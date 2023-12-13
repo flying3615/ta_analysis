@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{ts,tsx,js,jsx}]
+indent_style = space
+indent_size = 2
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+ij_continuation_indent_size = 4
+tab_width = 4
+
+# Disable star imports
+ij_kotlin_name_count_to_use_star_import = 10000
+ij_kotlin_name_count_to_use_star_import_for_members = 10000

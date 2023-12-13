@@ -1,0 +1,28 @@
+#!/bin/bash
+function changed {
+  git diff --name-only HEAD@{1} HEAD | grep "^$1" > /dev/null 2>&1
+}
+
+if changed 'build.gradle'; then
+  echo "📦 build.gradle changed. Do a Gradle import to bring your dependencies up to date."
+fi
+
+if changed 'web/package-lock.json'; then
+  echo "📦 The web package-lock.json changed. Run npm install in web folder to bring your dependencies up to date."
+fi
+
+if changed 'e2eTest/playwright/package-lock.json'; then
+  echo "📦 The PLAYWRIGHT package-lock.json changed. Run npm install in e2eTest/playwright/ to bring your testing dependencies up to date."
+fi
+
+if changed 'e2eTest/playwright-test/package-lock.json'; then
+  echo "📦 The PLAYWRIGHT-TEST package-lock.json changed. Run npm install in e2eTest/playwright-test/ to bring your testing dependencies up to date."
+fi
+
+if changed 'src/main/resources/secrets-example.properties'; then
+  echo "📦 secrets-example.properties changed. Your src/main/resources/secrets.properties file may be out of date."
+fi
+
+if changed '.env.auth-example'; then
+  echo "📦 .env.auth-exammple changed. Your .env.auth file may be out of date."
+fi
