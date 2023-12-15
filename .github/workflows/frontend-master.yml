@@ -1,0 +1,23 @@
+name: cdn frontend CI/CD master workflows
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  frontend-master-ci-build:
+    uses: linz/github-action-shared-library/.github/workflows/frontend-ci.yml@master #https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-ci.md
+    with:
+      aws-github-ci-role-arn: ${{ vars.GHA_ROLE_ARN }}
+      createAnImage: false
+      e2eDisable: true
+      codacyDisable: true
+    secrets: inherit
+
+  frontend-deployment-nonprod:
+    uses: ./.github/workflows/frontend-cd-env.yml
+    needs: [ frontend-master-ci-build ]
+    with:
+      deployment_environment: nonprod
+      deployment_role_arn: ${{ vars.DEPLOYMENT_ROLE_NONPROD }}
+    secrets: inherit

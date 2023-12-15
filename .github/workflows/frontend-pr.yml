@@ -1,0 +1,15 @@
+name: cdn frontend CI/CD PR workflow
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  frontend-master-ci-build:
+    uses: linz/github-action-shared-library/.github/workflows/frontend-ci.yml@master #https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-ci.md
+    with:
+      aws-github-ci-role-arn: ${{ vars.GHA_ROLE_ARN }}
+      createAnImage: false
+      e2eDisable: true
+      codacyDisable: true
+    secrets: inherit

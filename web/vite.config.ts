@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: "build",
+    outDir: "build/plan-generation",
     assetsDir: "public",
     sourcemap: true,
     target: "esnext",

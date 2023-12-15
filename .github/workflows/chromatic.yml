@@ -1,0 +1,43 @@
+# Workflow name
+name: 'Chromatic'
+
+# Event for the workflow
+on:
+  pull_request:
+    branches:
+      - 'master'
+    paths:
+      - 'web/**'
+  push:
+    branches:
+      - 'master'
+    paths:
+      - 'web/**'
+
+# List of jobs
+jobs:
+  chromatic-deployment:
+    # Operating System
+    runs-on: ubuntu-latest-4-cores
+    # Job steps
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.AUTH_TOKEN_GITHUB_PACKAGES }}
+        # 👇 Adds Chromatic as a step in the workflow
+      - name: Publish to Chromatic
+        timeout-minutes: 60
+        uses: chromaui/action@v1
+        # Chromatic GitHub Action options
+        with:
+          workingDir: web
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # 👇 Chromatic projectToken, refer to the manage page to obtain it.
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

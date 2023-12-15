@@ -1,0 +1,23 @@
+# Workflow name
+name: 'Chromatic no UI'
+
+# Event for the workflow
+on:
+  push:
+    paths-ignore:
+       - 'web/**'
+
+# List of jobs
+jobs:
+  chromatic-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Fake Chromatic Success
+        uses: chromaui/action@v1
+        with:
+          workingDir: web
+          skip: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # 👇 Chromatic projectToken, refer to the manage page to obtain it.
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
