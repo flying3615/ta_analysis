@@ -19,8 +19,28 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": "./",
+    // When adding mappings here, make sure to also add them in jest.config.js & .storybook/main.js
+    "paths": {
+      "src/*": [
+        "src/*"
+      ],
+      "test/*": [
+        "test/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+    },
   },
-  "include": ["src"],
+  "include": [
+    "config",
+    "src",
+    "test",
+    ".eslintrc.js",
+    "**/*.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import LandingPage from "./LandingPage";
+import LandingPage from "@components/LandingPage/LandingPage";
 
 describe("Verify rendering of the Landing Page", () => {
   it("should render", async () => {

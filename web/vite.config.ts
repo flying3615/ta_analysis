@@ -10,6 +10,9 @@ export default defineConfig({
     sourcemap: true,
     target: "esnext",
   },
+  define: {
+    "process.env": process.env,
+  },
   base: "/plan-generation",
   server: {
     port: 11065,
