@@ -3,6 +3,10 @@ module.exports = {
   collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],
   setupFilesAfterEnv: ["<rootDir>/test/setupTests.ts"],
   testMatch: ["<rootDir>/test/**/*.{spec,test}.{js,jsx,ts,tsx}"],
+  testEnvironment: "allure-jest/jsdom",
+  testEnvironmentOptions: {
+    resultsDir: "./allure-results",
+  },
   transform: {
     "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
     "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",

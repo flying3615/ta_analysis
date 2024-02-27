@@ -25,6 +25,8 @@ module.exports = {
     "out/",
     "dist/",
     "build/",
+    "allure-report/",
+    "allure-results/",
   ],
   rules: {
     "react/react-in-jsx-scope": "off",

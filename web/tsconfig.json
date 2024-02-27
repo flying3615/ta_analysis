@@ -35,6 +35,10 @@
       ],
     },
   },
+  "exclude": [
+    "allure-report",
+    "allure-results",
+  ],
   "include": [
     "config",
     "src",

@@ -8,6 +8,8 @@
 # testing
 /coverage
 /test-reports
+/allure-report
+/allure-results
 
 # production
 /build

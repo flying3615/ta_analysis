@@ -16,7 +16,9 @@
     "storybook": "storybook dev -p 6006",
     "storybook-no-cache": "storybook dev -p 6006 --no-manager-cache",
     "build-storybook": "cross-env NODE_OPTIONS='--max-old-space-size=20000' storybook build",
-    "chromatic": "chromatic --exit-zero-on-changes"
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "allure": "allure generate --clean",
+    "allure:open": "npm run allure && allure open ./allure-report --host localhost"
   },
   "husky": {
     "hooks": {
@@ -69,6 +71,9 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "allure-commandline": "^2.27.0",
+    "allure-jest": "^2.13.0",
+    "allure-js-commons": "^2.13.0",
     "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
     "babel-preset-react-app": "10.0.0",
