@@ -1,0 +1,13 @@
+name: CD - Survey Plangen Front End Deployment
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  frontend-deployment-nonprod:
+    uses: ./.github/workflows/cd-env.yml
+    with:
+      deploy_environment: nonprod
+      deploy_role_arn: 'arn:aws:iam::964632537160:role/linz-landonline-survey-plangen-nonprod/landonline-survey-plangen--staticsitecdrole01C021BB-86CSYwNFTkJl'
+    secrets: inherit

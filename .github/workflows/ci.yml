@@ -1,0 +1,42 @@
+name: CI - Survey Plangen Front End
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  frontend-ci:
+    uses: linz/github-action-shared-library/.github/workflows/frontend-ci.yml@master # https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-ci.md
+    with:
+      aws-github-ci-role-arn: 'arn:aws:iam::964632537160:role/landonline-survey-plangen-landonlinesurveyplangenci-LQCKTV18EcJb'
+      shouldCreateRelease: ${{ github.ref == 'refs/heads/master' }}
+      releaseChangePath: "web .github/workflows"
+      createAnImage: false
+      snykCheckEnable: true
+      snykOrgName: survey-jay
+      e2eDisable: true
+    secrets: inherit
+
+#  upload-sourcemaps:
+#    if: ${{ github.ref == 'refs/heads/master' }}
+#    needs: [frontend-ci]
+#    uses: linz/github-action-shared-library/.github/workflows/upload-source-map-workflow.yml@master
+#    strategy:
+#      matrix:
+#        include:
+#          - appId: '???' # New Relic: ???
+#            domain: 'kartoffel.dev.landonline.govt.nz'
+#          - appId: '???' # New Relic: ???
+#            domain: 'kumara.env.landonline.govt.nz'
+#          - appId: '???' # New Relic: ???
+#            domain: 'app.landonline.govt.nz'
+#    with:
+#      appId: ${{ matrix.appId }}
+#      urlPathsToHostedFiles: 'https://${{ matrix.domain }}/plan-generation/public'
+#      sourceMapDir: 'web/build/public'
+#      releaseId: ${{ github.sha }}
+#      releaseName: ${{ github.sha }}
+#    secrets:
+#      apiKey: ${{ secrets.NEW_RELIC_API_KEY }}

@@ -1,8 +1,13 @@
 *.js
+!.eslintrc.js
+!.prettierrc.js
 !jest.config.js
 *.d.ts
+*.d.ts.map
 node_modules
+.npmrc
 
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+cdk.context.json

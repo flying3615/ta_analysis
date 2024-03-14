@@ -2,16 +2,15 @@ name: Conventional Commit Checker
 
 on:
   pull_request:
-    branches: [ master ]
-    types: [ opened, edited, synchronize ]
+    branches: [master]
+    types: [opened, edited, synchronize]
 
 jobs:
   check-for-cc:
     runs-on: ubuntu-latest
     steps:
-      - name: check-for-cc
-        id: check-for-cc
-        uses: agenthunt/conventional-commit-checker-action@v1.0.0
+      - uses: linz/action-pull-request-lint@4744d5a3ab84000afc4eb5dc98b7fd19d7682fff # v1.1.0
         with:
-          pr-title-regex: "^(.+)(?:(([^)s]+)))?: ([A-Z]+)-([0-9]+): (.+)"
-          pr-body-regex: ".*"
+          conventional: "error"
+          jira: "error"
+          jira-projects: "SURVEY,SJ,ENABLE"
