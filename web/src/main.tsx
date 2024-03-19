@@ -5,8 +5,16 @@ import "@linzjs/lui/dist/scss/base.scss";
 import "@linzjs/lui/dist/fonts";
 import "./index.scss";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+import { initializeEnv } from "./utils/env-utils";
+
+async function render() {
+  await initializeEnv();
+  const container = document.getElementById("root");
+  ReactDOM.createRoot(container!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
+}
+
+await render();
