@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
-import { execSync } from "child_process";
 import react from "@vitejs/plugin-react";
+import { execSync } from "child_process";
+import { defineConfig } from "vite";
 
 const commitHash = execSync("git rev-parse --short HEAD").toString();
 const commitDate = execSync("git log -1 HEAD --format=%cI").toString();

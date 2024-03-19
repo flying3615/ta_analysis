@@ -1,10 +1,7 @@
 {
+  "extends": "@linzjs/style/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
     "outDir": "build",
 
     /* Bundler mode */
@@ -14,12 +11,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
 
     "baseUrl": "./",
     // When adding mappings here, make sure to also add them in jest.config.js & .storybook/main.js

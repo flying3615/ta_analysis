@@ -54,6 +54,7 @@
   "devDependencies": {
     "@babel/core": "^7.23.6",
     "@linzjs/lui": "^21.15.1",
+    "@linzjs/style": "^5.2.0",
     "@storybook/addon-actions": "^7.6.4",
     "@storybook/addon-essentials": "^7.6.4",
     "@storybook/addon-interactions": "^7.6.4",
