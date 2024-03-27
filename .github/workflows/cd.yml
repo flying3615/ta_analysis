@@ -9,5 +9,21 @@ jobs:
     uses: ./.github/workflows/cd-env.yml
     with:
       deploy_environment: nonprod
-      deploy_role_arn: 'arn:aws:iam::964632537160:role/linz-landonline-survey-plangen-nonprod/landonline-survey-plangen--staticsitecdrole01C021BB-86CSYwNFTkJl'
+      deploy_role_arn: 'arn:aws:iam::964632537160:role/linz-landonline-survey-plangen-fe-nonprod/landonline-survey-plangen--staticsitecdrole01C021BB-KFha6agWCk4Y' 
     secrets: inherit
+
+  frontend-deployment-preprod:
+    uses: ./.github/workflows/cd-env.yml
+    needs: [ frontend-deployment-nonprod ]
+    with:
+      deploy_environment: preprod
+      deploy_role_arn: 'arn:aws:iam::330245142449:role/linz-landonline-survey-plangen-fe-preprod/landonline-survey-plangen--staticsitecdrole01C021BB-Jp7tfaXsEu6X'
+    secrets: inherit
+
+  # frontend-deployment-prod:
+  #   uses: ./.github/workflows/cd-env.yml
+  #   needs: [ frontend-deployment-preprod ]
+  #   with:
+  #     deploy_environment: prod
+  #     deploy_role_arn: '???' # 'StaticSiteBucketCDRoleArn' from the cdk deploy output
+  #   secrets: inherit

@@ -27,7 +27,7 @@ jobs:
         with:
           aws-deployment-role-arn: ${{ inputs.deploy_role_arn }}
           github-token: ${{ secrets.STEP_GITHUB_ACTION_TOKEN }}
-          bucket: "linz-landonline-survey-plangen-${{ inputs.deploy_environment }}"
+          bucket: "linz-landonline-survey-plangen-fe-${{ inputs.deploy_environment }}"
           bucketPrefix: plan-generation
           slackBotUserOAuthAccessToken: ${{ secrets.SLACK_STEP_GITHUB_ACTION_BOT_TOKEN }}
           slackChannel: team-step-survey-plangen-build
