@@ -1,5 +1,54 @@
-# Landonline Survey Plan Generation
+# Landonline Survey Plan Generation (PlanGen)
 
-The front end app for Survey Plan Generation (aka 'Plangen')
+This repository contains Landonline Survey Plan Generation (PlanGen), which allows a surveyor to create layout plan sheets for an inflight survey.
 
-[Link to readme](./web/README.md)
+The back end API for this codebase is found [HERE](https://github.com/linz/landonline-survey-plan-generation-api)
+
+## Where is it deployed
+
+-   [Kartoffel](https://kartoffel.dev.landonline.govt.nz/plan-generation/)
+-   [Kumara (pre-prod)](https://kumara.env.landonline.govt.nz/plan-generation/)
+-   [Prod](https://app.landonline.govt.nz/plan-generation/)
+
+[See here](infra/README.md) for documentation on the infrastructure.
+
+## Local Development
+
+### Setup
+
+To get started, install the following software first:
+-   Git
+-   Node 18+
+-   [aws-azure-login](https://www.npmjs.com/package/aws-azure-login)
+-   [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
+### Source control
+Branches should start with the jira ticket and contain a short description (dash separated)
+`<jira-ticket>/<short-description>`
+e.g.
+`SJ-824/update-readme`
+
+Commit should follow the format of [conventional commit](https://toitutewhenua.atlassian.net/wiki/spaces/STEP/pages/207192124/PR+commit+and+tagging+conventions)
+
+`<type>: <jira-ticket> <short-description of change>`
+
+Examples:
+
+* `feat: SJ-123 Created sidebar options for text formatting`
+* `fix: SJ-456 Fixed right click behavior on the map`
+* `chore: SJ-789 Added security check in CI github workflow`
+* `docs: SJ-1001 Update infrastructure README docs`
+
+Note: for this repo, `feat`/`fix`/`chore`/etc must be lowercase
+
+### Running Locally
+
+#### Scripts
+
+-   `npm i` - install dependencies
+-   `npm run start` - start application
+-   `npm run lint` - check linting
+-   `npm run test` - run jest tests
+-   `npm run storybook` - run storybook for visual regression testing
+-   `npm run allure:open` - view allure test report dashboard
+-   (Further scripts in [package.json](./web/package.json))
