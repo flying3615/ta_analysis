@@ -11,20 +11,15 @@
     "preview": "vite preview",
     "test": "jest",
     "test:ci": "cross-env CI=true jest test --ci --coverage --coverageDirectory=test-reports/coverage --reporters=default --reporters=jest-summarizing-reporter --reporters=jest-html-reporter --testResultsProcessor=\"jest-junit\" --forceExit",
-    "lint": "eslint . --ext js,ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext js,ts,tsx --cache --max-warnings 0 && tsc --jsx react-jsx",
     "lint:fix": "eslint . --ext js,ts,tsx --fix --cache",
     "storybook": "storybook dev -p 6006",
     "storybook-no-cache": "storybook dev -p 6006 --no-manager-cache",
     "build-storybook": "cross-env NODE_OPTIONS='--max-old-space-size=20000' storybook build",
     "chromatic": "chromatic --exit-zero-on-changes",
     "allure": "allure generate --clean",
-    "allure:open": "npm run allure && allure open ./allure-report --host localhost"
-  },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint",
-      "post-merge": "../.githooks/post-merge"
-    }
+    "allure:open": "npm run allure && allure open ./allure-report --host localhost",
+    "prepare": "cd .. && husky install"
   },
   "jest-junit": {
     "outputDirectory": "test-reports/junit",
@@ -90,7 +85,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-storybook": "^0.6.15",
     "eslint-plugin-testing-library": "^6.2.0",
-    "husky": "^8.0.3",
+    "husky": "^9.0.11",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
