@@ -1,5 +1,5 @@
 import { resolve as _resolve } from "path";
-export const stories = ["../test/**/*.stories.@(js|jsx|ts|tsx)"];
+export const stories = ["../src/**/*.stories.@(js|jsx|ts|tsx)"];
 export const addons = [
   "@storybook/addon-links",
   "@storybook/addon-essentials",

@@ -1,4 +1,4 @@
-import LandingPage from "@components/LandingPage/LandingPage";
+import LandingPage from "../LandingPage.tsx";
 import { render, screen } from "@testing-library/react";
 
 describe("Verify rendering of the Landing Page", () => {

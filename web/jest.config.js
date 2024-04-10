@@ -1,8 +1,8 @@
 module.exports = {
-  roots: ["<rootDir>/test"],
+  roots: ["<rootDir>/src"],
   collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],
-  setupFilesAfterEnv: ["<rootDir>/test/setupTests.ts"],
-  testMatch: ["<rootDir>/test/**/*.{spec,test}.{js,jsx,ts,tsx}"],
+  setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
+  testMatch: ["<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"],
   testEnvironment: "allure-jest/jsdom",
   testEnvironmentOptions: {
     resultsDir: "./allure-results",
