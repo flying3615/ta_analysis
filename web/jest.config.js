@@ -14,11 +14,7 @@ module.exports = {
   },
   resetMocks: true,
   coverageReporters: ["text", "cobertura"],
-
-  // When adding mappings here, make sure to also add them in tsconfig.json & .storybook/main.js
   moduleNameMapper: {
-    "^src/(.*)$": "<rootDir>/src/$1",
-    "^test/(.*)$": "<rootDir>/test/$1",
-    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
 };
