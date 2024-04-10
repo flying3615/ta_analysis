@@ -7,7 +7,6 @@ Author Checklist
 - [ ] appropriate description and links provided to the story or related docs to understand the PR
 - [ ] self reviewed, seems easy to understand and follow
 - [ ] reasonable code test coverage
-- [ ] where applicable, the client APIs and Models generator completed
 - [ ] feature toggled if necessary
 - [ ] skipped tests are referenced to an appropriate story tracking it
 
