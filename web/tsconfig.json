@@ -13,16 +13,9 @@
     "jsx": "react-jsx",
 
     "baseUrl": "./",
-    // When adding mappings here, make sure to also add them in jest.config.js & .storybook/main.js
     "paths": {
-      "src/*": [
+      "@/*": [
         "src/*"
-      ],
-      "test/*": [
-        "test/*"
-      ],
-      "@components/*": [
-        "src/components/*"
       ],
     },
   },
