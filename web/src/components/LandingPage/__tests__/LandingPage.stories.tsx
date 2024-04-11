@@ -1,4 +1,4 @@
-import LandingPage from "@components/LandingPage/LandingPage";
+import LandingPage from "../LandingPage";
 import { Meta, StoryFn } from "@storybook/react";
 
 export default {

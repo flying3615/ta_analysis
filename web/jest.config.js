@@ -1,8 +1,8 @@
 module.exports = {
-  roots: ["<rootDir>/test"],
+  roots: ["<rootDir>/src"],
   collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],
-  setupFilesAfterEnv: ["<rootDir>/test/setupTests.ts"],
-  testMatch: ["<rootDir>/test/**/*.{spec,test}.{js,jsx,ts,tsx}"],
+  setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
+  testMatch: ["<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"],
   testEnvironment: "allure-jest/jsdom",
   testEnvironmentOptions: {
     resultsDir: "./allure-results",
@@ -14,11 +14,7 @@ module.exports = {
   },
   resetMocks: true,
   coverageReporters: ["text", "cobertura"],
-
-  // When adding mappings here, make sure to also add them in tsconfig.json & .storybook/main.js
   moduleNameMapper: {
-    "^src/(.*)$": "<rootDir>/src/$1",
-    "^test/(.*)$": "<rootDir>/test/$1",
-    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
 };
