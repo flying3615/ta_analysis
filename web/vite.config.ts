@@ -1,5 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "url";
 
@@ -15,6 +17,7 @@ export default defineConfig({
     sourcemap: true,
     target: "esnext",
   },
+  assetsInclude: ["/config/nr-config.js"],
   define: {
     "process.env": process.env,
     __BUILDDETAIL__: JSON.stringify({ buildVersion: commitHash.trim(), buildTimestamp: commitDate.trim() }),
@@ -22,8 +25,22 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) }],
   },
-  base: "/plan-generation",
+  base: "/plan-generation/",
   server: {
     port: 11065,
+    proxy: {
+      "/plan-generation/config/": {
+        target: "http://localhost:11065",
+        selfHandleResponse: true,
+        rewrite: (path) => path.replace("/plan-generation/config/", ""),
+        bypass: (req, res) => {
+          const requestedFileName = encodeURIComponent(req.url!.slice("/plan-generation/config/".length));
+          const localFilePath = path.join(__dirname, "config/local", requestedFileName);
+          console.log(`proxying ${req.url} to ${localFilePath}`);
+          const data = fs.readFileSync(localFilePath, "utf-8");
+          res.end(data);
+        },
+      },
+    },
   },
 });

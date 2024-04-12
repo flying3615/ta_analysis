@@ -26,6 +26,7 @@ jobs:
         uses: linz/github-action-shared-library/.github/actions/frontend-deploy-to-s3@master # https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-deploy-to-s3.md
         with:
           aws-deployment-role-arn: ${{ inputs.deploy_role_arn }}
+          environment: ${{ inputs.deploy_environment }}
           github-token: ${{ secrets.STEP_GITHUB_ACTION_TOKEN }}
           bucket: "linz-landonline-survey-plangen-fe-${{ inputs.deploy_environment }}"
           bucketPrefix: plan-generation
