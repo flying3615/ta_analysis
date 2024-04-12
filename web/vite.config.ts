@@ -17,6 +17,7 @@ export default defineConfig({
     sourcemap: true,
     target: "esnext",
   },
+  assetsInclude: ["/config/nr-config.js"],
   define: {
     "process.env": process.env,
     __BUILDDETAIL__: JSON.stringify({ buildVersion: commitHash.trim(), buildTimestamp: commitDate.trim() }),
