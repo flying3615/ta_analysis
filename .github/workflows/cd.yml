@@ -26,4 +26,5 @@ jobs:
   #   with:
   #     deploy_environment: prod
   #     deploy_role_arn: '???' # 'StaticSiteBucketCDRoleArn' from the cdk deploy output
+  #     new_relic_app_id: '' # todo: add new relic app id when created for deployment markers
   #   secrets: inherit

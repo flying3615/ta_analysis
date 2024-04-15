@@ -9,6 +9,10 @@ on:
       deploy_role_arn:
         required: true
         type: string
+      new_relic_app_id:
+        required: false
+        type: string
+        description: New Relic APM app id for deployment marker
 
 jobs:
   s3-deploy-frontend:
@@ -26,9 +30,12 @@ jobs:
         uses: linz/github-action-shared-library/.github/actions/frontend-deploy-to-s3@master # https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-deploy-to-s3.md
         with:
           aws-deployment-role-arn: ${{ inputs.deploy_role_arn }}
-          environment: ${{ inputs.deploy_environment }}
-          github-token: ${{ secrets.STEP_GITHUB_ACTION_TOKEN }}
           bucket: "linz-landonline-survey-plangen-fe-${{ inputs.deploy_environment }}"
           bucketPrefix: plan-generation
+          environment: ${{ inputs.deploy_environment }}
+          github-token: ${{ secrets.STEP_GITHUB_ACTION_TOKEN }}
+          newRelicAppID: ${{ inputs.new_relic_app_id }}
+          newRelicDeploymentKey: ${{ secrets.NEW_RELIC_DEPLOYMENT_API_KEY }}
+          newRelicLicenseKey: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
           slackBotUserOAuthAccessToken: ${{ secrets.SLACK_STEP_GITHUB_ACTION_BOT_TOKEN }}
           slackChannel: team-step-survey-plangen-build

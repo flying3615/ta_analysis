@@ -16,28 +16,27 @@ jobs:
       createAnImage: false
       snykCheckEnable: true
       snykOrgName: survey-jay
+      sourcemapDisable: true
       e2eDisable: true
     secrets: inherit
 
-  # upload-sourcemaps:
-  #   if: ${{ github.ref == 'refs/heads/master' }}
-  #   needs: [frontend-ci]
-  #   uses: linz/github-action-shared-library/.github/workflows/upload-source-map-workflow.yml@master
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - appId: '???' # New Relic: https://onenr.io/???
-  #           domain: 'kartoffel.dev.landonline.govt.nz'
-  #         - appId: '???' # New Relic: https://onenr.io/???
-  #           domain: 'kumara.env.landonline.govt.nz'
-  #         # - appId: '???' # New Relic: https://onenr.io/???
-  #         #   domain: 'app.landonline.govt.nz'
-  #   with:
-  #     appId: ${{ matrix.appId }}
-  #     urlPathsToHostedFiles: 'https://${{ matrix.domain }}/plan-generation/public'
-  #     sourceMapDir: 'web/build/public'
-  #     releaseId: ${{ github.sha }}
-  #     releaseName: ${{ github.sha }}
-  #   secrets:
-  #     apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+  upload-sourcemaps:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: [frontend-ci]
+    uses: linz/github-action-shared-library/.github/workflows/upload-source-map-workflow.yml@master
+    strategy:
+      matrix:
+        include:
+          - appId: 1835041279 # New Relic: https://onenr.io/02R56LLxrjb
+            domain: 'kartoffel.dev.landonline.govt.nz'
+          - appId: 1835041280 # New Relic: https://onenr.io/0LwGV11VeQ6
+            domain: 'kumara.env.landonline.govt.nz'
+          # - appId: '???' # New Relic: https://onenr.io/???
+          #   domain: 'app.landonline.govt.nz'
+    with:
+      appId: ${{ matrix.appId }}
+      urlPathsToHostedFiles: 'https://${{ matrix.domain }}/plan-generation/public'
+      sourceMapDir: 'web/build/public'
+    secrets:
+      apiKey: ${{ secrets.NEW_RELIC_DEPLOYMENT_API_KEY }}
 
