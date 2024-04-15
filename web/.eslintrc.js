@@ -33,4 +33,9 @@ module.exports = {
     "linebreak-style": ["error", "unix"],
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
   },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
 };
