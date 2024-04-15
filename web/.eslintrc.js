@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -11,11 +12,11 @@ module.exports = {
     "plugin:testing-library/react",
     "plugin:prettier/recommended",
     "plugin:storybook/recommended",
+    "plugin:jsx-a11y/recommended",
   ],
   parser: "@typescript-eslint/parser",
   plugins: ["react", "react-refresh", "jsx-a11y"],
   ignorePatterns: [
-    ".eslintrc.js",
     "jest.config.js",
     "config/",
     "react-app-env.d.ts",
@@ -28,14 +29,53 @@ module.exports = {
     "allure-report/",
     "allure-results/",
   ],
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   rules: {
     "react/react-in-jsx-scope": "off",
     "linebreak-style": ["error", "unix"],
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+    "react/jsx-curly-brace-presence": "warn",
+    "no-restricted-imports": [
+      "warn",
+      {
+        patterns: [
+          {
+            group: ["**/../../*"],
+            message: "Please use an absolute import instead of a relative import - example: '@/path/to/component'",
+          },
+        ],
+      },
+    ],
   },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  }
+  overrides: [
+    {
+      files: ["**/*.ts", "**/*.tsx"],
+      plugins: ["@typescript-eslint"],
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        project: "./tsconfig.json",
+        // eslint-disable-next-line no-undef
+        tsconfigRootDir: __dirname,
+      },
+      extends: ["plugin:@typescript-eslint/recommended"],
+      rules: {
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          {
+            argsIgnorePattern: "^_",
+          },
+        ],
+      },
+    },
+    {
+      files: ["**/*.test.*"],
+      rules: {
+        "no-console": "off",
+      },
+    },
+  ],
 };
