@@ -1,0 +1,19 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint *.{ts,js} ./**/*.{ts,js} --max-warnings 0 --cache && prettier --check *.{ts,js} ./**/*.{ts,js}",
+    "lint:fix": "eslint *.{ts,js} ./**/*.ts --fix --cache && prettier --write *.{ts,js} ./**/*.{ts,js} && npm run lint",
+    "test": "playwright test",
+    "test:ci": "npm test -c ./playwright.config.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.43.1",
+    "@types/node": "^20.12.7"
+  }
+}
