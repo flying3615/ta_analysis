@@ -35,16 +35,23 @@
 }
 
 .LandingPage-option {
+  margin: 20px;
+  text-decoration: none;
+  color: colours.$sea;
+}
+
+.LandingPage-optionBtn {
   text-align: center;
   padding: 32px;
-  margin: 20px;
+  margin-top: 0;
   width: 248px;
   height: 208px;
   border-radius: 9px;
   color: colours.$surfie;
+  transition: all 0.3s ease-in-out;
 }
 
-.LandingPage-option:hover {
+.LandingPage-optionBtn:hover {
   @include utils.drop-shadow(lg);
   background-color: colours.$polar;
   color: colours.$sea;
