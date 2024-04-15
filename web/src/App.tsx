@@ -24,8 +24,8 @@ export const PlangenApp = () => {
   return (
     <Routes>
       <Route path={Paths.root} element={<LandingPage />} />
-      <Route path={Paths.defineDiagrams} element={<Placeholder name={"Define diagrams"} />} />
-      <Route path={Paths.layoutPlanSheets} element={<Placeholder name={"Layout plan sheets"} />} />
+      <Route path={Paths.defineDiagrams} element={<Placeholder name="Define diagrams" />} />
+      <Route path={Paths.layoutPlanSheets} element={<Placeholder name="Layout plan sheets" />} />
     </Routes>
   );
 };
