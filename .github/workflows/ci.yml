@@ -16,6 +16,7 @@ jobs:
       createAnImage: false
       snykCheckEnable: true
       snykOrgName: survey-jay
+      sourcemapDisable: true
       e2eDisable: true
     secrets: inherit
 
