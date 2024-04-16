@@ -2,7 +2,7 @@
 @use "@linzjs/lui/dist/scss/Foundation/Utilities/BoxShadow" as utils;
 
 .LandingPage {
-  height: 100vh;
+  height: 100%;
   background-color: colours.$hint;
   padding-left: 4em;
   padding-top: 4em;
