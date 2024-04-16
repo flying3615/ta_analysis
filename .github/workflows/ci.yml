@@ -29,6 +29,11 @@ jobs:
       e2eLintCommand: "npm run lint"
       e2eTestReportDir: "test/e2e/output"
 
+      # These are needed for playwright to work
+      createAnImage: true
+      image: "step/survey/step-landonline-web-survey-plangen-fe"
+      imageTag: 'latest'
+
     secrets: inherit
 
   # upload-sourcemaps:

@@ -1,0 +1,131 @@
+version: '3.8'
+services:
+   plangen-frontend:
+    container_name: plangen-frontend
+    image: "${AWS_ECR_HOST}/step/survey/step-landonline-web-survey-plangen-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
+
+#   plangen-api:
+#    container_name: plangen-api
+#    image: "${AWS_ECR_HOST}/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
+#    #    build: .
+#    environment:
+#      SPLIT_ENV_API_KEY_JS: $SPLIT_ENV_API_KEY_JS
+#      SPLIT_ENV_API_KEY_SDK: $SPLIT_ENV_API_KEY_SDK
+#      GOOGLE_ANALYTICS_MEASUREMENT_ID: $GOOGLE_ANALYTICS_MEASUREMENT_ID
+#      TITLES_DOMAIN_URL: "http://titles-domain:8080/titles-domain"
+#      FEES_DOMAIN_URL: "http://fees-domain:8080"
+#      API_GATEWAY_URL: "http://reverse-proxy" # for apps configured going through the API_GATEWAY
+#      LOCKING_SERVICE_URL: "http://lock-service:8080/lock-service/v2/locks"
+#      WORKFLOW_URL: "http://workflow:8080/workflow/api"
+#      OIDC_ISSUER_URL: $OIDC_ISSUER_URL
+#      REQUESTS_SERVICE_URL: "http://requests-backend:8080/requests/api"
+#      USER_AUTHZ_BASE_URL: "http://user-authz:8080"
+#      CLIENT_ID: titles-internal-service
+#      CLIENT_SECRET: localclientsecret
+#    ports:
+#      - "12007:9000"
+#    depends_on:
+#      - keycloak
+#      - user-authz
+#      - titles-domain
+#      - fees-domain
+#      - lock-service
+#      - workflow
+#      - requests-backend
+#
+#   informix-db:
+#    container_name: informix-db
+#    image: "${AWS_ECR_HOST}/step/landonline-dev-db:latest"
+#    ports:
+#      - "9088:9088"
+#    healthcheck:
+#      test: [ "CMD", "grep", "-q", "<EOM>OK", "/opt/ifx/informix/tmp/startup.informix" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#
+#   keycloak:
+#    container_name: keycloak
+#    image: "${AWS_ECR_HOST}/step/enablement/landonline-auth"
+#    command: [ "--log-console-output=default" ]
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      KC_HOSTNAME: keycloak
+#      KC_PROXY: edge
+#      KC_HOSTNAME_STRICT_HTTPS: "false"
+#      KC_HOSTNAME_PORT: 8080
+#      KC_DB_URL: jdbc:postgresql://auth-db:5432/keycloak?currentSchema=keycloak
+#      KC_DB_USERNAME: $KEYCLOAK_DB_USERNAME
+#      KC_DB_PASSWORD: $KEYCLOAK_DB_PASSWORD
+#      KEYCLOAK_ADMIN: $KEYCLOAK_ADMIN
+#      KEYCLOAK_ADMIN_PASSWORD: $KEYCLOAK_ADMIN_PASSWORD
+#      LOCAL_SECRET_CONFIG: >
+#        {
+#          "auth.defaults.userIdSecretKey": "thisisasecretkey",
+#          "auth.defaults.informix.url": "${DB_CONNECTION};IFX_ISOLATION_LEVEL=2U;IFX_LO_READONLY=1",
+#          "auth.defaults.informix.username": "${DB_USERNAME}",
+#          "auth.defaults.informix.password": "${DB_PASSWORD}",
+#          "auth.defaults.informix.max-connections": "5"
+#        }
+#    healthcheck:
+#      test: ">/dev/tcp/127.0.0.1/8080"
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#    depends_on:
+#      auth-db:
+#        condition: service_healthy
+#      informix-db:
+#        condition: service_healthy
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#
+#   auth-db:
+#    container_name: auth-db
+#    image: "${AWS_ECR_HOST}/step/enablement/landonline-auth-db"
+#    user: postgres
+#    healthcheck:
+#      test: [ "CMD", "pg_isready" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#
+#   user-authz:
+#    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-user-authorisation-api:latest"
+#    ports:
+#      - "8082:8080"
+#    environment:
+#      - OIDC_ISSUER_URL=$OIDC_ISSUER_URL
+#      - OIDC_JWKS_URI=$OIDC_ISSUER_URL/protocol/openid-connect/certs
+#      - DB_CONNECTION_STRING=$DB_CONNECTION
+#      - DB_USERNAME=$DB_USERNAME
+#      - DB_PASSWORD=$DB_PASSWORD
+#      - BYPASS_CACHE=true
+#      - SPRING_APPLICATION_JSON={"landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}}}
+#    depends_on:
+#      keycloak:
+#        condition: service_healthy
+#      informix-db:
+#        condition: service_healthy
+#    healthcheck:
+#      test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+#      interval: 5s
+#      timeout: 5s
+#      retries: 8
+#
+#   reverse-proxy:
+#    container_name: reverse-proxy
+#    depends_on:
+#      - plangen-frontend
+#      - plangen-api
+#    build:
+#      context: ./run/e2e/reverse-proxy
+#      dockerfile: ./Dockerfile
+#    ports:
+#      - "11007:80"
+#    restart: always
+
+
+
+
