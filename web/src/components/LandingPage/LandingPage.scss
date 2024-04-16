@@ -1,8 +1,8 @@
 @use "@linzjs/lui/dist/scss/Foundation/Variables/ColorVars.scss" as colours;
-@use '@linzjs/lui/dist/scss/Foundation/Utilities/BoxShadow' as utils;
+@use "@linzjs/lui/dist/scss/Foundation/Utilities/BoxShadow" as utils;
 
 .LandingPage {
-  height:100vh;
+  height: 100%;
   background-color: colours.$hint;
   padding-left: 4em;
   padding-top: 4em;
@@ -26,7 +26,7 @@
 
 .LandingPage-titlePrompt {
   margin-top: 1rem;
-  color: colours.$charcoal
+  color: colours.$charcoal;
 }
 
 .LandingPage-options {
@@ -35,16 +35,23 @@
 }
 
 .LandingPage-option {
+  margin: 20px;
+  text-decoration: none;
+  color: colours.$sea;
+}
+
+.LandingPage-optionBtn {
   text-align: center;
   padding: 32px;
-  margin: 20px;
+  margin-top: 0;
   width: 248px;
   height: 208px;
   border-radius: 9px;
-  color: colours.$surfie
+  color: colours.$surfie;
+  transition: all 0.3s ease-in-out;
 }
 
-.LandingPage-option:hover {
+.LandingPage-optionBtn:hover {
   @include utils.drop-shadow(lg);
   background-color: colours.$polar;
   color: colours.$sea;
@@ -56,7 +63,7 @@
   color: colours.$sea;
 }
 
-.LandingPage-optionIcon  {
+.LandingPage-optionIcon {
   width: 100px !important;
   height: 100px !important;
 }

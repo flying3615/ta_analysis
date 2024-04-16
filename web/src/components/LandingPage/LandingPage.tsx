@@ -15,8 +15,8 @@ const LandingPage = () => {
           <h5 className="LandingPage-titlePrompt">What would you like to do?</h5>
         </div>
         <div className="LandingPage-options">
-          <LuiShadow className="LandingPage-option" dropSize="sm">
-            <Link className="LandingPage-optionLink" to={Paths.defineDiagrams}>
+          <Link className="LandingPage-option" to={Paths.defineDiagrams}>
+            <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
               <LuiIcon
                 name="ic_define_diagrams"
                 className="LandingPage-optionIcon"
@@ -25,10 +25,10 @@ const LandingPage = () => {
               />
 
               <p>Define Diagrams</p>
-            </Link>
-          </LuiShadow>
-          <LuiShadow className="LandingPage-option" dropSize="sm">
-            <Link className="LandingPage-optionLink" to={Paths.layoutPlanSheets}>
+            </LuiShadow>
+          </Link>
+          <Link className="LandingPage-option" to={Paths.layoutPlanSheets}>
+            <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
               <LuiIcon
                 name="ic_layout_plan_sheets"
                 className="LandingPage-optionIcon"
@@ -36,8 +36,8 @@ const LandingPage = () => {
                 color={LuiColorSea}
               />
               <p>Layout Plan Sheets</p>
-            </Link>
-          </LuiShadow>
+            </LuiShadow>
+          </Link>
         </div>
       </div>
       <div className="LandingPage-footer">
