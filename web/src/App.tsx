@@ -5,10 +5,11 @@ import { Paths } from "./Paths.ts";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 
 const Placeholder = (props: { name: string }) => <h2>{props.name} coming soon...</h2>;
 
-export const PlangenApp = () => {
+export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION,
   );
@@ -24,7 +25,7 @@ export const PlangenApp = () => {
   return (
     <Routes>
       <Route path={Paths.root} element={<LandingPage />} />
-      <Route path={Paths.defineDiagrams} element={<Placeholder name="Define diagrams" />} />
+      <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
       <Route path={Paths.layoutPlanSheets} element={<Placeholder name="Layout plan sheets" />} />
     </Routes>
   );

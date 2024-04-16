@@ -4,6 +4,7 @@ declare interface Window {
   _env_: {
     splitKey: string;
     oidcIssuer: string;
+    basemapApiKey: string;
   };
   newrelic: typeof newrelic | undefined;
 }

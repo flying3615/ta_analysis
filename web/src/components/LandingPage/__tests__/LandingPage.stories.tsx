@@ -10,7 +10,6 @@ export default {
 } as Meta<typeof LandingPage>;
 
 export const Default: StoryFn<typeof LandingPage> = () => {
-  console.log("Defualt story");
   return (
     <FeatureFlagProvider>
       <MemoryRouter initialEntries={["/plan-generation/"]}>

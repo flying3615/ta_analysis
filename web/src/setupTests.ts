@@ -14,4 +14,16 @@ jest.setTimeout(10000);
 window._env_ = {
   splitKey: "localhost",
   oidcIssuer: "https://auth.dev.landonline.govt.nz/realms/landonline",
+  basemapApiKey: "dummy",
 };
+
+window.URL.createObjectURL = jest.fn(() => "");
+beforeEach(() => {
+  window.URL.createObjectURL = jest.fn(() => "");
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { mapAssertions, mapFeatureAssertions } = require("@linzjs/landonline-openlayers-map");
+
+  expect.extend(mapAssertions.default);
+  expect.extend(mapFeatureAssertions.default);
+});
