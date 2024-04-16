@@ -6,7 +6,18 @@ import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 
-const Placeholder = (props: { name: string }) => <h2>{props.name} coming soon...</h2>;
+const Placeholder = (props: { name: string }) => (
+  <div>
+    <h2>{props.name} coming soon...</h2>
+    <button
+      onClick={() => {
+        throw Error("sourcemap test");
+      }}
+    >
+      Trigger error
+    </button>
+  </div>
+);
 
 export const PlangenApp = () => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
