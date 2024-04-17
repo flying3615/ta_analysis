@@ -7,18 +7,21 @@
     "lint": "eslint *.{ts,js} ./**/*.{ts,js} --max-warnings 0 --cache && prettier --check *.{ts,js} ./**/*.{ts,js}",
     "lintfix": "eslint *.{ts,js} ./**/*.ts --fix --cache && prettier --write *.{ts,js} ./**/*.{ts,js} && npm run lint",
     "test": "playwright test",
-    "testci": "npm test -c ./playwright.config.ts",
-    "testchromium": "playwright test --project=chromium",
-    "testfirefox": "playwright test --project=firefox",
-    "testsafari": "playwright test --project=webkit",
+    "test:ci": "cross-env CI=true npm test -c ./playwright.config.ts",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:safari": "playwright test --project=webkit",
     "htmlreport": "playwright show-report"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@linzjs/style": "^5.2.0",
     "@playwright/test": "^1.43.1",
     "@types/node": "^20.12.7",
-    "dotenv": "^16.4.5"
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "eslint-plugin-playwright": "^1.6.0"
   }
 }
