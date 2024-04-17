@@ -6,6 +6,7 @@ import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 
 const Placeholder = (props: { name: string }) => <h2>{props.name} coming soon...</h2>;
 
@@ -15,11 +16,19 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
   );
 
   if (loadingApplicationAvailable) {
-    return <></>; // avoid flicker
+    return <LuiLoadingSpinner />;
   }
 
   if (!isApplicationAvailable) {
-    return <h2>You do not have access to this feature.</h2>;
+    return (
+      <LuiErrorPage
+        content={
+          <LuiStaticMessage level="error" closable={false}>
+            <h2>You do not have access to this feature.</h2>
+          </LuiStaticMessage>
+        }
+      />
+    );
   }
 
   return (
