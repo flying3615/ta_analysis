@@ -6,7 +6,7 @@ import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.ts
 const renderPlangenApp = () => {
   render(
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/"]}>
+      <MemoryRouter initialEntries={["/plan-generation/98765"]}>
         <PlangenApp mockMap={true} />
       </MemoryRouter>
     </FeatureFlagProvider>,

@@ -14,7 +14,7 @@ export default {
 export const Default: StoryFn<typeof DefineDiagrams> = () => {
   return (
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/define-diagrams"]}>
+      <MemoryRouter initialEntries={["/plan-generation/define-diagrams/12345"]}>
         <PlangenApp />
       </MemoryRouter>
     </FeatureFlagProvider>

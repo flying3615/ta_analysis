@@ -12,7 +12,7 @@ export default {
 export const Default: StoryFn<typeof LandingPage> = () => {
   return (
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/"]}>
+      <MemoryRouter initialEntries={["/plan-generation/12345"]}>
         <PlangenApp />
       </MemoryRouter>
     </FeatureFlagProvider>

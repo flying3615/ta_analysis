@@ -1,5 +1,5 @@
 export const Paths = {
-  root: "/plan-generation",
-  defineDiagrams: "/plan-generation/define-diagrams",
-  layoutPlanSheets: "/plan-generation/layout-plan-sheets",
+  root: "/plan-generation/:transactionId?",
+  defineDiagrams: "/plan-generation/define-diagrams/:transactionId",
+  layoutPlanSheets: "/plan-generation/layout-plan-sheets/:transactionId",
 };
