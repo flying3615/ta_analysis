@@ -4,7 +4,6 @@ import {BASE_URL} from "../helper/required-params";
 test('has header', async ({ page }) => {
   await page.goto(BASE_URL);
 
-// Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Plan generation' })).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Plan generation' })).toBeVisible();
 });
 
