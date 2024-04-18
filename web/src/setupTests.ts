@@ -13,7 +13,8 @@ jest.setTimeout(10000);
 
 window._env_ = {
   splitKey: "localhost",
-  oidcIssuer: "https://auth.dev.landonline.govt.nz/realms/landonline",
+  oidcIssuerUri: "https://auth.dev.landonline.govt.nz/realms/landonline",
+  apiGatewayBaseUrl: "https://dummy.gateway.url",
   basemapApiKey: "dummy",
 };
 

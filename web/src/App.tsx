@@ -5,6 +5,8 @@ import { Paths } from "./Paths.ts";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
+import { OidcConfig } from "@linz/lol-auth-js";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 
@@ -41,12 +43,22 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
 };
 
 const App = () => {
+  const oidcConfig: OidcConfig = {
+    clientId: "survey-plangen-spa",
+    issuerUri: window._env_.oidcIssuerUri,
+    authzBaseUrl: window._env_.apiGatewayBaseUrl,
+    postLoginUri: window.location.href,
+    postLogoutUri: window.location.href,
+  };
+
   return (
-    <FeatureFlagProvider>
-      <BrowserRouter>
-        <PlangenApp />
-      </BrowserRouter>
-    </FeatureFlagProvider>
+    <BrowserRouter>
+      <LOLUserContextProviderV2 oidcConfig={oidcConfig}>
+        <FeatureFlagProvider>
+          <PlangenApp />
+        </FeatureFlagProvider>
+      </LOLUserContextProviderV2>
+    </BrowserRouter>
   );
 };
 

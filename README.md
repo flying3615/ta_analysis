@@ -1,6 +1,6 @@
 # Landonline Survey Plan Generation (PlanGen)
 
-This repository contains Landonline Survey Plan Generation (PlanGen), which allows a surveyor to create layout plan sheets for an inflight survey.
+This repository contains Landonline Survey Plan Generation (PlanGen), which allows a surveyor to create title and survey plans for an inflight survey.
 
 The back end API for this codebase is found [HERE](https://github.com/linz/landonline-survey-plan-generation-api)
 
@@ -43,10 +43,20 @@ Note: for this repo, `feat`/`fix`/`chore`/etc must be lowercase
 
 ### Running Locally
 
+Once packages have been installed (via `npm install`), then you can simply run the app for local development.
+
+There are three ways to develop for this app locally:
+
+1. Develop by running storybook which lets you develop at an individual component level: `npm run storybook`
+2. Develop by using the nonprod api and auth services: `npm run start:nonprod`
+3. Develop by having the api and auth services also running locally on your machine: `npm run start`. You'll need to setup the API - [see here for how to do this](https://github.com/linz/landonline-survey-plan-generation-api/blob/master/README.md#local-development)
+
+
 #### Scripts
 
 -   `npm i` - install dependencies
--   `npm run start` - start application
+-   `npm run start` - start application (using local api and auth)
+-   `npm run start:nonprod` - start application (using nonprod api and auth)
 -   `npm run lint` - check linting
 -   `npm run test` - run jest tests
 -   `npm run storybook` - run storybook for visual regression testing
