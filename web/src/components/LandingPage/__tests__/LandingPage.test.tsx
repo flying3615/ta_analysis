@@ -6,8 +6,8 @@ import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.ts
 const renderPlangenApp = () => {
   render(
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/"]}>
-        <PlangenApp />
+      <MemoryRouter initialEntries={["/plan-generation/98765"]}>
+        <PlangenApp mockMap={true} />
       </MemoryRouter>
     </FeatureFlagProvider>,
   );
@@ -25,7 +25,7 @@ describe("Verify rendering of the Landing Page", () => {
     const button = await screen.findByText("Define Diagrams");
     fireEvent.click(button);
 
-    expect(await screen.findByText(/Define diagrams/)).toBeInTheDocument();
+    expect(await screen.findByTestId("openlayers-map")).toBeInTheDocument();
     expect(screen.queryByText(/Layout Plan Sheets/)).not.toBeInTheDocument();
   });
   it("should go to Layout Plan Sheets on click", async () => {

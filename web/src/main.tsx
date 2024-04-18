@@ -1,6 +1,8 @@
 import "@linzjs/lui/dist/scss/base.scss";
 import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
+// Need the below for OL element styles
+import "ol/ol.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -8,11 +10,15 @@ import ReactDOM from "react-dom/client";
 import App from "@/App.tsx";
 
 async function render() {
-  const { splitKey, oidcIssuer } = await fetch("/plan-generation/config/env.json").then((r) => r.json());
+  const { splitKey, oidcIssuerUri, apiGatewayBaseUrl, basemapApiKey } = await fetch(
+    "/plan-generation/config/env.json",
+  ).then((r) => r.json());
 
   window._env_ = {
     splitKey,
-    oidcIssuer,
+    oidcIssuerUri,
+    apiGatewayBaseUrl,
+    basemapApiKey,
   };
 
   // Add to window, so we can check in console the current build versions

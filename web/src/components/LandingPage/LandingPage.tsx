@@ -1,9 +1,9 @@
 import "./LandingPage.scss";
 import { LuiIcon, LuiShadow } from "@linzjs/lui";
-import { Paths } from "@/Paths.ts";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const LandingPage = () => {
+  const { transactionId } = useParams();
   const LuiColorSea = "#007198"; // Need this as a constant
 
   return (
@@ -15,7 +15,7 @@ const LandingPage = () => {
           <h5 className="LandingPage-titlePrompt">What would you like to do?</h5>
         </div>
         <div className="LandingPage-options">
-          <Link className="LandingPage-option" to={Paths.defineDiagrams}>
+          <Link className="LandingPage-option" to={`/plan-generation/define-diagrams/${transactionId}`}>
             <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
               <LuiIcon
                 name="ic_define_diagrams"
@@ -23,11 +23,10 @@ const LandingPage = () => {
                 alt="Define diagrams"
                 color={LuiColorSea}
               />
-
               <p>Define Diagrams</p>
             </LuiShadow>
           </Link>
-          <Link className="LandingPage-option" to={Paths.layoutPlanSheets}>
+          <Link className="LandingPage-option" to={`/plan-generation/layout-plan-sheets/${transactionId}`}>
             <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
               <LuiIcon
                 name="ic_layout_plan_sheets"

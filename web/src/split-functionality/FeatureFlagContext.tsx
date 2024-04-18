@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 import { SplitFactoryProvider } from "@splitsoftware/splitio-react";
-import { useLOLUserContextV2 } from "@linz/landonline-common-js";
+import { useUserProfile } from "@linz/lol-auth-js";
 import { IBrowserSettings, MockedFeaturesMap } from "@splitsoftware/splitio/types/splitio.d";
 import { mockedFeatureFlagsOn } from "@/split-functionality/FeatureFlags.ts";
 
@@ -8,7 +8,7 @@ export function FeatureFlagProvider(props: {
   children: React.ReactNode;
   mockedFeatures?: MockedFeaturesMap;
 }): ReactElement {
-  const { user } = useLOLUserContextV2();
+  const user = useUserProfile();
 
   const authorizationKey = (window._env_ && window._env_.splitKey) ?? "";
 

@@ -4,12 +4,13 @@ import fs from "fs";
 import path from "path";
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "url";
+import http from "http";
 
 const commitHash = execSync("git rev-parse --short HEAD").toString();
 const commitDate = execSync("git log -1 HEAD --format=%cI").toString();
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(async ({ mode }) => ({
   plugins: [react()],
   build: {
     outDir: "build",
@@ -32,10 +33,14 @@ export default defineConfig({
       "/plan-generation/config/": {
         target: "http://localhost:11065",
         selfHandleResponse: true,
-        rewrite: (path) => path.replace("/plan-generation/config/", ""),
-        bypass: (req, res) => {
+        rewrite: (path: string) => path.replace("/plan-generation/config/", ""),
+        bypass: (req: http.IncomingMessage, res: http.ServerResponse) => {
           const requestedFileName = encodeURIComponent(req.url!.slice("/plan-generation/config/".length));
-          const localFilePath = path.join(__dirname, "config/local", requestedFileName);
+          let configDir = "config/local";
+          if (mode === "local-nonprod" && requestedFileName === "env.json") {
+            configDir = "config/nonprod";
+          }
+          const localFilePath = path.join(__dirname, configDir, requestedFileName);
           console.log(`proxying ${req.url} to ${localFilePath}`);
           const data = fs.readFileSync(localFilePath, "utf-8");
           res.end(data);
@@ -43,4 +48,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
