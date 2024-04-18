@@ -5,17 +5,6 @@ services:
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
       - "11065:8080"
-   auth-postgres:
-     container_name: auth-postgres
-     image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth-db'
-     ports:
-       - '5432:5432'
-     user: postgres
-     healthcheck:
-       test: [ 'CMD', 'pg_isready' ]
-       interval: 10s
-       timeout: 5s
-       retries: 5
 
    informix-db:
      container_name: informix-db
@@ -35,6 +24,18 @@ services:
        retries: 3
      volumes:
        - informix-db-data:/opt/ifx/data
+
+   auth-postgres:
+     container_name: auth-postgres
+     image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth-db'
+     ports:
+       - '5432:5432'
+     user: postgres
+     healthcheck:
+       test: [ 'CMD', 'pg_isready' ]
+       interval: 10s
+       timeout: 5s
+       retries: 5
 
    keycloak:
      container_name: auth-keycloak
@@ -58,7 +59,16 @@ services:
        KC_DB_PASSWORD: "password"
        NEW_RELIC_APP_NAME: "keycloak"
        LOCAL_SECRET_CONFIG: >
-         {"auth.defaults.userIdSecretKey": "thisisasecretkey", "auth.defaults.informix.url": "jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=2U;IFX_LO_READONLY=1", "auth.defaults.informix.username": "informix", "auth.defaults.informix.password": "in4mix", "auth.defaults.informix.max-connections": "5" }
+         {
+         "auth.defaults.userIdSecretKey": "thisisasecretkey",
+         "auth.defaults.informix.url": "jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=2U;IFX_LO_READONLY=1",
+         "auth.defaults.informix.username": "informix",
+         "auth.defaults.informix.password": "in4mix",
+         "auth.defaults.informix.max-connections": "5" 
+         }
+     depends_on:
+       informix-db:
+         condition: service_healthy
      healthcheck:
        test: ">/dev/tcp/127.0.0.1/8080"
        interval: 10s
