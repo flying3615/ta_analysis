@@ -32,7 +32,7 @@ jobs:
 
       # These are needed for playwright to work
       createAnImage: true
-      image: "step/survey/step-landonline-web-survey-plangen-fe"
+      image: "step/survey/step-landonline-web-survey-plan-generation-fe"
       imageTag: 'latest'
     secrets: inherit
 

@@ -2,6 +2,6 @@ version: '3.8'
 services:
    plangen-frontend:
     container_name: plangen-frontend
-    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plangen-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
       - "11065:8080"
