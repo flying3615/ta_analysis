@@ -24,23 +24,12 @@ Have [Node.js](https://nodejs.org/en/) installed in your machine. Have any IDE o
 ## How to run or debug tests
 
 ### With docker
-Build the plangen project:  
-backend:
-`gradle task build`  
-frontend:
-`npm run build`
 
-Verify you have file `.env` in the landonline-survey-plan-generation root directory with correct informations (ask team)
+Verify you have file `.env` in the landonline-survey-plan-generation/test/e2e directory with correct information (ask team)
+Verify you have file `.env` in the landonline-survey-plan-generation root directory with correct information (ask team)
 
 In landonline-survey-plan-generation root directory launch the following docker command :
 `docker compose up`
-
-### Running projects locally
-Start the full stack on your local env:
-- From docker compose:
-  - informix-db
-  - auth-stack
-- plangen back end and front end with gradle and npm tasks
 
 ### Run the e2e tests
 
