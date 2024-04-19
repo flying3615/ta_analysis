@@ -25,8 +25,8 @@ services:
      volumes:
        - informix-db-data:/opt/ifx/data
 
-   auth-postgres:
-     container_name: auth-postgres
+   auth-db:
+     container_name: auth-db
      image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth-db'
      ports:
        - '5432:5432'
@@ -54,7 +54,7 @@ services:
        KC_HOSTNAME_STRICT_HTTPS: "false"
        KC_PROXY: "edge"
        KC_HOSTNAME_PORT: 8081
-       KC_DB_URL: "jdbc:postgresql://auth-postgres:5432/keycloak?currentSchema=keycloak"
+       KC_DB_URL: "jdbc:postgresql://auth-db:5432/keycloak?currentSchema=keycloak"
        KC_DB_USERNAME: "keycloak"
        KC_DB_PASSWORD: "password"
        NEW_RELIC_APP_NAME: "keycloak"
@@ -89,7 +89,7 @@ services:
        - BYPASS_CACHE=true
        - SPRING_APPLICATION_JSON={"landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}}}
      depends_on:
-       keycloak: # keycloak auth container
+       keycloak:
          condition: service_healthy
        informix-db:
          condition: service_healthy
