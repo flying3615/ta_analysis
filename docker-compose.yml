@@ -94,9 +94,10 @@ services:
        informix-db:
          condition: service_healthy
      healthcheck:
-       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
-       interval: 5s
-       retries: 8
+       test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+       interval: 10s
+       timeout: 5s
+       retries: 5
 
 volumes:
   informix-db-data:
