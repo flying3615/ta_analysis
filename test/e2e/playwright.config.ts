@@ -1,12 +1,27 @@
 import { defineConfig, devices } from "@playwright/test";
-
-import { APP_URL } from "./helper/required-params";
+import { config } from "dotenv";
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// require('dotenv').config();
+config();
+if (!process.env.APP_URL) {
+  throw new Error("The APP_URL environment variable is not set");
+}
+if (!process.env.TEST_USERNAME) {
+  throw new Error("The TEST_USERNAME environment variable is not set");
+}
+if (!process.env.TEST_PASSWORD) {
+  throw new Error("The TEST_PASSWORD environment variable is not set");
+}
+
+export const APP_URL: string =
+  process.env.APP_URL ?? "http://localhost:11065/plan-generation/";
+export const AUTH_URL: string =
+  process.env.AUTH_URL ?? "http://keycloak:8081/realms/landonline/";
+export const TEST_USERNAME: string = process.env.TEST_USERNAME ?? "extsurv1";
+export const TEST_PASSWORD: string = process.env.TEST_PASSWORD;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -48,40 +63,40 @@ export default defineConfig({
     },
 
     // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
+    //   name: "firefox",
+    //   use: { ...devices["Desktop Firefox"] },
     // },
     //
     // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
+    //   name: "webkit",
+    //   use: { ...devices["Desktop Safari"] },
     // },
 
     /* Test against mobile viewports. */
     // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
+    //   name: "Mobile Chrome",
+    //   use: { ...devices["Pixel 5"] },
     // },
     // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
+    //   name: "Mobile Safari",
+    //   use: { ...devices["iPhone 12"] },
     // },
 
     /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    //   {
+    //     name: "Microsoft Edge",
+    //     use: { ...devices["Desktop Edge"], channel: "msedge" },
+    //   },
+    //   {
+    //     name: "Google Chrome",
+    //     use: { ...devices["Desktop Chrome"], channel: "chrome" },
+    //   },
   ],
 
   /* Run your local dev server before starting the tests */
   // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
+  //   command: "npm run start",
+  //   url: "http://127.0.0.1:3000",
   //   reuseExistingServer: !process.env.CI,
   // },
 });
