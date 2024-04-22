@@ -11,8 +11,8 @@
     "test:debug": "npm test -c ./playwright.config.ts -- --headed --trace on",
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
-    "test:safari": "playwright test --project=webkit",
-    "htmlreport": "playwright show-report"
+    "test:webkit": "playwright test --project=webkit",
+    "htmlreport": "playwright show-report output"
   },
   "keywords": [],
   "author": "",
