@@ -9,8 +9,7 @@
     - [Run the e2e tests](#run-the-e2e-tests)
 
 * e2e UI tests are written in Playwright
-* Configuration is set in 'playwright.config.ts' and the test environments are configured in env folder under utils.
-* Framework follows page object model for e2e testing.
+* Configuration is set in 'playwright.config.ts'.
 * Tests are in [./tests folder](./tests).
 
 ## Environment Variables
@@ -34,16 +33,22 @@ In landonline-survey-plan-generation root directory launch the following docker 
 ### Run the e2e tests
 
 ```
-npm ci
+npm test:ci
 ```
 
-Then use the command to start the test
+Then use the command to start the test in ci
 
 ```
 npm test
 ```
 
-To view the HTML reports run the below command
+Then use the command to start the test
+
+```
+npm test:debug
+```
+
+Then use the command to start the test in head and trace mode on
 
 ```
 npm run htmlreport
