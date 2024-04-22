@@ -46,7 +46,7 @@ const App = () => {
   const oidcConfig: OidcConfig = {
     clientId: "survey-plangen-spa",
     issuerUri: window._env_.oidcIssuerUri,
-    authzBaseUrl: window._env_.apiGatewayBaseUrl,
+    authzBaseUrl: window._env_.authzBaseUrl,
     postLoginUri: window.location.href,
     postLogoutUri: window.location.href,
   };

@@ -4,7 +4,7 @@ declare interface Window {
   _env_: {
     splitKey: string;
     oidcIssuerUri: string;
-    apiGatewayBaseUrl: string;
+    authzBaseUrl: string;
     basemapApiKey: string;
   };
   newrelic: typeof newrelic | undefined;
