@@ -49,6 +49,7 @@
     "@linzjs/landonline-openlayers-map": "^5.3.3",
     "@linzjs/lui": "^21.26.1",
     "@splitsoftware/splitio-react": "^1.11.1",
+    "@szhsin/react-menu": "^2.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.1"

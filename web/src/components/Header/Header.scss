@@ -1,0 +1,11 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.Header {
+  align-items: center;
+  border-bottom: 1px solid lui.$dew;
+  background-color: lui.$hint;
+  display: flex;
+  flex-direction: row;
+  height: 56px;
+  padding-left: 8px;
+}
