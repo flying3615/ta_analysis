@@ -102,5 +102,33 @@ services:
        timeout: 5s
        retries: 5
 
+   plangen-api:
+     container_name: plangen-api
+     extra_hosts:
+       - "host.docker.internal:host-gateway"
+       - "${HOSTNAME}:host-gateway"
+     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
+     environment:
+       DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;IFX_LOCK_MODE_WAIT=15;IFX_ISOLATION_LEVEL=5U
+       DB_USERNAME: informix
+       DB_PASSWORD: in4mix
+       DB_POOL_SIZE_MAX: ${DB_POOL_SIZE_MAX:-30}
+       USER_ID_SECRET_KEY: local
+       SPRING_PROFILES_ACTIVE: local
+       SPLIT_ENV_API_KEY_SDK: localhost
+       OIDC_ISSUER_URL: "http://$HOSTNAME:8081/realms/landonline"
+       AUTHZ_BASE_URL: "http://$HOSTNAME:8082"
+       CLIENT_ID: survey-plangen-service
+       CLIENT_SECRET: localclientsecret
+     ports:
+       - "12007:9000"
+     depends_on:
+       - authz
+     healthcheck:
+       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+       interval: 10s
+       timeout: 5s
+       retries: 5
+
 volumes:
   informix-db-data:
