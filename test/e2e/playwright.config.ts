@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, PlaywrightTestConfig } from "@playwright/test";
 import { config } from "dotenv";
 
 /**
@@ -16,17 +16,14 @@ if (!process.env.TEST_PASSWORD) {
   throw new Error("The TEST_PASSWORD environment variable is not set");
 }
 
-export const APP_URL: string =
-  process.env.APP_URL ?? "http://localhost:11065/plan-generation/";
-export const AUTH_URL: string =
-  process.env.AUTH_URL ?? "http://keycloak:8081/realms/landonline/";
-export const TEST_USERNAME: string = process.env.TEST_USERNAME ?? "extsurv1";
+export const APP_URL: string = process.env.APP_URL;
+export const TEST_USERNAME: string = process.env.TEST_USERNAME;
 export const TEST_PASSWORD: string = process.env.TEST_PASSWORD;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig({
+const pwConfig: PlaywrightTestConfig = defineConfig({
   testDir: "./tests",
   expect: {
     timeout: 15000, // Maximum time expect() should wait for the condition to be met.
@@ -40,7 +37,6 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  globalSetup: "./global-setup.ts",
   reporter: [
     [process.env.CI ? "dot" : "list"],
     ["html", { open: "never", outputFolder: "output" }],
@@ -58,18 +54,25 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "authSetup",
+      testMatch: "**/*.setup.ts",
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["authSetup"],
+      use: { ...devices["Desktop Chrome"], storageState: "auth/user.json" },
     },
 
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      dependencies: ["authSetup"],
+      use: { ...devices["Desktop Firefox"], storageState: "auth/user.json" },
     },
 
     {
       name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      dependencies: ["authSetup"],
+      use: { ...devices["Desktop Safari"], storageState: "auth/user.json" },
     },
 
     /* Test against mobile viewports. */
@@ -92,11 +95,6 @@ export default defineConfig({
     //     use: { ...devices["Desktop Chrome"], channel: "chrome" },
     //   },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: "npm run start",
-  //   url: "http://127.0.0.1:3000",
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
+
+export default pwConfig;
