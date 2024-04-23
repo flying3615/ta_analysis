@@ -81,13 +81,16 @@ services:
      ports:
        - "8082:8080"
      environment:
-       - OIDC_ISSUER_URL=http://${HOSTNAME}:8081/realms/landonline
-       - OIDC_JWKS_URI=http://keycloak:8080/realms/landonline/protocol/openid-connect/certs
-       - DB_CONNECTION_STRING=jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5
-       - DB_USERNAME=informix
-       - DB_PASSWORD=in4mix
-       - BYPASS_CACHE=true
-       - SPRING_APPLICATION_JSON={"landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}}}
+       OIDC_ISSUER_URL: http://${HOSTNAME}:8081/realms/landonline
+       OIDC_JWKS_URI: http://keycloak:8080/realms/landonline/protocol/openid-connect/certs
+       DB_CONNECTION_STRING: jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5
+       DB_USERNAME: informix
+       DB_PASSWORD: in4mix
+       BYPASS_CACHE: true
+       SPRING_APPLICATION_JSON: >
+         {
+         "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}}
+         }
      depends_on:
        keycloak:
          condition: service_healthy
