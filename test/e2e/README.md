@@ -33,19 +33,19 @@ In landonline-survey-plan-generation root directory launch the following docker 
 ### Run the e2e tests
 
 ```
-npm test:ci
+npm run test:ci
 ```
 
 Then use the command to start the test in ci
 
 ```
-npm test
+npm run test
 ```
 
 Then use the command to start the test
 
 ```
-npm test:debug
+npm run test:debug
 ```
 
 Then use the command to start the test in head and trace mode on

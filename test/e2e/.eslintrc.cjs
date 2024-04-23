@@ -26,5 +26,6 @@ extend.rules = {
     'playwright/no-wait-for-selector': 'off',
   },
 };
+extend.ignorePatterns=['test-results/*', 'output/*']
 
 module.exports = extend;

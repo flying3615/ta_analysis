@@ -6,3 +6,4 @@ playwright/.cache/
 output/
 .env
 .eslintcache
+auth/*.json
