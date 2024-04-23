@@ -1,12 +1,13 @@
 import Header from "@/components/Header/Header";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const PlanSheets = () => {
   const { transactionId } = useParams();
+  const navigate = useNavigate();
 
   return (
     <>
-      <Header transactionId={transactionId} view="Sheets" />
+      <Header onNavigate={navigate} transactionId={transactionId} view="Sheets" />
       <div className="PlanSheets" />
     </>
   );

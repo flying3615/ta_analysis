@@ -4,15 +4,16 @@ import { LolOpenLayersMap } from "@linzjs/landonline-openlayers-map";
 import { linzMLBasemapLayer } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode } from "react";
 import Header from "@/components/Header/Header";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const DefineDiagrams = (props: { mock?: boolean; children?: ReactNode }) => {
   const maxZoom = 24;
   const { transactionId } = useParams();
+  const navigate = useNavigate();
 
   return (
     <>
-      <Header transactionId={transactionId} view="Diagrams" />
+      <Header onNavigate={navigate} transactionId={transactionId} view="Diagrams" />
       <div className="DefineDiagrams">
         <LolOpenLayersMap
           view={{ projection: "EPSG:3857", center: [19457143.791, -5057154.019], zoom: 16, maxZoom }}

@@ -26,15 +26,16 @@ describe("Verify rendering of the Landing Page", () => {
     fireEvent.click(button);
 
     expect(await screen.findByTestId("openlayers-map")).toBeInTheDocument();
-    expect(screen.queryByText(/Layout Plan Sheets/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Sheets/)).not.toBeInTheDocument();
   });
+
   it("should go to Layout Plan Sheets on click", async () => {
     renderPlangenApp();
 
     const button = await screen.findByText("Layout Plan Sheets");
     fireEvent.click(button);
 
-    expect(await screen.findByText(/Layout plan sheets/)).toBeInTheDocument();
-    expect(screen.queryByText(/Define diagrams/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/Sheets/)).toBeInTheDocument();
+    expect(screen.queryByText(/Diagrams/)).not.toBeInTheDocument();
   });
 });
