@@ -5,6 +5,14 @@ services:
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
       - "11065:8080"
+    depends_on:
+      plangen-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:8080/plan-generation/
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
    informix-db:
      container_name: informix-db
@@ -94,8 +102,6 @@ services:
      depends_on:
        keycloak:
          condition: service_healthy
-       informix-db:
-         condition: service_healthy
      healthcheck:
        test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
        interval: 10s
@@ -121,11 +127,12 @@ services:
        CLIENT_ID: survey-plangen-service
        CLIENT_SECRET: localclientsecret
      ports:
-       - "12007:9000"
+       - "12007:8080"
      depends_on:
-       - authz
+       authz:
+          condition: service_healthy
      healthcheck:
-       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+       test: wget --no-verbose --tries=1 --spider http://localhost:8080/plan-generation/api/health || exit 1
        interval: 10s
        timeout: 5s
        retries: 5
