@@ -3,7 +3,7 @@ import { test as setup } from "@playwright/test";
 import { TEST_PASSWORD, TEST_USERNAME } from "../playwright.config";
 
 setup("authenticate", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("plan-generation/");
   await page.waitForURL(/\/realms\/landonline/, { timeout: 60000 });
   await page.fill('[data-testid="userID"]', TEST_USERNAME);
   await page.fill('[data-testid="password"]', TEST_PASSWORD);
