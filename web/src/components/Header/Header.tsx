@@ -6,7 +6,7 @@ import { Paths } from "@/Paths";
 
 export type ViewMode = "Diagrams" | "Sheets";
 
-interface HeaderProps {
+export interface HeaderProps {
   onNavigate: (url: string) => void;
   transactionId?: string;
   view: ViewMode;
@@ -14,6 +14,10 @@ interface HeaderProps {
 
 const Header = ({ onNavigate, transactionId, view }: HeaderProps) => {
   const handleNavigate = (mode: ViewMode) => {
+    if (!transactionId) {
+      return;
+    }
+
     switch (mode) {
       case "Diagrams":
         onNavigate(generatePath(Paths.defineDiagrams, { transactionId }));
