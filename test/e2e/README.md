@@ -28,7 +28,7 @@ Verify you have file `.env` in the landonline-survey-plan-generation/test/e2e di
 Verify you have file `.env` in the landonline-survey-plan-generation root directory with correct information (ask team)
 
 In landonline-survey-plan-generation root directory launch the following docker command :
-`docker compose up`
+`docker compose up -d`
 
 ### Run the e2e tests
 

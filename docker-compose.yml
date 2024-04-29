@@ -1,12 +1,12 @@
 version: '3.9'
 services:
-   plangen-frontend:
-    container_name: plangen-frontend
+   frontend:
+    container_name: frontend
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
       - "11065:8080"
     depends_on:
-      plangen-api:
+      backend:
         condition: service_healthy
     healthcheck:
       test: curl --fail http://localhost:8080/plan-generation/
@@ -108,8 +108,8 @@ services:
        timeout: 5s
        retries: 5
 
-   plangen-api:
-     container_name: plangen-api
+   backend:
+     container_name: backend
      extra_hosts:
        - "host.docker.internal:host-gateway"
        - "${HOSTNAME}:host-gateway"
@@ -127,7 +127,7 @@ services:
        CLIENT_ID: survey-plangen-service
        CLIENT_SECRET: localclientsecret
      ports:
-       - "12007:8080"
+       - "12065:8080"
      depends_on:
        authz:
           condition: service_healthy
