@@ -11,13 +11,25 @@ jobs:
     uses: linz/github-action-shared-library/.github/workflows/frontend-ci.yml@master # https://github.com/linz/github-action-shared-library/blob/master/docs/frontend-ci.md
     with:
       aws-github-ci-role-arn: 'arn:aws:iam::964632537160:role/landonline-survey-plangen-landonlinesurveyplangenci-LQCKTV18EcJb'
+      sourcemapDisable: true
+
+      # Release config
       shouldCreateRelease: ${{ github.ref == 'refs/heads/master' }}
       releaseChangePath: "web .github/workflows"
-      createAnImage: false
+
+      # Snyk
       snykCheckEnable: true
       snykOrgName: survey-jay
-      sourcemapDisable: true
-      e2eDisable: true
+
+      # e2e tests
+      e2eTestRunner: ubuntu-latest-16-cores
+      e2eDir: ./test/e2e
+      e2eLintCommand: "npm run lint"
+      e2eTestReportDir: "test/e2e/output"
+
+      # These are needed for playwright to work
+      image: "step/survey/step-landonline-web-survey-plan-generation-fe"
+      imageTag: 'latest'
     secrets: inherit
 
   upload-sourcemaps:

@@ -1,0 +1,28 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint *.{ts,js} ./**/*.{ts,js} --max-warnings 0 --cache && prettier --check *.{ts,js} ./**/*.{ts,js}",
+    "lintfix": "eslint *.{ts,js} ./**/*.ts --fix --cache && prettier --write *.{ts,js} ./**/*.{ts,js} && npm run lint",
+    "test": "playwright test",
+    "test:ci": "cross-env CI=true npm test -c ./playwright.config.ts",
+    "test:debug": "npm test -c ./playwright.config.ts -- --debug --trace on",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "htmlreport": "playwright show-report output"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@linzjs/style": "^5.2.0",
+    "@playwright/test": "^1.43.1",
+    "@types/node": "^20.12.7",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "eslint-plugin-playwright": "^1.6.0"
+  }
+}
