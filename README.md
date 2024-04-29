@@ -45,11 +45,13 @@ Note: for this repo, `feat`/`fix`/`chore`/etc must be lowercase
 
 Once packages have been installed (via `npm install`), then you can simply run the app for local development.
 
-There are three ways to develop for this app locally:
+There are four ways to develop for this app locally:
 
 1. Develop by running storybook which lets you develop at an individual component level: `npm run storybook`
 2. Develop by using the nonprod api and auth services: `npm run start:nonprod`
-3. Develop by having the api and auth services also running locally on your machine: `npm run start`. You'll need to setup the API - [see here for how to do this](https://github.com/linz/landonline-survey-plan-generation-api/blob/master/README.md#local-development)
+3. Develop by having the api and auth services also running locally on your machine: `npm run start`. You'll need to setup the API - [see here for how to do this](https://github.com/linz/landonline-survey-plan-generation-api/blob/master/README.md#local-development).
+4. Develop by running containers defined in this repo via `docker compose up --scale frontend=0 -d` under root folder, and `npm run start` in /web folder
+
 
 
 #### Scripts
@@ -62,3 +64,7 @@ There are three ways to develop for this app locally:
 -   `npm run storybook` - run storybook for visual regression testing
 -   `npm run allure:open` - view allure test report dashboard
 -   (Further scripts in [package.json](./web/package.json))
+
+#### E2E tests
+
+(Refer to [README.md](test/e2e/README.md)) 
