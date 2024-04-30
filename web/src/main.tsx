@@ -3,6 +3,8 @@ import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
 // Need the below for OL element styles
 import "ol/ol.css";
+// need below for LuiMenu
+import "@szhsin/react-menu/dist/index.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";

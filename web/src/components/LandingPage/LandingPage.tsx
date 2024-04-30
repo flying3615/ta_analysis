@@ -1,4 +1,5 @@
 import "./LandingPage.scss";
+
 import { LuiIcon, LuiShadow } from "@linzjs/lui";
 import { Link, useParams } from "react-router-dom";
 

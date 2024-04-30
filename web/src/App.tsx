@@ -9,8 +9,7 @@ import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig } from "@linz/lol-auth-js";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
-
-const Placeholder = (props: { name: string }) => <h2>{props.name} coming soon...</h2>;
+import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
@@ -37,7 +36,7 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
     <Routes>
       <Route path={Paths.root} element={<LandingPage />} />
       <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
-      <Route path={Paths.layoutPlanSheets} element={<Placeholder name="Layout plan sheets" />} />
+      <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
     </Routes>
   );
 };
