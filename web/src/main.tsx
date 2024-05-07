@@ -12,15 +12,16 @@ import ReactDOM from "react-dom/client";
 import App from "@/App.tsx";
 
 async function render() {
-  const { splitKey, oidcIssuerUri, authzBaseUrl, basemapApiKey } = await fetch("/plan-generation/config/env.json").then(
-    (r) => r.json(),
-  );
+  const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(
+    "/plan-generation/config/env.json",
+  ).then((r) => r.json());
 
   window._env_ = {
-    splitKey,
-    oidcIssuerUri,
+    apiGatewayBaseUrl,
     authzBaseUrl,
     basemapApiKey,
+    oidcIssuerUri,
+    splitKey,
   };
 
   // Add to window, so we can check in console the current build versions

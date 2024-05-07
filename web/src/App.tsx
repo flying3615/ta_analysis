@@ -10,6 +10,10 @@ import { OidcConfig } from "@linz/lol-auth-js";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
+import { Provider } from "react-redux";
+import { store } from "./redux/store.ts";
+
+export const appClientId = "survey-plangen-spa";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
@@ -43,7 +47,7 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
 
 const App = () => {
   const oidcConfig: OidcConfig = {
-    clientId: "survey-plangen-spa",
+    clientId: appClientId,
     issuerUri: window._env_.oidcIssuerUri,
     authzBaseUrl: window._env_.authzBaseUrl,
     postLoginUri: window.location.href,
@@ -54,7 +58,9 @@ const App = () => {
     <BrowserRouter>
       <LOLUserContextProviderV2 oidcConfig={oidcConfig}>
         <FeatureFlagProvider>
-          <PlangenApp />
+          <Provider store={store}>
+            <PlangenApp />
+          </Provider>
         </FeatureFlagProvider>
       </LOLUserContextProviderV2>
     </BrowserRouter>

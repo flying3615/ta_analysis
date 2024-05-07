@@ -2,10 +2,11 @@ declare const __BUILDDETAIL__: { buildVersion: string; buildTimestamp: string };
 
 declare interface Window {
   _env_: {
-    splitKey: string;
-    oidcIssuerUri: string;
+    apiGatewayBaseUrl: string;
     authzBaseUrl: string;
     basemapApiKey: string;
+    oidcIssuerUri: string;
+    splitKey: string;
   };
   newrelic: typeof newrelic | undefined;
 }
