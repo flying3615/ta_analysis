@@ -12,6 +12,7 @@ configure({ asyncUtilTimeout: 5000 });
 jest.setTimeout(10000);
 
 window._env_ = {
+  apiGatewayBaseUrl: "http://localhost/api",
   splitKey: "localhost",
   oidcIssuerUri: "https://auth.dev.landonline.govt.nz/realms/landonline",
   authzBaseUrl: "https://dummy.authz.url",
