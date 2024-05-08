@@ -5,6 +5,7 @@
   grid: "container" 1fr;
   height: calc(100% - header.$headerHeight);
   overflow-x: hidden;
-  position: relative;
+  position: absolute;
   width: 100%;
+  top: header.$headerHeight;
 }

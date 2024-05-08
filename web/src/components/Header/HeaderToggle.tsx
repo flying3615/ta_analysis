@@ -3,8 +3,7 @@ import "./HeaderToggle.scss";
 import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { Menu, MenuItem } from "@szhsin/react-menu";
 import { ViewMode } from "./Header";
-
-const colourSea = "#007198";
+import { luiColors } from "@/constants";
 
 interface HeaderToggleProps {
   onNavigate: (mode: ViewMode) => void;
@@ -18,7 +17,7 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => (
       <LuiButton className="HeaderToggle__button lui-button-tertiary lui-button-icon">
         <LuiIcon
           alt={`${view} icon`}
-          color={colourSea}
+          color={luiColors.sea}
           name={view === "Diagrams" ? "ic_define_diagrams" : "ic_layout_plan_sheets"}
           size="md"
         />
@@ -26,7 +25,7 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => (
         <LuiIcon
           alt="Dropdown icon"
           className="HeaderToggle__dropdownIcon"
-          color={colourSea}
+          color={luiColors.sea}
           name="ic_arrow_drop_down"
           size="md"
         />

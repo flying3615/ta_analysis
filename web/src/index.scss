@@ -1,7 +1,8 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
+@import "lui-overrides";
 
 html {
-  overflow-y: clip !important;
+  overflow: clip !important;
 }
 
 html,
