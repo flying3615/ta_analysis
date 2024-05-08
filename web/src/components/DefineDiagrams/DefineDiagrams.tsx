@@ -1,6 +1,6 @@
 import "./DefineDiagrams.scss";
 
-import { LolOpenLayersMap } from "@linzjs/landonline-openlayers-map";
+import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
 import { linzMLBasemapLayer, marksLayer } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
@@ -22,10 +22,8 @@ interface DefineDiagramsProps {
 }
 
 // adding projection definitions to allow conversions between them
-// EPSG:4167 is what the coordinates are in the CSD package
-// EPSG:1 is what the `PlacementParams` come through as from openlayers
+// EPSG:1 is what the data from the DB comes in as
 // EPSG:3857 is used as the openlayers map projection
-proj4.defs("EPSG:4167", "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs");
 proj4.defs("EPSG:1", "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs +pm=160");
 register(proj4);
 
@@ -44,7 +42,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   }, [dispatch, transactionId]);
 
   return (
-    <>
+    <LolOpenLayersMapContextProvider>
       <Header onNavigate={navigate} transactionId={transactionId} view="Diagrams" />
       <div className="DefineDiagrams">
         {featuresFetching && <LuiLoadingSpinner />}
@@ -64,6 +62,6 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
         )}
         {children}
       </div>
-    </>
+    </LolOpenLayersMapContextProvider>
   );
 };

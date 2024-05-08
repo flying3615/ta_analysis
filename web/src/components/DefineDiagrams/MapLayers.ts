@@ -51,7 +51,6 @@ export const marksLayer = (marksData: IFeatureSource[], maxZoom: number): LolOpe
       type: SourceType.FEATURES,
       data: marksData,
       maxZoom,
-      projection: "EPSG:4326",
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;
 };
