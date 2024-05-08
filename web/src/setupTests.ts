@@ -4,6 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
 import "jest-canvas-mock";
+import { setupJestCanvasMock } from "jest-canvas-mock";
 import { configure } from "@testing-library/react";
 
 // It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all the detail of an async assertion failure
@@ -23,9 +24,13 @@ window.URL.createObjectURL = jest.fn(() => "");
 beforeEach(() => {
   window.URL.createObjectURL = jest.fn(() => "");
 
+  setupJestCanvasMock();
+
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { mapAssertions, mapFeatureAssertions } = require("@linzjs/landonline-openlayers-map");
 
   expect.extend(mapAssertions.default);
   expect.extend(mapFeatureAssertions.default);
 });
+
+global.ResizeObserver = require("resize-observer-polyfill");

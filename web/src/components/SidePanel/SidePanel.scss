@@ -1,0 +1,29 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+$sidePanelWidth: 280px;
+
+.SidePanel {
+  position: relative;
+  height: 100%;
+  width: $sidePanelWidth;
+  background: lui.$white;
+  padding: 8px;
+  flex: none;
+  display: none;
+
+  &-open {
+    display: block;
+  }
+
+  &-left {
+    left: 0;
+    border-right: 1px solid lui.$dew;
+    order: -99;
+  }
+
+  &-right {
+    right: 0;
+    border-left: 1px solid lui.$dew;
+    order: 99;
+  }
+}

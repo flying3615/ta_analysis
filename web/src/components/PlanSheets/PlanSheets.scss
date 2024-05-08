@@ -1,0 +1,27 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+@use "@/components/Header/Header.scss" as header;
+@use "@/components/Footer/Footer.scss" as footer;
+@use "@/components/SidePanel/SidePanel.scss" as sidePanel;
+
+.PlanSheets {
+  width: 100vw;
+  height: calc(100vh - (header.$headerHeight + footer.$footerHeight));
+  display: flex;
+}
+
+.PlanSheetsDiagramOptions {
+  padding: 8px;
+
+  &-heading {
+    display: flex;
+
+    & h2 {
+      color: lui.$fuscous;
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0;
+      display: inline;
+      padding-left: 4px;
+    }
+  }
+}

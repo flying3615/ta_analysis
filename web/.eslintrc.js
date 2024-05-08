@@ -44,7 +44,7 @@ module.exports = {
       {
         patterns: [
           {
-            group: ["**/../../*"],
+            group: ["**/../*"],
             message: "Please use an absolute import instead of a relative import - example: '@/path/to/component'",
           },
         ],
@@ -72,9 +72,20 @@ module.exports = {
       },
     },
     {
-      files: ["**/*.test.*"],
+      files: ["**/*.test.*", "**/*.stories.*"],
       rules: {
         "no-console": "off",
+        "no-restricted-imports": [
+          "warn",
+          {
+            patterns: [
+              {
+                group: ["**/../../*"],
+                message: "Please use an absolute import instead of a relative import - example: '@/path/to/component'",
+              },
+            ],
+          },
+        ],
       },
     },
   ],
