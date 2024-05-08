@@ -1,8 +1,8 @@
 import { IMarks, SurveyFeaturesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { Reducer, SerializedError, createSelector } from "@reduxjs/toolkit";
-import { planGenApiConfig } from "../apiConfig";
+import { planGenApiConfig } from "@/redux/apiConfig";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
-import { createAppSlice } from "../createAppSlice";
+import { createAppSlice } from "@/redux/createAppSlice";
 
 export interface SurveyFeaturesState {
   isFetching: boolean;
