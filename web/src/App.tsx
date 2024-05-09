@@ -11,9 +11,8 @@ import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
 import { Provider } from "react-redux";
-import { store } from "./redux/store.ts";
-
-export const appClientId = "survey-plangen-spa";
+import { store } from "@/redux/store.ts";
+import { appClientId } from "./constants.tsx";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(

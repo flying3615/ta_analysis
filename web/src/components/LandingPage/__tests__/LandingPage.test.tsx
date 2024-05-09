@@ -1,19 +1,20 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { PlangenApp } from "@/App.tsx";
 import { MemoryRouter } from "react-router";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { renderWithProviders } from "@/test-utils/jest-utils";
 
 const renderPlangenApp = () => {
-  render(
+  renderWithProviders(
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/98765"]}>
+      <MemoryRouter initialEntries={["/plan-generation/123"]}>
         <PlangenApp mockMap={true} />
       </MemoryRouter>
     </FeatureFlagProvider>,
   );
 };
 
-describe("Verify rendering of the Landing Page", () => {
+describe("LandingPage", () => {
   it("should render", async () => {
     renderPlangenApp();
     expect(await screen.findByText("Plan generation")).toBeInTheDocument();

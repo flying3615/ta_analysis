@@ -1,5 +1,5 @@
 import { IMarks, SurveyFeaturesControllerApi } from "@linz/survey-plan-generation-api-client";
-import { Reducer, SerializedError, createSelector } from "@reduxjs/toolkit";
+import { SerializedError, createSelector } from "@reduxjs/toolkit";
 import { planGenApiConfig } from "@/redux/apiConfig";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { createAppSlice } from "@/redux/createAppSlice";
@@ -47,8 +47,8 @@ export const surveyFeaturesSlice = createAppSlice({
     isFetching: (state) => state.isFetching,
     getError: (state) => state.error,
     getMarksForOpenlayers: createSelector(
-      (state) => state.marks,
-      (marks: IMarks[]) =>
+      (state: SurveyFeaturesState) => state.marks,
+      (marks) =>
         marks.map(
           (m) =>
             ({
@@ -67,5 +67,3 @@ export const surveyFeaturesSlice = createAppSlice({
 
 export const { fetchFeatures } = surveyFeaturesSlice.actions;
 export const { isFetching, getError, getMarksForOpenlayers } = surveyFeaturesSlice.selectors;
-
-export default surveyFeaturesSlice.reducer as Reducer<SurveyFeaturesState>;

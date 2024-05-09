@@ -16,7 +16,7 @@ import { LuiLoadingSpinner } from "@linzjs/lui";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 
-interface DefineDiagramsProps {
+export interface DefineDiagramsProps {
   mock?: boolean;
   children?: ReactNode;
 }

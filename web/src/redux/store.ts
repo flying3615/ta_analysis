@@ -1,11 +1,11 @@
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
-import { surveyFeaturesSlice } from "./survey-features/surveyFeaturesSlice";
+import { surveyFeaturesSlice } from "@/redux/survey-features/surveyFeaturesSlice";
 
 const rootReducer = combineSlices(surveyFeaturesSlice);
 
 export type RootState = ReturnType<typeof rootReducer>;
 
-const setupStore = (preloadedState?: Partial<RootState>) =>
+export const setupStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
