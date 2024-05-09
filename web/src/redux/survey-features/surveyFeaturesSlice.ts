@@ -1,4 +1,4 @@
-import { IMarks, SurveyFeaturesControllerApi } from "@linz/survey-plan-generation-api-client";
+import { IMarks, ResponseError, SurveyFeaturesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { SerializedError, createSelector } from "@reduxjs/toolkit";
 import { planGenApiConfig } from "@/redux/apiConfig";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
@@ -21,10 +21,21 @@ export const surveyFeaturesSlice = createAppSlice({
   initialState,
   reducers: (create) => ({
     fetchFeatures: create.asyncThunk(
-      async (transactionId: number) => {
-        const client = new SurveyFeaturesControllerApi(planGenApiConfig());
-        const res = await client.getSurveyFeatures({ transactionId });
-        return res;
+      async (transactionId: number, { rejectWithValue }) => {
+        try {
+          const client = new SurveyFeaturesControllerApi(planGenApiConfig());
+          const res = await client.getSurveyFeatures({ transactionId });
+          return res;
+        } catch (err) {
+          const errResponse = err as ResponseError;
+          const errResponseJson = await errResponse.response.json();
+
+          return rejectWithValue({
+            name: errResponse.response.statusText,
+            message: errResponseJson?.message ?? errResponse.message,
+            code: errResponse.response.status,
+          });
+        }
       },
       {
         pending: (state) => {
@@ -38,7 +49,7 @@ export const surveyFeaturesSlice = createAppSlice({
         },
         rejected: (state, action) => {
           state.isFetching = false;
-          state.error = action.error;
+          state.error = action.payload as SerializedError;
         },
       },
     ),
