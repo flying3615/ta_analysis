@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
@@ -59,6 +59,7 @@ describe("DefineDiagrams", () => {
   it("displays error when survey not found", async () => {
     renderDefineDiagrams(404);
 
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
     expect(screen.getByText("Sorry, there was an error")).toBeInTheDocument();
   });
 });
