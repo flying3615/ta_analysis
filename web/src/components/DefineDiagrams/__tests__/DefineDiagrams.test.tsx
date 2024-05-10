@@ -52,7 +52,7 @@ describe("DefineDiagrams", () => {
     // validate marks visible
     const marksLayerState = mockMap.layerState[MARKS_LAYER_NAME];
     await waitFor(() => expect(marksLayerState?.visible).toBeTruthy());
-    await waitFor(() => expect(marksLayerState).toHaveFeatureCount(3));
+    await waitFor(() => expect(marksLayerState).toHaveFeatureCount(13));
     expect(marksLayerState).toHaveFeature(1);
   });
 

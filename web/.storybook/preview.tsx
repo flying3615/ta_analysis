@@ -4,6 +4,10 @@ import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
 
 import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
+import { initialize, mswLoader } from "msw-storybook-addon";
+import { handlers } from "@/mocks/mockHandlers";
+
+initialize();
 
 const preview: Preview = {
   parameters: {
@@ -15,7 +19,11 @@ const preview: Preview = {
       },
       defaultViewport: 'responsive',
     },
+    msw: {
+      handlers: [...handlers],
+    },
   },
+  loaders: [mswLoader],
 };
 
 export default preview;

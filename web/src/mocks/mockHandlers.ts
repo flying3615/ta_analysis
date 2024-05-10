@@ -1,12 +1,26 @@
 import { rest } from "msw";
-import { mockOriginMark } from "./mockSurveyFeatures";
+import { MarksBuilder } from "@/test-utils/MarksBuilder";
 
 export const handlers = [
   rest.get(/\/survey-features\/123/, (_, res, ctx) =>
     res(
       ctx.status(200, "OK"),
       ctx.json({
-        marks: [mockOriginMark(1), mockOriginMark(2), mockOriginMark(3)],
+        marks: [
+          MarksBuilder.originMark().build(),
+          MarksBuilder.nonWitnessOriginMark().build(),
+          MarksBuilder.newPRM().build(),
+          MarksBuilder.oldPRM().build(),
+          MarksBuilder.newWitnessMark().build(),
+          MarksBuilder.oldWitnessMark().build(),
+          MarksBuilder.postAdoptedNewMark().build(),
+          MarksBuilder.postOtherMark().build(),
+          MarksBuilder.unmarkedPoint().build(),
+          MarksBuilder.pegNew().build(),
+          MarksBuilder.pegOther().build(),
+          MarksBuilder.adoptedCadastralSurveyNetworkMarkOrVCM().build(),
+          MarksBuilder.oldCadastralSurveyNetworkMarkOrVCM().build(),
+        ],
       }),
     ),
   ),

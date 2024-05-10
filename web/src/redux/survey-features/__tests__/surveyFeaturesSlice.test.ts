@@ -42,44 +42,21 @@ describe("surveyFeaturesSlice", () => {
     await waitFor(() => expect(isFetching(store.getState())).toBe(false));
 
     expect(getError(store.getState())).toBeUndefined();
-    expect(getMarksForOpenlayers(store.getState())).toStrictEqual([
-      {
-        id: 1,
-        name: "PEG 1 DP 123",
-        label: "PEG 1 DP 123",
-        markSymbol: 1,
-        shape: {
-          geometry: {
-            type: "Point",
-            coordinates: [10, 10],
-          },
+
+    const marks = getMarksForOpenlayers(store.getState());
+    expect(marks).toHaveLength(13);
+    expect(marks[0]).toStrictEqual({
+      id: 1,
+      name: "PEG 1 DP 123",
+      label: "PEG 1 DP 123",
+      markSymbol: 1,
+      shape: {
+        geometry: {
+          type: "Point",
+          coordinates: [170.970892, -45.068865],
         },
       },
-      {
-        id: 2,
-        name: "PEG 1 DP 123",
-        label: "PEG 1 DP 123",
-        markSymbol: 1,
-        shape: {
-          geometry: {
-            type: "Point",
-            coordinates: [10, 10],
-          },
-        },
-      },
-      {
-        id: 3,
-        name: "PEG 1 DP 123",
-        label: "PEG 1 DP 123",
-        markSymbol: 1,
-        shape: {
-          geometry: {
-            type: "Point",
-            coordinates: [10, 10],
-          },
-        },
-      },
-    ]);
+    });
   });
 
   it("should handle fetchFeatures for unsuccessful response", async () => {

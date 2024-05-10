@@ -43,10 +43,10 @@ function svgForSymbol(markSymbol: number): string {
     case 9:
       return unmarkedPoint();
     case 10:
-      // PEG/NEW
+      // PEG (new)
       return circleSVG("white");
     case 11:
-      // PEG / other
+      // PEG (other)
       return circleSVG("black");
     case 12:
       // Adopted CSNM
