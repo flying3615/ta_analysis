@@ -10,6 +10,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "@/App.tsx";
+import { patchFetch } from "@linz/lol-auth-js";
 
 async function render() {
   const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(
@@ -23,6 +24,9 @@ async function render() {
     oidcIssuerUri,
     splitKey,
   };
+
+  // patch fetch requests to add authorization header to api gateway requests
+  patchFetch((url) => url.startsWith(window._env_.apiGatewayBaseUrl));
 
   // Add to window, so we can check in console the current build versions
   try {
