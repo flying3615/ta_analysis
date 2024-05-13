@@ -1,8 +1,9 @@
-import { rest } from "msw";
+import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import { MarksBuilder } from "@/test-utils/MarksBuilder";
 
-export const handlers = [
-  rest.get(/\/survey-features\/123/, (_, res, ctx) =>
+export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
+  // added $ in regex to force exact match for transaction id
+  rest.get(/\/survey-features\/123$/, (_, res, ctx) =>
     res(
       ctx.status(200, "OK"),
       ctx.json({

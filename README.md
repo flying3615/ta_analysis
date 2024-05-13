@@ -61,6 +61,7 @@ There are four ways to develop for this app locally:
 -   `npm run start:nonprod` - start application (using nonprod api and auth)
 -   `npm run lint` - check linting
 -   `npm run test` - run jest tests
+-   `npm run mock` - run app against mock server worker
 -   `npm run storybook` - run storybook for visual regression testing
 -   `npm run allure:open` - view allure test report dashboard
 -   (Further scripts in [package.json](./web/package.json))
