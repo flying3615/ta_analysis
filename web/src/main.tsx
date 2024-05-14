@@ -7,12 +7,12 @@ import "ol/ol.css";
 import "@szhsin/react-menu/dist/index.css";
 
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 import App from "@/App.tsx";
 import { patchFetch } from "@linz/lol-auth-js";
 
-async function render() {
+export async function renderInit() {
   const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(
     "/plan-generation/config/env.json",
   ).then((r) => r.json());
@@ -35,34 +35,16 @@ async function render() {
   } catch (_ex) {
     // ignore
   }
+}
 
+async function renderApp() {
+  await renderInit();
   const container = document.getElementById("root");
-  ReactDOM.createRoot(container!).render(
+  createRoot(container!).render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,
   );
 }
 
-// run app with mock mode
-if (import.meta.env.MODE === "mock") {
-  const { worker } = await import("./mocks/mockBrowser");
-
-  // once the Service Worker is up and ready to intercept requests.
-  worker
-    .start({
-      serviceWorker: {
-        // default MSW load from root `/` so changing url
-        url: `/plan-generation/mockServiceWorker.js`,
-      },
-      // disable warning for unhandled request other than `plan-generation/v1/`
-      onUnhandledRequest(req, print) {
-        if (req.url.pathname.startsWith("/plan-generation/v1/")) {
-          print.warning();
-        } else return;
-      },
-    })
-    .then(() => render());
-}
-// run app against backend
-else await render();
+renderApp();
