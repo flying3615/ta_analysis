@@ -1,3 +1,5 @@
+import warningSvg from "@/assets/warning.svg?raw";
+
 import FeatureLike from "ol/Feature";
 import { Icon, Style } from "ol/style";
 import { svgCircle, svgCross, svgSquare, svgTriangle } from "./svgShapes";
@@ -10,6 +12,9 @@ export const markStyleFunction = (feature: FeatureLike): Style[] => [
   }),
 ];
 
+// we only want to generate one blob url for this icon
+const warningIcon = warningTriangle();
+
 /**
  * Generate the associated SVG based on mark type (determined by mark symbol code)
  */
@@ -17,10 +22,10 @@ function svgForSymbol(markSymbol: number): string {
   switch (markSymbol) {
     // Origin mark
     case 1:
-      return originMark();
+      return warningIcon;
     // Non-witness origin
     case 2:
-      return nonWitnessOriginMark();
+      return warningIcon;
     // Permanent reference mark (new)
     case 3:
       return newPRM();
@@ -29,10 +34,10 @@ function svgForSymbol(markSymbol: number): string {
       return oldPRM();
     // Witness mark (adopted or new)
     case 5:
-      return newWitnessMark();
+      return warningIcon;
     // Witness mark (else)
     case 6:
-      return oldWitnessMark();
+      return warningIcon;
     // Post (adopted or new)
     case 7:
       return postAdoptedNewMark();
@@ -59,23 +64,6 @@ function svgForSymbol(markSymbol: number): string {
   }
 }
 
-// Origin mark - 'ORWB' or 'ORWI'
-export const originMark = (): string =>
-  createSVG(
-    '<line x1="0" y1="0" x2="14" y2="14" style="stroke:rgb(0,0,0);stroke-width:2" />' +
-      '<line x1="0" y1="14" x2="14" y2="0" style="stroke:rgb(0,0,0);stroke-width:2" />' +
-      '<circle fill="white" stroke="black" cx="7" cy="7" r="7"/>' +
-      '<circle fill="black" stroke="black" cx="7" cy="7" r="3"/>',
-  );
-
-// Non-witness origin - 'ORBD' or 'ORIG'
-export const nonWitnessOriginMark = (): string =>
-  createSVG(
-    '<line x1="0" y1="0" x2="14" y2="14" style="stroke:rgb(0,0,0);stroke-width:2" />' +
-      '<line x1="0" y1="14" x2="14" y2="0" style="stroke:rgb(0,0,0);stroke-width:2" />' +
-      '<circle fill="black" stroke="black" cx="7" cy="7" r="3"/>',
-  );
-
 // PRM - New (PRMA or PRBD)
 export const newPRM = (): string =>
   createSVG(
@@ -90,20 +78,6 @@ export const oldPRM = (): string =>
     '<circle fill="none" stroke="black" cx="12" cy="12" r="9"/>' +
       '<circle fill="none" stroke="black" cx="12" cy="12" r="6"/>' +
       '<circle fill="black" stroke="black" cx="12" cy="12" r="3"/>',
-  );
-
-// WITN - New
-export const newWitnessMark = (): string =>
-  createSVG(
-    '<circle fill="none" stroke="black" cx="10" cy="10" r="7"/>' +
-      '<circle fill="white" stroke="black" cx="10" cy="10" r="3"/>',
-  );
-
-// WITN - Old
-export const oldWitnessMark = (): string =>
-  createSVG(
-    '<circle fill="none" stroke="black" cx="10" cy="10" r="7"/>' +
-      '<circle fill="black" stroke="black" cx="10" cy="10" r="3"/>',
   );
 
 // POST - adopted or new
@@ -123,8 +97,13 @@ export const adoptedCadastralSurveyNetworkMarkOrVCM = (): string =>
 
 export const oldCadastralSurveyNetworkMarkOrVCM = (): string => createSVG(svgTriangle(iconSize, 12, "black", "black"));
 
-export const createSVG = (elements: string): string =>
+// this svg has an issue when using as inline data uri so we reference as a blob url
+function warningTriangle(): string {
+  return URL.createObjectURL(new Blob([warningSvg], { type: "image/svg+xml" }));
+}
+
+export const createSVG = (elements: string, width = 25, height = 25): string =>
   `data:image/svg+xml;utf8,
-  <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
     ${elements}
   </svg>`;
