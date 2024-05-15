@@ -1,7 +1,7 @@
 module.exports = {
   roots: ["<rootDir>/src"],
   collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],
-  setupFiles: ["react-app-polyfill/jsdom", "<rootDir>/src/jest.polyfills.ts"],
+  setupFiles: ["react-app-polyfill/jsdom", "<rootDir>/src/jest.polyfills.ts", "<rootDir>/src/hide-console-errors.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
   testMatch: ["<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"],
   testEnvironment: "allure-jest/jsdom",
@@ -19,6 +19,7 @@ module.exports = {
   resetMocks: true,
   coverageReporters: ["text", "cobertura"],
   moduleNameMapper: {
+    "^@/(.*)\\.svg\?(.*)": "<rootDir>/src/$1.svg",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
 };
