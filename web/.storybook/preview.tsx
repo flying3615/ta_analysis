@@ -7,7 +7,13 @@ import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from '@storybook/addon-viewport'
 import { initialize, mswLoader } from "msw-storybook-addon";
 import { handlers } from "@/mocks/mockHandlers";
 
-initialize();
+initialize({
+  onUnhandledRequest: (req, print) =>{
+    if (req.url.pathname.startsWith("/plan-generation/v1/")) {
+      print.warning();
+    } else return;
+  }}
+)
 
 const preview: Preview = {
   parameters: {
