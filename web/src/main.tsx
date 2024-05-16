@@ -7,21 +7,26 @@ import "ol/ol.css";
 import "@szhsin/react-menu/dist/index.css";
 
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 import App from "@/App.tsx";
+import { patchFetch } from "@linz/lol-auth-js";
 
-async function render() {
-  const { splitKey, oidcIssuerUri, authzBaseUrl, basemapApiKey } = await fetch("/plan-generation/config/env.json").then(
-    (r) => r.json(),
-  );
+export async function renderInit() {
+  const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(
+    "/plan-generation/config/env.json",
+  ).then((r) => r.json());
 
   window._env_ = {
-    splitKey,
-    oidcIssuerUri,
+    apiGatewayBaseUrl,
     authzBaseUrl,
     basemapApiKey,
+    oidcIssuerUri,
+    splitKey,
   };
+
+  // patch fetch requests to add authorization header to api gateway requests
+  patchFetch((url) => url.startsWith(window._env_.apiGatewayBaseUrl));
 
   // Add to window, so we can check in console the current build versions
   try {
@@ -30,13 +35,16 @@ async function render() {
   } catch (_ex) {
     // ignore
   }
+}
 
+async function renderApp() {
+  await renderInit();
   const container = document.getElementById("root");
-  ReactDOM.createRoot(container!).render(
+  createRoot(container!).render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,
   );
 }
 
-await render();
+renderApp();

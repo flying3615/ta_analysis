@@ -6,10 +6,16 @@ import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
-import { OidcConfig } from "@linz/lol-auth-js";
+import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
+import { Provider } from "react-redux";
+import { store } from "@/redux/store.ts";
+import { appClientId } from "./constants.tsx";
+import { mockUser } from "./mocks/mockAuthUser.ts";
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
+import { ReactNode } from "react";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
@@ -43,20 +49,44 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
 
 const App = () => {
   const oidcConfig: OidcConfig = {
-    clientId: "survey-plangen-spa",
+    clientId: appClientId,
     issuerUri: window._env_.oidcIssuerUri,
     authzBaseUrl: window._env_.authzBaseUrl,
     postLoginUri: window.location.href,
     postLogoutUri: window.location.href,
   };
 
+  interface AuthContextProviderProps {
+    children: ReactNode;
+    user?: UserProfile & UserAccessesData;
+  }
+
+  const AuthContextProvider = (props: AuthContextProviderProps) => {
+    const mode = import.meta.env.MODE.toLowerCase();
+    if (mode === "mock" || props.user) {
+      return (
+        <MockUserContextProvider user={mockUser}>
+          <>{props.children}</>
+        </MockUserContextProvider>
+      );
+    }
+
+    return (
+      <LOLUserContextProviderV2 oidcConfig={oidcConfig}>
+        <>{props.children}</>
+      </LOLUserContextProviderV2>
+    );
+  };
+
   return (
     <BrowserRouter>
-      <LOLUserContextProviderV2 oidcConfig={oidcConfig}>
+      <AuthContextProvider>
         <FeatureFlagProvider>
-          <PlangenApp />
+          <Provider store={store}>
+            <PlangenApp />
+          </Provider>
         </FeatureFlagProvider>
-      </LOLUserContextProviderV2>
+      </AuthContextProvider>
     </BrowserRouter>
   );
 };

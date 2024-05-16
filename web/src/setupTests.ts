@@ -2,34 +2,42 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
+import "@testing-library/jest-dom/jest-globals";
 import "@testing-library/jest-dom";
 import "jest-canvas-mock";
 import { setupJestCanvasMock } from "jest-canvas-mock";
 import { configure } from "@testing-library/react";
+import { mapAssertions, mapFeatureAssertions } from "@linzjs/landonline-openlayers-map";
+import { server } from "@/mocks/mockServer";
 
-// It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all the detail of an async assertion failure
-// will be lost due to the test failing because of the overall timeout instead.
+// It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all
+// the detail of an async assertion failure will be lost due to the test
+// failing because of the overall timeout instead.
 configure({ asyncUtilTimeout: 5000 });
 jest.setTimeout(10000);
 
+// app requires all these values to exist
 window._env_ = {
-  splitKey: "localhost",
-  oidcIssuerUri: "https://auth.dev.landonline.govt.nz/realms/landonline",
+  apiGatewayBaseUrl: "http://localhost/api",
   authzBaseUrl: "https://dummy.authz.url",
   basemapApiKey: "dummy",
+  oidcIssuerUri: "https://auth.dev.landonline.govt.nz/realms/landonline",
+  splitKey: "localhost",
 };
 
-window.URL.createObjectURL = jest.fn(() => "");
+// setup mocked responses from API requests
+beforeAll(() => server.listen());
+
 beforeEach(() => {
-  window.URL.createObjectURL = jest.fn(() => "");
-
   setupJestCanvasMock();
-
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { mapAssertions, mapFeatureAssertions } = require("@linzjs/landonline-openlayers-map");
-
-  expect.extend(mapAssertions.default);
-  expect.extend(mapFeatureAssertions.default);
 });
 
-global.ResizeObserver = require("resize-observer-polyfill");
+expect.extend(mapAssertions.default);
+expect.extend(mapFeatureAssertions.default);
+
+// Reset any request handlers that we may add during the tests, so they don't
+// affect other tests.
+afterEach(() => server.resetHandlers());
+
+// Clean up after the tests are finished.
+afterAll(() => server.close());

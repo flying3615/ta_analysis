@@ -11,6 +11,7 @@ const commitDate = execSync("git log -1 HEAD --format=%cI").toString();
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => ({
+  envDir: "viteEnv",
   plugins: [react()],
   build: {
     outDir: "build",

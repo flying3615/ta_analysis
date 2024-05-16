@@ -24,6 +24,7 @@ module.exports = babelJest.default.createTransformer({
       },
     ],
   ],
+  plugins: ["babel-plugin-transform-vite-meta-env"],
   babelrc: false,
   configFile: false,
 });
