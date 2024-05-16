@@ -1,5 +1,5 @@
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
-import { MarksBuilder } from "@/test-utils/MarksBuilder";
+import { MarksBuilder } from "@/mocks/data/MarksBuilder.ts";
 
 export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   // added $ in regex to force exact match for transaction id

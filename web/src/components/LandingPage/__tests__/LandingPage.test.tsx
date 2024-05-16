@@ -1,42 +1,40 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { PlangenApp } from "@/App.tsx";
-import { MemoryRouter } from "react-router";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { renderWithProviders } from "@/test-utils/jest-utils";
-
-const renderPlangenApp = () => {
-  renderWithProviders(
-    <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/123"]}>
-        <PlangenApp mockMap={true} />
-      </MemoryRouter>
-    </FeatureFlagProvider>,
-  );
-};
+import { customRender, customRenderMulti } from "@/test-utils/jest-utils";
+import LandingPage from "@/components/LandingPage/LandingPage.tsx";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
 
 describe("LandingPage", () => {
-  it("should render", async () => {
-    renderPlangenApp();
-    expect(await screen.findByText("Plan generation")).toBeInTheDocument();
+  it("should render Landing page", async () => {
+    customRender(<LandingPage />);
+
+    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
+    expect(screen.getByText(/^Define Diagrams$/)).toBeTruthy();
+    expect(screen.getByText(/^Layout Plan Sheets$/)).toBeTruthy();
+    expect(
+      screen.getByText(/Find Maintain Diagram Layers and Preferences in Define Diagrams and Layout Plan Sheets/),
+    ).toBeTruthy();
   });
 
   it("should go to Define Diagrams on click", async () => {
-    renderPlangenApp();
+    customRenderMulti("/plan-generation/123", [
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+      { component: <DefineDiagrams />, route: "/plan-generation/define-diagrams/:transactionId" },
+    ]);
 
     const button = await screen.findByText("Define Diagrams");
     fireEvent.click(button);
-
-    expect(await screen.findByTestId("openlayers-map")).toBeInTheDocument();
-    expect(screen.queryByText(/Sheets/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
   });
 
   it("should go to Layout Plan Sheets on click", async () => {
-    renderPlangenApp();
+    customRenderMulti("/plan-generation/123", [
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+      { component: <PlanSheets />, route: "/plan-generation/layout-plan-sheets/:transactionId" },
+    ]);
 
     const button = await screen.findByText("Layout Plan Sheets");
     fireEvent.click(button);
-
-    expect(await screen.findByText(/Sheets/)).toBeInTheDocument();
-    expect(screen.queryByText(/Diagrams/)).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Survey sheet diagrams/ })).toBeInTheDocument();
   });
 });

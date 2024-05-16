@@ -2,33 +2,17 @@ import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/rea
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
-import { MemoryRouter, Route, Routes, generatePath } from "react-router-dom";
-import { Paths } from "@/Paths";
-import { renderWithProviders } from "@/test-utils/jest-utils";
+import { customRender } from "@/test-utils/jest-utils";
+import { RootState } from "@/redux/store.ts";
 
 describe("DefineDiagrams", () => {
-  const renderDefineDiagrams = (transactionId: number = 123) => {
-    const path = generatePath(Paths.defineDiagrams, { transactionId });
-
-    renderWithProviders(
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={true} />} />
-        </Routes>
-      </MemoryRouter>,
-    );
-  };
-
   beforeEach(() => {
     // We need this *after* createObjectURL* gets stubbed
     getMockMap().resetState();
   });
 
   it("should render", async () => {
-    renderDefineDiagrams();
-
-    // loading spinner while fetching features
-    await screen.findByTestId("loading-spinner");
+    customRender(<DefineDiagrams mock={true} />);
 
     // openlayers map and it's layers should render after features fetched
     const mockMap = getMockMap();
@@ -37,11 +21,15 @@ describe("DefineDiagrams", () => {
     });
 
     // header toggle label is visible
-    expect(screen.getByText("Diagrams")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
   });
 
   it("should show marks on the map", async () => {
-    renderDefineDiagrams();
+    customRender(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
 
     // openlayers map and it's layers should render
     const mockMap = getMockMap();
@@ -57,9 +45,34 @@ describe("DefineDiagrams", () => {
   });
 
   it("displays error when survey not found", async () => {
-    renderDefineDiagrams(404);
+    customRender(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/404",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
 
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
     expect(screen.getByText("Sorry, there was an error")).toBeInTheDocument();
+    expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
+  });
+
+  it("displays loading spinner", async () => {
+    const mockState = {
+      surveyFeatures: {
+        isFetching: true,
+        marks: [],
+        error: undefined,
+      },
+    } as Partial<RootState>;
+    customRender(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+      { preloadedState: mockState },
+    );
+
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+    expect(screen.queryByText("Sorry, there was an error")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
   });
 });

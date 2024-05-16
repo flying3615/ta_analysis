@@ -1,7 +1,8 @@
 import { AppStore, RootState, setupStore } from "@/redux/store";
-import { RenderOptions, render } from "@testing-library/react";
-import { PropsWithChildren } from "react";
+import { RenderOptions, render, RenderResult } from "@testing-library/react";
+import { PropsWithChildren, ReactElement } from "react";
 import { Provider } from "react-redux";
+import { MemoryRouter, Route, Routes } from "react-router";
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
@@ -10,7 +11,7 @@ interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
   store?: AppStore;
 }
 
-export function renderWithProviders(
+export function renderWithReduxProvider(
   ui: React.ReactElement,
   {
     preloadedState = {},
@@ -28,3 +29,34 @@ export function renderWithProviders(
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
   };
 }
+
+export const customRender = (
+  component: ReactElement<PropsWithChildren>,
+  url = "/",
+  route = "/",
+  options?: ExtendedRenderOptions,
+): RenderResult => {
+  return renderWithReduxProvider(
+    <MemoryRouter initialEntries={[url]}>
+      <Routes>
+        <Route path={route} element={component} />
+      </Routes>
+    </MemoryRouter>,
+    options,
+  );
+};
+
+export const customRenderMulti = (
+  url = "/",
+  routes: { route: string; component: ReactElement<PropsWithChildren> }[],
+): RenderResult => {
+  return renderWithReduxProvider(
+    <MemoryRouter initialEntries={[url]}>
+      <Routes>
+        {routes.map((r, idx) => {
+          return <Route key={idx} path={r.route} element={r.component} />;
+        })}
+      </Routes>
+    </MemoryRouter>,
+  );
+};
