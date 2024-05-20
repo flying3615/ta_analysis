@@ -43,9 +43,18 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
       <Route path={Paths.root} element={<LandingPage />} />
       <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
       <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+      <Route path="*" element={<NoMatchingRouteFound />} />
     </Routes>
   );
 };
+
+function NoMatchingRouteFound(): JSX.Element {
+  return (
+    <div>
+      <h1>No matching route to render page, please check url</h1>
+    </div>
+  );
+}
 
 const App = () => {
   const oidcConfig: OidcConfig = {

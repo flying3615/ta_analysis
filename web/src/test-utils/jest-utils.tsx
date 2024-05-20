@@ -31,7 +31,7 @@ export function renderWithReduxProvider(
 }
 
 export const customRender = (
-  component: ReactElement<PropsWithChildren>,
+  component: ReactElement,
   url = "/",
   route = "/",
   options?: ExtendedRenderOptions,
@@ -48,7 +48,8 @@ export const customRender = (
 
 export const customRenderMulti = (
   url = "/",
-  routes: { route: string; component: ReactElement<PropsWithChildren> }[],
+  routes: { route: string; component: ReactElement }[],
+  options?: ExtendedRenderOptions,
 ): RenderResult => {
   return renderWithReduxProvider(
     <MemoryRouter initialEntries={[url]}>
@@ -58,5 +59,6 @@ export const customRenderMulti = (
         })}
       </Routes>
     </MemoryRouter>,
+    options,
   );
 };

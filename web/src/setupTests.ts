@@ -26,7 +26,15 @@ window._env_ = {
 };
 
 // setup mocked responses from API requests
-beforeAll(() => server.listen());
+beforeAll(() =>
+  server.listen({
+    onUnhandledRequest: (req, print) => {
+      if (req.url.pathname.startsWith("/plan-generation/v1/")) {
+        print.warning();
+      } else return;
+    },
+  }),
+);
 
 beforeEach(() => {
   setupJestCanvasMock();
