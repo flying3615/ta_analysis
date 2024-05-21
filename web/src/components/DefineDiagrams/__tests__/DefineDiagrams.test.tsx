@@ -2,7 +2,7 @@ import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/rea
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
-import { customRender } from "@/test-utils/jest-utils";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
 
 describe("DefineDiagrams", () => {
@@ -12,7 +12,7 @@ describe("DefineDiagrams", () => {
   });
 
   it("should render", async () => {
-    customRender(<DefineDiagrams mock={true} />);
+    renderCompWithReduxAndRoute(<DefineDiagrams mock={true} />);
 
     // openlayers map and it's layers should render after features fetched
     const mockMap = getMockMap();
@@ -25,7 +25,7 @@ describe("DefineDiagrams", () => {
   });
 
   it("should show marks on the map", async () => {
-    customRender(
+    renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
       "/plan-generation/define-diagrams/123",
       "/plan-generation/define-diagrams/:transactionId",
@@ -45,7 +45,7 @@ describe("DefineDiagrams", () => {
   });
 
   it("displays error when survey not found", async () => {
-    customRender(
+    renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
       "/plan-generation/define-diagrams/404",
       "/plan-generation/define-diagrams/:transactionId",
@@ -64,7 +64,7 @@ describe("DefineDiagrams", () => {
         error: undefined,
       },
     } as Partial<RootState>;
-    customRender(
+    renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
       "/plan-generation/define-diagrams/123",
       "/plan-generation/define-diagrams/:transactionId",

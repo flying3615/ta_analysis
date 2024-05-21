@@ -48,11 +48,15 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
   );
 };
 
-function NoMatchingRouteFound(): JSX.Element {
+function NoMatchingRouteFound(): React.JSX.Element {
   return (
-    <div>
-      <h1>No matching route to render page, please check url</h1>
-    </div>
+    <LuiErrorPage
+      content={
+        <LuiStaticMessage level="error" closable={false}>
+          <h2>This page does not exist, please check the url and try again.</h2>
+        </LuiStaticMessage>
+      }
+    />
   );
 }
 

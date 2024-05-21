@@ -1,6 +1,6 @@
 import { AppStore, RootState, setupStore } from "@/redux/store";
 import { RenderOptions, render, RenderResult } from "@testing-library/react";
-import { PropsWithChildren, ReactElement } from "react";
+import React, { PropsWithChildren, ReactElement } from "react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router";
 
@@ -20,7 +20,7 @@ export function renderWithReduxProvider(
     ...renderOptions
   }: ExtendedRenderOptions = {},
 ) {
-  function Wrapper({ children }: PropsWithChildren): JSX.Element {
+  function Wrapper({ children }: PropsWithChildren): React.JSX.Element {
     return <Provider store={store}>{children}</Provider>;
   }
 
@@ -30,7 +30,7 @@ export function renderWithReduxProvider(
   };
 }
 
-export const customRender = (
+export const renderCompWithReduxAndRoute = (
   component: ReactElement,
   url = "/",
   route = "/",
@@ -46,7 +46,7 @@ export const customRender = (
   );
 };
 
-export const customRenderMulti = (
+export const renderMultiCompWithReduxAndRoute = (
   url = "/",
   routes: { route: string; component: ReactElement }[],
   options?: ExtendedRenderOptions,

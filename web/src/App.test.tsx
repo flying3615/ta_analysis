@@ -19,7 +19,7 @@ describe("Verify rendering of application", () => {
     ["/plan-generation/", "Plan generation"],
     ["/plan-generation/define-diagrams/123", "Diagrams"],
     ["/plan-generation/layout-plan-sheets/123", "Sheets"],
-    ["/plan-", "No matching route to render page, please check url"],
+    ["/plan-", "This page does not exist, please check the url and try again."],
   ];
   test.each(validRoutes)("verify route with %s", async (route, expected) => {
     renderPlangenApp(route);
