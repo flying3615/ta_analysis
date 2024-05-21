@@ -7,7 +7,6 @@ import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.ts
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { Provider } from "react-redux";
 import { setupStore } from "@/redux/store";
-import { Paths } from "@/Paths";
 
 export default {
   title: "DefineDiagrams",
@@ -20,7 +19,7 @@ export const Default: StoryFn<typeof DefineDiagrams> = () => {
       <FeatureFlagProvider>
         <MemoryRouter initialEntries={["/plan-generation/define-diagrams/123"]}>
           <Routes>
-            <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+            <Route path="/plan-generation/define-diagrams/:transactionId" element={<DefineDiagrams />} />
           </Routes>
         </MemoryRouter>
       </FeatureFlagProvider>

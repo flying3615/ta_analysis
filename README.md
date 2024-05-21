@@ -65,7 +65,6 @@ There are five (!) ways to develop for this app locally:
 -   `npm run mock` - run app against mock server worker
 -   `npm run storybook` - run storybook for visual regression testing
 -   `npm run test-storybook` - run storybook test (Storybook's test runner requires either a locally running Storybook instance or a published Storybook to run all the existing tests, so run `npm run storybook` before `npm run test-storybook`)
-- Note :- Known issue with `"@storybook/test-runner": "^0.18.0"` if you run test-storybook command it says no test found
 -   `npm run allure:open` - view allure test report dashboard
 -   (Further scripts in [package.json](./web/package.json))
 

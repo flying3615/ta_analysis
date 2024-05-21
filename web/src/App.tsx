@@ -43,9 +43,22 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
       <Route path={Paths.root} element={<LandingPage />} />
       <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
       <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+      <Route path="*" element={<NoMatchingRouteFound />} />
     </Routes>
   );
 };
+
+function NoMatchingRouteFound(): React.JSX.Element {
+  return (
+    <LuiErrorPage
+      content={
+        <LuiStaticMessage level="error" closable={false}>
+          <h2>This page does not exist, please check the url and try again.</h2>
+        </LuiStaticMessage>
+      }
+    />
+  );
+}
 
 const App = () => {
   const oidcConfig: OidcConfig = {
