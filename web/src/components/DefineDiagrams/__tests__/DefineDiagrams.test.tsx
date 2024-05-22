@@ -1,7 +1,7 @@
 import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
-import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
+import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME, PARCELS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
 
@@ -44,6 +44,26 @@ describe("DefineDiagrams", () => {
     expect(marksLayerState).toHaveFeature(1);
   });
 
+  it("should show parcels on the map", async () => {
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+
+    // openlayers map and it's layers should render
+    const mockMap = getMockMap();
+    await waitFor(() => {
+      expect(mockMap).toHaveLayer(PARCELS_LAYER_NAME, LayerType.VECTOR);
+    });
+
+    // validate parcels visible
+    const parcelsLayerState = mockMap.layerState[PARCELS_LAYER_NAME];
+    await waitFor(() => expect(parcelsLayerState?.visible).toBeTruthy());
+    await waitFor(() => expect(parcelsLayerState).toHaveFeatureCount(5));
+    expect(parcelsLayerState).toHaveFeature(1);
+  });
+
   it("displays error when survey not found", async () => {
     renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
@@ -61,6 +81,9 @@ describe("DefineDiagrams", () => {
       surveyFeatures: {
         isFetching: true,
         marks: [],
+        primaryParcels: [],
+        nonPrimaryParcels: [],
+        centreLineParcels: [],
         error: undefined,
       },
     } as Partial<RootState>;

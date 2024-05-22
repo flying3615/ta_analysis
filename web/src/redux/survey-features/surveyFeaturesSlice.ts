@@ -1,4 +1,9 @@
-import { IMarks, ResponseError, SurveyFeaturesControllerApi } from "@linz/survey-plan-generation-api-client";
+import {
+  IInflightParcels,
+  IMarks,
+  ResponseError,
+  SurveyFeaturesControllerApi,
+} from "@linz/survey-plan-generation-api-client";
 import { SerializedError, createSelector } from "@reduxjs/toolkit";
 import { planGenApiConfig } from "@/redux/apiConfig";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
@@ -7,12 +12,18 @@ import { createAppSlice } from "@/redux/createAppSlice";
 export interface SurveyFeaturesState {
   isFetching: boolean;
   marks: IMarks[];
+  primaryParcels: IInflightParcels[];
+  nonPrimaryParcels: IInflightParcels[];
+  centreLineParcels: IInflightParcels[];
   error?: SerializedError;
 }
 
 const initialState: SurveyFeaturesState = {
   isFetching: false,
   marks: [],
+  primaryParcels: [],
+  nonPrimaryParcels: [],
+  centreLineParcels: [],
   error: undefined,
 };
 
@@ -42,10 +53,13 @@ export const surveyFeaturesSlice = createAppSlice({
           state.isFetching = true;
         },
         fulfilled: (state, action) => {
-          const { marks } = action.payload;
+          const { marks, primaryParcels, nonPrimaryParcels, centreLineParcels } = action.payload;
 
           state.isFetching = false;
           state.marks = marks;
+          state.primaryParcels = primaryParcels;
+          state.nonPrimaryParcels = nonPrimaryParcels;
+          state.centreLineParcels = centreLineParcels;
         },
         rejected: (state, action) => {
           state.isFetching = false;
@@ -57,6 +71,7 @@ export const surveyFeaturesSlice = createAppSlice({
   selectors: {
     isFetching: (state) => state.isFetching,
     getError: (state) => state.error,
+
     getMarksForOpenlayers: createSelector(
       (state: SurveyFeaturesState) => state.marks,
       (marks) =>
@@ -73,8 +88,28 @@ export const surveyFeaturesSlice = createAppSlice({
             }) as IFeatureSource,
         ),
     ),
+
+    getParcelsForOpenlayers: createSelector(
+      [
+        (state: SurveyFeaturesState) => state.primaryParcels,
+        (state: SurveyFeaturesState) => state.nonPrimaryParcels,
+        (state: SurveyFeaturesState) => state.centreLineParcels,
+      ],
+      (primary, nonPrimary, centreline) =>
+        [...primary, ...nonPrimary, ...centreline].map(
+          (p) =>
+            ({
+              id: p.id,
+              parcelIntent: p.properties.intentCode.code,
+              topoClass: p.properties.topologyClass,
+              shape: {
+                geometry: p.geometry,
+              },
+            }) as IFeatureSource,
+        ),
+    ),
   },
 });
 
 export const { fetchFeatures } = surveyFeaturesSlice.actions;
-export const { isFetching, getError, getMarksForOpenlayers } = surveyFeaturesSlice.selectors;
+export const { isFetching, getError, getMarksForOpenlayers, getParcelsForOpenlayers } = surveyFeaturesSlice.selectors;

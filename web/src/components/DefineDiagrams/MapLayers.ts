@@ -8,14 +8,17 @@ import {
   SourceType,
 } from "@linzjs/landonline-openlayers-map";
 import { markStyleFunction } from "./markStyles";
+import { parcelStyles } from "./parcelStyles";
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
 
 export const BASEMAP_LAYER_NAME = "linz_basemap";
 export const MARKS_LAYER_NAME = "marks";
+export const PARCELS_LAYER_NAME = "parcels";
 
 const zIndexes: Record<string, number> = {
-  MARKS_LAYER_NAME: 100,
+  MARKS_LAYER_NAME: 2,
+  PARCELS_LAYER_NAME: 1,
 };
 
 export const linzMLBasemapLayer = (maxZoom: number) => {
@@ -50,6 +53,24 @@ export const marksLayer = (marksData: IFeatureSource[], maxZoom: number): LolOpe
     source: {
       type: SourceType.FEATURES,
       data: marksData,
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const parcelsLayer = (parcelsData: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: PARCELS_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: true,
+    inInitialZoom: true,
+    declutterLabels: false,
+    togglable: false,
+    zIndex: zIndexes[PARCELS_LAYER_NAME],
+    style: parcelStyles,
+    source: {
+      type: SourceType.FEATURES,
+      data: parcelsData,
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;

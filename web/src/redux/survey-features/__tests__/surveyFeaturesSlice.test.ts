@@ -4,6 +4,7 @@ import {
   fetchFeatures,
   getError,
   getMarksForOpenlayers,
+  getParcelsForOpenlayers,
   isFetching,
   surveyFeaturesSlice,
 } from "@/redux/survey-features/surveyFeaturesSlice";
@@ -13,6 +14,9 @@ describe("surveyFeaturesSlice", () => {
   const initialState: SurveyFeaturesState = {
     isFetching: false,
     marks: [],
+    primaryParcels: [],
+    nonPrimaryParcels: [],
+    centreLineParcels: [],
     error: undefined,
   };
 
@@ -26,6 +30,9 @@ describe("surveyFeaturesSlice", () => {
     expect(surveyFeaturesSlice.reducer(undefined, { type: "unknown" })).toStrictEqual({
       isFetching: false,
       marks: [],
+      primaryParcels: [],
+      nonPrimaryParcels: [],
+      centreLineParcels: [],
       error: undefined,
     });
   });
@@ -54,6 +61,28 @@ describe("surveyFeaturesSlice", () => {
         geometry: {
           type: "Point",
           coordinates: [170.970892, -45.068865],
+        },
+      },
+    });
+
+    const parcels = getParcelsForOpenlayers(store.getState());
+    expect(parcels).toHaveLength(5);
+    expect(parcels[0]).toStrictEqual({
+      id: 1,
+      parcelIntent: "FSIM",
+      topoClass: "PRIM",
+      shape: {
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [170.970892, -45.068865],
+              [170.971792900901, -45.068865],
+              [170.971792900901, -45.0684145495496],
+              [170.970892, -45.0684145495496],
+              [170.970892, -45.068865],
+            ],
+          ],
         },
       },
     });

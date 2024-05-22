@@ -1,5 +1,6 @@
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
-import { MarksBuilder } from "@/mocks/data/MarksBuilder.ts";
+import { MarksBuilder } from "@/mocks/data/MarksBuilder";
+import { ParcelsBuilder } from "@/mocks/data/ParcelsBuilder";
 
 export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   // added $ in regex to force exact match for transaction id
@@ -22,6 +23,13 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
           MarksBuilder.adoptedCadastralSurveyNetworkMarkOrVCM().build(),
           MarksBuilder.oldCadastralSurveyNetworkMarkOrVCM().build(),
         ],
+        primaryParcels: [
+          ParcelsBuilder.primaryParcel().build(),
+          ParcelsBuilder.hydroParcel().build(),
+          ParcelsBuilder.roadParcel().build(),
+        ],
+        nonPrimaryParcels: [ParcelsBuilder.nonPrimaryParcel().build()],
+        centreLineParcels: [ParcelsBuilder.centreLineParcel().build()],
       }),
     ),
   ),
