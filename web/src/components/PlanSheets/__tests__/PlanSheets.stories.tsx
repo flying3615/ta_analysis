@@ -1,4 +1,4 @@
-import { Meta, StoryFn, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import PlanSheets from "../PlanSheets";
 import { MemoryRouter } from "react-router-dom";
 import { userEvent, within } from "@storybook/testing-library";
@@ -12,6 +12,8 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
+type Story = StoryObj<typeof PlanSheets>;
+
 const PlanSheetsTemplate = () => {
   return (
     <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/12345"]}>
@@ -20,11 +22,11 @@ const PlanSheetsTemplate = () => {
   );
 };
 
-export const Default: StoryFn<typeof PlanSheets> = () => {
-  return <PlanSheetsTemplate />;
+export const Default: Story = {
+  render: () => <PlanSheetsTemplate />,
 };
 
-export const SmallViewport: StoryObj<typeof PlanSheets> = {
+export const SmallViewport: Story = {
   render: () => <PlanSheetsTemplate />,
   parameters: {
     viewport: {
@@ -34,7 +36,7 @@ export const SmallViewport: StoryObj<typeof PlanSheets> = {
   },
 };
 
-export const DiagramsPanelClosed: StoryObj<typeof PlanSheets> = {
+export const DiagramsPanelClosed: Story = {
   render: () => <PlanSheetsTemplate />,
   parameters: {
     viewport: {

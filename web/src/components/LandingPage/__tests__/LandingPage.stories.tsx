@@ -1,5 +1,5 @@
 import LandingPage from "../LandingPage";
-import { Meta, StoryFn } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { MemoryRouter } from "react-router";
 import { PlangenApp } from "@/App.tsx";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
@@ -9,12 +9,13 @@ export default {
   component: LandingPage,
 } as Meta<typeof LandingPage>;
 
-export const Default: StoryFn<typeof LandingPage> = () => {
-  return (
+type Story = StoryObj<typeof LandingPage>;
+export const Default: Story = {
+  render: () => (
     <FeatureFlagProvider>
       <MemoryRouter initialEntries={["/plan-generation/12345"]}>
         <PlangenApp />
       </MemoryRouter>
     </FeatureFlagProvider>
-  );
+  ),
 };

@@ -1,7 +1,7 @@
 // Need the below for OL element styles
 import "ol/ol.css";
 
-import { Meta, StoryFn } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { MemoryRouter, Routes, Route } from "react-router";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
@@ -13,8 +13,10 @@ export default {
   component: DefineDiagrams,
 } as Meta<typeof DefineDiagrams>;
 
-export const Default: StoryFn<typeof DefineDiagrams> = () => {
-  return (
+type Story = StoryObj<typeof DefineDiagrams>;
+
+export const Default: Story = {
+  render: () => (
     <Provider store={setupStore()}>
       <FeatureFlagProvider>
         <MemoryRouter initialEntries={["/plan-generation/define-diagrams/123"]}>
@@ -24,5 +26,5 @@ export const Default: StoryFn<typeof DefineDiagrams> = () => {
         </MemoryRouter>
       </FeatureFlagProvider>
     </Provider>
-  );
+  ),
 };

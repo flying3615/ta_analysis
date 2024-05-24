@@ -17,6 +17,8 @@ export default {
   },
 } as Meta<typeof SidePanel>;
 
+type Story = StoryObj<typeof SidePanel>;
+
 const Template = (props: SidePanelProps) => {
   return (
     <div style={{ width: "100vw", height: "100vh", display: "flex" }}>
@@ -30,7 +32,7 @@ const Template = (props: SidePanelProps) => {
   );
 };
 
-export const Default: StoryObj<typeof SidePanel> = {
+export const Default: Story = {
   render: Template,
   args: {
     align: "left",
@@ -39,7 +41,7 @@ export const Default: StoryObj<typeof SidePanel> = {
   },
 };
 
-export const Closed: StoryObj<typeof SidePanel> = {
+export const Closed: Story = {
   render: Template,
   args: {
     align: "left",
@@ -48,7 +50,7 @@ export const Closed: StoryObj<typeof SidePanel> = {
   },
 };
 
-export const RightAligned: StoryObj<typeof SidePanel> = {
+export const RightAligned: Story = {
   render: Template,
   args: {
     align: "right",
