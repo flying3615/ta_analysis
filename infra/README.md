@@ -35,3 +35,7 @@ Each environment (nonprod/preprod/prod) has its own S3 stack and deployment IAM 
 
 - Login: `aws-azure-login --mode gui --profile step-survey-prod`
 - Deploy the api stack: `npx cdk deploy landonline-survey-plangen-fe-prod --region ap-southeast-2 --profile step-survey-prod`
+
+## Environment Secrets
+
+[See here](./templates/README.md) for docs about environment secrets.
