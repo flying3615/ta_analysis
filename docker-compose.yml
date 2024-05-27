@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-   frontend:
+  frontend:
     container_name: frontend
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
@@ -14,128 +14,146 @@ services:
       timeout: 5s
       retries: 5
 
-   informix-db:
-     container_name: informix-db
-     extra_hosts:
-       - "host.docker.internal:host-gateway"
-     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/landonline-dev-db:latest"
-     ports:
-       - "9088:9088"
-     healthcheck:
-       test:
-         [
-           "CMD-SHELL",
-           "STARTED=$$(grep -r \"<EOM>OK\" /opt/ifx/informix/tmp/startup.informix | wc -l);  if [ $$STARTED -gt 0 ]; then echo 0; else echo 1; fi"
-         ]
-       interval: 30s
-       timeout: 10s
-       retries: 3
-     volumes:
-       - informix-db-data:/opt/ifx/data
+  informix-db:
+    container_name: informix-db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/landonline-dev-db:latest"
+    ports:
+      - "9088:9088"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "STARTED=$$(grep -r \"<EOM>OK\" /opt/ifx/informix/tmp/startup.informix | wc -l);  if [ $$STARTED -gt 0 ]; then echo 0; else echo 1; fi"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - informix-db-data:/opt/ifx/data
 
-   auth-db:
-     container_name: auth-db
-     image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth-db'
-     ports:
-       - '5432:5432'
-     user: postgres
-     healthcheck:
-       test: [ 'CMD', 'pg_isready' ]
-       interval: 10s
-       timeout: 5s
-       retries: 5
+  geoserver:
+    container_name: geoserver
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/landonline-geoserver:latest"
+    ports:
+      - "14005:8080"
+    extra_hosts:
+      - "informix:host-gateway"
+    environment:
+      DB_CONNECTION_STRING: >
+        ${DB_CONNECTION_STRING:-jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix};OPTOFC=1;IFX_LOCK_MODE_WAIT=5
+      DB_USERNAME: ${DB_USERNAME:-informix}
+      DB_PASSWORD: ${DB_PASSWORD:-in4mix}
+      NEW_RELIC_AGENT_ENABLED: "false"
+    depends_on:
+      informix-db:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/geoserver/wms?service=wms&version=1.1.1&request=GetCapabilities
+      interval: 12s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
 
-   keycloak:
-     container_name: auth-keycloak
-     extra_hosts:
-       - "host.docker.internal:host-gateway"
-     image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth'
-     # this is to make the logs easier to read in local development
-     command: [ '--log-console-output=default' ]
-     # command: ['--log-console-output=default', '--debug'] # replace above command to debug keycloak
-     ports:
-       - '8083:8080'
-       #- '5005:5005' # uncomment this to debug keycloak
-     env_file: .env
-     environment:
-       KC_HOSTNAME: "${HOSTNAME}"
-       KC_HOSTNAME_STRICT_HTTPS: "false"
-       KC_PROXY: "edge"
-       KC_HOSTNAME_PORT: 8083
-       KC_DB_URL: "jdbc:postgresql://auth-db:5432/keycloak?currentSchema=keycloak"
-       KC_DB_USERNAME: "keycloak"
-       KC_DB_PASSWORD: "password"
-       NEW_RELIC_APP_NAME: "keycloak"
-       LOCAL_SECRET_CONFIG: >
-         {
-         "auth.defaults.userIdSecretKey": "thisisasecretkey",
-         "auth.defaults.informix.url": "jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=2U;IFX_LO_READONLY=1",
-         "auth.defaults.informix.username": "informix",
-         "auth.defaults.informix.password": "in4mix",
-         "auth.defaults.informix.max-connections": "5" 
-         }
-     depends_on:
-       informix-db:
-         condition: service_healthy
-     healthcheck:
-       test: ">/dev/tcp/127.0.0.1/8080"
-       interval: 10s
-       timeout: 5s
-       retries: 5
+  auth-db:
+    container_name: auth-db
+    image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth-db'
+    ports:
+      - '5432:5432'
+    user: postgres
+    healthcheck:
+      test: [ 'CMD', 'pg_isready' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-   authz:
-     container_name: auth-authz
-     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-user-authorisation-api:latest"
-     ports:
-       - "8082:8080"
-     environment:
-       OIDC_ISSUER_URL: http://${HOSTNAME}:8083/realms/landonline
-       OIDC_JWKS_URI: http://keycloak:8080/realms/landonline/protocol/openid-connect/certs
-       DB_CONNECTION_STRING: jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5
-       DB_USERNAME: informix
-       DB_PASSWORD: in4mix
-       BYPASS_CACHE: true
-       SPRING_APPLICATION_JSON: >
-         {
-         "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}}
-         }
-     depends_on:
-       keycloak:
-         condition: service_healthy
-     healthcheck:
-       test: wget --spider http://localhost:8080/actuator/health
-       interval: 10s
-       timeout: 5s
-       retries: 5
+  keycloak:
+    container_name: auth-keycloak
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: '725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-auth'
+    # this is to make the logs easier to read in local development
+    command: [ '--log-console-output=default' ]
+    # command: ['--log-console-output=default', '--debug'] # replace above command to debug keycloak
+    ports:
+      - '8083:8080'
+      #- '5005:5005' # uncomment this to debug keycloak
+    env_file: .env
+    environment:
+      KC_HOSTNAME: "${HOSTNAME}"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_PROXY: "edge"
+      KC_HOSTNAME_PORT: 8083
+      KC_DB_URL: "jdbc:postgresql://auth-db:5432/keycloak?currentSchema=keycloak"
+      KC_DB_USERNAME: "keycloak"
+      KC_DB_PASSWORD: "password"
+      NEW_RELIC_APP_NAME: "keycloak"
+      LOCAL_SECRET_CONFIG: >
+        { "auth.defaults.userIdSecretKey": "thisisasecretkey", "auth.defaults.informix.url": "jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=2U;IFX_LO_READONLY=1", "auth.defaults.informix.username": "informix", "auth.defaults.informix.password": "in4mix", "auth.defaults.informix.max-connections": "5"  }
+    depends_on:
+      informix-db:
+        condition: service_healthy
+    healthcheck:
+      test: ">/dev/tcp/127.0.0.1/8080"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-   backend:
-     container_name: backend
-     extra_hosts:
-       - "host.docker.internal:host-gateway"
-       - "${HOSTNAME}:host-gateway"
-     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
-     environment:
-       DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;IFX_LOCK_MODE_WAIT=15;IFX_ISOLATION_LEVEL=5U
-       DB_USERNAME: informix
-       DB_PASSWORD: in4mix
-       DB_POOL_SIZE_MAX: ${DB_POOL_SIZE_MAX:-30}
-       USER_ID_SECRET_KEY: local
-       SPRING_PROFILES_ACTIVE: local
-       SPLIT_ENV_API_KEY_SDK: localhost
-       OIDC_ISSUER_URL: "http://$HOSTNAME:8083/realms/landonline"
-       AUTHZ_BASE_URL: "http://$HOSTNAME:8082"
-       CLIENT_ID: survey-plangen-service
-       CLIENT_SECRET: localclientsecret
-     ports:
-       - "12065:8080"
-     depends_on:
-       authz:
-          condition: service_healthy
-     healthcheck:
-       test: wget --spider http://localhost:8080/plan-generation/api/health
-       interval: 10s
-       timeout: 5s
-       retries: 5
+  authz:
+    container_name: auth-authz
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/landonline-user-authorisation-api:latest"
+    ports:
+      - "8082:8080"
+    environment:
+      OIDC_ISSUER_URL: http://${HOSTNAME}:8083/realms/landonline
+      OIDC_JWKS_URI: http://keycloak:8080/realms/landonline/protocol/openid-connect/certs
+      DB_CONNECTION_STRING: jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5
+      DB_USERNAME: informix
+      DB_PASSWORD: in4mix
+      BYPASS_CACHE: true
+      SPRING_APPLICATION_JSON: >
+        { "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}} }
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: wget --spider http://localhost:8080/actuator/health
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    container_name: backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "${HOSTNAME}:host-gateway"
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
+    environment:
+      DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;IFX_LOCK_MODE_WAIT=15;IFX_ISOLATION_LEVEL=5U
+      DB_USERNAME: informix
+      DB_PASSWORD: in4mix
+      DB_POOL_SIZE_MAX: ${DB_POOL_SIZE_MAX:-30}
+      USER_ID_SECRET_KEY: local
+      SPRING_PROFILES_ACTIVE: local
+      SPLIT_ENV_API_KEY_SDK: localhost
+      OIDC_ISSUER_URL: "http://$HOSTNAME:8083/realms/landonline"
+      AUTHZ_BASE_URL: "http://$HOSTNAME:8082"
+      CLIENT_ID: survey-plangen-service
+      CLIENT_SECRET: localclientsecret
+      GEOSERVER_URL: "http://$HOSTNAME:14005/geoserver"
+    ports:
+      - "12065:8080"
+    depends_on:
+      authz:
+        condition: service_healthy
+      geoserver:
+        condition: service_healthy
+    healthcheck:
+      test: wget --spider http://localhost:8080/plan-generation/api/health
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   informix-db-data:
