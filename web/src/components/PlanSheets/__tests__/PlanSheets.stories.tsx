@@ -27,7 +27,7 @@ export const Default: Story = {
 };
 
 export const SmallViewport: Story = {
-  render: () => <PlanSheetsTemplate />,
+  ...Default,
   parameters: {
     viewport: {
       defaultViewport: "tablet",
@@ -37,13 +37,7 @@ export const SmallViewport: Story = {
 };
 
 export const DiagramsPanelClosed: Story = {
-  render: () => <PlanSheetsTemplate />,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
+  ...SmallViewport,
 };
 DiagramsPanelClosed.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);

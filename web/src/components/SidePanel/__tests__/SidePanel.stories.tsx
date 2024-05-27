@@ -33,7 +33,7 @@ const Template = (props: SidePanelProps) => {
 };
 
 export const Default: Story = {
-  render: Template,
+  render: (args) => <Template {...args} />,
   args: {
     align: "left",
     isOpen: true,
@@ -42,7 +42,7 @@ export const Default: Story = {
 };
 
 export const Closed: Story = {
-  render: Template,
+  ...Default,
   args: {
     align: "left",
     isOpen: false,
@@ -51,7 +51,7 @@ export const Closed: Story = {
 };
 
 export const RightAligned: Story = {
-  render: Template,
+  ...Default,
   args: {
     align: "right",
     isOpen: true,
