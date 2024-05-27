@@ -11,7 +11,8 @@ export default {
   },
 } as Meta<typeof Footer>;
 
-export const Default: StoryObj<typeof Footer> = {
+type Story = StoryObj<typeof Footer>;
+export const Default: Story = {
   render: (args) => (
     <div style={{ height: "100vh" }}>
       <Footer>{args.content}</Footer>

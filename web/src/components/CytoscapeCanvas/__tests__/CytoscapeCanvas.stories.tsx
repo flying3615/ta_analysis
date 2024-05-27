@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import CytoscapeCanvas from "../CytoscapeCanvas";
 
 export default {
@@ -6,10 +6,12 @@ export default {
   component: CytoscapeCanvas,
 } as Meta<typeof CytoscapeCanvas>;
 
-export const Default: StoryFn<typeof CytoscapeCanvas> = () => {
-  return (
+type Story = StoryObj<typeof CytoscapeCanvas>;
+
+export const Default: Story = {
+  render: () => (
     <div style={{ height: "100vh" }}>
       <CytoscapeCanvas />
     </div>
-  );
+  ),
 };
