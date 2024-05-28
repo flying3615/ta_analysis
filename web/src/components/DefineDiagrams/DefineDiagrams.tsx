@@ -1,7 +1,7 @@
 import "./DefineDiagrams.scss";
 
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
-import { linzMLBasemapLayer, marksLayer, parcelsLayer } from "@/components/DefineDiagrams/MapLayers";
+import { linzMLBasemapLayer, marksLayer, parcelsLayer, vectorsLayer } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,6 +10,7 @@ import {
   getError,
   getMarksForOpenlayers,
   getParcelsForOpenlayers,
+  getVectorsForOpenLayers,
   isFetching,
 } from "@/redux/survey-features/surveyFeaturesSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
@@ -38,6 +39,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const error = useAppSelector((state) => getError(state));
   const marks = useAppSelector((state) => getMarksForOpenlayers(state));
   const parcels = useAppSelector((state) => getParcelsForOpenlayers(state));
+  const vectors = useAppSelector((state) => getVectorsForOpenLayers(state));
 
   useEffect(() => {
     transactionId && dispatch(fetchFeatures(parseInt(transactionId)));
@@ -59,7 +61,12 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
             }}
             bufferFactor={1.2}
             mock={mock}
-            layers={[linzMLBasemapLayer(maxZoom), parcelsLayer(parcels, maxZoom), marksLayer(marks, maxZoom)]}
+            layers={[
+              linzMLBasemapLayer(maxZoom),
+              parcelsLayer(parcels, maxZoom),
+              marksLayer(marks, maxZoom),
+              vectorsLayer(vectors, maxZoom),
+            ]}
           />
         )}
         {children}

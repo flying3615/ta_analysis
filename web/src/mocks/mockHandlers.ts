@@ -1,6 +1,7 @@
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import { MarksBuilder } from "@/mocks/data/MarksBuilder";
 import { ParcelsBuilder } from "@/mocks/data/ParcelsBuilder";
+import { VectorsBuilder } from "@/test-utils/VectorsBuilder.ts";
 
 export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   // added $ in regex to force exact match for transaction id
@@ -30,6 +31,18 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
         ],
         nonPrimaryParcels: [ParcelsBuilder.nonPrimaryParcel().build()],
         centreLineParcels: [ParcelsBuilder.centreLineParcel().build()],
+        parcelDimensionVectors: [
+          VectorsBuilder.parcelDimensionVectorNonPrimary(1, 1).build(),
+          VectorsBuilder.parcelDimensionVectorPrimary(2, 2).build(),
+        ],
+        nonBoundaryVectors: [
+          VectorsBuilder.nonBoundaryPseudo(1, 1).build(),
+          VectorsBuilder.nonBoundaryCalculated(2, 2).build(),
+          VectorsBuilder.nonBoundaryMeasured(3, 2).build(),
+          VectorsBuilder.nonBoundaryAdopted(4, 3).build(),
+          VectorsBuilder.nonBoundaryReinstatedAdopted(5, 4).build(),
+          VectorsBuilder.nonBoundaryReinstatedCalculated(6, 5).build(),
+        ],
       }),
     ),
   ),

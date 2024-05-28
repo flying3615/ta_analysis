@@ -1,8 +1,10 @@
 import {
   IInflightParcels,
   IMarks,
+  IObservation,
   ResponseError,
   SurveyFeaturesControllerApi,
+  SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 import { SerializedError, createSelector } from "@reduxjs/toolkit";
 import { planGenApiConfig } from "@/redux/apiConfig";
@@ -15,6 +17,8 @@ export interface SurveyFeaturesState {
   primaryParcels: IInflightParcels[];
   nonPrimaryParcels: IInflightParcels[];
   centreLineParcels: IInflightParcels[];
+  parcelDimensionVectors: IObservation[];
+  nonBoundaryVectors: IObservation[];
   error?: SerializedError;
 }
 
@@ -24,6 +28,8 @@ const initialState: SurveyFeaturesState = {
   primaryParcels: [],
   nonPrimaryParcels: [],
   centreLineParcels: [],
+  parcelDimensionVectors: [],
+  nonBoundaryVectors: [],
   error: undefined,
 };
 
@@ -34,9 +40,9 @@ export const surveyFeaturesSlice = createAppSlice({
     fetchFeatures: create.asyncThunk(
       async (transactionId: number, { rejectWithValue }) => {
         try {
-          const client = new SurveyFeaturesControllerApi(planGenApiConfig());
-          const res = await client.getSurveyFeatures({ transactionId });
-          return res;
+          const client: SurveyFeaturesControllerApi = new SurveyFeaturesControllerApi(planGenApiConfig());
+          const respose: SurveyFeaturesResponseDTO = await client.getSurveyFeatures({ transactionId });
+          return respose;
         } catch (err) {
           const errResponse = err as ResponseError;
           const errResponseJson = await errResponse.response.json();
@@ -53,13 +59,22 @@ export const surveyFeaturesSlice = createAppSlice({
           state.isFetching = true;
         },
         fulfilled: (state, action) => {
-          const { marks, primaryParcels, nonPrimaryParcels, centreLineParcels } = action.payload;
+          const {
+            marks,
+            primaryParcels,
+            nonPrimaryParcels,
+            centreLineParcels,
+            parcelDimensionVectors,
+            nonBoundaryVectors,
+          } = action.payload;
 
           state.isFetching = false;
           state.marks = marks;
           state.primaryParcels = primaryParcels;
           state.nonPrimaryParcels = nonPrimaryParcels;
           state.centreLineParcels = centreLineParcels;
+          state.parcelDimensionVectors = parcelDimensionVectors ?? [];
+          state.nonBoundaryVectors = nonBoundaryVectors ?? [];
         },
         rejected: (state, action) => {
           state.isFetching = false;
@@ -88,6 +103,27 @@ export const surveyFeaturesSlice = createAppSlice({
             }) as IFeatureSource,
         ),
     ),
+    getVectorsForOpenLayers: createSelector(
+      [
+        (state: SurveyFeaturesState) => state.parcelDimensionVectors,
+        (state: SurveyFeaturesState) => state.nonBoundaryVectors,
+      ],
+      (parcelDimension, nonBoundary: IObservation[]) => {
+        return [...parcelDimension, ...nonBoundary].map(
+          (o) =>
+            ({
+              id: o.id,
+              transactionId: o.transactionId,
+              surveyClass: o.properties.surveyClass,
+              isParcelDimensionVector: o.properties.primary === "Y" || o.properties.nonPrimary === "Y",
+              isNonBoundaryVector: o.properties.traverse === "Y",
+              shape: {
+                geometry: o.geometry,
+              },
+            }) as IFeatureSource,
+        );
+      },
+    ),
 
     getParcelsForOpenlayers: createSelector(
       [
@@ -112,4 +148,5 @@ export const surveyFeaturesSlice = createAppSlice({
 });
 
 export const { fetchFeatures } = surveyFeaturesSlice.actions;
-export const { isFetching, getError, getMarksForOpenlayers, getParcelsForOpenlayers } = surveyFeaturesSlice.selectors;
+export const { isFetching, getError, getMarksForOpenlayers, getParcelsForOpenlayers, getVectorsForOpenLayers } =
+  surveyFeaturesSlice.selectors;

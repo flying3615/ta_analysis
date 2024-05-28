@@ -1,14 +1,16 @@
 import { setupStore } from "@/redux/store";
 import {
-  SurveyFeaturesState,
   fetchFeatures,
   getError,
   getMarksForOpenlayers,
   getParcelsForOpenlayers,
+  getVectorsForOpenLayers,
   isFetching,
   surveyFeaturesSlice,
+  SurveyFeaturesState,
 } from "@/redux/survey-features/surveyFeaturesSlice";
 import { waitFor } from "@testing-library/react";
+import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
 
 describe("surveyFeaturesSlice", () => {
   const initialState: SurveyFeaturesState = {
@@ -17,6 +19,8 @@ describe("surveyFeaturesSlice", () => {
     primaryParcels: [],
     nonPrimaryParcels: [],
     centreLineParcels: [],
+    nonBoundaryVectors: [],
+    parcelDimensionVectors: [],
     error: undefined,
   };
 
@@ -33,6 +37,8 @@ describe("surveyFeaturesSlice", () => {
       primaryParcels: [],
       nonPrimaryParcels: [],
       centreLineParcels: [],
+      nonBoundaryVectors: [],
+      parcelDimensionVectors: [],
       error: undefined,
     });
   });
@@ -82,6 +88,25 @@ describe("surveyFeaturesSlice", () => {
               [170.970892, -45.0684145495496],
               [170.970892, -45.068865],
             ],
+          ],
+        },
+      },
+    });
+
+    const vectors = getVectorsForOpenLayers(store.getState());
+    expect(vectors).toHaveLength(8);
+    expect(vectors[0]).toStrictEqual({
+      id: 1,
+      transactionId: 1,
+      surveyClass: ObservationElementSurveyedClassCode.PSED,
+      isParcelDimensionVector: true,
+      isNonBoundaryVector: false,
+      shape: {
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [170.970892, -45.0675136486486],
+            [170.972693801802, -45.0684145495496],
           ],
         },
       },

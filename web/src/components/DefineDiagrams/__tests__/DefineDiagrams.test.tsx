@@ -1,7 +1,12 @@
 import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
-import { BASEMAP_LAYER_NAME, MARKS_LAYER_NAME, PARCELS_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
+import {
+  BASEMAP_LAYER_NAME,
+  MARKS_LAYER_NAME,
+  PARCELS_LAYER_NAME,
+  VECTORS_LAYER_NAME,
+} from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
 
@@ -84,6 +89,8 @@ describe("DefineDiagrams", () => {
         primaryParcels: [],
         nonPrimaryParcels: [],
         centreLineParcels: [],
+        nonBoundaryVectors: [],
+        parcelDimensionVectors: [],
         error: undefined,
       },
     } as Partial<RootState>;
@@ -97,5 +104,24 @@ describe("DefineDiagrams", () => {
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
     expect(screen.queryByText("Sorry, there was an error")).not.toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
+  });
+
+  it("should show vectors on the map", async () => {
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+    // openlayers map and it's layers should render
+    const mockMap = getMockMap();
+    await waitFor(() => {
+      expect(mockMap).toHaveLayer(VECTORS_LAYER_NAME, LayerType.VECTOR);
+    });
+
+    // validate vectors visible
+    const vectorLayerState = mockMap.layerState[VECTORS_LAYER_NAME];
+    await waitFor(() => expect(vectorLayerState?.visible).toBeTruthy());
+    await waitFor(() => expect(vectorLayerState).toHaveFeatureCount(8));
+    expect(vectorLayerState).toHaveFeature(1);
   });
 });

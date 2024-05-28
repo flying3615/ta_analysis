@@ -64,7 +64,7 @@ export class MarksBuilder {
       .withSymbolCode(6)
       .withCoordinates([170.971792900901, -45.0684145495496]);
   }
-
+  //Boundary post New / adopted
   static postAdoptedNewMark(): MarksBuilder {
     return new MarksBuilder()
       .withId(7)
@@ -74,6 +74,7 @@ export class MarksBuilder {
       .withCoordinates([170.972693801802, -45.0684145495496]);
   }
 
+  //Boundary post Old
   static postOtherMark(): MarksBuilder {
     return new MarksBuilder()
       .withId(8)
