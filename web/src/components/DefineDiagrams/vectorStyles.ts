@@ -12,7 +12,6 @@ export const VectorColors = {
 
 export const VectorLineDashes = {
   [ObservationElementSurveyedClassCode.MEAS]: [5, 5],
-  [ObservationElementSurveyedClassCode.CALC]: [1, 3],
   [ObservationElementSurveyedClassCode.PSED]: [8, 4],
 };
 
@@ -31,7 +30,7 @@ export const measStyle = baseStroke(
   VectorColors.colorOrange,
   VectorLineDashes[ObservationElementSurveyedClassCode.MEAS],
 );
-export const calcStyle = baseStroke(undefined, undefined, VectorLineDashes[ObservationElementSurveyedClassCode.CALC]);
+export const calcStyle = baseStroke();
 export const adptStyle = baseStroke();
 export const reiStyle = baseStroke(3);
 export const defaultStyle = baseStroke(
