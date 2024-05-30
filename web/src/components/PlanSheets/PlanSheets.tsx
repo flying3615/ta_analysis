@@ -1,23 +1,50 @@
 import "./PlanSheets.scss";
 import Header from "@/components/Header/Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Footer from "@/components/Footer/Footer";
-import { LuiButton, LuiIcon } from "@linzjs/lui";
+import { LuiButton, LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
 import { luiColors } from "@/constants";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import {
+  fetchPlan,
+  getDiagrams,
+  getEdgeDataForPage,
+  getNodeDataForPage,
+  isPlanFetching,
+  getPlanError,
+} from "@/redux/plan/planSlice.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 
 const PlanSheets = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
+
+  const nodeData = useAppSelector((state) => getNodeDataForPage(state, 1));
+  const edgeData = useAppSelector((state) => getEdgeDataForPage(state, 1));
+  const diagrams = useAppSelector((state) => getDiagrams(state));
+  const planDataIsFetching = useAppSelector((state) => isPlanFetching(state));
+  const planDataError = useAppSelector((state) => getPlanError(state));
+
+  if (!transactionId) {
+    throw new Error("Transaction ID is missing");
+  }
+
+  useEffect(() => {
+    dispatch(fetchPlan(parseInt(transactionId)));
+  }, [dispatch, transactionId]);
+
+  if (planDataIsFetching) return <LuiLoadingSpinner />;
 
   return (
     <>
+      {planDataError && <p>Error fetching plan data</p>}
       <Header onNavigate={navigate} transactionId={transactionId} view="Sheets" />
       <div className="PlanSheets">
-        <CytoscapeCanvas />
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
           <div className="PlanSheetsDiagramOptions">
             <div className="PlanSheetsDiagramOptions-heading">
@@ -26,6 +53,7 @@ const PlanSheets = () => {
             </div>
           </div>
         </SidePanel>
+        <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={diagrams} />
       </div>
       <Footer>
         <LuiButton

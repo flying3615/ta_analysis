@@ -1,5 +1,6 @@
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import { MarksBuilder } from "@/mocks/data/MarksBuilder";
+import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { ParcelsBuilder } from "@/mocks/data/ParcelsBuilder";
 import { VectorsBuilder } from "@/test-utils/VectorsBuilder.ts";
 
@@ -47,8 +48,13 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
     ),
   ),
 
-  // 404 case
+  rest.get(/\/plan\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json(mockPlanData))),
+
+  // 404 cases
   rest.get(/\/survey-features\/404/, (_, res, ctx) =>
+    res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),
+  ),
+  rest.get(/\/plan\/404/, (_, res, ctx) =>
     res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),
   ),
 ];

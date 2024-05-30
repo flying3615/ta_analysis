@@ -72,7 +72,7 @@ module.exports = {
       },
     },
     {
-      files: ["**/*.test.*", "**/*.stories.*"],
+      files: ["**/*.test.*", "**/*.stories.*", ".storybook/**"],
       rules: {
         "no-console": "off",
         "no-restricted-imports": [

@@ -6,6 +6,9 @@ import { sleep } from "@/test-utils/storybook-utils";
 
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
+import { Provider } from "react-redux";
+import { store } from "@/redux/store.ts";
+import { Route, Routes } from "react-router";
 
 export default {
   title: "PlanSheets",
@@ -16,9 +19,13 @@ type Story = StoryObj<typeof PlanSheets>;
 
 const PlanSheetsTemplate = () => {
   return (
-    <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/12345"]}>
-      <PlanSheets />
-    </MemoryRouter>
+    <Provider store={store}>
+      <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/123"]}>
+        <Routes>
+          <Route path="/plan-generation/layout-plan-sheets/:transactionId" element={<PlanSheets />}></Route>
+        </Routes>
+      </MemoryRouter>
+    </Provider>
   );
 };
 

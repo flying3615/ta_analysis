@@ -1,7 +1,8 @@
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
 import { surveyFeaturesSlice } from "@/redux/survey-features/surveyFeaturesSlice";
+import { planSlice } from "@/redux/plan/planSlice.ts";
 
-const rootReducer = combineSlices(surveyFeaturesSlice);
+const rootReducer = combineSlices(surveyFeaturesSlice, planSlice);
 
 export type RootState = ReturnType<typeof rootReducer>;
 

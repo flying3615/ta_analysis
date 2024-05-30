@@ -38,6 +38,17 @@ export async function renderInit() {
 }
 
 async function renderApp() {
+  const mode = import.meta.env.MODE.toLowerCase();
+  if (mode === "mock") {
+    // This should not happen, possibly a bug in vite that it serves the
+    // env before the env.mock, causing us to rerender different
+    // trees.
+    // In https://toitutewhenua.atlassian.net/browse/SJ-1353
+    // this code/file gets removed/replaced.
+    console.warn("ordinary main called in mock mode");
+    return;
+  }
+
   await renderInit();
   const container = document.getElementById("root");
   createRoot(container!).render(
