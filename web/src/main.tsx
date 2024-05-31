@@ -41,11 +41,8 @@ async function renderApp() {
   const mode = import.meta.env.MODE.toLowerCase();
   if (mode === "mock") {
     // This should not happen, possibly a bug in vite that it serves the
-    // env before the env.mock, causing us to rerender different
-    // trees.
-    // In https://toitutewhenua.atlassian.net/browse/SJ-1353
-    // this code/file gets removed/replaced.
-    console.warn("ordinary main called in mock mode");
+    // env before the env.mock, causing us to rerender different trees.
+    console.warn("main.tsx loaded instead of mainMocked.tsx despite being in mock mode");
     return;
   }
 
