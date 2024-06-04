@@ -40,6 +40,10 @@ type Story = StoryObj<typeof DefineDiagramsWrapper>;
 export const Default: Story = {
   render: DefineDiagramsWrapper,
   parameters: {
+    backgrounds: {
+      default: "ocean",
+      values: [{ name: "ocean", value: "#90e9ff" }],
+    },
     msw: {
       handlers: [
         ...handlers,
@@ -76,6 +80,10 @@ export const Default: Story = {
 
 export const UnderlyingLayers: Story = {
   ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
   args: {
     transactionId: "456",
   },
