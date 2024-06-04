@@ -1,7 +1,13 @@
 import "./DefineDiagrams.scss";
 
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
-import { linzMLBasemapLayer, marksLayer, parcelsLayer, vectorsLayer } from "@/components/DefineDiagrams/MapLayers.ts";
+import {
+  linzMLBasemapLayer,
+  marksLayer,
+  parcelsLayer,
+  vectorsLayer,
+  underlyingParcelsLayer,
+} from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
 import { useNavigate, useParams } from "react-router-dom";
@@ -63,10 +69,12 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
             mock={mock}
             layers={[
               linzMLBasemapLayer(maxZoom),
+              underlyingParcelsLayer(maxZoom),
               parcelsLayer(parcels, maxZoom),
               marksLayer(marks, maxZoom),
               vectorsLayer(vectors, maxZoom),
             ]}
+            useLoadingIndicator={true}
           />
         )}
         {children}

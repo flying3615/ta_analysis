@@ -1,3 +1,5 @@
+import { MapColors } from "./mapColors";
+
 /**
  * Helpers to generate SVG strings for `square`, `cross` and `circle` shapes
  */
@@ -7,7 +9,12 @@ const centreOffset = (length: number) => Math.round((length - 2) / 2.0);
 const makeStyle = (fillColor: string, strokeColor: string, strokeWidth = 1) =>
   `style="fill: ${fillColor}; stroke: ${strokeColor}; stroke-width: ${strokeWidth}px"`;
 
-export const svgSquare = (boxSideLength = 25, sideLength = 16, strokeColor = "black", fillColor = "white") => {
+export const svgSquare = (
+  boxSideLength = 25,
+  sideLength = 16,
+  strokeColor = MapColors.black,
+  fillColor = MapColors.white,
+) => {
   const startP = Math.round(centreOffset(boxSideLength) - sideLength / 2.0);
 
   return `
@@ -20,7 +27,12 @@ export const svgSquare = (boxSideLength = 25, sideLength = 16, strokeColor = "bl
     />`;
 };
 
-export const svgCross = (boxSideLength = 25, sideLength = 16, strokeColor = "black", fillColor = "white") => {
+export const svgCross = (
+  boxSideLength = 25,
+  sideLength = 16,
+  strokeColor = MapColors.black,
+  fillColor = MapColors.white,
+) => {
   const centre = centreOffset(boxSideLength);
   const startP = Math.round(centre - sideLength / 2.0);
   const endP = Math.round(centre + sideLength / 2.0);
@@ -44,7 +56,12 @@ export const svgCross = (boxSideLength = 25, sideLength = 16, strokeColor = "bla
   `;
 };
 
-export const svgCircle = (boxSideLength = 25, radius: number, strokeColor = "black", fillColor = "white") => `
+export const svgCircle = (
+  boxSideLength = 25,
+  radius: number,
+  strokeColor = MapColors.black,
+  fillColor = MapColors.white,
+) => `
   <circle
     cx="${centreOffset(boxSideLength)}"
     cy="${centreOffset(boxSideLength)}"
@@ -52,7 +69,12 @@ export const svgCircle = (boxSideLength = 25, radius: number, strokeColor = "bla
     ${makeStyle(fillColor, strokeColor)}
   />`;
 
-export const svgTriangle = (boxSideLength = 25, sideLength: number, strokeColor = "black", fillColor = "white") => {
+export const svgTriangle = (
+  boxSideLength = 25,
+  sideLength: number,
+  strokeColor = MapColors.black,
+  fillColor = MapColors.white,
+) => {
   const offset = centreOffset(boxSideLength) - sideLength / 2;
   const height = Math.round((sideLength * Math.sqrt(3) * 100) / 2) / 100;
   const points = [

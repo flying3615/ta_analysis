@@ -1,10 +1,10 @@
 import { Fill, Stroke, Style } from "ol/style";
 import { FeatureLike } from "ol/Feature";
 import { StyleContext } from "@linzjs/landonline-openlayers-map";
-import { COLORS } from "./mapColors";
+import { MapColors } from "./mapColors";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
 
-const createParcelStyle = (fillColor: string, strokeColor: string, strokeWidth: number, lineDash?: number) => {
+export const createParcelStyle = (fillColor: string, strokeColor: string, strokeWidth: number, lineDash?: number) => {
   return new Style({
     fill: new Fill({
       color: fillColor,
@@ -17,13 +17,13 @@ const createParcelStyle = (fillColor: string, strokeColor: string, strokeWidth: 
   });
 };
 
-const roadParcelStyle = createParcelStyle(COLORS.transparent, COLORS.midGrey, 1.5, 3);
-const hydroParcelStyle = createParcelStyle(COLORS.transparent, COLORS.midGrey, 1.5, 3);
-const primParcelStyle = createParcelStyle(COLORS.transparent, COLORS.black, 3);
+const roadParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, 3);
+const hydroParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, 3);
+const primParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 3);
 
-const nonPrimParcelStyle = createParcelStyle(COLORS.transparent, COLORS.black, 1.5);
+const nonPrimParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 1.5);
 
-const centerLineParcelStyle = createParcelStyle(COLORS.transparent, COLORS.black, 1.5);
+const centerLineParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 1.5);
 
 /**
  * From `vtParcelStyleFunction()` in `web/src/map-styles/vectorTileStyle.ts` in Survey Capture, with following changes

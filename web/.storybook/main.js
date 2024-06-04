@@ -9,7 +9,14 @@ const config = {
     "@storybook/addon-interactions",
     "@chromatic-com/storybook"
   ],
-  staticDirs:  ["../public", { from: "../public", to: "/plan-generation" }],
+  staticDirs: [
+    "../public",
+    { from: "../public", to: "/plan-generation" },
+    {
+      from: "../src/mocks/data/geotiles",
+      to: "/data/geotiles",
+    },
+  ],
   docs: {
     autodocs: false,
   },

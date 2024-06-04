@@ -3,6 +3,7 @@ import warningSvg from "@/assets/warning.svg?raw";
 import FeatureLike from "ol/Feature";
 import { Icon, Style } from "ol/style";
 import { svgCircle, svgCross, svgSquare, svgTriangle } from "./svgShapes";
+import { MapColors } from "./mapColors";
 
 const iconSize = 25;
 
@@ -49,10 +50,10 @@ function svgForSymbol(markSymbol: number): string {
       return unmarkedPoint();
     case 10:
       // PEG (new)
-      return circleSVG("white");
+      return circleSVG(MapColors.white);
     case 11:
       // PEG (other)
-      return circleSVG("black");
+      return circleSVG(MapColors.black);
     case 12:
       // Adopted CSNM
       return adoptedCadastralSurveyNetworkMarkOrVCM();
@@ -60,42 +61,43 @@ function svgForSymbol(markSymbol: number): string {
       // Old or (invalid) New CSNM
       return oldCadastralSurveyNetworkMarkOrVCM();
     default:
-      return circleSVG("red");
+      return circleSVG(MapColors.red);
   }
 }
 
 // PRM - New (PRMA or PRBD)
 export const newPRM = (): string =>
   createSVG(
-    '<circle fill="none" stroke="black" cx="12" cy="12" r="9"/>' +
-      '<circle fill="white" stroke="black" cx="12" cy="12" r="6"/>' +
-      '<circle fill="white" stroke="black" cx="12" cy="12" r="3"/>',
+    `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
+      `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
+      `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
   );
 
 // PRM - Old (PRMA or PRBD)
 export const oldPRM = (): string =>
   createSVG(
-    '<circle fill="none" stroke="black" cx="12" cy="12" r="9"/>' +
-      '<circle fill="none" stroke="black" cx="12" cy="12" r="6"/>' +
-      '<circle fill="black" stroke="black" cx="12" cy="12" r="3"/>',
+    `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
+      `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
+      `<circle fill="${MapColors.black}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
   );
 
 // POST - adopted or new
-export const postAdoptedNewMark = (): string => createSVG(svgSquare(iconSize, 8, "black", "white"));
+export const postAdoptedNewMark = (): string => createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.white));
 
 // POST - other
-export const postOtherMark = (): string => createSVG(svgSquare(iconSize, 8, "black", "black"));
+export const postOtherMark = (): string => createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.black));
 
 // UNMARKED - draw a cross
 export const unmarkedPoint = (): string => createSVG(svgCross(iconSize, 6));
 
 // Circles for PEG & unknown symbol
-export const circleSVG = (fill = "black"): string => createSVG(svgCircle(iconSize, 3, "black", fill));
+export const circleSVG = (fill = MapColors.black): string => createSVG(svgCircle(iconSize, 3, MapColors.black, fill));
 
 export const adoptedCadastralSurveyNetworkMarkOrVCM = (): string =>
-  createSVG(svgTriangle(iconSize, 12, "black", "white"));
+  createSVG(svgTriangle(iconSize, 12, MapColors.black, MapColors.white));
 
-export const oldCadastralSurveyNetworkMarkOrVCM = (): string => createSVG(svgTriangle(iconSize, 12, "black", "black"));
+export const oldCadastralSurveyNetworkMarkOrVCM = (): string =>
+  createSVG(svgTriangle(iconSize, 12, MapColors.black, MapColors.black));
 
 // this svg has an issue when using as inline data uri so we reference as a blob url
 function warningTriangle(): string {

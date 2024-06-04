@@ -3,17 +3,21 @@ import {
   LayerType,
   LolOpenLayersFeatureSourceDef,
   LolOpenLayersMapLibreSourceDef,
+  LolOpenLayersMVTSourceDef,
   LolOpenLayersTileLayerDef,
   LolOpenLayersVectorLayerDef,
+  LolOpenLayersVectorTileLayerDef,
   SourceType,
 } from "@linzjs/landonline-openlayers-map";
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
+import { underlyingParcelStyles } from "./underlyingStyles";
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
 
 export const BASEMAP_LAYER_NAME = "linz_basemap";
+export const UNDERLYING_PARCELS_LAYER_NAME = "viw_parcel_all";
 export const MARKS_LAYER_NAME = "marks";
 export const PARCELS_LAYER_NAME = "parcels";
 export const VECTORS_LAYER_NAME = "vectors";
@@ -94,4 +98,20 @@ export const vectorsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLa
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;
+};
+
+export const underlyingParcelsLayer = (maxZoom: number): LolOpenLayersVectorLayerDef => {
+  const { apiGatewayBaseUrl } = window._env_;
+  return {
+    name: UNDERLYING_PARCELS_LAYER_NAME,
+    type: LayerType.VECTOR_TILE,
+    visible: true,
+    maxResolution: 10,
+    style: underlyingParcelStyles,
+    source: {
+      type: SourceType.MVT,
+      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${UNDERLYING_PARCELS_LAYER_NAME}/{z}/{x}/{-y}`,
+      maxZoom: maxZoom > 30 ? 30 : maxZoom, // maximum Level for Tile Matrix Set of EPSG:900913
+    } as LolOpenLayersMVTSourceDef,
+  } as LolOpenLayersVectorTileLayerDef;
 };

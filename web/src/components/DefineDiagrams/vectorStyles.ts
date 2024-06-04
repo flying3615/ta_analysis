@@ -2,13 +2,7 @@ import FeatureLike from "ol/Feature";
 import { Style } from "ol/style";
 import Stroke, { Options } from "ol/style/Stroke";
 import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
-
-export const VectorColors = {
-  colorBlack: "rgb(0, 0, 0)",
-  colorBlue: "rgb(0, 144, 255)",
-  colorOrange: "rgb(235, 140, 52)",
-  colorWhite: "rgb(255,255,255)",
-};
+import { MapColors } from "./mapColors";
 
 export const VectorLineDashes = {
   [ObservationElementSurveyedClassCode.MEAS]: [5, 5],
@@ -17,7 +11,7 @@ export const VectorLineDashes = {
 
 const baseStroke: (width?: number, color?: string, lineDash?: number[]) => Options = (
   width = 1,
-  color = VectorColors.colorBlack,
+  color = MapColors.black,
   lineDash = [],
 ) => ({
   color,
@@ -27,7 +21,7 @@ const baseStroke: (width?: number, color?: string, lineDash?: number[]) => Optio
 
 export const measStyle = baseStroke(
   undefined,
-  VectorColors.colorOrange,
+  MapColors.orange,
   VectorLineDashes[ObservationElementSurveyedClassCode.MEAS],
 );
 export const calcStyle = baseStroke();
@@ -35,7 +29,7 @@ export const adptStyle = baseStroke();
 export const reiStyle = baseStroke(3);
 export const defaultStyle = baseStroke(
   undefined,
-  VectorColors.colorBlue,
+  MapColors.blue,
   VectorLineDashes[ObservationElementSurveyedClassCode.PSED],
 );
 
@@ -44,7 +38,7 @@ export const vectorStyles = (feature: FeatureLike): Style => {
   // unsure of why it is there, but to leave it as is.
   if (feature.get("isParcelDimensionVector")) {
     return new Style({
-      stroke: new Stroke(baseStroke(1, VectorColors.colorWhite)),
+      stroke: new Stroke(baseStroke(1, MapColors.white)),
     });
   }
 

@@ -6,6 +6,7 @@ import {
   MARKS_LAYER_NAME,
   PARCELS_LAYER_NAME,
   VECTORS_LAYER_NAME,
+  UNDERLYING_PARCELS_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
@@ -67,6 +68,26 @@ describe("DefineDiagrams", () => {
     await waitFor(() => expect(parcelsLayerState?.visible).toBeTruthy());
     await waitFor(() => expect(parcelsLayerState).toHaveFeatureCount(5));
     expect(parcelsLayerState).toHaveFeature(1);
+  });
+
+  it("should show underlying parcels on the map", async () => {
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+
+    // openlayers map and it's layers should render
+    const mockMap = getMockMap();
+    await waitFor(() => {
+      expect(mockMap).toHaveLayer(UNDERLYING_PARCELS_LAYER_NAME, LayerType.VECTOR_TILE);
+    });
+
+    // validate underlying parcels visible
+    const underlyingParcelsLayerState = mockMap.layerState[UNDERLYING_PARCELS_LAYER_NAME];
+    await waitFor(() => expect(underlyingParcelsLayerState?.visible).toBeTruthy());
+    await waitFor(() => expect(underlyingParcelsLayerState).toHaveFeatureCount(2));
+    expect(underlyingParcelsLayerState).toHaveFeature(1);
   });
 
   it("displays error when survey not found", async () => {

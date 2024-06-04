@@ -50,6 +50,18 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
 
   rest.get(/\/plan\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json(mockPlanData))),
 
+  // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
+  // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint
+  rest.get(/\/v1\/generate-plans\/tiles\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/, async ({ params }, res, ctx) => {
+    const [layerName, zoom, x, y] = Object.values(params);
+    const tileBuffer = await fetch(`/data/geotiles/${layerName}/${zoom}/${x}/${y}`).then((res) => res.arrayBuffer());
+    return res(
+      ctx.set("Content-Length", tileBuffer.byteLength.toString()),
+      ctx.set("Content-Type", "application/x-protobuf"),
+      ctx.body(tileBuffer),
+    );
+  }),
+
   // 404 cases
   rest.get(/\/survey-features\/404/, (_, res, ctx) =>
     res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),

@@ -6,17 +6,17 @@ import {
   defaultStyle,
   measStyle,
   reiStyle,
-  VectorColors,
   vectorStyles,
 } from "@/components/DefineDiagrams/vectorStyles.ts";
 import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+import { MapColors } from "../mapColors";
 
 const parcelDimensionVector = new Feature<Geometry>({ isParcelDimensionVector: true });
 describe("vectorStyles", () => {
   it("styles parcelDimensionVector correctly", () => {
     const style = vectorStyles(parcelDimensionVector);
     const stroke = style.getStroke();
-    expect(stroke.getColor()).toEqual(VectorColors.colorWhite);
+    expect(stroke.getColor()).toEqual(MapColors.white);
     expect(stroke.getWidth()).toBe(1);
   });
 
