@@ -23,7 +23,9 @@ export class PlanDataBuilder {
 
   addCooordinate(id: number, position: ICartesianCoords, coordType: string = "node"): PlanDataBuilder {
     if (this.planData.diagrams.length == 0) {
-      throw new Error("Diagram must be added before coordinate");
+      throw new Error(
+        "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addCoordinate()",
+      );
     }
 
     last(this.planData.diagrams)?.coordinates?.push({
@@ -42,7 +44,9 @@ export class PlanDataBuilder {
     style: string = "solid",
   ): PlanDataBuilder {
     if (this.planData.diagrams.length == 0) {
-      throw new Error("Diagram must be added before line");
+      throw new Error(
+        "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addLine()",
+      );
     }
 
     last(this.planData.diagrams)?.lines?.push({
@@ -51,6 +55,41 @@ export class PlanDataBuilder {
       lineType,
       pointWidth,
       style,
+    });
+    return this;
+  }
+
+  addLabel(
+    intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
+    id: number,
+    displayText: string,
+    position: ICartesianCoords,
+    featureId?: number,
+    featureType?: string,
+    labelType: string = "markName",
+    font: string = "Tahoma",
+    fontSize: number = 10,
+  ) {
+    if (this.planData.diagrams.length == 0) {
+      throw new Error(
+        "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addLabel()",
+      );
+    }
+
+    const into = last(this.planData.diagrams)?.[intoWhere];
+    if (!into) {
+      throw new Error(`${intoWhere} is not a label array`);
+    }
+
+    into.push({
+      id,
+      displayText,
+      position,
+      labelType,
+      font,
+      fontSize,
+      featureId,
+      featureType,
     });
     return this;
   }

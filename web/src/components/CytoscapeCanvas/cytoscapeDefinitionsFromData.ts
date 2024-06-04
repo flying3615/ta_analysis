@@ -27,6 +27,8 @@ export const nodeDefinitionsFromData = (data: INodeData[]): cytoscape.NodeDefini
         data: {
           id: nodeDataEntry.id,
           label: nodeDataEntry.label,
+          "font-family": nodeDataEntry.properties["font"],
+          "font-size": nodeDataEntry.properties["fontSize"],
           ...nodeDataEntry.properties,
         },
       };

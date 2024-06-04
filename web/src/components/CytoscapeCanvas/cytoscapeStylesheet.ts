@@ -2,9 +2,10 @@ import { Stylesheet } from "cytoscape";
 
 const cytoscapeStylesheet = [
   {
-    selector: "node[label][font][fontSize]",
+    // Node with label
+    selector: "node[label][font-family][font-size]",
     style: {
-      "background-color": "#000000",
+      "background-color": "#FFFFFF",
       label: "data(label)",
       "font-family": "data(font)",
       "font-size": "data(fontSize)",
@@ -20,6 +21,7 @@ const cytoscapeStylesheet = [
     },
   },
   {
+    // Node with no label
     selector: "node[^label]",
     style: {
       visibility: "hidden",

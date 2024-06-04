@@ -1,8 +1,26 @@
-import { IDiagram, ILine } from "@linz/survey-plan-generation-api-client";
+import { IDiagram, ILine, ILabel } from "@linz/survey-plan-generation-api-client";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
 export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
   return diagrams.flatMap((diagram, diagramIndex) => {
+    const labelToNode = (label: ILabel) => {
+      return {
+        id: label.id.toString(),
+        position: label.position,
+        label: label.displayText,
+        diagramIndex,
+        properties: {
+          labelType: label.labelType,
+          font: label.font,
+          fontSize: label.fontSize,
+          featureId: label.featureId,
+          featureType: label.featureType,
+        },
+      };
+    };
+
+    const notSymbol = (label: ILabel) => label.font !== "LOLsymbols";
+
     return [
       ...diagram.coordinates.map((coordinate) => {
         return {
@@ -14,6 +32,9 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
           },
         };
       }),
+      ...diagram.labels.filter(notSymbol).map(labelToNode),
+      ...diagram.lineLabels.filter(notSymbol).map(labelToNode),
+      ...diagram.parcelLabels.filter(notSymbol).map(labelToNode),
     ];
   });
 };

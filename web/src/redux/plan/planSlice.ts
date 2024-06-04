@@ -71,11 +71,11 @@ export const planSlice = createAppSlice({
     getPlanError: (state) => state.error,
     // Here we filter the first diagram, a future story will filter by page
     getNodeDataForPage: createSelector(
-      [(state: PlanState) => state.nodeData, (state: PlanState, pageNumber: number) => pageNumber],
+      [(state: PlanState) => state.nodeData, (_state: PlanState, pageNumber: number) => pageNumber],
       (nodeData, _pageNumber) => nodeData.filter((node) => node.diagramIndex === 0),
     ),
     getEdgeDataForPage: createSelector(
-      [(state: PlanState) => state.edgeData, (state: PlanState, pageNumber: number) => pageNumber],
+      [(state: PlanState) => state.edgeData, (_state: PlanState, pageNumber: number) => pageNumber],
       (edgeData, _pageNumber) => edgeData.filter((edge) => edge.diagramIndex == 0),
     ),
     getDiagrams: (state) => state.diagrams,

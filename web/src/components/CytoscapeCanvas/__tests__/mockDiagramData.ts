@@ -5,7 +5,7 @@ export const markNodes: INodeData[] = [
   {
     id: "n-1",
     label: "IS IX DP 7441",
-    position: { x: 1102, y: 354 },
+    position: { x: 1102, y: -354 },
     diagramIndex: 0,
     properties: {
       font: "Times New Roman",
@@ -15,7 +15,7 @@ export const markNodes: INodeData[] = [
   {
     id: "n-2",
     label: "PEG 1 DP 4061813",
-    position: { x: 864, y: 560 },
+    position: { x: 864, y: -560 },
     diagramIndex: 0,
     properties: {
       fontSize: 8,
@@ -24,7 +24,7 @@ export const markNodes: INodeData[] = [
   {
     id: "n-3",
     label: "PEG XL DP 7441",
-    position: { x: 392, y: 100 },
+    position: { x: 392, y: -100 },
     diagramIndex: 0,
     properties: {
       fontSize: 12,
@@ -33,14 +33,14 @@ export const markNodes: INodeData[] = [
   {
     id: "n-4",
     label: "PEG XLI DP 7441",
-    position: { x: 200, y: 398.99 },
+    position: { x: 200, y: -398.99 },
     diagramIndex: 0,
     properties: {},
   },
   {
     id: "n-5",
     label: "PEG XLV DP 7441",
-    position: { x: 719, y: 837 },
+    position: { x: 719, y: -837 },
     diagramIndex: 0,
     properties: {},
   },
@@ -99,13 +99,13 @@ export const lineEdges: IEdgeData[] = [
 
 export const diagrams: IDiagram[] = [
   {
-    bottomRightPoint: { x: 80, y: -90 },
+    bottomRightPoint: { x: 1500, y: -1000 },
     coordinateLabels: [],
     coordinates: [],
     labels: [],
     lineLabels: [],
     lines: [],
-    originPageOffset: { x: 0, y: 0 },
+    originPageOffset: { x: 0, y: -0 },
     parcelLabels: [],
   },
 ];
