@@ -24,10 +24,10 @@ const config = {
     environmentName: 'preprod',
     environmentType: AwsEnv.PreProduction,
   },
-  // prod: {
-  //   environmentName: 'prod',
-  //   environmentType: AwsEnv.Production,
-  // },
+  prod: {
+    environmentName: 'prod',
+    environmentType: AwsEnv.Production,
+  },
 };
 
 Object.values(config).map((values) => {
