@@ -7,10 +7,10 @@ if changed 'web/package-lock.json'; then
   echo "📦 The web package-lock.json changed. Run npm install in web folder to bring your dependencies up to date."
 fi
 
-if changed 'e2eTest/playwright/package-lock.json'; then
-  echo "📦 The PLAYWRIGHT package-lock.json changed. Run npm install in e2eTest/playwright/ to bring your testing dependencies up to date."
+if changed 'test/e2e/package-lock.json'; then
+  echo "📦 The e2e package-lock.json changed. Run npm install in e2e/test folder to bring your dependencies up to date."
 fi
 
-if changed 'e2eTest/playwright-test/package-lock.json'; then
-  echo "📦 The PLAYWRIGHT-TEST package-lock.json changed. Run npm install in e2eTest/playwright-test/ to bring your testing dependencies up to date."
+if changed 'infra/package-lock.json'; then
+  echo "📦 The infra package-lock.json changed. Run npm install in infra folder to bring your dependencies up to date."
 fi
