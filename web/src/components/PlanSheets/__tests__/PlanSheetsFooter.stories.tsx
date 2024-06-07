@@ -1,0 +1,68 @@
+import { Meta, StoryObj } from "@storybook/react";
+import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
+import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
+import { userEvent, within } from "@storybook/testing-library";
+import { expect } from "@storybook/jest";
+
+export default {
+  title: "PlanSheetsFooter",
+  component: PlanSheetsFooter,
+  argTypes: {
+    content: {
+      control: "text",
+    },
+  },
+} as Meta<typeof PlanSheetsFooter>;
+
+type Story = StoryObj<typeof PlanSheetsFooter>;
+
+const TemplatePlanSheetsFooter = () => {
+  const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
+
+  return (
+    <PlanSheetsFooter
+      diagramsPanelOpen={diagramsPanelOpen}
+      view={activeSheet}
+      setDiagramsPanelOpen={setDiagramsPanelOpen}
+      onChangeSheet={changeActiveSheet}
+    />
+  );
+};
+
+export const Default: Story = {
+  render: () => (
+    <div style={{ height: "100vh" }}>
+      <TemplatePlanSheetsFooter />
+    </div>
+  ),
+};
+
+export const SelectTitleSheetView: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByTitle("Change sheet view"));
+    await expect(await canvas.findByText("Title sheet")).toHaveAttribute("aria-disabled", "true");
+    await expect(await canvas.findByText("Survey sheet")).not.toHaveAttribute("aria-disabled");
+  },
+};
+
+export const SelectSurveySheetView: Story = {
+  ...Default,
+  render: () => (
+    <div style={{ height: "100vh" }}>
+      <TemplatePlanSheetsFooter />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByTitle("Change sheet view"));
+    await userEvent.click(await canvas.findByText("Survey sheet"));
+    await userEvent.click(await canvas.findByTitle("Change sheet view"));
+
+    await expect(await canvas.findByText("Title sheet")).not.toHaveAttribute("aria-disabled");
+    await expect(await canvas.findByText("Survey sheet")).toHaveAttribute("aria-disabled", "true");
+  },
+};

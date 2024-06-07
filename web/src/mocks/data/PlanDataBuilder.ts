@@ -7,7 +7,14 @@ export class PlanDataBuilder {
     pages: [],
   };
 
-  addDiagram(bottomRightPoint: ICartesianCoords, originPageOffset: ICartesianCoords = { x: 0, y: 0 }): PlanDataBuilder {
+  addDiagram(
+    bottomRightPoint: ICartesianCoords,
+    originPageOffset: ICartesianCoords = {
+      x: 0,
+      y: 0,
+    },
+    diagramType: "sysGenPrimaryDiag" | "sysGenNonPrimaryDiag" | "sysGenTraverseDiag" = "sysGenPrimaryDiag",
+  ): PlanDataBuilder {
     this.planData.diagrams.push({
       bottomRightPoint,
       originPageOffset,
@@ -17,6 +24,7 @@ export class PlanDataBuilder {
       parcelLabels: [],
       coordinateLabels: [],
       lineLabels: [],
+      diagramType,
     });
     return this;
   }

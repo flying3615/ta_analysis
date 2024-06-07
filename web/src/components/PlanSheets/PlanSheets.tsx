@@ -1,32 +1,35 @@
 import "./PlanSheets.scss";
 import Header from "@/components/Header/Header";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Footer from "@/components/Footer/Footer";
-import { LuiButton, LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
+import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
+import { LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
 import { luiColors } from "@/constants";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
-import {
-  fetchPlan,
-  getDiagrams,
-  getEdgeDataForPage,
-  getNodeDataForPage,
-  isPlanFetching,
-  getPlanError,
-} from "@/redux/plan/planSlice.ts";
+import { fetchPlan, getDiagrams, getPlanError, isPlanFetching } from "@/redux/plan/planSlice.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
+
+const SheetToDiagramMap: Record<PlanSheetType, string> = {
+  [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
+  [PlanSheetType.TITLE]: "sysGenPrimaryDiag",
+};
 
 const PlanSheets = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
+  const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
 
-  const nodeData = useAppSelector((state) => getNodeDataForPage(state, 1));
-  const edgeData = useAppSelector((state) => getEdgeDataForPage(state, 1));
-  const diagrams = useAppSelector((state) => getDiagrams(state));
+  const diagrams = useAppSelector((state) =>
+    getDiagrams(state).filter((d) => d.diagramType === SheetToDiagramMap[activeSheet]),
+  );
+  const nodeData = extractNodes(diagrams);
+  const edgeData = extractEdges(diagrams);
   const planDataIsFetching = useAppSelector((state) => isPlanFetching(state));
   const planDataError = useAppSelector((state) => getPlanError(state));
 
@@ -55,16 +58,12 @@ const PlanSheets = () => {
         </SidePanel>
         <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={diagrams} />
       </div>
-      <Footer>
-        <LuiButton
-          className="lui-button-icon lui-button-icon-only lui-button-tertiary"
-          title="Toggle diagrams panel"
-          buttonProps={{ "aria-pressed": diagramsPanelOpen }}
-          onClick={() => setDiagramsPanelOpen(!diagramsPanelOpen)}
-        >
-          <LuiIcon alt="Toggle diagrams icon" color={luiColors.sea} name="ic_open_diagrams" size="md" />
-        </LuiButton>
-      </Footer>
+      <PlanSheetsFooter
+        diagramsPanelOpen={diagramsPanelOpen}
+        view={activeSheet}
+        setDiagramsPanelOpen={setDiagramsPanelOpen}
+        onChangeSheet={changeActiveSheet}
+      />
     </>
   );
 };

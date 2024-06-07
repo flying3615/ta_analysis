@@ -1,11 +1,14 @@
 import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder.ts";
 
 export const mockPlanData = new PlanDataBuilder()
-  .addDiagram({
-    x: 80,
-    y: -90,
-  })
-
+  .addDiagram(
+    {
+      x: 80,
+      y: -90,
+    },
+    undefined,
+    "sysGenPrimaryDiag",
+  )
   .addCooordinate(10001, {
     x: 20,
     y: -10,
@@ -30,14 +33,6 @@ export const mockPlanData = new PlanDataBuilder()
     x: 20,
     y: -70,
   })
-  .addCooordinate(30001, {
-    x: 20,
-    y: -75,
-  })
-  .addCooordinate(30002, {
-    x: 80,
-    y: -75,
-  })
   .addCooordinate(20001, {
     x: 20,
     y: -80,
@@ -45,6 +40,14 @@ export const mockPlanData = new PlanDataBuilder()
   .addCooordinate(20002, {
     x: 80,
     y: -80,
+  })
+  .addCooordinate(30001, {
+    x: 20,
+    y: -75,
+  })
+  .addCooordinate(30002, {
+    x: 80,
+    y: -75,
   })
   .addLine(1001, [10001, 10002], 0.75, "observation", "peck1")
   .addLine(1002, [10002, 10003], 1.0, "observation", "solid")
@@ -55,11 +58,66 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(1007, [10002, 10005], 2.0, "observation", "brokenSolid1")
   .addLine(2001, [20001, 20002], 0.75, "observation", "arrow1")
   .addLine(3001, [30001, 30002], 0.75, "observation", "doubleArrow1")
-  .addLabel("labels", 10, "Label 10", { x: 55, y: -10 }, 10001, "mark", "display", "Times New Roman", 10)
-  .addLabel("lineLabels", 11, "Label 11", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
-  .addLabel("parcelLabels", 12, "Label 12", { x: 35, y: -35 }, 1, "parcel", "display", "Tahoma", 16)
-  .addDiagram({
-    x: 80,
-    y: -90,
+  .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "display", "Times New Roman", 10)
+  .addLabel("lineLabels", 12, "Label 12", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
+  .addLabel("parcelLabels", 13, "Label 13", { x: 35, y: -35 }, 1, "parcel", "display", "Tahoma", 16)
+  .addLabel(
+    "labels",
+    1,
+    "System Generated Primary Diagram",
+    { x: 50, y: -5 },
+    undefined,
+    undefined,
+    "diagram",
+    "Tahoma",
+    14.0,
+  )
+
+  .addDiagram(
+    {
+      x: 80,
+      y: -105,
+    },
+    undefined,
+    "sysGenTraverseDiag",
+  )
+  .addCooordinate(40001, {
+    x: 20,
+    y: -10,
   })
+  .addCooordinate(40002, {
+    x: 80,
+    y: -10,
+  })
+  .addCooordinate(40003, {
+    x: 80,
+    y: -70,
+  })
+  .addCooordinate(40004, {
+    x: 20,
+    y: -70,
+  })
+  .addCooordinate(40005, {
+    x: 110,
+    y: -100,
+  })
+  .addLine(1001, [40001, 40002], 1.0, "observation", "solid")
+  .addLine(1003, [40002, 40003], 1.0, "observation", "solid")
+  .addLine(1004, [40003, 40004], 1.0, "observation", "solid")
+  .addLine(1006, [40004, 40001], 1.0, "observation", "solid")
+  .addLine(1007, [40002, 40005], 1.0, "observation", "peck1")
+  .addLine(1008, [40005, 40003], 1.0, "observation", "peck1")
+  .addLabel("lineLabels", 21, "Line", { x: 85, y: -40 }, 1001, "line", "display", "Tahoma", 14)
+  .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14)
+  .addLabel(
+    "labels",
+    2,
+    "System Generated Traverse Diagram",
+    { x: 50, y: -5 },
+    undefined,
+    undefined,
+    "diagram",
+    "Tahoma",
+    14.0,
+  )
   .build();

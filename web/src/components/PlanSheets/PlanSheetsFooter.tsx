@@ -1,0 +1,59 @@
+import "./PlanSheetsFooter.scss";
+import React from "react";
+import { LuiButton, LuiIcon } from "@linzjs/lui";
+import { luiColors } from "@/constants.tsx";
+import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+
+export interface FooterProps {
+  onChangeSheet: (sheet: PlanSheetType) => () => void;
+  view: PlanSheetType;
+  diagramsPanelOpen: boolean;
+  setDiagramsPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const PlanSheetsFooter = ({
+  onChangeSheet,
+  view = PlanSheetType.TITLE,
+  diagramsPanelOpen,
+  setDiagramsPanelOpen,
+}: FooterProps) => {
+  return (
+    <footer className="PlanSheetsFooter">
+      <Menu
+        menuButton={
+          <LuiButton title="Change sheet view" className="lui-button-tertiary lui-button-icon">
+            <LuiIcon
+              alt={`${view} icon`}
+              color={luiColors.sea}
+              name={view === PlanSheetType.TITLE ? "ic_title_sheet" : "ic_survey_sheet"}
+              size="md"
+            />
+            <LuiIcon alt="Dropdown icon" color={luiColors.sea} name="ic_arrow_drop_down" size="md" />
+          </LuiButton>
+        }
+      >
+        <MenuHeader className="change-sheet-header">Change sheet view</MenuHeader>
+        <MenuItem disabled={view === PlanSheetType.TITLE} onClick={onChangeSheet(PlanSheetType.TITLE)}>
+          <LuiIcon alt={`${view} icon`} color={luiColors.sea} name="ic_title_sheet" size="md" />
+          Title sheet
+        </MenuItem>
+        <MenuItem disabled={view === PlanSheetType.SURVEY} onClick={onChangeSheet(PlanSheetType.SURVEY)}>
+          <LuiIcon alt={`${view} icon`} color={luiColors.sea} name="ic_survey_sheet" size="md" />
+          Survey sheet
+        </MenuItem>
+      </Menu>
+
+      <LuiButton
+        className="lui-button-icon lui-button-icon-only lui-button-tertiary"
+        title="Toggle diagrams panel"
+        buttonProps={{ "aria-pressed": diagramsPanelOpen }}
+        onClick={() => setDiagramsPanelOpen(!diagramsPanelOpen)}
+      >
+        <LuiIcon alt="Toggle diagrams icon" color={luiColors.sea} name="ic_open_diagrams" size="md" />
+      </LuiButton>
+    </footer>
+  );
+};
+
+export default PlanSheetsFooter;

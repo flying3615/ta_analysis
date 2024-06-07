@@ -2,7 +2,7 @@
 
 $footerHeight: 56px;
 
-.Footer {
+.PlanSheetsFooter {
   align-items: center;
   border-top: 1px solid lui.$dew;
   background-color: lui.$hint;
@@ -14,4 +14,12 @@ $footerHeight: 56px;
   padding-right: 8px;
   bottom: 0;
   position: absolute;
+
+  .change-sheet-header {
+    text-transform: lowercase;
+
+    &:first-letter {
+      text-transform: uppercase;
+    }
+  }
 }

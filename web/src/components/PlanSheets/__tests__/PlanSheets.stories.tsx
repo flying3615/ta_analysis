@@ -9,6 +9,8 @@ import "@szhsin/react-menu/dist/index.css";
 import { Provider } from "react-redux";
 import { store } from "@/redux/store.ts";
 import { Route, Routes } from "react-router";
+import { rest } from "msw";
+import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder";
 
 export default {
   title: "PlanSheets",
@@ -50,4 +52,102 @@ DiagramsPanelClosed.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   await userEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
   await sleep(2000);
+};
+
+export const SystemGeneratedPrimaryDiagram: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        rest.get(/\/plan\/123$/, (_, res, ctx) => {
+          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenPrimaryDiag")));
+        }),
+      ],
+    },
+  },
+};
+
+export const SystemGeneratedSurveyDiagram: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        rest.get(/\/plan\/123$/, (_, res, ctx) => {
+          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenTraverseDiag")));
+        }),
+      ],
+    },
+  },
+};
+SystemGeneratedSurveyDiagram.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(await canvas.findByTitle("Change sheet view"));
+  await sleep(1000);
+  await userEvent.click(await canvas.findByText("Survey sheet"));
+};
+
+export const SystemGeneratedNonPrimaryDiagram: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        rest.get(/\/plan\/123$/, (_, res, ctx) => {
+          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenNonPrimaryDiag")));
+        }),
+      ],
+    },
+  },
+};
+
+const planData = (
+  diagramType: "sysGenTraverseDiag" | "sysGenPrimaryDiag" | "sysGenNonPrimaryDiag" = "sysGenPrimaryDiag",
+) => {
+  const diagramDescription = {
+    sysGenPrimaryDiag: "System Generated Primary Diagram",
+    sysGenNonPrimaryDiag: "System Generated Non Primary Diagram",
+    sysGenTraverseDiag: "System Generated Traverse Diagram",
+  };
+
+  return new PlanDataBuilder()
+    .addDiagram(
+      {
+        x: 80,
+        y: -90,
+      },
+      undefined,
+      diagramType,
+    )
+    .addCooordinate(10001, {
+      x: 20,
+      y: -10,
+    })
+    .addCooordinate(10002, {
+      x: 50,
+      y: -50,
+    })
+    .addCooordinate(10003, {
+      x: 20,
+      y: -60,
+    })
+    .addCooordinate(10004, {
+      x: 10,
+      y: -10,
+    })
+    .addLine(1001, [10001, 10002], 1.75, "observation", "solid")
+    .addLine(1002, [10002, 10003], 1.75, "observation", "solid")
+    .addLine(1003, [10003, 10004], 1.75, "observation", "solid")
+    .addLine(1004, [10004, 10001], 1.75, "observation", "solid")
+    .addLabel(
+      "labels",
+      1,
+      diagramDescription[diagramType],
+      { x: 50, y: -5 },
+      undefined,
+      undefined,
+      "diagram",
+      "Tahoma",
+      14.0,
+    )
+    .build();
 };

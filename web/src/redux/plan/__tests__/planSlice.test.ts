@@ -59,7 +59,7 @@ describe("planSlice", () => {
     expect(diagrams[0]?.lines).toHaveLength(9);
 
     const nodeDataForPage = getNodeDataForPage(store.getState(), 1);
-    expect(nodeDataForPage).toHaveLength(13);
+    expect(nodeDataForPage).toHaveLength(14);
     expect(nodeDataForPage[0]?.id).toBe("10001");
     expect(nodeDataForPage[1]?.id).toBe("10002");
     expect(nodeDataForPage[2]?.id).toBe("10003");
@@ -198,6 +198,7 @@ describe("planSlice", () => {
       expect(selectedDiagrams).toHaveLength(2);
       expect(selectedDiagrams[0]).toStrictEqual({
         bottomRightPoint: { x: 1500, y: -1000 },
+        diagramType: "sysGenPrimaryDiag",
         coordinateLabels: [],
         coordinates: [],
         labels: [],

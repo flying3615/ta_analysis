@@ -33,6 +33,7 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
         };
       }),
       ...diagram.labels.filter(notSymbol).map(labelToNode),
+      ...diagram.coordinateLabels.filter(notSymbol).map(labelToNode),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode),
       ...diagram.parcelLabels.filter(notSymbol).map(labelToNode),
     ];
