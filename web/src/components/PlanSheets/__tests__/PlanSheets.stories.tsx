@@ -1,3 +1,4 @@
+import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import PlanSheets from "../PlanSheets";
 import { MemoryRouter } from "react-router-dom";
@@ -11,6 +12,7 @@ import { store } from "@/redux/store.ts";
 import { Route, Routes } from "react-router";
 import { rest } from "msw";
 import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder";
+import { fireEvent } from "@storybook/testing-library";
 
 export default {
   title: "PlanSheets",
@@ -50,8 +52,12 @@ export const DiagramsPanelClosed: Story = {
 };
 DiagramsPanelClosed.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  await userEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
+  // Use fireEvent to get around known issue in testing-library
+  // https://github.com/storybookjs/storybook/issues/26888
+  // https://github.com/testing-library/user-event/issues/1075#issuecomment-1948093169
+  fireEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
   await sleep(2000);
+  expect(canvas.queryByRole("heading", { name: "Survey sheet diagrams" })).toBeNull();
 };
 
 export const SystemGeneratedPrimaryDiagram: Story = {
