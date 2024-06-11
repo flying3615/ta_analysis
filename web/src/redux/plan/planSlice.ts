@@ -16,7 +16,7 @@ export interface PlanState {
 }
 
 const initialState: PlanState = {
-  isPlanFetching: false,
+  isPlanFetching: true,
   diagrams: [],
   pages: [],
   nodeData: [],

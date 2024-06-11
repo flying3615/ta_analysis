@@ -30,7 +30,7 @@ describe("planSlice", () => {
 
   it("should handle initial state", () => {
     expect(planSlice.reducer(undefined, { type: "unknown" })).toStrictEqual({
-      isPlanFetching: false,
+      isPlanFetching: true,
       diagrams: [],
       pages: [],
       nodeData: [],
