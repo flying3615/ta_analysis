@@ -1,4 +1,3 @@
-import { LINZ_JOURNEY_ID_HEADER_KEY, getJourneyId } from "@linz/landonline-common-js";
 import { Configuration, HTTPHeaders } from "@linz/survey-plan-generation-api-client";
 import { ulid } from "ulid";
 
@@ -8,7 +7,6 @@ export const generateUniqueValue = () => ulid(Number.parseInt((new Date().getTim
 
 const generateHeaders = (): HTTPHeaders => {
   return {
-    [LINZ_JOURNEY_ID_HEADER_KEY]: getJourneyId(),
     [LINZ_CORRELATION_ID]: generateUniqueValue(),
   };
 };

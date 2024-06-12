@@ -5,8 +5,8 @@ import {
   linzMLBasemapLayer,
   marksLayer,
   parcelsLayer,
-  vectorsLayer,
   underlyingParcelsLayer,
+  vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
@@ -23,6 +23,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
+import { useLuiModalPrefab } from "@linzjs/windows";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
@@ -40,7 +42,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
   const featuresFetching = useAppSelector((state) => isFetching(state));
   const error = useAppSelector((state) => getError(state));
   const marks = useAppSelector((state) => getMarksForOpenlayers(state));
@@ -51,12 +53,18 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     transactionId && dispatch(fetchFeatures(parseInt(transactionId)));
   }, [dispatch, transactionId]);
 
+  useEffect(() => {
+    if (error)
+      showPrefabModal(unhandledErrorModal(errorFromSerializedError(error))).then(() =>
+        navigate(`/plan-generation/${transactionId}`),
+      );
+  }, [error, navigate, showPrefabModal, transactionId]);
+
   return (
     <LolOpenLayersMapContextProvider>
       <Header onNavigate={navigate} transactionId={transactionId} view="Diagrams" />
-      <div className="DefineDiagrams">
+      <div className="DefineDiagrams" ref={modalOwnerRef}>
         {featuresFetching && <LuiLoadingSpinner />}
-        {error && <p>Sorry, there was an error</p>}
         {!featuresFetching && !error && (
           <LolOpenLayersMap
             view={{

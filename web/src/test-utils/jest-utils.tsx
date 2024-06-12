@@ -1,5 +1,6 @@
 import { AppStore, RootState, setupStore } from "@/redux/store";
-import { RenderOptions, render, RenderResult } from "@testing-library/react";
+import { LuiModalAsyncContextProvider } from "@linzjs/windows";
+import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import React, { PropsWithChildren, ReactElement } from "react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router";
@@ -21,7 +22,11 @@ export function renderWithReduxProvider(
   }: ExtendedRenderOptions = {},
 ) {
   function Wrapper({ children }: PropsWithChildren): React.JSX.Element {
-    return <Provider store={store}>{children}</Provider>;
+    return (
+      <LuiModalAsyncContextProvider>
+        <Provider store={store}>{children}</Provider>
+      </LuiModalAsyncContextProvider>
+    );
   }
 
   return {
@@ -38,9 +43,11 @@ export const renderCompWithReduxAndRoute = (
 ): RenderResult => {
   return renderWithReduxProvider(
     <MemoryRouter initialEntries={[url]}>
-      <Routes>
-        <Route path={route} element={component} />
-      </Routes>
+      <LuiModalAsyncContextProvider>
+        <Routes>
+          <Route path={route} element={component} />
+        </Routes>
+      </LuiModalAsyncContextProvider>
     </MemoryRouter>,
     options,
   );
@@ -53,11 +60,13 @@ export const renderMultiCompWithReduxAndRoute = (
 ): RenderResult => {
   return renderWithReduxProvider(
     <MemoryRouter initialEntries={[url]}>
-      <Routes>
-        {routes.map((r, idx) => {
-          return <Route key={idx} path={r.route} element={r.component} />;
-        })}
-      </Routes>
+      <LuiModalAsyncContextProvider>
+        <Routes>
+          {routes.map((r, idx) => {
+            return <Route key={idx} path={r.route} element={r.component} />;
+          })}
+        </Routes>
+      </LuiModalAsyncContextProvider>
     </MemoryRouter>,
     options,
   );

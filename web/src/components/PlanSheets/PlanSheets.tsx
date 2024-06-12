@@ -12,6 +12,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { useLuiModalPrefab } from "@linzjs/windows";
 
 const SheetToDiagramMap: Record<PlanSheetType, string> = {
   [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
@@ -22,6 +24,7 @@ const PlanSheets = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
 
@@ -33,21 +36,25 @@ const PlanSheets = () => {
   const planDataIsFetching = useAppSelector((state) => isPlanFetching(state));
   const planDataError = useAppSelector((state) => getPlanError(state));
 
-  if (!transactionId) {
-    throw new Error("Transaction ID is missing");
-  }
+  useEffect(() => {
+    if (!transactionId) showPrefabModal(unhandledErrorModal(new Error("Transaction ID is missing")));
+    if (planDataError) {
+      showPrefabModal(unhandledErrorModal(errorFromSerializedError(planDataError))).then(() =>
+        navigate(`/plan-generation/${transactionId}`),
+      );
+    }
+  }, [planDataError, transactionId, navigate, showPrefabModal]);
 
   useEffect(() => {
-    dispatch(fetchPlan(parseInt(transactionId)));
+    transactionId && dispatch(fetchPlan(parseInt(transactionId)));
   }, [dispatch, transactionId]);
 
   if (planDataIsFetching) return <LuiLoadingSpinner />;
 
   return (
     <>
-      {planDataError && <p>Error fetching plan data</p>}
       <Header onNavigate={navigate} transactionId={transactionId} view="Sheets" />
-      <div className="PlanSheets">
+      <div className="PlanSheets" ref={modalOwnerRef}>
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
           <div className="PlanSheetsDiagramOptions">
             <div className="PlanSheetsDiagramOptions-heading">

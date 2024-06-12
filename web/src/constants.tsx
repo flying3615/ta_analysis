@@ -6,3 +6,6 @@ export const luiColors = {
 
 // this sits here to help prevent circular dependency
 export const appClientId = "survey-plangen-spa";
+
+export const LINZ_CUSTOMER_SUPPORT_PHONE = "0800 665 463";
+export const LINZ_CUSTOMER_SUPPORT_EMAIL = "customersupport@linz.govt.nz";

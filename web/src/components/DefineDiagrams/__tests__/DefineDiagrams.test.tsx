@@ -8,8 +8,10 @@ import {
   VECTORS_LAYER_NAME,
   UNDERLYING_PARCELS_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
+import LandingPage from "@/components/LandingPage/LandingPage.tsx";
+import userEvent from "@testing-library/user-event";
 
 describe("DefineDiagrams", () => {
   beforeEach(() => {
@@ -98,8 +100,20 @@ describe("DefineDiagrams", () => {
     );
 
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
-    expect(screen.getByText("Sorry, there was an error")).toBeInTheDocument();
+    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
+  });
+
+  it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
+    renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [
+      { component: <DefineDiagrams mock={true} />, route: "/plan-generation/define-diagrams/:transactionId" },
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+    ]);
+
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
+    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
+    await userEvent.click(screen.getByText("Dismiss"));
+    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
 
   it("displays loading spinner", async () => {

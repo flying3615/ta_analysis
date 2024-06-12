@@ -15,7 +15,10 @@ import { store } from "@/redux/store.ts";
 import { appClientId } from "./constants.tsx";
 import { mockUser } from "./mocks/mockAuthUser.ts";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
-import { ReactNode } from "react";
+import { ErrorInfo, ReactNode, useEffect } from "react";
+import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
+import { ErrorBoundary } from "react-error-boundary";
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
@@ -60,6 +63,22 @@ function NoMatchingRouteFound(): React.JSX.Element {
   );
 }
 
+const errorHandler = (error: Error, info: ErrorInfo) => {
+  console.error(error, info);
+};
+
+const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+
+  useEffect(() => {
+    showPrefabModal(unhandledErrorModal(error)).then(() => {
+      resetErrorBoundary();
+    });
+  }, [showPrefabModal, error, resetErrorBoundary]);
+
+  return <div ref={modalOwnerRef} />;
+};
+
 const App = () => {
   const oidcConfig: OidcConfig = {
     clientId: appClientId,
@@ -92,15 +111,19 @@ const App = () => {
   };
 
   return (
-    <BrowserRouter>
-      <AuthContextProvider>
-        <FeatureFlagProvider>
-          <Provider store={store}>
-            <PlangenApp />
-          </Provider>
-        </FeatureFlagProvider>
-      </AuthContextProvider>
-    </BrowserRouter>
+    <LuiModalAsyncContextProvider>
+      <ErrorBoundary FallbackComponent={ShowUnhandledModal} onError={errorHandler}>
+        <BrowserRouter>
+          <AuthContextProvider>
+            <FeatureFlagProvider>
+              <Provider store={store}>
+                <PlangenApp />
+              </Provider>
+            </FeatureFlagProvider>
+          </AuthContextProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </LuiModalAsyncContextProvider>
   );
 };
 

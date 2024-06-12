@@ -14,7 +14,7 @@ module.exports = {
     "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(ol|lodash-es))",
+    "node_modules/(?!(ol|lodash-es|@linzjs/windows/|@linzjs/lui/|@fontsource))",
   ],
   resetMocks: true,
   coverageReporters: ["text", "cobertura"],
