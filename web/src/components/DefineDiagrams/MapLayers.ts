@@ -40,7 +40,7 @@ export const linzMLBasemapLayer = (maxZoom: number) => {
       // this layer can only be used up to zoom 24 or errors are thrown by maplibre-gl-js
       maxZoom: maxZoom > 24 ? 24 : maxZoom,
       attributions: linzCC4Attrib,
-      excludeLayers: ["Buildings", "Buildings-Outline", "Housenumber"],
+      excludeLayers: ["Parcels-Ln", "Buildings", "Buildings-Outline", "Housenumber"],
       preserveDrawingBuffer: true,
     } as LolOpenLayersMapLibreSourceDef,
   } as LolOpenLayersTileLayerDef;
