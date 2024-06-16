@@ -24,7 +24,37 @@ describe("LandingPage", () => {
 
     const button = await screen.findByText("Define Diagrams");
     fireEvent.click(button);
-    expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
+  });
+
+  it("should show application error when Define Diagrams clicked on plan not ready for layout", async () => {
+    renderMultiCompWithReduxAndRoute("/plan-generation/666", [
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+      { component: <PlanSheets />, route: "/plan-generation/layout-plan-sheets/:transactionId" },
+    ]);
+
+    const button = await screen.findByText("Define Diagrams");
+    fireEvent.click(button);
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+    expect(await screen.findByText("Error preparing dataset")).toBeInTheDocument();
+    expect(screen.getByText(/20001/)).toBeInTheDocument();
+    expect(screen.getByText(/prepare dataset application error/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
+  });
+
+  it("should show unexpected error when Define Diagrams clicked on non-existent plan", async () => {
+    renderMultiCompWithReduxAndRoute("/plan-generation/404", [
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+      { component: <PlanSheets />, route: "/plan-generation/layout-plan-sheets/:transactionId" },
+    ]);
+
+    const button = await screen.findByText("Define Diagrams");
+    fireEvent.click(button);
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
+    expect(screen.getByText(/Detailed error information/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
 
   it("should go to Layout Plan Sheets on click", async () => {

@@ -1,16 +1,49 @@
 import "./LandingPage.scss";
 
-import { LuiIcon, LuiShadow } from "@linzjs/lui";
-import { Link, useParams } from "react-router-dom";
+import { LuiIcon, LuiLoadingSpinner, LuiShadow } from "@linzjs/lui";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
+import { planGenApiConfig } from "@/redux/apiConfig.ts";
+import { useState } from "react";
+import { useLuiModalPrefab } from "@linzjs/windows";
+import { prepareDatasetErrorModal } from "@/components/LandingPage/prepareDatasetErrorModal.tsx";
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { luiColors } from "@/constants.tsx";
 
 const LandingPage = () => {
   const { transactionId } = useParams();
-  const LuiColorSea = "#007198"; // Need this as a constant
+  const navigate = useNavigate();
+  const [preparingDataset, setPreparingDataset] = useState<boolean>();
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+
+  const prepareDatasetAndDefineDiagrams = () => {
+    if (preparingDataset) {
+      console.warn("Already in progress");
+      return;
+    }
+    setPreparingDataset(true);
+    new DiagramsControllerApi(planGenApiConfig())
+      .postDiagrams({ transactionId: parseInt(transactionId ?? "0") })
+      .then(async (response) => {
+        setPreparingDataset(false);
+        if (response.ok) {
+          navigate(`/plan-generation/define-diagrams/${transactionId}`);
+        } else {
+          await showPrefabModal(prepareDatasetErrorModal(response));
+        }
+      })
+      .catch(async (error) => {
+        console.warn(`catch err ${error}`);
+        setPreparingDataset(false);
+        await showPrefabModal(unhandledErrorModal(error));
+      });
+  };
 
   return (
     <>
       <div className="LandingPage-background"></div>
-      <div className="LandingPage">
+      {preparingDataset && <LuiLoadingSpinner />}
+      <div className="LandingPage" ref={modalOwnerRef}>
         <div className="LandingPage-top"></div>
         <div className="LandingPage-inner">
           <div className="LandingPage-title">
@@ -18,24 +51,28 @@ const LandingPage = () => {
             <h5 className="LandingPage-titlePrompt">What would you like to do?</h5>
           </div>
           <div className="LandingPage-options">
-            <Link className="LandingPage-option" to={`/plan-generation/define-diagrams/${transactionId}`}>
+            <button
+              className="LandingPage-option"
+              disabled={preparingDataset}
+              onClick={prepareDatasetAndDefineDiagrams}
+            >
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_define_diagrams"
                   className="LandingPage-optionIcon"
                   alt="Define diagrams"
-                  color={LuiColorSea}
+                  color={luiColors.sea}
                 />
                 <p>Define Diagrams</p>
               </LuiShadow>
-            </Link>
+            </button>
             <Link className="LandingPage-option" to={`/plan-generation/layout-plan-sheets/${transactionId}`}>
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_layout_plan_sheets"
                   className="LandingPage-optionIcon"
                   alt="Layout plan sheets"
-                  color={LuiColorSea}
+                  color={luiColors.sea}
                 />
                 <p>Layout Plan Sheets</p>
               </LuiShadow>

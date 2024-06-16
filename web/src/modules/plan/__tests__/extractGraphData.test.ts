@@ -27,7 +27,6 @@ describe("extractGraphData", () => {
     const extractedNodes = extractNodes(mockPlanData.diagrams);
 
     expect(extractedNodes).toHaveLength(22); // 4 labels after mark nodes in first diagram
-    console.log(JSON.stringify(extractedNodes));
 
     const labelNode10 = extractedNodes[10];
     expect(labelNode10?.id).toBe("1");

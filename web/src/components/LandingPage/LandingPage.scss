@@ -21,6 +21,7 @@
   background-color: colours.$hint;
   background-image: url("/plan-generation/static/media/landing_page_background.png");
   opacity: 30%;
+  pointer-events: none;
 }
 
 .LandingPage-inner {
@@ -46,6 +47,15 @@
   margin: 20px;
   text-decoration: none;
   color: colours.$sea;
+}
+
+button.LandingPage-option {
+  background-color: colours.$polar;
+  opacity: 100%;
+  border: none;
+  padding: 0 !important;
+  cursor: pointer;
+  z-index: 100;
 }
 
 .LandingPage-optionBtn {

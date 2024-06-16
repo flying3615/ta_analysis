@@ -1,54 +1,20 @@
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
-import { MarksBuilder } from "@/mocks/data/MarksBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { ParcelsBuilder } from "@/mocks/data/ParcelsBuilder";
-import { VectorsBuilder } from "@/test-utils/VectorsBuilder.ts";
+import { mockSurveyFeaturesData } from "@/mocks/data/mockSurveyFeaturesData.ts";
 
 export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   // added $ in regex to force exact match for transaction id
-  rest.get(/\/survey-features\/123$/, (_, res, ctx) =>
-    res(
-      ctx.status(200, "OK"),
-      ctx.json({
-        marks: [
-          MarksBuilder.originMark().build(),
-          MarksBuilder.nonWitnessOriginMark().build(),
-          MarksBuilder.newPRM().build(),
-          MarksBuilder.oldPRM().build(),
-          MarksBuilder.newWitnessMark().build(),
-          MarksBuilder.oldWitnessMark().build(),
-          MarksBuilder.postAdoptedNewMark().build(),
-          MarksBuilder.postOtherMark().build(),
-          MarksBuilder.unmarkedPoint().build(),
-          MarksBuilder.pegNew().build(),
-          MarksBuilder.pegOther().build(),
-          MarksBuilder.adoptedCadastralSurveyNetworkMarkOrVCM().build(),
-          MarksBuilder.oldCadastralSurveyNetworkMarkOrVCM().build(),
-        ],
-        primaryParcels: [
-          ParcelsBuilder.primaryParcel().build(),
-          ParcelsBuilder.hydroParcel().build(),
-          ParcelsBuilder.roadParcel().build(),
-        ],
-        nonPrimaryParcels: [ParcelsBuilder.nonPrimaryParcel().build()],
-        centreLineParcels: [ParcelsBuilder.centreLineParcel().build()],
-        parcelDimensionVectors: [
-          VectorsBuilder.parcelDimensionVectorNonPrimary(1, 1).build(),
-          VectorsBuilder.parcelDimensionVectorPrimary(2, 2).build(),
-        ],
-        nonBoundaryVectors: [
-          VectorsBuilder.nonBoundaryPseudo(1, 1).build(),
-          VectorsBuilder.nonBoundaryCalculated(2, 2).build(),
-          VectorsBuilder.nonBoundaryMeasured(3, 2).build(),
-          VectorsBuilder.nonBoundaryAdopted(4, 3).build(),
-          VectorsBuilder.nonBoundaryReinstatedAdopted(5, 4).build(),
-          VectorsBuilder.nonBoundaryReinstatedCalculated(6, 5).build(),
-        ],
-      }),
-    ),
-  ),
+  rest.get(/\/survey-features\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json(mockSurveyFeaturesData))),
 
   rest.get(/\/plan\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json(mockPlanData))),
+
+  rest.post(/\/diagrams\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json({ ok: true }))),
+  rest.post(/\/diagrams\/666$/, (_, res, ctx) =>
+    res(
+      ctx.status(200, "OK"),
+      ctx.json({ ok: false, statusCode: 20001, message: "prepare dataset application error" }),
+    ),
+  ),
 
   // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint
@@ -67,6 +33,9 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
     res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),
   ),
   rest.get(/\/plan\/404/, (_, res, ctx) =>
+    res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),
+  ),
+  rest.post(/\/diagrams\/404$/, (_, res, ctx) =>
     res(ctx.status(404, "Not found"), ctx.json({ code: 404, message: "Not found" })),
   ),
 ];

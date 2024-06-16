@@ -29,7 +29,7 @@ window._env_ = {
 beforeAll(() =>
   server.listen({
     onUnhandledRequest: (req, print) => {
-      if (req.url.pathname.startsWith("/plan-generation/v1/")) {
+      if (req.url.pathname.includes("/generate-plans/")) {
         print.warning();
       } else return;
     },

@@ -4,6 +4,15 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { useEffect } from "react";
 
 describe("unhandledErrorModal", () => {
+  const TestModal = (props: { error: Error }) => {
+    const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+
+    useEffect(() => {
+      showPrefabModal(unhandledErrorModal(props.error));
+    }, [props.error, showPrefabModal]);
+
+    return <div ref={modalOwnerRef} />;
+  };
   test("returns the prefab config", () => {
     const config = unhandledErrorModal(new Error("A test error"));
 
@@ -15,16 +24,6 @@ describe("unhandledErrorModal", () => {
     expect(config.buttons?.[0]?.title).toBe("Dismiss");
     expect(config.buttons?.[0]?.level).toBe("tertiary");
   });
-
-  const TestModal = (props: { error: Error }) => {
-    const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-
-    useEffect(() => {
-      showPrefabModal(unhandledErrorModal(props.error));
-    }, [props.error, showPrefabModal]);
-
-    return <div ref={modalOwnerRef} />;
-  };
 
   test("generates a UX via showPrefabModal for an API error", async () => {
     render(
