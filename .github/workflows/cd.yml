@@ -26,5 +26,5 @@ jobs:
     with:
       deploy_environment: prod
       deploy_role_arn: 'arn:aws:iam::700740182805:role/linz-landonline-survey-plangen-fe-prod/landonline-survey-plangen--staticsitecdrole01C021BB-QQgHp5uihVZL'
-      new_relic_app_id: '' # todo: add new relic app id when created for deployment markers in SJ-1162
+      new_relic_app_id: '1835050606'
     secrets: inherit

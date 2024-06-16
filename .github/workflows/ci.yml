@@ -43,8 +43,8 @@ jobs:
             domain: 'kartoffel.dev.landonline.govt.nz'
           - appId: 1835041280 # New Relic: https://onenr.io/0LwGV11VeQ6
             domain: 'kumara.env.landonline.govt.nz'
-          # - appId: '???' # New Relic: https://onenr.io/???
-          #   domain: 'app.landonline.govt.nz'
+          - appId: '1835050606' # New Relic: https://onenr.io/0qQadyK2Zj1
+            domain: 'app.landonline.govt.nz'
     with:
       appId: ${{ matrix.appId }}
       urlPathsToHostedFiles: 'https://${{ matrix.domain }}/plan-generation/public'
