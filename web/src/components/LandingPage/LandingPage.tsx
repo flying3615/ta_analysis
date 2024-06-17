@@ -35,6 +35,7 @@ const LandingPage = () => {
       .catch(async (error) => {
         console.warn(`catch err ${error}`);
         setPreparingDataset(false);
+        newrelic.noticeError(error);
         await showPrefabModal(unhandledErrorModal(error));
       });
   };

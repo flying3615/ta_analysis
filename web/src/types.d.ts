@@ -8,5 +8,4 @@ declare interface Window {
     oidcIssuerUri: string;
     splitKey: string;
   };
-  newrelic: typeof newrelic | undefined;
 }
