@@ -65,6 +65,7 @@ function NoMatchingRouteFound(): React.JSX.Element {
 
 const errorHandler = (error: Error, info: ErrorInfo) => {
   console.error(error, info);
+  newrelic.noticeError(error);
 };
 
 const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {

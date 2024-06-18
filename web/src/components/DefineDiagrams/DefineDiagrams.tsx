@@ -54,10 +54,11 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   }, [dispatch, transactionId]);
 
   useEffect(() => {
-    if (error)
-      showPrefabModal(unhandledErrorModal(errorFromSerializedError(error))).then(() =>
-        navigate(`/plan-generation/${transactionId}`),
-      );
+    if (error) {
+      const serializedError = errorFromSerializedError(error);
+      newrelic.noticeError(serializedError);
+      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
+    }
   }, [error, navigate, showPrefabModal, transactionId]);
 
   return (

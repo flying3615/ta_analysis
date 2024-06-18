@@ -25,6 +25,11 @@ window._env_ = {
   splitKey: "localhost",
 };
 
+// @ts-expect-error Deliberatley stub the newrelic object
+global.newrelic = {
+  noticeError: jest.fn(),
+};
+
 // setup mocked responses from API requests
 beforeAll(() =>
   server.listen({

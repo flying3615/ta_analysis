@@ -37,11 +37,10 @@ const PlanSheets = () => {
   const planDataError = useAppSelector((state) => getPlanError(state));
 
   useEffect(() => {
-    if (!transactionId) showPrefabModal(unhandledErrorModal(new Error("Transaction ID is missing")));
     if (planDataError) {
-      showPrefabModal(unhandledErrorModal(errorFromSerializedError(planDataError))).then(() =>
-        navigate(`/plan-generation/${transactionId}`),
-      );
+      const serializedError = errorFromSerializedError(planDataError);
+      newrelic.noticeError(serializedError);
+      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
