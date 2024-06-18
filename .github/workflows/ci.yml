@@ -30,6 +30,9 @@ jobs:
       # These are needed for playwright to work
       image: "step/survey/step-landonline-web-survey-plan-generation-fe"
       imageTag: 'latest'
+
+      # Push coverage to codacy
+      codacyDisable: false
     secrets: inherit
 
   upload-sourcemaps:
