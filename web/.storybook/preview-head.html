@@ -7,4 +7,7 @@
         authzBaseUrl: "https://dummy.authz.url",
         basemapApiKey: "c01hvfqmgfxc7dyn84hcq7tkn1w"
     };
+    window.newrelic = {
+        noticeError: (error) => { console.log(`[New Relic] noticeError() called with: '${error.message}'`) }
+    }
 </script>

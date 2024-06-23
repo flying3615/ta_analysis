@@ -1,4 +1,4 @@
-import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import {
@@ -12,24 +12,51 @@ import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@
 import { RootState } from "@/redux/store.ts";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import userEvent from "@testing-library/user-event";
+import { server } from "@/mocks/mockServer.ts";
 
 describe("DefineDiagrams", () => {
+  const mockMap = getMockMap();
   beforeEach(() => {
     // We need this *after* createObjectURL* gets stubbed
     getMockMap().resetState();
   });
 
   it("should render", async () => {
-    renderCompWithReduxAndRoute(<DefineDiagrams mock={true} />);
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
 
     // openlayers map and it's layers should render after features fetched
-    const mockMap = getMockMap();
+
     await waitFor(() => {
       expect(mockMap).toHaveLayer(BASEMAP_LAYER_NAME, LayerType.TILE);
     });
 
     // header toggle label is visible
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
+  });
+
+  it("call prepares dataset on initial render", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading-spinner")).toBeFalsy();
+    });
+
+    const expected = {
+      method: "POST",
+      url: new URL("http://localhost:11065/plan-generation/v1/api/generate-plans/diagrams/123"),
+    };
+    // async callback from the prepareDataset success
+    expect(requestSpy).toHaveBeenCalledWith(expect.objectContaining(expected));
   });
 
   it("should show marks on the map", async () => {
@@ -39,8 +66,6 @@ describe("DefineDiagrams", () => {
       "/plan-generation/define-diagrams/:transactionId",
     );
 
-    // openlayers map and it's layers should render
-    const mockMap = getMockMap();
     await waitFor(() => {
       expect(mockMap).toHaveLayer(MARKS_LAYER_NAME, LayerType.VECTOR);
     });
@@ -60,7 +85,6 @@ describe("DefineDiagrams", () => {
     );
 
     // openlayers map and it's layers should render
-    const mockMap = getMockMap();
     await waitFor(() => {
       expect(mockMap).toHaveLayer(PARCELS_LAYER_NAME, LayerType.VECTOR);
     });
@@ -80,7 +104,6 @@ describe("DefineDiagrams", () => {
     );
 
     // openlayers map and it's layers should render
-    const mockMap = getMockMap();
     await waitFor(() => {
       expect(mockMap).toHaveLayer(UNDERLYING_PARCELS_LAYER_NAME, LayerType.VECTOR_TILE);
     });
@@ -99,27 +122,37 @@ describe("DefineDiagrams", () => {
       "/plan-generation/define-diagrams/:transactionId",
     );
 
-    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
   });
 
-  it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
+  it("navigate back to landing page when clicked on dismiss button on Unexpected error dialog", async () => {
     renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [
       { component: <DefineDiagrams mock={true} />, route: "/plan-generation/define-diagrams/:transactionId" },
       { component: <LandingPage />, route: "/plan-generation/:transactionId" },
     ]);
 
-    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     await userEvent.click(screen.getByText("Dismiss"));
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
 
-  it("displays loading spinner", async () => {
+  it("navigate back to landing page when clicked on dismiss button on preparedataset error dialog", async () => {
+    renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [
+      { component: <DefineDiagrams mock={true} />, route: "/plan-generation/define-diagrams/:transactionId" },
+      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
+    ]);
+
+    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
+    await userEvent.click(screen.getByText("Dismiss"));
+    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
+  });
+
+  it("displays loading spinner when survey data hasn't been loaded", async () => {
     const mockState = {
       surveyFeatures: {
         isFetching: true,
+        isFulfilled: false,
         marks: [],
         primaryParcels: [],
         nonPrimaryParcels: [],
@@ -148,7 +181,6 @@ describe("DefineDiagrams", () => {
       "/plan-generation/define-diagrams/:transactionId",
     );
     // openlayers map and it's layers should render
-    const mockMap = getMockMap();
     await waitFor(() => {
       expect(mockMap).toHaveLayer(VECTORS_LAYER_NAME, LayerType.VECTOR);
     });

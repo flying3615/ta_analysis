@@ -43,12 +43,12 @@ export const OpenHeaderToggle: Story = {
     const canvas = within(canvasElement);
 
     await userEvent.click(await canvas.findByText("Diagrams"));
-    await expect(await canvas.findByText("Define diagrams")).toHaveAttribute("aria-disabled", "true");
+    await expect(await canvas.findByText("Define Diagrams")).toHaveAttribute("aria-disabled", "true");
     await expect(await canvas.findByText("Layout Plan Sheets")).not.toHaveAttribute("aria-disabled");
 
     await userEvent.click(await canvas.findByText("Layout Plan Sheets"));
     await userEvent.click(await canvas.findByText("Sheets"));
-    await expect(await canvas.findByText("Define diagrams")).not.toHaveAttribute("aria-disabled");
+    await expect(await canvas.findByText("Define Diagrams")).not.toHaveAttribute("aria-disabled");
     await expect(await canvas.findByText("Layout Plan Sheets")).toHaveAttribute("aria-disabled", "true");
   },
 };

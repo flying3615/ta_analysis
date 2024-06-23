@@ -13,6 +13,7 @@ import { createAppSlice } from "@/redux/createAppSlice";
 
 export interface SurveyFeaturesState {
   isFetching: boolean;
+  isFulfilled: boolean;
   marks: IMarks[];
   primaryParcels: IInflightParcels[];
   nonPrimaryParcels: IInflightParcels[];
@@ -24,6 +25,7 @@ export interface SurveyFeaturesState {
 
 const initialState: SurveyFeaturesState = {
   isFetching: false,
+  isFulfilled: false,
   marks: [],
   primaryParcels: [],
   nonPrimaryParcels: [],
@@ -41,8 +43,8 @@ export const surveyFeaturesSlice = createAppSlice({
       async (transactionId: number, { rejectWithValue }) => {
         try {
           const client: SurveyFeaturesControllerApi = new SurveyFeaturesControllerApi(planGenApiConfig());
-          const respose: SurveyFeaturesResponseDTO = await client.getSurveyFeatures({ transactionId });
-          return respose;
+          const response: SurveyFeaturesResponseDTO = await client.getSurveyFeatures({ transactionId });
+          return response;
         } catch (err) {
           const errResponse = err as ResponseError;
           const errResponseJson = await errResponse.response.json();
@@ -69,6 +71,7 @@ export const surveyFeaturesSlice = createAppSlice({
           } = action.payload;
 
           state.isFetching = false;
+          state.isFulfilled = true;
           state.marks = marks;
           state.primaryParcels = primaryParcels;
           state.nonPrimaryParcels = nonPrimaryParcels;
@@ -85,6 +88,7 @@ export const surveyFeaturesSlice = createAppSlice({
   }),
   selectors: {
     isFetching: (state) => state.isFetching,
+    isFulfilled: (state) => state.isFulfilled,
     getError: (state) => state.error,
 
     getMarksForOpenlayers: createSelector(
@@ -148,5 +152,11 @@ export const surveyFeaturesSlice = createAppSlice({
 });
 
 export const { fetchFeatures } = surveyFeaturesSlice.actions;
-export const { isFetching, getError, getMarksForOpenlayers, getParcelsForOpenlayers, getVectorsForOpenLayers } =
-  surveyFeaturesSlice.selectors;
+export const {
+  isFetching,
+  isFulfilled,
+  getError,
+  getMarksForOpenlayers,
+  getParcelsForOpenlayers,
+  getVectorsForOpenLayers,
+} = surveyFeaturesSlice.selectors;

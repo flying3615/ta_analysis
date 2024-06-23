@@ -33,7 +33,7 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => (
     }
   >
     <MenuItem disabled={view === "Diagrams"} onClick={() => onNavigate("Diagrams")}>
-      Define diagrams
+      Define Diagrams
     </MenuItem>
     <MenuItem disabled={view === "Sheets"} onClick={() => onNavigate("Sheets")}>
       Layout Plan Sheets

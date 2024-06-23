@@ -15,6 +15,7 @@ import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/j
 describe("surveyFeaturesSlice", () => {
   const initialState: SurveyFeaturesState = {
     isFetching: false,
+    isFulfilled: false,
     marks: [],
     primaryParcels: [],
     nonPrimaryParcels: [],
@@ -33,6 +34,7 @@ describe("surveyFeaturesSlice", () => {
   it("should handle initial state", () => {
     expect(surveyFeaturesSlice.reducer(undefined, { type: "unknown" })).toStrictEqual({
       isFetching: false,
+      isFulfilled: false,
       marks: [],
       primaryParcels: [],
       nonPrimaryParcels: [],

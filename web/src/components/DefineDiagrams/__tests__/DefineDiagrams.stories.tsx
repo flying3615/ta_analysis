@@ -12,6 +12,9 @@ import { Paths } from "@/Paths";
 import { rest } from "msw";
 import { MarksBuilder } from "@/mocks/data/MarksBuilder";
 import { handlers } from "@/mocks/mockHandlers";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/queries";
+import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 
 export default {
   title: "DefineDiagrams",
@@ -24,15 +27,19 @@ export default {
 } as Meta<typeof DefineDiagrams>;
 
 const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => (
-  <Provider store={setupStore()}>
-    <FeatureFlagProvider>
-      <MemoryRouter initialEntries={[generatePath(Paths.defineDiagrams, { transactionId })]}>
-        <Routes>
-          <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
-        </Routes>
-      </MemoryRouter>
-    </FeatureFlagProvider>
-  </Provider>
+  <LuiModalAsyncContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={setupStore()}>
+        <FeatureFlagProvider>
+          <MemoryRouter initialEntries={[generatePath(Paths.defineDiagrams, { transactionId })]}>
+            <Routes>
+              <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+            </Routes>
+          </MemoryRouter>
+        </FeatureFlagProvider>
+      </Provider>
+    </QueryClientProvider>
+  </LuiModalAsyncContextProvider>
 );
 
 type Story = StoryObj<typeof DefineDiagramsWrapper>;
@@ -42,7 +49,7 @@ export const Default: Story = {
   parameters: {
     backgrounds: {
       default: "ocean",
-      values: [{ name: "ocean", value: "#90e9ff" }],
+      values: [{ name: "ocean", value: "#b8dcf2" }],
     },
     msw: {
       handlers: [
@@ -86,5 +93,16 @@ export const UnderlyingLayers: Story = {
   },
   args: {
     transactionId: "456",
+  },
+};
+
+export const PrepareDatasetError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "666",
   },
 };

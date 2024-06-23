@@ -7,6 +7,8 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./queries/index.ts";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
@@ -117,9 +119,11 @@ const App = () => {
         <BrowserRouter>
           <AuthContextProvider>
             <FeatureFlagProvider>
-              <Provider store={store}>
-                <PlangenApp />
-              </Provider>
+              <QueryClientProvider client={queryClient}>
+                <Provider store={store}>
+                  <PlangenApp />
+                </Provider>
+              </QueryClientProvider>
             </FeatureFlagProvider>
           </AuthContextProvider>
         </BrowserRouter>

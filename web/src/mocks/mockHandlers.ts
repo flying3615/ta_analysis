@@ -9,6 +9,7 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   rest.get(/\/plan\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json(mockPlanData))),
 
   rest.post(/\/diagrams\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json({ ok: true }))),
+  rest.post(/\/diagrams\/456$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.json({ ok: true }))),
   rest.post(/\/diagrams\/666$/, (_, res, ctx) =>
     res(
       ctx.status(200, "OK"),
@@ -20,12 +21,11 @@ export const handlers: RestHandler<MockedRequest<DefaultBodyType>>[] = [
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint
   rest.get(/\/v1\/generate-plans\/tiles\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/, async ({ params }, res, ctx) => {
     const [layerName, zoom, x, y] = Object.values(params);
-    const tileBuffer = await fetch(`/data/geotiles/${layerName}/${zoom}/${x}/${y}`).then((res) => res.arrayBuffer());
-    return res(
-      ctx.set("Content-Length", tileBuffer.byteLength.toString()),
-      ctx.set("Content-Type", "application/x-protobuf"),
-      ctx.body(tileBuffer),
-    );
+    const response = await fetch(`/data/geotiles/${layerName}/${zoom}/${x}/${y}`);
+    if (response.ok) {
+      return res(ctx.body(await response.arrayBuffer()));
+    }
+    return res(ctx.body(new ArrayBuffer(0)));
   }),
 
   // 404 cases

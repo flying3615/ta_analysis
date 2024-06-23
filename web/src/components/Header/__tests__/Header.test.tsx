@@ -17,7 +17,7 @@ describe("Header", () => {
     expect(screen.queryByText("Diagrams")).toBeNull();
   });
 
-  it("fires onNavigate", async () => {
+  it("fires onNavigate when clicking Layout Plan Sheets", async () => {
     const onNavFn = jest.fn();
     render(<Header onNavigate={onNavFn} transactionId="123" view="Diagrams" />);
 
@@ -27,5 +27,17 @@ describe("Header", () => {
     await userEvent.click(screen.getByText(/Layout Plan Sheets/));
 
     expect(onNavFn).toHaveBeenCalledWith("/plan-generation/layout-plan-sheets/123");
+  });
+
+  it("fires onNavigate when clicking Define Diagrams", async () => {
+    const onNavFn = jest.fn();
+    render(<Header onNavigate={onNavFn} transactionId="123" view="Sheets" />);
+
+    await userEvent.click(screen.getByText("Sheets"));
+
+    await waitFor(async () => expect(await screen.findByText(/Define Diagrams/)).toBeInTheDocument());
+    await userEvent.click(screen.getByText(/Define Diagrams/));
+
+    expect(onNavFn).toHaveBeenCalledWith("/plan-generation/define-diagrams/123");
   });
 });

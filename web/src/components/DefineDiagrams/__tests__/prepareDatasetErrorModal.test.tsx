@@ -1,17 +1,13 @@
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { render, screen } from "@testing-library/react";
 import { useEffect } from "react";
-import { PostDiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { prepareDatasetErrorModal } from "@/components/LandingPage/prepareDatasetErrorModal.tsx";
+import { PrepareDatasetError } from "@/queries/prepareDataset";
+import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 
 describe("prepareDatasetErrorModal", () => {
-  const prepareDatasetError: PostDiagramsResponseDTO = {
-    ok: false,
-    statusCode: 20001,
-    message: "prepare dataset application error",
-  };
+  const prepareDatasetError = new PrepareDatasetError("prepare dataset application error", 20001);
 
-  const TestPrepareDatasetErrorModal = (props: { error: PostDiagramsResponseDTO }) => {
+  const TestPrepareDatasetErrorModal = (props: { error: PrepareDatasetError }) => {
     const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
     useEffect(() => {
@@ -25,7 +21,7 @@ describe("prepareDatasetErrorModal", () => {
     expect(errorModal.level).toBe("error");
     expect(errorModal.title).toBe("Error preparing dataset");
     expect(errorModal.buttons).toHaveLength(1);
-    expect(errorModal.buttons?.[0]?.title).toBe("Continue");
+    expect(errorModal.buttons?.[0]?.title).toBe("Dismiss");
   });
 
   test("render prepareDatasetErrorModal", async () => {

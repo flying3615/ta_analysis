@@ -13,6 +13,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:storybook/recommended",
     "plugin:jsx-a11y/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
   ],
   parser: "@typescript-eslint/parser",
   plugins: ["react", "react-refresh", "jsx-a11y"],

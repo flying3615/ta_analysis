@@ -10,14 +10,14 @@ import {
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
-import { useNavigate, useParams } from "react-router-dom";
+import { generatePath, useNavigate, useParams } from "react-router-dom";
 import {
   fetchFeatures,
   getError,
   getMarksForOpenlayers,
   getParcelsForOpenlayers,
   getVectorsForOpenLayers,
-  isFetching,
+  isFulfilled,
 } from "@/redux/survey-features/surveyFeaturesSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LuiLoadingSpinner } from "@linzjs/lui";
@@ -25,6 +25,9 @@ import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
+import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
+import { Paths } from "@/Paths";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
@@ -43,30 +46,49 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-  const featuresFetching = useAppSelector((state) => isFetching(state));
-  const error = useAppSelector((state) => getError(state));
+
+  const {
+    mutate: prepareDataset,
+    error: prepareDatasetError,
+    isSuccess: prepareDatasetIsSuccess,
+  } = usePrepareDatasetMutation(parseInt(transactionId ?? "0"));
+
+  useEffect(() => {
+    // Call prepareDataset only once, when initially mounting
+    prepareDataset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const marks = useAppSelector((state) => getMarksForOpenlayers(state));
   const parcels = useAppSelector((state) => getParcelsForOpenlayers(state));
   const vectors = useAppSelector((state) => getVectorsForOpenLayers(state));
 
   useEffect(() => {
-    transactionId && dispatch(fetchFeatures(parseInt(transactionId)));
-  }, [dispatch, transactionId]);
+    prepareDatasetIsSuccess && dispatch(fetchFeatures(parseInt(transactionId ?? "0")));
+  }, [transactionId, prepareDatasetIsSuccess, dispatch]);
+
+  const featuresFulfilled = useAppSelector((state) => isFulfilled(state));
+  const featuresError = useAppSelector((state) => getError(state));
+  const error = prepareDatasetError ?? featuresError;
+  const hasLoaded = prepareDatasetIsSuccess && featuresFulfilled;
 
   useEffect(() => {
-    if (error) {
-      const serializedError = errorFromSerializedError(error);
-      newrelic.noticeError(serializedError);
-      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
+    if (!error) {
+      return;
     }
+    const serializedError = error instanceof PrepareDatasetError ? error : errorFromSerializedError(error);
+    newrelic.noticeError(serializedError);
+    showPrefabModal(
+      error instanceof PrepareDatasetError ? prepareDatasetErrorModal(error) : unhandledErrorModal(serializedError),
+    ).then(() => navigate(generatePath(Paths.root, { transactionId })));
   }, [error, navigate, showPrefabModal, transactionId]);
 
   return (
     <LolOpenLayersMapContextProvider>
       <Header onNavigate={navigate} transactionId={transactionId} view="Diagrams" />
       <div className="DefineDiagrams" ref={modalOwnerRef}>
-        {featuresFetching && <LuiLoadingSpinner />}
-        {!featuresFetching && !error && (
+        {!hasLoaded && <LuiLoadingSpinner />}
+        {hasLoaded && (
           <LolOpenLayersMap
             view={{
               projection: "EPSG:3857",
