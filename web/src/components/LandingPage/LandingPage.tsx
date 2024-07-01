@@ -1,12 +1,13 @@
 import "./LandingPage.scss";
 
 import { LuiIcon, LuiShadow } from "@linzjs/lui";
-import { generatePath, Link, useParams } from "react-router-dom";
+import { generatePath, Link } from "react-router-dom";
 import { luiColors } from "@/constants.tsx";
 import { Paths } from "@/Paths.ts";
+import { useTransactionId } from "@/hooks/useTransactionId";
 
 const LandingPage = () => {
-  const { transactionId } = useParams();
+  const transactionId = useTransactionId();
 
   return (
     <>

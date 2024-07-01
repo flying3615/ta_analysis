@@ -1,30 +1,28 @@
 import "./Header.scss";
 
-import { generatePath } from "react-router-dom";
+import { generatePath, useNavigate } from "react-router-dom";
 import HeaderToggle from "./HeaderToggle";
 import { Paths } from "@/Paths";
+import { useTransactionId } from "@/hooks/useTransactionId";
 
 export type ViewMode = "Diagrams" | "Sheets";
 
 export interface HeaderProps {
-  onNavigate: (url: string) => void;
-  transactionId?: string;
   view: ViewMode;
 }
 
-const Header = ({ onNavigate, transactionId, view }: HeaderProps) => {
-  const handleNavigate = (mode: ViewMode) => {
-    if (!transactionId) {
-      return;
-    }
+const Header = ({ view }: HeaderProps) => {
+  const navigate = useNavigate();
+  const transactionId = useTransactionId();
 
+  const handleNavigate = (mode: ViewMode) => {
     switch (mode) {
       case "Diagrams":
-        onNavigate(generatePath(Paths.defineDiagrams, { transactionId }));
+        navigate(generatePath(Paths.defineDiagrams, { transactionId }));
         break;
 
       case "Sheets":
-        onNavigate(generatePath(Paths.layoutPlanSheets, { transactionId }));
+        navigate(generatePath(Paths.layoutPlanSheets, { transactionId }));
         break;
 
       default:

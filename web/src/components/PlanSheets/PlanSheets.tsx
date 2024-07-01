@@ -1,7 +1,7 @@
 import "./PlanSheets.scss";
 import Header from "@/components/Header/Header";
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
 import { luiColors } from "@/constants";
@@ -14,6 +14,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useLuiModalPrefab } from "@linzjs/windows";
+import { useTransactionId } from "@/hooks/useTransactionId";
 
 const SheetToDiagramMap: Record<PlanSheetType, string> = {
   [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
@@ -21,7 +22,7 @@ const SheetToDiagramMap: Record<PlanSheetType, string> = {
 };
 
 const PlanSheets = () => {
-  const { transactionId } = useParams();
+  const transactionId = useTransactionId();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -45,14 +46,14 @@ const PlanSheets = () => {
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
   useEffect(() => {
-    transactionId && dispatch(fetchPlan(parseInt(transactionId)));
+    transactionId && dispatch(fetchPlan(transactionId));
   }, [dispatch, transactionId]);
 
   if (planDataIsFetching) return <LuiLoadingSpinner />;
 
   return (
     <>
-      <Header onNavigate={navigate} transactionId={transactionId} view="Sheets" />
+      <Header view="Sheets" />
       <div className="PlanSheets" ref={modalOwnerRef}>
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
           <div className="PlanSheetsDiagramOptions">

@@ -2,42 +2,56 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Header from "../Header";
 
+const mockedUsedNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockedUsedNavigate,
+}));
+
+const mockedUseTransactionId = jest.fn();
+jest.mock("@/hooks/useTransactionId", () => ({
+  useTransactionId: () => mockedUseTransactionId(),
+}));
+
 describe("Header", () => {
+  beforeEach(() => {
+    mockedUsedNavigate.mockClear();
+    mockedUseTransactionId.mockReturnValue(123);
+  });
+
   it("displays correct Diagrams label", () => {
-    render(<Header onNavigate={jest.fn()} transactionId="123" view="Diagrams" />);
+    render(<Header view="Diagrams" />);
 
     expect(screen.getByText("Diagrams")).toBeInTheDocument();
     expect(screen.queryByText("Sheets")).toBeNull();
   });
 
   it("displays correct Sheets label", () => {
-    render(<Header onNavigate={jest.fn()} transactionId="123" view="Sheets" />);
+    render(<Header view="Sheets" />);
 
     expect(screen.getByText("Sheets")).toBeInTheDocument();
     expect(screen.queryByText("Diagrams")).toBeNull();
   });
 
   it("fires onNavigate when clicking Layout Plan Sheets", async () => {
-    const onNavFn = jest.fn();
-    render(<Header onNavigate={onNavFn} transactionId="123" view="Diagrams" />);
+    render(<Header view="Diagrams" />);
 
     await userEvent.click(screen.getByText("Diagrams"));
 
     await waitFor(async () => expect(await screen.findByText(/Layout Plan Sheets/)).toBeInTheDocument());
     await userEvent.click(screen.getByText(/Layout Plan Sheets/));
 
-    expect(onNavFn).toHaveBeenCalledWith("/plan-generation/layout-plan-sheets/123");
+    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/layout-plan-sheets/123");
   });
 
   it("fires onNavigate when clicking Define Diagrams", async () => {
-    const onNavFn = jest.fn();
-    render(<Header onNavigate={onNavFn} transactionId="123" view="Sheets" />);
+    render(<Header view="Sheets" />);
 
     await userEvent.click(screen.getByText("Sheets"));
 
     await waitFor(async () => expect(await screen.findByText(/Define Diagrams/)).toBeInTheDocument());
     await userEvent.click(screen.getByText(/Define Diagrams/));
 
-    expect(onNavFn).toHaveBeenCalledWith("/plan-generation/define-diagrams/123");
+    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/define-diagrams/123");
   });
 });

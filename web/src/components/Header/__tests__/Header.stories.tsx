@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
 import Header from "../Header";
-import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { within, userEvent } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
 import { Paths } from "@/Paths";
@@ -13,26 +13,14 @@ export default {
 } as Meta<typeof Header>;
 
 type Story = StoryObj<typeof Header>;
-const Template = () => {
-  const navigate = useNavigate();
-  return (
-    <Routes>
-      <Route
-        path={Paths.defineDiagrams}
-        element={<Header onNavigate={navigate} transactionId="12345" view="Diagrams" />}
-      />
-      <Route
-        path={Paths.layoutPlanSheets}
-        element={<Header onNavigate={navigate} transactionId="12345" view="Sheets" />}
-      />
-    </Routes>
-  );
-};
 
 export const Default: Story = {
   render: () => (
     <MemoryRouter initialEntries={["/plan-generation/define-diagrams/12345"]}>
-      <Template />
+      <Routes>
+        <Route path={Paths.defineDiagrams} element={<Header view="Diagrams" />} />
+        <Route path={Paths.layoutPlanSheets} element={<Header view="Sheets" />} />
+      </Routes>
     </MemoryRouter>
   ),
 };

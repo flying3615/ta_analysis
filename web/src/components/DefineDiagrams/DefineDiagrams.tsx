@@ -11,7 +11,7 @@ import {
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
-import { generatePath, useNavigate, useParams } from "react-router-dom";
+import { generatePath, useNavigate } from "react-router-dom";
 import {
   fetchFeatures,
   getError,
@@ -35,6 +35,7 @@ import {
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 import { Paths } from "@/Paths";
+import { useTransactionId } from "@/hooks/useTransactionId";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
@@ -49,18 +50,16 @@ register(proj4);
 
 export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const maxZoom = 24;
-  const { transactionId } = useParams();
+  const transactionId = useTransactionId();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-
-  const transactionIDValue = parseInt(transactionId ?? "0");
 
   const {
     mutate: prepareDataset,
     error: prepareDatasetError,
     isSuccess: prepareDatasetIsSuccess,
-  } = usePrepareDatasetMutation(transactionIDValue);
+  } = usePrepareDatasetMutation(transactionId);
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -77,10 +76,10 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
 
   useEffect(() => {
     if (prepareDatasetIsSuccess) {
-      dispatch(fetchFeatures(transactionIDValue));
-      dispatch(fetchDiagrams(transactionIDValue));
+      dispatch(fetchFeatures(transactionId));
+      dispatch(fetchDiagrams(transactionId));
     }
-  }, [transactionIDValue, prepareDatasetIsSuccess, dispatch]);
+  }, [transactionId, prepareDatasetIsSuccess, dispatch]);
 
   const featuresFulfilled = useAppSelector((state) => isFulfilled(state));
   const diagramsFulfilled = useAppSelector((state) => isDiagramsFulfilled(state));
@@ -102,7 +101,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
 
   return (
     <LolOpenLayersMapContextProvider>
-      <Header onNavigate={navigate} transactionId={transactionId} view="Diagrams" />
+      <Header view="Diagrams" />
       <div className="DefineDiagrams" ref={modalOwnerRef}>
         {!hasLoaded && <LuiLoadingSpinner />}
         {hasLoaded && (
