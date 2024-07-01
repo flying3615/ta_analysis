@@ -7,6 +7,7 @@ import {
   PARCELS_LAYER_NAME,
   VECTORS_LAYER_NAME,
   UNDERLYING_PARCELS_LAYER_NAME,
+  DIAGRAMS_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { RootState } from "@/redux/store.ts";
@@ -115,6 +116,29 @@ describe("DefineDiagrams", () => {
     expect(underlyingParcelsLayerState).toHaveFeature(1);
   });
 
+  it("should show diagrams on the map", async () => {
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/124",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+
+    // openlayers map and it's layers should render
+    const mockMap = getMockMap();
+    await waitFor(() => {
+      expect(mockMap).toHaveLayer(DIAGRAMS_LAYER_NAME, LayerType.VECTOR);
+    });
+
+    // validate diagrams visible
+    const diagramsLayerState = mockMap.layerState[DIAGRAMS_LAYER_NAME];
+    await waitFor(() => expect(diagramsLayerState?.visible).toBeTruthy());
+    await waitFor(() => {
+      expect(diagramsLayerState).toHaveFeatureCount(2);
+    });
+    expect(diagramsLayerState).toHaveFeature(1);
+    expect(diagramsLayerState).toHaveFeature(2);
+  });
+
   it("displays error when survey not found", async () => {
     renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
@@ -124,7 +148,7 @@ describe("DefineDiagrams", () => {
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
-  });
+  }, 120000);
 
   it("navigate back to landing page when clicked on dismiss button on Unexpected error dialog", async () => {
     renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [

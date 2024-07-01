@@ -2,7 +2,7 @@
 import "ol/ol.css";
 
 import { Meta, StoryObj } from "@storybook/react";
-import { MemoryRouter, Routes, Route } from "react-router";
+import { MemoryRouter, Route, Routes } from "react-router";
 import { generatePath } from "react-router-dom";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
@@ -10,11 +10,11 @@ import { Provider } from "react-redux";
 import { setupStore } from "@/redux/store";
 import { Paths } from "@/Paths";
 import { rest } from "msw";
-import { MarksBuilder } from "@/mocks/data/MarksBuilder";
 import { handlers } from "@/mocks/mockHandlers";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/queries";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
+import { unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 
 export default {
   title: "DefineDiagrams",
@@ -60,8 +60,8 @@ export const Default: Story = {
             ctx.status(200, "OK"),
             ctx.json({
               marks: [
-                MarksBuilder.unmarkedPoint().withCoordinates([14.8280094, -41.306448]).build(),
-                MarksBuilder.unmarkedPoint().withCoordinates([14.8337251, -41.308552]).build(),
+                unmarkedPointBuilder().withCoordinates([14.8280094, -41.306448]).build(),
+                unmarkedPointBuilder().withCoordinates([14.8337251, -41.308552]).build(),
               ],
               primaryParcels: [],
               nonPrimaryParcels: [],
@@ -92,7 +92,21 @@ export const UnderlyingLayers: Story = {
     backgrounds: {},
   },
   args: {
-    transactionId: "456",
+    transactionId: "125",
+  },
+};
+
+export const SystemGeneratedDiagrams: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+    msw: {
+      handlers: [...handlers],
+    },
+  },
+  args: {
+    transactionId: "124",
   },
 };
 

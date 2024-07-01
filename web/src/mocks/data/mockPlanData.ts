@@ -1,4 +1,4 @@
-import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder.ts";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 
 export const mockPlanData = new PlanDataBuilder()
   .addDiagram(

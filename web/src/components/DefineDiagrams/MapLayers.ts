@@ -13,6 +13,7 @@ import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
 import { underlyingParcelStyles } from "./underlyingStyles";
+import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
 
@@ -21,8 +22,10 @@ export const UNDERLYING_PARCELS_LAYER_NAME = "viw_parcel_all";
 export const MARKS_LAYER_NAME = "marks";
 export const PARCELS_LAYER_NAME = "parcels";
 export const VECTORS_LAYER_NAME = "vectors";
+export const DIAGRAMS_LAYER_NAME = "diagrams";
 
 const zIndexes: Record<string, number> = {
+  DIAGRAMS_LAYER_NAME: 50,
   MARKS_LAYER_NAME: 2,
   PARCELS_LAYER_NAME: 1,
 };
@@ -92,6 +95,24 @@ export const vectorsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLa
     togglable: false,
     zIndex: zIndexes[VECTORS_LAYER_NAME],
     style: vectorStyles,
+    source: {
+      type: SourceType.FEATURES,
+      data,
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: DIAGRAMS_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: true,
+    inInitialZoom: true,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[DIAGRAMS_LAYER_NAME],
+    style: diagramStyles,
     source: {
       type: SourceType.FEATURES,
       data,

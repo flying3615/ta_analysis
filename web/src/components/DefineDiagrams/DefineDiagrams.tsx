@@ -2,6 +2,7 @@ import "./DefineDiagrams.scss";
 
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
 import {
+  diagramsLayer,
   linzMLBasemapLayer,
   marksLayer,
   parcelsLayer,
@@ -25,6 +26,12 @@ import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import {
+  fetchDiagrams,
+  getDiagramsError,
+  getDiagramsForOpenlayers,
+  isDiagramsFulfilled,
+} from "@/redux/diagrams/diagramsSlice.ts";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 import { Paths } from "@/Paths";
@@ -47,11 +54,13 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
+  const transactionIDValue = parseInt(transactionId ?? "0");
+
   const {
     mutate: prepareDataset,
     error: prepareDatasetError,
     isSuccess: prepareDatasetIsSuccess,
-  } = usePrepareDatasetMutation(parseInt(transactionId ?? "0"));
+  } = usePrepareDatasetMutation(transactionIDValue);
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -62,15 +71,23 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const marks = useAppSelector((state) => getMarksForOpenlayers(state));
   const parcels = useAppSelector((state) => getParcelsForOpenlayers(state));
   const vectors = useAppSelector((state) => getVectorsForOpenLayers(state));
+  const diagrams = useAppSelector((state) => {
+    return getDiagramsForOpenlayers(state);
+  });
 
   useEffect(() => {
-    prepareDatasetIsSuccess && dispatch(fetchFeatures(parseInt(transactionId ?? "0")));
-  }, [transactionId, prepareDatasetIsSuccess, dispatch]);
+    if (prepareDatasetIsSuccess) {
+      dispatch(fetchFeatures(transactionIDValue));
+      dispatch(fetchDiagrams(transactionIDValue));
+    }
+  }, [transactionIDValue, prepareDatasetIsSuccess, dispatch]);
 
   const featuresFulfilled = useAppSelector((state) => isFulfilled(state));
+  const diagramsFulfilled = useAppSelector((state) => isDiagramsFulfilled(state));
   const featuresError = useAppSelector((state) => getError(state));
-  const error = prepareDatasetError ?? featuresError;
-  const hasLoaded = prepareDatasetIsSuccess && featuresFulfilled;
+  const diagramsError = useAppSelector((state) => getDiagramsError(state));
+  const error = prepareDatasetError ?? featuresError ?? diagramsError;
+  const hasLoaded = prepareDatasetIsSuccess && featuresFulfilled && diagramsFulfilled;
 
   useEffect(() => {
     if (!error) {
@@ -104,8 +121,8 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
               parcelsLayer(parcels, maxZoom),
               marksLayer(marks, maxZoom),
               vectorsLayer(vectors, maxZoom),
+              diagramsLayer(diagrams, maxZoom),
             ]}
-            useLoadingIndicator={true}
           />
         )}
         {children}

@@ -9,6 +9,7 @@ import { setupJestCanvasMock } from "jest-canvas-mock";
 import { configure } from "@testing-library/react";
 import { mapAssertions, mapFeatureAssertions } from "@linzjs/landonline-openlayers-map";
 import { server } from "@/mocks/mockServer";
+import { coordinateMatchers } from "@/test-utils/jest-utils.tsx";
 
 // It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all
 // the detail of an async assertion failure will be lost due to the test
@@ -47,6 +48,7 @@ beforeEach(() => {
 
 expect.extend(mapAssertions.default);
 expect.extend(mapFeatureAssertions.default);
+expect.extend(coordinateMatchers);
 
 // Reset any request handlers that we may add during the tests, so they don't
 // affect other tests.

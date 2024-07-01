@@ -11,7 +11,7 @@ import { Provider } from "react-redux";
 import { store } from "@/redux/store.ts";
 import { Route, Routes } from "react-router";
 import { rest } from "msw";
-import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { fireEvent } from "@storybook/testing-library";
 
 export default {

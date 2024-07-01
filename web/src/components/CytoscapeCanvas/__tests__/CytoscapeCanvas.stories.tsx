@@ -3,7 +3,7 @@ import CytoscapeCanvas from "../CytoscapeCanvas";
 import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { PlanDataBuilder } from "@/mocks/data/PlanDataBuilder.ts";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 
 export default {
   title: "CytoscapeCanvas",
