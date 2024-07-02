@@ -4,6 +4,7 @@ import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenMutation } from "@/queries/types";
 import { DiagramsControllerApi, PostDiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
+import { getDiagramsQueryKey } from "./diagrams";
 
 /**
  * Error that occurs when the survey is in a non-ready state to be edited in plangen.
@@ -33,5 +34,6 @@ export const usePrepareDatasetMutation: PlanGenMutation<PostDiagramsResponseDTO>
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getSurveyFeaturesQueryKey(transactionId) });
+      queryClient.invalidateQueries({ queryKey: getDiagramsQueryKey(transactionId) });
     },
   });
