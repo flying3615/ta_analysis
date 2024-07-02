@@ -12,6 +12,7 @@ export interface ErrorWithResponse extends Error {
     status: number | string;
     statusText?: string;
     url?: string;
+    message?: string;
   };
 }
 
@@ -63,6 +64,8 @@ export const unhandledErrorModal = (
   const handleCopyAction = () => {
     navigator.clipboard.writeText(clipBoardMessage).then();
   };
+
+  console.error(`Unexpected error: ${errorMessage}`);
 
   return {
     level: "error",
@@ -135,10 +138,12 @@ export const unhandledErrorModal = (
   };
 };
 
-export const errorFromSerializedError = (error: SerializedError) => ({
+export const errorFromSerializedError = (error: SerializedError | Error | ErrorWithResponse): ErrorWithResponse => ({
   name: error.message ?? "Unknown API error",
-  message: error.message ?? "",
+  message: error.message || ("response" in error && error.response?.message) || "",
   response: {
-    status: error.code ?? "",
+    status: ("code" in error && error.code) || ("response" in error && error.response?.status) || "",
+    statusText: ("response" in error && error.response?.statusText) || "",
+    url: ("response" in error && error.response?.url) || "",
   },
 });

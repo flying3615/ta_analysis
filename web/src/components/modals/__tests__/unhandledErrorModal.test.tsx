@@ -80,10 +80,17 @@ describe("errorFromSerializedError", () => {
     const error = errorFromSerializedError({
       code: "404",
       message: "Not found",
+      response: {
+        status: 404,
+        statusText: "Not found",
+        url: "http://api/wrong.txt",
+      },
     });
 
     expect(error.name).toBe("Not found");
     expect(error.message).toBe("Not found");
     expect(error.response?.status).toBe("404");
+    expect(error.response?.statusText).toBe("Not found");
+    expect(error.response?.url).toBe("http://api/wrong.txt");
   });
 });
