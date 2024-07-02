@@ -12,30 +12,23 @@ import {
 import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
 import { generatePath, useNavigate } from "react-router-dom";
-import {
-  fetchFeatures,
-  getError,
-  getMarksForOpenlayers,
-  getParcelsForOpenlayers,
-  getVectorsForOpenLayers,
-  isFulfilled,
-} from "@/redux/survey-features/surveyFeaturesSlice";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import {
-  fetchDiagrams,
-  getDiagramsError,
-  getDiagramsForOpenlayers,
-  isDiagramsFulfilled,
-} from "@/redux/diagrams/diagramsSlice.ts";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 import { Paths } from "@/Paths";
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
+import { useGetDiagramsQuery } from "@/queries/diagrams";
+import {
+  getDiagramsForOpenLayers,
+  getMarksForOpenLayers,
+  getParcelsForOpenLayers,
+  getVectorsForOpenLayers,
+} from "./featureMapper";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
@@ -52,41 +45,40 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   const maxZoom = 24;
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const {
     mutate: prepareDataset,
-    error: prepareDatasetError,
     isSuccess: prepareDatasetIsSuccess,
-  } = usePrepareDatasetMutation(transactionId);
+    error: prepareDatasetError,
+  } = usePrepareDatasetMutation({ transactionId });
+
+  const {
+    data: features,
+    isLoading: featuresIsLoading,
+    error: featuresError,
+  } = useSurveyFeaturesQuery({
+    transactionId,
+    enabled: prepareDatasetIsSuccess, // Don't fetch features until the dataset is prepared
+  });
+
+  const {
+    data: diagrams,
+    isLoading: diagramsIsLoading,
+    error: diagramsError,
+  } = useGetDiagramsQuery({
+    transactionId,
+    enabled: prepareDatasetIsSuccess, // Don't fetch diagrams until the dataset is prepared
+  });
+
+  const error = prepareDatasetError ?? featuresError ?? diagramsError;
+  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramsIsLoading;
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
     prepareDataset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const marks = useAppSelector((state) => getMarksForOpenlayers(state));
-  const parcels = useAppSelector((state) => getParcelsForOpenlayers(state));
-  const vectors = useAppSelector((state) => getVectorsForOpenLayers(state));
-  const diagrams = useAppSelector((state) => {
-    return getDiagramsForOpenlayers(state);
-  });
-
-  useEffect(() => {
-    if (prepareDatasetIsSuccess) {
-      dispatch(fetchFeatures(transactionId));
-      dispatch(fetchDiagrams(transactionId));
-    }
-  }, [transactionId, prepareDatasetIsSuccess, dispatch]);
-
-  const featuresFulfilled = useAppSelector((state) => isFulfilled(state));
-  const diagramsFulfilled = useAppSelector((state) => isDiagramsFulfilled(state));
-  const featuresError = useAppSelector((state) => getError(state));
-  const diagramsError = useAppSelector((state) => getDiagramsError(state));
-  const error = prepareDatasetError ?? featuresError ?? diagramsError;
-  const hasLoaded = prepareDatasetIsSuccess && featuresFulfilled && diagramsFulfilled;
 
   useEffect(() => {
     if (!error) {
@@ -103,8 +95,8 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     <LolOpenLayersMapContextProvider>
       <Header view="Diagrams" />
       <div className="DefineDiagrams" ref={modalOwnerRef}>
-        {!hasLoaded && <LuiLoadingSpinner />}
-        {hasLoaded && (
+        {isLoading && <LuiLoadingSpinner />}
+        {!isLoading && features && diagrams && (
           <LolOpenLayersMap
             view={{
               projection: "EPSG:3857",
@@ -117,10 +109,10 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
             layers={[
               linzMLBasemapLayer(maxZoom),
               underlyingParcelsLayer(maxZoom),
-              parcelsLayer(parcels, maxZoom),
-              marksLayer(marks, maxZoom),
-              vectorsLayer(vectors, maxZoom),
-              diagramsLayer(diagrams, maxZoom),
+              parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
+              marksLayer(getMarksForOpenLayers(features), maxZoom),
+              vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
+              diagramsLayer(getDiagramsForOpenLayers(diagrams), maxZoom),
             ]}
           />
         )}

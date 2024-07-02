@@ -1,20 +1,19 @@
 import "./PlanSheets.scss";
 import Header from "@/components/Header/Header";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
 import { luiColors } from "@/constants";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
-import { fetchPlan, getDiagrams, getPlanError, isPlanFetching } from "@/redux/plan/planSlice.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { useGetPlanQuery } from "@/queries/plan.ts";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SheetToDiagramMap: Record<PlanSheetType, string> = {
   [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
@@ -24,18 +23,11 @@ const SheetToDiagramMap: Record<PlanSheetType, string> = {
 const PlanSheets = () => {
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
 
-  const diagrams = useAppSelector((state) =>
-    getDiagrams(state).filter((d) => d.diagramType === SheetToDiagramMap[activeSheet]),
-  );
-  const nodeData = extractNodes(diagrams);
-  const edgeData = extractEdges(diagrams);
-  const planDataIsFetching = useAppSelector((state) => isPlanFetching(state));
-  const planDataError = useAppSelector((state) => getPlanError(state));
+  const { data: planData, isLoading: planDataIsLoading, error: planDataError } = useGetPlanQuery({ transactionId });
 
   useEffect(() => {
     if (planDataError) {
@@ -45,11 +37,18 @@ const PlanSheets = () => {
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
-  useEffect(() => {
-    transactionId && dispatch(fetchPlan(transactionId));
-  }, [dispatch, transactionId]);
+  if (planDataIsLoading || !planData) {
+    return (
+      <div ref={modalOwnerRef}>
+        <Header view="Sheets" />
+        <LuiLoadingSpinner />
+      </div>
+    );
+  }
 
-  if (planDataIsFetching) return <LuiLoadingSpinner />;
+  const diagrams = planData.diagrams.filter((d) => d.diagramType === SheetToDiagramMap[activeSheet]);
+  const nodeData = extractNodes(diagrams);
+  const edgeData = extractEdges(diagrams);
 
   return (
     <>

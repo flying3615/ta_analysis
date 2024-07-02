@@ -1,6 +1,9 @@
-import { UseMutationResult, useMutation } from "@tanstack/react-query";
-import { planGenApiConfig } from "@/redux/apiConfig";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/queries";
+import { apiConfig } from "@/queries/apiConfig";
+import { PlanGenMutation } from "@/queries/types";
 import { DiagramsControllerApi, PostDiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
 
 /**
  * Error that occurs when the survey is in a non-ready state to be edited in plangen.
@@ -15,16 +18,20 @@ export class PrepareDatasetError extends Error {
   }
 }
 
-export const usePrepareDatasetMutation = (
-  transactionId: number,
-): UseMutationResult<PostDiagramsResponseDTO, Error | PrepareDatasetError, void> =>
+export const getPrepareDatasetQueryKey = (transactionId: number) => ["prepareDataset", transactionId];
+
+export const usePrepareDatasetMutation: PlanGenMutation<PostDiagramsResponseDTO> = ({ transactionId, ...params }) =>
   useMutation({
-    mutationKey: ["prepareDataset", transactionId],
+    ...params,
+    mutationKey: getPrepareDatasetQueryKey(transactionId),
     mutationFn: async () => {
-      const response = await new DiagramsControllerApi(planGenApiConfig()).postDiagrams({ transactionId });
+      const response = await new DiagramsControllerApi(apiConfig()).postDiagrams({ transactionId });
       if (!response.ok) {
         throw new PrepareDatasetError(response.message ?? "Failed to prepare dataset", response.statusCode);
       }
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getSurveyFeaturesQueryKey(transactionId) });
     },
   });

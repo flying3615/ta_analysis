@@ -1,7 +1,6 @@
 import { AppStore, RootState, setupStore } from "@/redux/store";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/queries";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import React, { PropsWithChildren, ReactElement } from "react";
 import { Provider } from "react-redux";
@@ -14,6 +13,7 @@ import { chunk, flattenDeep } from "lodash-es";
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
   preloadedState?: Partial<RootState>;
   store?: AppStore;
+  queryClient?: QueryClient;
 }
 
 export function renderWithReduxProvider(
@@ -22,6 +22,16 @@ export function renderWithReduxProvider(
     preloadedState = {},
     // Automatically create a store instance if no store was passed in
     store = setupStore(preloadedState),
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+        mutations: {
+          retry: false,
+        },
+      },
+    }),
     ...renderOptions
   }: ExtendedRenderOptions = {},
 ) {

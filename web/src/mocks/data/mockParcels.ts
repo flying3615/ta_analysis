@@ -16,7 +16,7 @@ import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
 
 const parcelsBuilderTestOrigin = () => ParcelsBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 
-const primaryParcel = parcelsBuilderTestOrigin()
+export const primaryParcel = parcelsBuilderTestOrigin()
   .withId(1)
   .withActionCode("CREA", "Created")
   .withIntentCode(ParcelIntentCode.FSIM)

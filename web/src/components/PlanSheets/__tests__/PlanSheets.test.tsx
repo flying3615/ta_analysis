@@ -1,4 +1,4 @@
-import { screen, waitForElementToBeRemoved } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import PlanSheets from "../PlanSheets";
 import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer";
@@ -15,7 +15,7 @@ describe("PlanSheets", () => {
       "/plan-generation/layout-plan-sheets/:transactionId",
     );
 
-    expect(await screen.findByText("Sheets")).toBeInTheDocument();
+    expect(await screen.findByText("Survey sheet diagrams")).toBeVisible();
     const diagramsSidePanelButton = screen.getByTitle("Toggle diagrams panel");
     expect(diagramsSidePanelButton).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("diagrams-sidepanel")).toHaveAttribute("aria-hidden", "false");
@@ -46,10 +46,7 @@ describe("PlanSheets", () => {
       "/plan-generation/layout-plan-sheets/:transactionId",
     );
 
-    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
-    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
-
-    expect(screen.getByText("Unexpected error")).toBeInTheDocument();
+    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
   });
 
   it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
@@ -58,7 +55,6 @@ describe("PlanSheets", () => {
       { component: <LandingPage />, route: "/plan-generation/:transactionId" },
     ]);
 
-    await waitForElementToBeRemoved(() => screen.queryByTestId("loading-spinner"));
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     await userEvent.click(screen.getByText("Dismiss"));
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();

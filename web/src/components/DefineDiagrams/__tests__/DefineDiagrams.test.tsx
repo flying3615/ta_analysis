@@ -10,10 +10,10 @@ import {
   DIAGRAMS_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { RootState } from "@/redux/store.ts";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer.ts";
+import { rest } from "msw";
 
 describe("DefineDiagrams", () => {
   const mockMap = getMockMap();
@@ -39,7 +39,7 @@ describe("DefineDiagrams", () => {
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
   });
 
-  it("call prepares dataset on initial render", async () => {
+  it("call prepares dataset and subsequent queries on initial render", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
     renderCompWithReduxAndRoute(
@@ -52,12 +52,30 @@ describe("DefineDiagrams", () => {
       expect(screen.queryByTestId("loading-spinner")).toBeFalsy();
     });
 
-    const expected = {
-      method: "POST",
-      url: new URL("http://localhost:11065/plan-generation/v1/api/generate-plans/diagrams/123"),
-    };
     // async callback from the prepareDataset success
-    expect(requestSpy).toHaveBeenCalledWith(expect.objectContaining(expected));
+    // Note: Prepare dataset should only be called once!
+    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        method: "POST",
+        url: new URL("http://localhost/api/v1/generate-plans/diagrams/123"),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        method: "GET",
+        url: new URL("http://localhost/api/v1/generate-plans/survey-features/123"),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        method: "GET",
+        url: new URL("http://localhost/api/v1/generate-plans/diagrams/123"),
+      }),
+    );
   });
 
   it("should show marks on the map", async () => {
@@ -173,24 +191,13 @@ describe("DefineDiagrams", () => {
   });
 
   it("displays loading spinner when survey data hasn't been loaded", async () => {
-    const mockState = {
-      surveyFeatures: {
-        isFetching: true,
-        isFulfilled: false,
-        marks: [],
-        primaryParcels: [],
-        nonPrimaryParcels: [],
-        centreLineParcels: [],
-        nonBoundaryVectors: [],
-        parcelDimensionVectors: [],
-        error: undefined,
-      },
-    } as Partial<RootState>;
+    server.use(rest.get(/\/diagrams\/123$/, (_, res, ctx) => res(ctx.status(404))));
+    server.use(rest.get(/\/survey-features\/123$/, (_, res, ctx) => res(ctx.status(404))));
+
     renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,
       "/plan-generation/define-diagrams/123",
       "/plan-generation/define-diagrams/:transactionId",
-      { preloadedState: mockState },
     );
 
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();

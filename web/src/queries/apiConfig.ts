@@ -3,15 +3,13 @@ import { ulid } from "ulid";
 
 export const LINZ_CORRELATION_ID = "x-linz-correlation-id";
 
-export const generateUniqueValue = () => ulid(Number.parseInt((new Date().getTime() / 1000).toString()));
-
 const generateHeaders = (): HTTPHeaders => {
   return {
-    [LINZ_CORRELATION_ID]: generateUniqueValue(),
+    [LINZ_CORRELATION_ID]: ulid(),
   };
 };
 
-export const planGenApiConfig = () => {
+export const apiConfig = () => {
   const { apiGatewayBaseUrl } = window._env_;
 
   return new Configuration({

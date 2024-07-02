@@ -13,6 +13,8 @@ import { Route, Routes } from "react-router";
 import { rest } from "msw";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { fireEvent } from "@storybook/testing-library";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/queries";
 
 export default {
   title: "PlanSheets",
@@ -23,13 +25,15 @@ type Story = StoryObj<typeof PlanSheets>;
 
 const PlanSheetsTemplate = () => {
   return (
-    <Provider store={store}>
-      <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/123"]}>
-        <Routes>
-          <Route path="/plan-generation/layout-plan-sheets/:transactionId" element={<PlanSheets />}></Route>
-        </Routes>
-      </MemoryRouter>
-    </Provider>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/123"]}>
+          <Routes>
+            <Route path="/plan-generation/layout-plan-sheets/:transactionId" element={<PlanSheets />}></Route>
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    </QueryClientProvider>
   );
 };
 

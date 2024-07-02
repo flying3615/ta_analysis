@@ -8,4 +8,5 @@ declare interface Window {
     oidcIssuerUri: string;
     splitKey: string;
   };
+  isStorybook?: true | undefined;
 }
