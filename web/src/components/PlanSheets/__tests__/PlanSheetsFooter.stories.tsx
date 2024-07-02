@@ -1,8 +1,10 @@
 import { Meta, StoryObj } from "@storybook/react";
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
-import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
 import { userEvent, within } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
+import { store } from "@/redux/store.ts";
+import { Provider } from "react-redux";
+import { useState } from "react";
 
 export default {
   title: "PlanSheetsFooter",
@@ -17,15 +19,12 @@ export default {
 type Story = StoryObj<typeof PlanSheetsFooter>;
 
 const TemplatePlanSheetsFooter = () => {
-  const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
+  const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
 
   return (
-    <PlanSheetsFooter
-      diagramsPanelOpen={diagramsPanelOpen}
-      view={activeSheet}
-      setDiagramsPanelOpen={setDiagramsPanelOpen}
-      onChangeSheet={changeActiveSheet}
-    />
+    <Provider store={store}>
+      <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
+    </Provider>
   );
 };
 

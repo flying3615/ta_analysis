@@ -1,6 +1,7 @@
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
+import planSheetsSlice from "./planSheets/planSheetsSlice";
 
-const rootReducer = combineSlices();
+const rootReducer = combineSlices(planSheetsSlice);
 
 export type RootState = ReturnType<typeof rootReducer>;
 

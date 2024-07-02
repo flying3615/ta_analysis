@@ -1,31 +1,24 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import userEvent from "@testing-library/user-event";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
 
 describe("PlanSheetsFooter", () => {
   it("renders", async () => {
-    render(
-      <PlanSheetsFooter
-        view={PlanSheetType.SURVEY}
-        onChangeSheet={jest.fn()}
-        setDiagramsPanelOpen={jest.fn()}
-        diagramsPanelOpen={true}
-      />,
-    );
+    renderWithReduxProvider(<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />);
 
     expect(await screen.findByTitle("Toggle diagrams panel")).toBeInTheDocument();
   });
 
   it("displays menu with Title sheet selected", async () => {
-    render(
-      <PlanSheetsFooter
-        view={PlanSheetType.TITLE}
-        onChangeSheet={jest.fn()}
-        setDiagramsPanelOpen={jest.fn()}
-        diagramsPanelOpen={true}
-      />,
-    );
+    renderWithReduxProvider(<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />, {
+      preloadedState: {
+        planSheets: {
+          activeSheet: PlanSheetType.TITLE,
+        },
+      },
+    });
 
     expect(screen.queryByRole("menuitem")).toBeNull();
 
@@ -37,14 +30,13 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays menu with Survey sheet selected", async () => {
-    render(
-      <PlanSheetsFooter
-        view={PlanSheetType.SURVEY}
-        onChangeSheet={jest.fn()}
-        setDiagramsPanelOpen={jest.fn()}
-        diagramsPanelOpen={true}
-      />,
-    );
+    renderWithReduxProvider(<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />, {
+      preloadedState: {
+        planSheets: {
+          activeSheet: PlanSheetType.SURVEY,
+        },
+      },
+    });
 
     expect(screen.queryByRole("menuitem")).toBeNull();
 

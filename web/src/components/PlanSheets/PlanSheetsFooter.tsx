@@ -4,20 +4,19 @@ import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { luiColors } from "@/constants.tsx";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getActiveSheet, setActiveSheet } from "@/redux/planSheets/planSheetsSlice";
 
 export interface FooterProps {
-  onChangeSheet: (sheet: PlanSheetType) => () => void;
-  view: PlanSheetType;
   diagramsPanelOpen: boolean;
   setDiagramsPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const PlanSheetsFooter = ({
-  onChangeSheet,
-  view = PlanSheetType.TITLE,
-  diagramsPanelOpen,
-  setDiagramsPanelOpen,
-}: FooterProps) => {
+const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterProps) => {
+  const dispatch = useAppDispatch();
+  const view = useAppSelector((state) => getActiveSheet(state));
+  const onChangeSheet = (sheet: PlanSheetType) => () => dispatch(setActiveSheet(sheet));
+
   return (
     <footer className="PlanSheetsFooter">
       <Menu

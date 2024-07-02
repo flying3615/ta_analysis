@@ -6,26 +6,23 @@ import { luiColors } from "@/constants";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { usePlanSheetState } from "@/components/PlanSheets/usePlanSheetState.ts";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useGetPlanQuery } from "@/queries/plan.ts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const SheetToDiagramMap: Record<PlanSheetType, string> = {
-  [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
-  [PlanSheetType.TITLE]: "sysGenPrimaryDiag",
-};
+import { useAppSelector } from "@/hooks/reduxHooks.ts";
+import { getActiveDiagramType } from "@/redux/planSheets/planSheetsSlice.ts";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
-  const { activeSheet, changeActiveSheet, diagramsPanelOpen, setDiagramsPanelOpen } = usePlanSheetState();
+  const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
+
+  const activeDiagramType = useAppSelector((state) => getActiveDiagramType(state));
 
   const { data: planData, isLoading: planDataIsLoading, error: planDataError } = useGetPlanQuery({ transactionId });
 
@@ -46,7 +43,7 @@ const PlanSheets = () => {
     );
   }
 
-  const diagrams = planData.diagrams.filter((d) => d.diagramType === SheetToDiagramMap[activeSheet]);
+  const diagrams = planData.diagrams.filter((d) => d.diagramType === activeDiagramType);
   const nodeData = extractNodes(diagrams);
   const edgeData = extractEdges(diagrams);
 
@@ -64,12 +61,7 @@ const PlanSheets = () => {
         </SidePanel>
         <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={diagrams} />
       </div>
-      <PlanSheetsFooter
-        diagramsPanelOpen={diagramsPanelOpen}
-        view={activeSheet}
-        setDiagramsPanelOpen={setDiagramsPanelOpen}
-        onChangeSheet={changeActiveSheet}
-      />
+      <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
     </>
   );
 };
