@@ -35,7 +35,7 @@ global.newrelic = {
 beforeAll(() =>
   server.listen({
     onUnhandledRequest: (req, print) => {
-      if (req.url.pathname.includes("/generate-plans/")) {
+      if (req.url.includes("/generate-plans/")) {
         print.warning();
       } else return;
     },

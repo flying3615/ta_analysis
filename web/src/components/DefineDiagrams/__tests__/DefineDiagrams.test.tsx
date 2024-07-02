@@ -13,7 +13,7 @@ import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer.ts";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 
 describe("DefineDiagrams", () => {
   const mockMap = getMockMap();
@@ -58,22 +58,28 @@ describe("DefineDiagrams", () => {
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        method: "POST",
-        url: new URL("http://localhost/api/v1/generate-plans/diagrams/123"),
+        request: expect.objectContaining({
+          method: "POST",
+          url: "http://localhost/api/v1/generate-plans/diagrams/123",
+        }),
       }),
     );
     expect(requestSpy).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        method: "GET",
-        url: new URL("http://localhost/api/v1/generate-plans/survey-features/123"),
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/survey-features/123",
+        }),
       }),
     );
     expect(requestSpy).toHaveBeenNthCalledWith(
       3,
       expect.objectContaining({
-        method: "GET",
-        url: new URL("http://localhost/api/v1/generate-plans/diagrams/123"),
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/diagrams/123",
+        }),
       }),
     );
   });
@@ -191,8 +197,8 @@ describe("DefineDiagrams", () => {
   });
 
   it("displays loading spinner when survey data hasn't been loaded", async () => {
-    server.use(rest.get(/\/diagrams\/123$/, (_, res, ctx) => res(ctx.status(404))));
-    server.use(rest.get(/\/survey-features\/123$/, (_, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(/\/diagrams\/123$/, () => HttpResponse.text(null, { status: 404 })));
+    server.use(http.get(/\/survey-features\/123$/, () => HttpResponse.text(null, { status: 404 })));
 
     renderCompWithReduxAndRoute(
       <DefineDiagrams mock={true} />,

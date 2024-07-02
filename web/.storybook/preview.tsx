@@ -9,9 +9,10 @@ import { handlers } from "../src/mocks/mockHandlers";
 
 initialize({
   onUnhandledRequest: (req, print) => {
-    if (req.url.pathname.startsWith("/plan-generation/v1/")) {
+    if (req.url.startsWith("/plan-generation/v1/")) {
       print.warning();
     } else return;
+    return;
   },
 });
 

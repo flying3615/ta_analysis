@@ -3,7 +3,7 @@ import PlanSheets from "../PlanSheets";
 import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
-import { rest } from "msw";
+import { HttpResponse, delay, http } from "msw";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 
@@ -63,7 +63,10 @@ describe("PlanSheets", () => {
   it("displays loading spinner while waiting for response", async () => {
     // response handler with delayed response
     server.use(
-      rest.get(/\/plan\/123$/, (_, res, ctx) => res(ctx.status(200, "OK"), ctx.delay(2000), ctx.json(mockPlanData))),
+      http.get(/\/plan\/123$/, async () => {
+        await delay(2000);
+        return HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" });
+      }),
     );
 
     renderCompWithReduxAndRoute(

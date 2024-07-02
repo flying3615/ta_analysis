@@ -10,7 +10,7 @@ import "@szhsin/react-menu/dist/index.css";
 import { Provider } from "react-redux";
 import { store } from "@/redux/store.ts";
 import { Route, Routes } from "react-router";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { fireEvent } from "@storybook/testing-library";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -69,9 +69,9 @@ export const SystemGeneratedPrimaryDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        rest.get(/\/plan\/123$/, (_, res, ctx) => {
-          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenPrimaryDiag")));
-        }),
+        http.get(/\/plan\/123$/, () =>
+          HttpResponse.json(planData("sysGenPrimaryDiag"), { status: 200, statusText: "OK" }),
+        ),
       ],
     },
   },
@@ -82,9 +82,9 @@ export const SystemGeneratedSurveyDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        rest.get(/\/plan\/123$/, (_, res, ctx) => {
-          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenTraverseDiag")));
-        }),
+        http.get(/\/plan\/123$/, () =>
+          HttpResponse.json(planData("sysGenTraverseDiag"), { status: 200, statusText: "OK" }),
+        ),
       ],
     },
   },
@@ -102,8 +102,8 @@ export const SystemGeneratedNonPrimaryDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        rest.get(/\/plan\/123$/, (_, res, ctx) => {
-          return res(ctx.status(200, "OK"), ctx.json(planData("sysGenNonPrimaryDiag")));
+        http.get(/\/plan\/123$/, () => {
+          return HttpResponse.json(planData("sysGenNonPrimaryDiag"), { status: 200, statusText: "OK" });
         }),
       ],
     },

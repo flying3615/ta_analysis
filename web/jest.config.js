@@ -8,6 +8,7 @@ module.exports = {
   testEnvironmentOptions: {
     resultsDir: "./allure-results",
   },
+  resolver: "<rootDir>/config/jest/resolver.js",
   transform: {
     "\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
     "\\.(scss|css)$": "<rootDir>/config/jest/cssTransform.js",
