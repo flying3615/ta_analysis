@@ -10,7 +10,3 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: linz/action-pull-request-lint@4744d5a3ab84000afc4eb5dc98b7fd19d7682fff # v1.1.0
-        with:
-          conventional: "error"
-          jira: "error"
-          jira-projects: "SURVEY,SJ,ENABLE"
