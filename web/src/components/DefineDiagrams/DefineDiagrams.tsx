@@ -11,10 +11,10 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram.tsx";
 import {
   diagramsLayer,
-  linzMLBasemapLayer,
   marksLayer,
   parcelsLayer,
   underlyingParcelsLayer,
+  underlyingRoadCentreLine,
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import Header from "@/components/Header/Header";
@@ -114,8 +114,8 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
             bufferFactor={1.2}
             mock={mock}
             layers={[
-              linzMLBasemapLayer(maxZoom),
               underlyingParcelsLayer(maxZoom),
+              underlyingRoadCentreLine(maxZoom),
               parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
               marksLayer(getMarksForOpenLayers(features), maxZoom),
               vectorsLayer(getVectorsForOpenLayers(features), maxZoom),

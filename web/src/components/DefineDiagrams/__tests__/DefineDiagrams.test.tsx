@@ -2,12 +2,12 @@ import { screen, waitFor } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import {
-  BASEMAP_LAYER_NAME,
   MARKS_LAYER_NAME,
   PARCELS_LAYER_NAME,
   VECTORS_LAYER_NAME,
   UNDERLYING_PARCELS_LAYER_NAME,
   DIAGRAMS_LAYER_NAME,
+  UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
@@ -28,13 +28,6 @@ describe("DefineDiagrams", () => {
       "/plan-generation/define-diagrams/123",
       "/plan-generation/define-diagrams/:transactionId",
     );
-
-    // openlayers map and it's layers should render after features fetched
-
-    await waitFor(() => {
-      expect(mockMap).toHaveLayer(BASEMAP_LAYER_NAME, LayerType.TILE);
-    });
-
     // header toggle label is visible
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
   });
@@ -131,6 +124,9 @@ describe("DefineDiagrams", () => {
     // openlayers map and it's layers should render
     await waitFor(() => {
       expect(mockMap).toHaveLayer(UNDERLYING_PARCELS_LAYER_NAME, LayerType.VECTOR_TILE);
+    });
+    await waitFor(() => {
+      expect(mockMap).toHaveLayer(UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME, LayerType.VECTOR_TILE);
     });
 
     // validate underlying parcels visible

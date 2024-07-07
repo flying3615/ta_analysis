@@ -4,7 +4,12 @@ import { StyleContext } from "@linzjs/landonline-openlayers-map";
 import { MapColors } from "./mapColors";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
 
-export const createParcelStyle = (fillColor: string, strokeColor: string, strokeWidth: number, lineDash?: number) => {
+export const createParcelStyle = (
+  fillColor: string,
+  strokeColor: string,
+  strokeWidth: number,
+  lineDash?: number[] | undefined,
+) => {
   return new Style({
     fill: new Fill({
       color: fillColor,
@@ -12,13 +17,13 @@ export const createParcelStyle = (fillColor: string, strokeColor: string, stroke
     stroke: new Stroke({
       color: strokeColor,
       width: strokeWidth,
-      lineDash: lineDash ? [lineDash] : undefined,
+      lineDash: lineDash,
     }),
   });
 };
 
-const roadParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, 3);
-const hydroParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, 3);
+const roadParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, [3]);
+const hydroParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1.5, [3]);
 const primParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 3);
 
 const nonPrimParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 1.5);

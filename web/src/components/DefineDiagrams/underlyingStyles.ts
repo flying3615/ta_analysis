@@ -1,4 +1,4 @@
-import { Style } from "ol/style";
+import { Fill, Stroke, Style, Text } from "ol/style";
 import { FeatureLike } from "ol/Feature";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
 import { ParcelStatusCode } from "@linz/luck-syscodes/build/js/ParcelStatusCode";
@@ -7,10 +7,28 @@ import { createParcelStyle } from "./parcelStyles";
 
 const roadParcelStyle = createParcelStyle(MapColors.yellowOpacity50, MapColors.black, 0.5);
 const hydroParcelStyle = createParcelStyle(MapColors.cyan, MapColors.black, 0.5);
-const primaryParcelStyle = createParcelStyle(MapColors.transparent, MapColors.black, 0.5);
-const secondaryParcelStyle = createParcelStyle(MapColors.transparent, MapColors.orange2, 1);
-const tertiaryParcelStyle = createParcelStyle(MapColors.transparent, MapColors.orangeDark2, 1);
-const tertiaryCenterlineParcelStyle = createParcelStyle(MapColors.transparent, MapColors.red, 1, 3);
+const primaryParcelStyle = createParcelStyle(MapColors.transparent, MapColors.midGray, 1, [2, 7]);
+
+const vtRoadsCentrelineStyle = (feature: FeatureLike) => {
+  return new Style({
+    stroke: new Stroke({
+      color: MapColors.white,
+      width: 2,
+    }),
+    text: new Text({
+      font: '12px "Open Sans",sans-serif',
+      text: feature.get("road_name"),
+      placement: "line",
+      offsetY: -10,
+      fill: new Fill({ color: MapColors.black }),
+    }),
+    zIndex: 1,
+  });
+};
+
+export const vtRoadsCentrelineStyleFunction = (feature: FeatureLike) => {
+  return vtRoadsCentrelineStyle(feature);
+};
 
 /**
  * From `vtParcelStyleFunction()` in `web/src/map-styles/vectorTileStyle.ts` in Survey Capture,
@@ -39,30 +57,8 @@ export const underlyingParcelStyles = (feature: FeatureLike): Style => {
         }
       }
     }
-
-    case "SECO": {
-      return secondaryParcelStyle;
-    }
-
-    case "TERT": {
-      return tertiaryParcelStyle;
-    }
-
-    // strata parcel (height limited) - will likely have own styling in future
-    case "STRA": {
-      return primaryParcelStyle;
-    }
-
-    case "SECL": {
-      return secondaryParcelStyle;
-    }
-
-    case "TECL": {
-      return tertiaryCenterlineParcelStyle;
-    }
-
     default: {
-      return primaryParcelStyle;
+      return new Style({});
     }
   }
 };

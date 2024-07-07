@@ -12,7 +12,7 @@ import {
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
-import { underlyingParcelStyles } from "./underlyingStyles";
+import { underlyingParcelStyles, vtRoadsCentrelineStyleFunction } from "./underlyingStyles";
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
@@ -23,6 +23,7 @@ export const MARKS_LAYER_NAME = "marks";
 export const PARCELS_LAYER_NAME = "parcels";
 export const VECTORS_LAYER_NAME = "vectors";
 export const DIAGRAMS_LAYER_NAME = "diagrams";
+export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
 
 const zIndexes: Record<string, number> = {
   DIAGRAMS_LAYER_NAME: 50,
@@ -132,6 +133,22 @@ export const underlyingParcelsLayer = (maxZoom: number): LolOpenLayersVectorLaye
     source: {
       type: SourceType.MVT,
       url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${UNDERLYING_PARCELS_LAYER_NAME}/{z}/{x}/{-y}`,
+      maxZoom: maxZoom > 30 ? 30 : maxZoom, // maximum Level for Tile Matrix Set of EPSG:900913
+    } as LolOpenLayersMVTSourceDef,
+  } as LolOpenLayersVectorTileLayerDef;
+};
+
+export const underlyingRoadCentreLine = (maxZoom: number): LolOpenLayersVectorLayerDef => {
+  const { apiGatewayBaseUrl } = window._env_;
+  return {
+    name: UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME,
+    type: LayerType.VECTOR_TILE,
+    visible: true,
+    maxResolution: 10,
+    style: vtRoadsCentrelineStyleFunction,
+    source: {
+      type: SourceType.MVT,
+      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME}/{z}/{x}/{-y}`,
       maxZoom: maxZoom > 30 ? 30 : maxZoom, // maximum Level for Tile Matrix Set of EPSG:900913
     } as LolOpenLayersMVTSourceDef,
   } as LolOpenLayersVectorTileLayerDef;
