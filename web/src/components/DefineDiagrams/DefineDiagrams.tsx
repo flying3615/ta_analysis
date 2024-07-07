@@ -1,6 +1,14 @@
 import "./DefineDiagrams.scss";
 
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
+import { LuiLoadingSpinner } from "@linzjs/lui";
+import { useLuiModalPrefab } from "@linzjs/windows";
+import { register } from "ol/proj/proj4";
+import proj4 from "proj4";
+import { ReactNode, useEffect } from "react";
+import { generatePath, useNavigate } from "react-router-dom";
+
+import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram.tsx";
 import {
   diagramsLayer,
   linzMLBasemapLayer,
@@ -9,26 +17,22 @@ import {
   underlyingParcelsLayer,
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
-import { ReactNode, useEffect } from "react";
 import Header from "@/components/Header/Header";
-import { generatePath, useNavigate } from "react-router-dom";
-import { LuiLoadingSpinner } from "@linzjs/lui";
-import proj4 from "proj4";
-import { register } from "ol/proj/proj4";
-import { useLuiModalPrefab } from "@linzjs/windows";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
-import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
-import { Paths } from "@/Paths";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
+import { Paths } from "@/Paths";
 import { useGetDiagramsQuery } from "@/queries/diagrams";
+import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
+import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
+
 import {
   getDiagramsForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
 } from "./featureMapper";
+import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
+import { DefineDiagramMenuButtons } from "@/components/DefineDiagrams/DefineDiagramHeaderButtons.tsx";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
@@ -41,8 +45,9 @@ export interface DefineDiagramsProps {
 proj4.defs("EPSG:1", "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs +pm=160");
 register(proj4);
 
+const maxZoom = 24;
+
 export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
-  const maxZoom = 24;
   const transactionId = useTransactionId();
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -93,7 +98,9 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
 
   return (
     <LolOpenLayersMapContextProvider>
-      <Header view="Diagrams" />
+      <Header view="Diagrams">
+        <DefineDiagramMenuButtons />
+      </Header>
       <div className="DefineDiagrams" ref={modalOwnerRef}>
         {isLoading && <LuiLoadingSpinner />}
         {!isLoading && features && diagrams && (
@@ -118,6 +125,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
         )}
         {children}
       </div>
+      <EnlargeDiagram />
     </LolOpenLayersMapContextProvider>
   );
 };

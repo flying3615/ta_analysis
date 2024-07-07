@@ -6,6 +6,10 @@ import { expect } from "@storybook/jest";
 import { Paths } from "@/Paths";
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
+import { queryClient } from "@/queries";
+import { store } from "@/redux/store.ts";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Provider } from "react-redux";
 
 export default {
   title: "Header",
@@ -16,12 +20,16 @@ type Story = StoryObj<typeof Header>;
 
 export const Default: Story = {
   render: () => (
-    <MemoryRouter initialEntries={["/plan-generation/define-diagrams/12345"]}>
-      <Routes>
-        <Route path={Paths.defineDiagrams} element={<Header view="Diagrams" />} />
-        <Route path={Paths.layoutPlanSheets} element={<Header view="Sheets" />} />
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/plan-generation/define-diagrams/12345"]}>
+          <Routes>
+            <Route path={Paths.defineDiagrams} element={<Header view="Diagrams" />} />
+            <Route path={Paths.layoutPlanSheets} element={<Header view="Sheets" />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    </QueryClientProvider>
   ),
 };
 

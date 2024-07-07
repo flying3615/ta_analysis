@@ -1,9 +1,12 @@
 import "./Header.scss";
 
+import { PropsWithChildren } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
-import HeaderToggle from "./HeaderToggle";
-import { Paths } from "@/Paths";
+
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { Paths } from "@/Paths";
+
+import HeaderToggle from "./HeaderToggle";
 
 export type ViewMode = "Diagrams" | "Sheets";
 
@@ -11,7 +14,7 @@ export interface HeaderProps {
   view: ViewMode;
 }
 
-const Header = ({ view }: HeaderProps) => {
+const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
   const navigate = useNavigate();
   const transactionId = useTransactionId();
 
@@ -33,6 +36,7 @@ const Header = ({ view }: HeaderProps) => {
   return (
     <header className="Header">
       <HeaderToggle onNavigate={handleNavigate} view={view} />
+      {children}
     </header>
   );
 };

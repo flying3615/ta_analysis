@@ -16,7 +16,7 @@ module.exports = {
     "plugin:@tanstack/eslint-plugin-query/recommended",
   ],
   parser: "@typescript-eslint/parser",
-  plugins: ["react", "react-refresh", "jsx-a11y"],
+  plugins: ["react", "react-refresh", "jsx-a11y", "simple-import-sort"],
   ignorePatterns: [
     "jest.config.js",
     "config/",
@@ -36,6 +36,10 @@ module.exports = {
     },
   },
   rules: {
+    // Default simple-import-sort rules
+    "simple-import-sort/imports": "off",
+    "simple-import-sort/exports": "off",
+
     "react/react-in-jsx-scope": "off",
     "linebreak-style": ["error", "unix"],
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],

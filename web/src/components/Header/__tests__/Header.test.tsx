@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Header from "../Header";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
 
 const mockedUsedNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
@@ -20,21 +21,21 @@ describe("Header", () => {
   });
 
   it("displays correct Diagrams label", () => {
-    render(<Header view="Diagrams" />);
+    renderWithReduxProvider(<Header view="Diagrams" />);
 
     expect(screen.getByText("Diagrams")).toBeInTheDocument();
     expect(screen.queryByText("Sheets")).toBeNull();
   });
 
   it("displays correct Sheets label", () => {
-    render(<Header view="Sheets" />);
+    renderWithReduxProvider(<Header view="Sheets" />);
 
     expect(screen.getByText("Sheets")).toBeInTheDocument();
     expect(screen.queryByText("Diagrams")).toBeNull();
   });
 
   it("fires onNavigate when clicking Layout Plan Sheets", async () => {
-    render(<Header view="Diagrams" />);
+    renderWithReduxProvider(<Header view="Diagrams" />);
 
     await userEvent.click(screen.getByText("Diagrams"));
 
@@ -45,7 +46,7 @@ describe("Header", () => {
   });
 
   it("fires onNavigate when clicking Define Diagrams", async () => {
-    render(<Header view="Sheets" />);
+    renderWithReduxProvider(<Header view="Sheets" />);
 
     await userEvent.click(screen.getByText("Sheets"));
 

@@ -79,7 +79,7 @@ export const nodePositionsFromData = (
   // the window is 'tall')
   // We find this axis from the scale with the smallest magnitude => less pixels per cm
   // and we apply an offset to centre the page in the other axis.
-  let scale;
+  let scale: number;
   let offsetX = 0;
   let offsetY = 0;
   if (Math.abs(scaleX) > Math.abs(scaleY)) {
