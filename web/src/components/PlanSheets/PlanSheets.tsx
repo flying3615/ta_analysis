@@ -1,19 +1,22 @@
 import "./PlanSheets.scss";
-import Header from "@/components/Header/Header";
-import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
+
 import { LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
-import { luiColors } from "@/constants";
-import SidePanel from "@/components/SidePanel/SidePanel";
-import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
-import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useTransactionId } from "@/hooks/useTransactionId";
-import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import Header from "@/components/Header/Header";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import SidePanel from "@/components/SidePanel/SidePanel";
+import { luiColors } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useTransactionId } from "@/hooks/useTransactionId";
+import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import { useGetPlanQuery } from "@/queries/plan.ts";
 import { getActiveDiagramType } from "@/redux/planSheets/planSheetsSlice.ts";
+
+import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
 
 const PlanSheets = () => {

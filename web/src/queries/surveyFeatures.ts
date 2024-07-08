@@ -1,7 +1,8 @@
+import { SurveyFeaturesControllerApi, SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { useQuery } from "@tanstack/react-query";
+
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenQuery } from "@/queries/types";
-import { SurveyFeaturesControllerApi, SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
 
 export const getSurveyFeaturesQueryKey = (transactionId: number) => ["surveyFeatures", transactionId];
 

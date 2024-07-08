@@ -1,4 +1,4 @@
-import { UserProfile, UserAccessesData } from "@linz/lol-auth-js";
+import { UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 
 export const mockUser: UserProfile & UserAccessesData = {
   loginType: "EXTN",

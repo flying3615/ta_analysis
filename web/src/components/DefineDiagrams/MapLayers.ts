@@ -9,11 +9,13 @@ import {
   LolOpenLayersVectorTileLayerDef,
   SourceType,
 } from "@linzjs/landonline-openlayers-map";
+
+import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
+import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
+
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
-import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
 import { underlyingParcelStyles, vtRoadsCentrelineStyleFunction } from "./underlyingStyles";
-import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
 

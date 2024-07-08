@@ -6,11 +6,11 @@ import "ol/ol.css";
 // need below for LuiMenu
 import "@szhsin/react-menu/dist/index.css";
 
+import { patchFetch } from "@linz/lol-auth-js";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
 import App from "@/App.tsx";
-import { patchFetch } from "@linz/lol-auth-js";
 
 export async function renderInit() {
   const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(

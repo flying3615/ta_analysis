@@ -1,5 +1,5 @@
-import cytoscape, { ElementGroup } from "cytoscape";
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import cytoscape, { ElementGroup } from "cytoscape";
 
 interface IGraphData {
   id: string;

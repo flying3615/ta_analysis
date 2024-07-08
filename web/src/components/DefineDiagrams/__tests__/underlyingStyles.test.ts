@@ -1,7 +1,8 @@
-import { MapColors } from "../mapColors";
-import { underlyingParcelStyles } from "../underlyingStyles";
 import { Feature } from "ol";
 import { Style } from "ol/style";
+
+import { MapColors } from "../mapColors";
+import { underlyingParcelStyles } from "../underlyingStyles";
 
 describe("underlyingStyles", () => {
   describe("underlyingParcelStyles", () => {

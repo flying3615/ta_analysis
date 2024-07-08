@@ -1,4 +1,5 @@
 import "./SidePanel.scss";
+
 import clsx from "clsx";
 
 export interface SidePanelProps extends React.PropsWithChildren {

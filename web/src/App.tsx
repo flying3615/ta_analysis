@@ -1,26 +1,28 @@
-import LandingPage from "@/components/LandingPage/LandingPage";
-import { Route, Routes } from "react-router";
-import { BrowserRouter } from "react-router-dom";
-import { Paths } from "./Paths.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./queries/index.ts";
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
-import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
+import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ErrorInfo, ReactNode, useEffect } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
+import { Route, Routes } from "react-router";
+import { BrowserRouter } from "react-router-dom";
+
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import LandingPage from "@/components/LandingPage/LandingPage";
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
 import { store } from "@/redux/store.ts";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+
 import { appClientId } from "./constants.tsx";
 import { mockUser } from "./mocks/mockAuthUser.ts";
-import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
-import { ErrorInfo, ReactNode, useEffect } from "react";
-import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
-import { ErrorBoundary } from "react-error-boundary";
-import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { Paths } from "./Paths.ts";
+import { queryClient } from "./queries/index.ts";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(

@@ -1,5 +1,7 @@
+import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
+
 import {
   adptStyle,
   calcStyle,
@@ -8,7 +10,7 @@ import {
   reiStyle,
   vectorStyles,
 } from "@/components/DefineDiagrams/vectorStyles.ts";
-import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+
 import { MapColors } from "../mapColors";
 
 const parcelDimensionVector = new Feature<Geometry>({ isParcelDimensionVector: true });

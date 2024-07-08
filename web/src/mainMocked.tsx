@@ -5,8 +5,10 @@ import "@/index.scss";
 import "ol/ol.css";
 // need below for LuiMenu
 import "@szhsin/react-menu/dist/index.css";
-import { createRoot } from "react-dom/client";
+
 import React from "react";
+import { createRoot } from "react-dom/client";
+
 import App from "@/App.tsx";
 import { renderInit } from "@/main.tsx";
 const { worker } = await import("./mocks/mockBrowser");

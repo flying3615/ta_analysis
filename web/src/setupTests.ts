@@ -5,9 +5,11 @@
 import "@testing-library/jest-dom/jest-globals";
 import "@testing-library/jest-dom";
 import "jest-canvas-mock";
-import { setupJestCanvasMock } from "jest-canvas-mock";
-import { configure } from "@testing-library/react";
+
 import { mapAssertions, mapFeatureAssertions } from "@linzjs/landonline-openlayers-map";
+import { configure } from "@testing-library/react";
+import { setupJestCanvasMock } from "jest-canvas-mock";
+
 import { server } from "@/mocks/mockServer";
 import { coordinateMatchers } from "@/test-utils/jest-utils.tsx";
 

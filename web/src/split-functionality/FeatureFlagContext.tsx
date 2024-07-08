@@ -1,7 +1,8 @@
-import { ReactElement } from "react";
-import { SplitFactoryProvider } from "@splitsoftware/splitio-react";
 import { useUserProfile } from "@linz/lol-auth-js";
 import { IBrowserSettings, MockedFeaturesMap } from "@splitsoftware/splitio/types/splitio.d";
+import { SplitFactoryProvider } from "@splitsoftware/splitio-react";
+import { ReactElement } from "react";
+
 import { mockedFeatureFlagsOn } from "@/split-functionality/FeatureFlags.ts";
 
 export function FeatureFlagProvider(props: {

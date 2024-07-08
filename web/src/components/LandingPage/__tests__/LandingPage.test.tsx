@@ -1,8 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import LandingPage from "@/components/LandingPage/LandingPage.tsx";
+
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
+import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 describe("LandingPage", () => {
   it("should render Landing page", async () => {

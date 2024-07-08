@@ -1,4 +1,5 @@
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
+
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
 export const markNodes: INodeData[] = [

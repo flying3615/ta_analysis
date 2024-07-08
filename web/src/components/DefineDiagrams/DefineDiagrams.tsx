@@ -25,6 +25,7 @@ import { useGetDiagramsQuery } from "@/queries/diagrams";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
+import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import {
   getDiagramsForOpenLayers,
   getMarksForOpenLayers,
@@ -32,7 +33,6 @@ import {
   getVectorsForOpenLayers,
 } from "./featureMapper";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
-import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 
 export interface DefineDiagramsProps {
   mock?: boolean;

@@ -1,4 +1,5 @@
-import { IDiagram, ILine, ILabel } from "@linz/survey-plan-generation-api-client";
+import { IDiagram, ILabel, ILine } from "@linz/survey-plan-generation-api-client";
+
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
 export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {

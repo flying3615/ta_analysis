@@ -1,3 +1,4 @@
+import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import {
   edgeDefinitionsFromData,
   IEdgeData,
@@ -5,7 +6,6 @@ import {
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
-import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 
 const inputNodes = [
   { id: "node1", label: "Node 1", diagramIndex: 0, properties: { a: 1 }, position: { x: 10, y: -50 } },

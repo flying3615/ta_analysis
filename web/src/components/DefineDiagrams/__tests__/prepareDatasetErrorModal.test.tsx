@@ -1,8 +1,9 @@
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { render, screen } from "@testing-library/react";
 import { useEffect } from "react";
-import { PrepareDatasetError } from "@/queries/prepareDataset";
+
 import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
+import { PrepareDatasetError } from "@/queries/prepareDataset";
 
 describe("prepareDatasetErrorModal", () => {
   const prepareDatasetError = new PrepareDatasetError("prepare dataset application error", 20001);

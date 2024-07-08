@@ -2,9 +2,10 @@ import "./LandingPage.scss";
 
 import { LuiIcon, LuiShadow } from "@linzjs/lui";
 import { generatePath, Link } from "react-router-dom";
+
 import { luiColors } from "@/constants.tsx";
-import { Paths } from "@/Paths.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { Paths } from "@/Paths.ts";
 
 const LandingPage = () => {
   const transactionId = useTransactionId();

@@ -1,6 +1,7 @@
-import { useMemo } from "react";
-import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 import { useSplitClient } from "@splitsoftware/splitio-react";
+import { useMemo } from "react";
+
+import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 
 interface IFeatureToggleResult {
   loading: boolean;

@@ -1,7 +1,9 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Header from "../Header";
+
 import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
+
+import Header from "../Header";
 
 const mockedUsedNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({

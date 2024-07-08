@@ -1,4 +1,5 @@
-import { svgSquare, svgCross, svgCircle, svgTriangle } from "@/components/DefineDiagrams/svgShapes";
+import { svgCircle, svgCross, svgSquare, svgTriangle } from "@/components/DefineDiagrams/svgShapes";
+
 import { MapColors } from "../mapColors";
 
 const iconSize = 25;

@@ -1,7 +1,8 @@
-import { Fill, Stroke, Style, Text } from "ol/style";
-import { FeatureLike } from "ol/Feature";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
 import { ParcelStatusCode } from "@linz/luck-syscodes/build/js/ParcelStatusCode";
+import { FeatureLike } from "ol/Feature";
+import { Fill, Stroke, Style, Text } from "ol/style";
+
 import { MapColors } from "./mapColors";
 import { createParcelStyle } from "./parcelStyles";
 

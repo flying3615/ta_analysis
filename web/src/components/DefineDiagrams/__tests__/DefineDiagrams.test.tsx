@@ -1,19 +1,20 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
+
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import {
+  DIAGRAMS_LAYER_NAME,
   MARKS_LAYER_NAME,
   PARCELS_LAYER_NAME,
-  VECTORS_LAYER_NAME,
   UNDERLYING_PARCELS_LAYER_NAME,
-  DIAGRAMS_LAYER_NAME,
   UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME,
+  VECTORS_LAYER_NAME,
 } from "@/components/DefineDiagrams/MapLayers.ts";
-import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
-import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer.ts";
-import { HttpResponse, http } from "msw";
+import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const buttonLabels = [
   "Delete",

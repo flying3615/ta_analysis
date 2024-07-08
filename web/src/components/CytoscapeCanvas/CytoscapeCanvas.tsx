@@ -1,6 +1,10 @@
 import "./CytoscapeCanvas.scss";
-import { useCallback, useEffect, useRef, useState } from "react";
+
+import { IDiagram } from "@linz/survey-plan-generation-api-client";
 import cytoscape from "cytoscape";
+import { debounce } from "lodash-es";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import {
   edgeDefinitionsFromData,
   IEdgeData,
@@ -9,8 +13,6 @@ import {
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import cytoscapeStylesheet from "@/components/CytoscapeCanvas/cytoscapeStylesheet.ts";
-import { debounce } from "lodash-es";
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
 
 export interface ICytoscapeCanvasProps {
   nodeData: INodeData[];

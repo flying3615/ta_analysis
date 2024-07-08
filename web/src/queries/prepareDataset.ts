@@ -1,10 +1,12 @@
+import { DiagramsControllerApi, PostDiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { useMutation } from "@tanstack/react-query";
+
 import { queryClient } from "@/queries";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenMutation } from "@/queries/types";
-import { DiagramsControllerApi, PostDiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
+
 import { getDiagramsQueryKey } from "./diagrams";
+import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
 
 /**
  * Error that occurs when the survey is in a non-ready state to be edited in plangen.

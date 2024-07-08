@@ -1,8 +1,10 @@
 import { screen } from "@testing-library/react";
-import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import userEvent from "@testing-library/user-event";
+
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
+
+import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
 
 describe("PlanSheetsFooter", () => {
   it("renders", async () => {

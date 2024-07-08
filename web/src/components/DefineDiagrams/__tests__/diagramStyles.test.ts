@@ -1,6 +1,7 @@
-import { Geometry } from "ol/geom";
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import { Feature } from "ol";
+import { Geometry } from "ol/geom";
+
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 
 describe("diagramStyles", () => {

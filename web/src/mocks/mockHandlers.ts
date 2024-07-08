@@ -1,10 +1,11 @@
 import { http, HttpHandler, HttpResponse } from "msw";
-import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+
+import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
 import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels.ts";
+import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
-import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features

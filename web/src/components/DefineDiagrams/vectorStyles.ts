@@ -1,7 +1,8 @@
+import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
 import FeatureLike from "ol/Feature";
 import { Style } from "ol/style";
 import Stroke, { Options } from "ol/style/Stroke";
-import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+
 import { MapColors } from "./mapColors";
 
 export const VectorLineDashes = {

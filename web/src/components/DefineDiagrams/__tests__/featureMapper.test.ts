@@ -1,17 +1,19 @@
+import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
+import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
+
+import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
+import { mockDiagrams } from "@/mocks/data/mockDiagrams";
+import { mockMarks } from "@/mocks/data/mockMarks";
+import { centreLineParcel, nonPrimaryParcel, primaryParcel } from "@/mocks/data/mockParcels";
+import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors";
+
 import {
   getDiagramsForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
 } from "../featureMapper";
-import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
-import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
-import { mockMarks } from "@/mocks/data/mockMarks";
-import { centreLineParcel, nonPrimaryParcel, primaryParcel } from "@/mocks/data/mockParcels";
-import { mockDiagrams } from "@/mocks/data/mockDiagrams";
-import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors";
-import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 
 describe("featureMapper", () => {
   test("getMarksForOpenLayers", () => {

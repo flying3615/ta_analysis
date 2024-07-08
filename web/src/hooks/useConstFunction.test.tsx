@@ -1,5 +1,6 @@
-import { MutableRefObject, ReactElement } from "react";
 import { render } from "@testing-library/react";
+import { MutableRefObject, ReactElement } from "react";
+
 import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
 
 let t: MutableRefObject<() => void>;

@@ -2,10 +2,10 @@ import { LuiButton, LuiIcon, LuiMenu } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsActionType.ts";
+import { VerticalSpacer } from "@/components/Header/Header";
 import { luiColors } from "@/constants.tsx";
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { VerticalSpacer } from "@/components/Header/Header";
 
 export const DefineDiagramMenuButtons = () => {
   const dispatch = useAppDispatch();

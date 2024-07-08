@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
+
+import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
+
 import CytoscapeCanvas from "../CytoscapeCanvas";
-import { lineEdges, markNodes, diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 
 describe("CytoscapeCanvas", () => {
   it("renders", async () => {

@@ -1,6 +1,6 @@
-import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
-import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
+import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {

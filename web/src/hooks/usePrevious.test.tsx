@@ -1,7 +1,8 @@
-import { ReactElement, useState } from "react";
 import { render, screen } from "@testing-library/react";
-import { usePrevious } from "@/hooks/usePrevious.ts";
 import userEvent from "@testing-library/user-event";
+import { ReactElement, useState } from "react";
+
+import { usePrevious } from "@/hooks/usePrevious.ts";
 
 describe("usePrevious", () => {
   let extPrevious: boolean | undefined = undefined;

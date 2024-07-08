@@ -2,8 +2,10 @@ import "./HeaderToggle.scss";
 
 import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { Menu, MenuItem } from "@szhsin/react-menu";
-import { ViewMode } from "./Header";
+
 import { luiColors } from "@/constants";
+
+import { ViewMode } from "./Header";
 
 interface HeaderToggleProps {
   onNavigate: (mode: ViewMode) => void;

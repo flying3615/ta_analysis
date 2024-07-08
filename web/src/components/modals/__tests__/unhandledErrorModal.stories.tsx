@@ -1,9 +1,10 @@
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
-import { useEffect } from "react";
-import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import { Meta, StoryObj } from "@storybook/react";
 import { expect } from "@storybook/jest";
+import { Meta, StoryObj } from "@storybook/react";
 import { waitFor } from "@storybook/testing-library";
+import { useEffect } from "react";
+
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { sleep } from "@/test-utils/storybook-utils.ts";
 
 const TestModalTemplate = (props: { defaultToOpen?: boolean }) => {

@@ -1,5 +1,6 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export interface PlanSheetsState {
   activeSheet: PlanSheetType;

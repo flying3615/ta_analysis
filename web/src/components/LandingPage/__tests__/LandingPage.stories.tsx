@@ -1,8 +1,10 @@
-import LandingPage from "../LandingPage";
 import { Meta, StoryObj } from "@storybook/react";
 import { MemoryRouter } from "react-router";
+
 import { PlangenApp } from "@/App.tsx";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+
+import LandingPage from "../LandingPage";
 
 export default {
   title: "LandingPage",

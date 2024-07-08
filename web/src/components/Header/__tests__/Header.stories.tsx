@@ -1,15 +1,18 @@
-import { Meta, StoryObj } from "@storybook/react";
-import Header from "../Header";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { within, userEvent } from "@storybook/testing-library";
-import { expect } from "@storybook/jest";
-import { Paths } from "@/Paths";
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
-import { queryClient } from "@/queries";
-import { store } from "@/redux/store.ts";
+
+import { expect } from "@storybook/jest";
+import { Meta, StoryObj } from "@storybook/react";
+import { userEvent, within } from "@storybook/testing-library";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+import { Paths } from "@/Paths";
+import { queryClient } from "@/queries";
+import { store } from "@/redux/store.ts";
+
+import Header from "../Header";
 
 export default {
   title: "Header",

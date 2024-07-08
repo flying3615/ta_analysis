@@ -1,15 +1,15 @@
+import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+
 import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
 import { VectorsBuilder } from "@/mocks/builders/VectorsBuilder.ts";
-
 import {
-  PEG_12_OFFSET,
-  PEG_13_OFFSET,
   PEG_3_OFFSET,
   PEG_4_OFFSET,
   PEG_7_OFFSET,
   PEG_8_OFFSET,
+  PEG_12_OFFSET,
+  PEG_13_OFFSET,
 } from "@/mocks/data/mockMarks.ts";
-import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
 const vectorsBuilderTestOrigin = () => VectorsBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 
 // Vector from 8: Boundary post old to 13: oldCadastralSurveyNetworkMarkOrVCM

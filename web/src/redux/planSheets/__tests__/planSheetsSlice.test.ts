@@ -1,6 +1,7 @@
-import { setupStore } from "@/redux/store";
-import planSheetsSlice, { PlanSheetsState, getActiveDiagramType, getActiveSheet } from "../planSheetsSlice";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { setupStore } from "@/redux/store";
+
+import planSheetsSlice, { getActiveDiagramType, getActiveSheet, PlanSheetsState } from "../planSheetsSlice";
 
 describe("planSheetsSlice", () => {
   const initialState: PlanSheetsState = {

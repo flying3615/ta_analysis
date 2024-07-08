@@ -1,5 +1,6 @@
-import { diagramsBuilderTestOrigin } from "@/mocks/builders/DiagramsBuilder.ts";
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
+
+import { diagramsBuilderTestOrigin } from "@/mocks/builders/DiagramsBuilder.ts";
 
 export const mockDiagrams = () =>
   diagramsBuilderTestOrigin()

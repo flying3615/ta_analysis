@@ -1,7 +1,7 @@
+import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import FeatureLike from "ol/Feature";
 import { Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
-import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
 const lineColourMap = {

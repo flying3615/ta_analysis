@@ -1,10 +1,12 @@
-import { useLuiModalPrefabProps } from "@linzjs/windows";
-import { PropsWithChildren } from "react";
+import "./unhandledErrorModal.scss";
+
 import { initJourneyId } from "@linz/landonline-common-js";
 import { LuiAccordicard, LuiButton, LuiIcon } from "@linzjs/lui";
-import { LINZ_CUSTOMER_SUPPORT_EMAIL, LINZ_CUSTOMER_SUPPORT_PHONE } from "@/constants.tsx";
-import "./unhandledErrorModal.scss";
+import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { SerializedError } from "@reduxjs/toolkit";
+import { PropsWithChildren } from "react";
+
+import { LINZ_CUSTOMER_SUPPORT_EMAIL, LINZ_CUSTOMER_SUPPORT_PHONE } from "@/constants.tsx";
 
 export interface ErrorWithResponse extends Error {
   timestamp?: Date;

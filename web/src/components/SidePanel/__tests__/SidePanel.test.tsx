@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+
 import SidePanel from "../SidePanel";
 
 describe("SidePanel", () => {

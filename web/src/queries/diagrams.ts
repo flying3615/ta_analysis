@@ -1,7 +1,8 @@
+import { DiagramsControllerApi, DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { useQuery } from "@tanstack/react-query";
+
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenQuery } from "@/queries/types";
-import { DiagramsControllerApi, DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
 

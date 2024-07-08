@@ -1,8 +1,8 @@
-import { ParcelsBuilder } from "@/mocks/builders/ParcelsBuilder.ts";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
+
+import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
+import { ParcelsBuilder } from "@/mocks/builders/ParcelsBuilder.ts";
 import {
-  PEG_11_OFFSET,
-  PEG_12_OFFSET,
   PEG_1_OFFSET,
   PEG_2_OFFSET,
   PEG_3_OFFSET,
@@ -11,8 +11,9 @@ import {
   PEG_6_OFFSET,
   PEG_7_OFFSET,
   PEG_8_OFFSET,
+  PEG_11_OFFSET,
+  PEG_12_OFFSET,
 } from "@/mocks/data/mockMarks.ts";
-import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
 
 const parcelsBuilderTestOrigin = () => ParcelsBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 

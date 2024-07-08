@@ -1,7 +1,8 @@
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useEffect } from "react";
+
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 
 describe("unhandledErrorModal", () => {
   const TestModal = (props: { error: Error }) => {

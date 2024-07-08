@@ -1,8 +1,9 @@
-import { Fill, Stroke, Style } from "ol/style";
-import { FeatureLike } from "ol/Feature";
-import { StyleContext } from "@linzjs/landonline-openlayers-map";
-import { MapColors } from "./mapColors";
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
+import { StyleContext } from "@linzjs/landonline-openlayers-map";
+import { FeatureLike } from "ol/Feature";
+import { Fill, Stroke, Style } from "ol/style";
+
+import { MapColors } from "./mapColors";
 
 export const createParcelStyle = (
   fillColor: string,

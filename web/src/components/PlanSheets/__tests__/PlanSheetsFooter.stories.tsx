@@ -1,10 +1,12 @@
-import { Meta, StoryObj } from "@storybook/react";
-import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
-import { userEvent, within } from "@storybook/testing-library";
 import { expect } from "@storybook/jest";
-import { store } from "@/redux/store.ts";
-import { Provider } from "react-redux";
+import { Meta, StoryObj } from "@storybook/react";
+import { userEvent, within } from "@storybook/testing-library";
 import { useState } from "react";
+import { Provider } from "react-redux";
+
+import { store } from "@/redux/store.ts";
+
+import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
 
 export default {
   title: "PlanSheetsFooter",

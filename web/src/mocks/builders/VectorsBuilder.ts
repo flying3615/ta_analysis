@@ -1,5 +1,6 @@
-import { IObservation, LineStringGeoJSON, LineStringGeoJSONTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
+import { IObservation, LineStringGeoJSON, LineStringGeoJSONTypeEnum } from "@linz/survey-plan-generation-api-client";
+
 import { CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder.ts";
 
 export class VectorsBuilder extends CommonBuilder<VectorsBuilder> {

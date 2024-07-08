@@ -1,11 +1,13 @@
 import { screen } from "@testing-library/react";
-import PlanSheets from "../PlanSheets";
 import userEvent from "@testing-library/user-event";
-import { server } from "@/mocks/mockServer";
-import { mockPlanData } from "@/mocks/data/mockPlanData";
-import { HttpResponse, delay, http } from "msw";
-import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { delay, http, HttpResponse } from "msw";
+
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { server } from "@/mocks/mockServer";
+import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+
+import PlanSheets from "../PlanSheets";
 
 describe("PlanSheets", () => {
   it("renders with the survey sheet diagrams side panel open by default", async () => {

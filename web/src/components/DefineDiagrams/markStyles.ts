@@ -1,9 +1,10 @@
-import warningSvg from "@/assets/warning.svg?raw";
-
 import FeatureLike from "ol/Feature";
 import { Icon, Style } from "ol/style";
-import { svgCircle, svgCross, svgSquare, svgTriangle } from "./svgShapes";
+
+import warningSvg from "@/assets/warning.svg?raw";
+
 import { MapColors } from "./mapColors";
+import { svgCircle, svgCross, svgSquare, svgTriangle } from "./svgShapes";
 
 const iconSize = 25;
 
