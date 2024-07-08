@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { getActiveDiagramType } from "@/redux/planSheets/planSheetsSlice.ts";
+import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();
@@ -49,7 +50,9 @@ const PlanSheets = () => {
 
   return (
     <>
-      <Header view="Sheets" />
+      <Header view="Sheets">
+        <PlanSheetsHeaderButtons />
+      </Header>
       <div className="PlanSheets" ref={modalOwnerRef}>
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
           <div className="PlanSheetsDiagramOptions">

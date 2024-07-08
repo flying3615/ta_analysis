@@ -14,6 +14,8 @@ export interface HeaderProps {
   view: ViewMode;
 }
 
+export const VerticalSpacer = () => <div className="verticalSpacer" />;
+
 const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
   const navigate = useNavigate();
   const transactionId = useTransactionId();
@@ -36,6 +38,7 @@ const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
   return (
     <header className="Header">
       <HeaderToggle onNavigate={handleNavigate} view={view} />
+      <VerticalSpacer />
       {children}
     </header>
   );

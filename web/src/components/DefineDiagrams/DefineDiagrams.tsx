@@ -32,7 +32,7 @@ import {
   getVectorsForOpenLayers,
 } from "./featureMapper";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
-import { DefineDiagramMenuButtons } from "@/components/DefineDiagrams/DefineDiagramHeaderButtons.tsx";
+import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 
 export interface DefineDiagramsProps {
   mock?: boolean;

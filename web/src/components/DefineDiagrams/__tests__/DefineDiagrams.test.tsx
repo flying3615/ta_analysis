@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import {
@@ -15,6 +15,26 @@ import userEvent from "@testing-library/user-event";
 import { server } from "@/mocks/mockServer.ts";
 import { HttpResponse, http } from "msw";
 
+const buttonLabels = [
+  "Delete",
+  "Zoom in",
+  "Zoom out",
+  "Zoom centre",
+  "Select RT lines",
+  "Add RT lines",
+  "Draw RT boundary",
+  "Draw abuttal",
+  "Select line",
+  "Define primary diagram",
+  "Define non-primary diagram",
+  "Define survey diagram rectangle",
+  "Select diagram",
+  "Label diagrams",
+  "Enlarge diagram",
+  "Reduce diagram",
+  "Manage labels",
+];
+
 describe("DefineDiagrams", () => {
   const mockMap = getMockMap();
   beforeEach(() => {
@@ -30,6 +50,24 @@ describe("DefineDiagrams", () => {
     );
     // header toggle label is visible
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
+  });
+
+  it("should have all navigation buttons", async () => {
+    renderCompWithReduxAndRoute(
+      <DefineDiagrams mock={true} />,
+      "/plan-generation/define-diagrams/123",
+      "/plan-generation/define-diagrams/:transactionId",
+    );
+    window.alert = jest.fn();
+
+    buttonLabels.forEach((label) => {
+      expect(screen.getByLabelText(label)).toBeInTheDocument();
+    });
+
+    buttonLabels.forEach((label) => {
+      fireEvent.click(screen.getByLabelText(label));
+      expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented");
+    });
   });
 
   it("call prepares dataset and subsequent queries on initial render", async () => {

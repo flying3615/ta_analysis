@@ -14,4 +14,14 @@ $headerHeight: 56px;
 
   color: lui.$charcoal;
   fill: lui.$fuscous;
+
+  .verticalSpacer {
+    height: calc($headerHeight / 2);
+    border-left: 1px solid lui.$dew;
+    margin: 0 lui.$unit-xs;
+  }
+
+  .nestedButtonMenu {
+    margin: 0 lui.$unit-xs;
+  }
 }
