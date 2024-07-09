@@ -32,6 +32,7 @@ export const handlers: HttpHandler[] = [
   http.post(/\/diagrams\/123$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/124$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/125$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/diagrams\/126$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/456$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/666$/, () =>
     HttpResponse.json(
@@ -71,10 +72,29 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
+  // Survey 126: Return two marks in order to center the map on the geotiles fixture data we have manually defined
+  http.get(/\/survey-features\/126$/, () =>
+    HttpResponse.json(
+      {
+        marks: [
+          unmarkedPointBuilder().withCoordinates([10.9857178, -45.07255078]).build(),
+          unmarkedPointBuilder().withCoordinates([10.9925842, -45.06770141]).build(),
+        ],
+        primaryParcels: [],
+        nonPrimaryParcels: [],
+        centreLineParcels: [],
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
   http.get(/\/diagrams\/123$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
   http.get(/\/diagrams\/125$/, () =>
+    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.get(/\/diagrams\/126$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
 

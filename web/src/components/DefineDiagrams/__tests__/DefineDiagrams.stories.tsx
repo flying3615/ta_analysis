@@ -100,6 +100,17 @@ export const UnderlyingLayers: Story = {
   },
 };
 
+export const RoadCentrelineLayers: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "126",
+  },
+};
+
 export const SystemGeneratedDiagrams: Story = {
   ...Default,
   parameters: {
