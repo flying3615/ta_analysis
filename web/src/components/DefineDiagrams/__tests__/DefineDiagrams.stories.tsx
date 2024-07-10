@@ -111,7 +111,7 @@ export const RoadCentrelineLayers: Story = {
   },
 };
 
-export const SystemGeneratedDiagrams: Story = {
+export const Diagrams: Story = {
   ...Default,
   parameters: {
     ...Default.parameters,

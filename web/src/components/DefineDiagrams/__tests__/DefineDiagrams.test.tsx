@@ -192,10 +192,14 @@ describe("DefineDiagrams", () => {
     const diagramsLayerState = mockMap.layerState[DIAGRAMS_LAYER_NAME];
     await waitFor(() => expect(diagramsLayerState?.visible).toBeTruthy());
     await waitFor(() => {
-      expect(diagramsLayerState).toHaveFeatureCount(2);
+      expect(diagramsLayerState).toHaveFeatureCount(6);
     });
     expect(diagramsLayerState).toHaveFeature(1);
     expect(diagramsLayerState).toHaveFeature(2);
+    expect(diagramsLayerState).toHaveFeature(3);
+    expect(diagramsLayerState).toHaveFeature(4);
+    expect(diagramsLayerState).toHaveFeature(5);
+    expect(diagramsLayerState).toHaveFeature(6);
   });
 
   it("displays error when survey not found", async () => {

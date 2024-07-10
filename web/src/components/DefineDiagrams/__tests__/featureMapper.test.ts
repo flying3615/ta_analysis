@@ -95,21 +95,21 @@ describe("featureMapper", () => {
     const diagrams = getDiagramsForOpenLayers(mockDiagrams());
 
     expect(diagrams[0]?.id).toBe(1);
-    expect((diagrams[0] as Record<string, string>)?.["diagramType"]).toBe(CpgDiagramType.SYSP);
+    expect((diagrams[0] as Record<string, string>)?.["diagramType"]).toBe(CpgDiagramType.SYSN);
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 50]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 50]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 150]);
+    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
+    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 250]);
+    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 250]);
+    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
 
     expect(diagrams[1]?.id).toBe(2);
     expect((diagrams[1] as Record<string, string>)?.["diagramType"]).toBe(CpgDiagramType.SYSP);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(7);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 50]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [250, 50]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [250, 250]);
+    expect(diagrams[1]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
+    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
+    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 250]);
     expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 250]);
     expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 150]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
+    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
   });
 });
