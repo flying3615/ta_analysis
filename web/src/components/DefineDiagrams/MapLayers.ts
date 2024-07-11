@@ -11,6 +11,7 @@ import {
 } from "@linzjs/landonline-openlayers-map";
 
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
+import { lineStyles } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
 
 import { markStyleFunction } from "./markStyles";
@@ -26,8 +27,10 @@ export const PARCELS_LAYER_NAME = "parcels";
 export const VECTORS_LAYER_NAME = "vectors";
 export const DIAGRAMS_LAYER_NAME = "diagrams";
 export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
+export const LINES_LAYER_NAME = "lines";
 
 const zIndexes: Record<string, number> = {
+  LINES_LAYER_NAME: 51,
   DIAGRAMS_LAYER_NAME: 50,
   MARKS_LAYER_NAME: 2,
   PARCELS_LAYER_NAME: 1,
@@ -116,6 +119,24 @@ export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenL
     togglable: false,
     zIndex: zIndexes[DIAGRAMS_LAYER_NAME],
     style: diagramStyles,
+    source: {
+      type: SourceType.FEATURES,
+      data,
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const linesLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: LINES_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: true,
+    inInitialZoom: true,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[LINES_LAYER_NAME],
+    style: lineStyles,
     source: {
       type: SourceType.FEATURES,
       data,

@@ -11,6 +11,7 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram.tsx";
 import {
   diagramsLayer,
+  linesLayer,
   marksLayer,
   parcelsLayer,
   underlyingParcelsLayer,
@@ -22,12 +23,14 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetDiagramsQuery } from "@/queries/diagrams";
+import { useGetLinesQuery } from "@/queries/lines.ts";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import {
   getDiagramsForOpenLayers,
+  getLinesForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
@@ -76,8 +79,17 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     enabled: prepareDatasetIsSuccess, // Don't fetch diagrams until the dataset is prepared
   });
 
-  const error = prepareDatasetError ?? featuresError ?? diagramsError;
-  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramsIsLoading;
+  const {
+    data: diagramLines,
+    isLoading: diagramLinesIsLoading,
+    error: diagramLinesError,
+  } = useGetLinesQuery({
+    transactionId,
+    enabled: prepareDatasetIsSuccess, // Don't fetch lines until the dataset is prepared
+  });
+
+  const error = prepareDatasetError ?? featuresError ?? diagramsError ?? diagramLinesError;
+  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramsIsLoading || diagramLinesIsLoading;
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -103,7 +115,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
       </Header>
       <div className="DefineDiagrams" ref={modalOwnerRef}>
         {isLoading && <LuiLoadingSpinner />}
-        {!isLoading && features && diagrams && (
+        {!isLoading && features && diagrams && diagramLines && (
           <LolOpenLayersMap
             view={{
               projection: "EPSG:3857",
@@ -120,6 +132,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
               marksLayer(getMarksForOpenLayers(features), maxZoom),
               vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
               diagramsLayer(getDiagramsForOpenLayers(diagrams), maxZoom),
+              linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
             ]}
           />
         )}

@@ -86,7 +86,7 @@ describe("DefineDiagrams", () => {
 
     // async callback from the prepareDataset success
     // Note: Prepare dataset should only be called once!
-    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenCalledTimes(4);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -111,6 +111,15 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/diagrams/123",
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      4,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/123/lines",
         }),
       }),
     );

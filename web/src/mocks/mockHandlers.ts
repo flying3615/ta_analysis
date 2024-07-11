@@ -1,7 +1,9 @@
 import { http, HttpHandler, HttpResponse } from "msw";
 
 import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
+import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
+import { mockLines } from "@/mocks/data/mockLines.ts";
 import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
@@ -26,9 +28,6 @@ export const handlers: HttpHandler[] = [
 
   http.get(/\/plan\/123$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
 
-  http.get(/\/diagrams\/123$/, () =>
-    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
-  ),
   http.post(/\/diagrams\/123$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/124$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/diagrams\/125$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
@@ -55,6 +54,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/diagrams\/124$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
+  http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
 
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/survey-features\/125$/, () =>
@@ -97,6 +97,11 @@ export const handlers: HttpHandler[] = [
   http.get(/\/diagrams\/126$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
+
+  http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/126\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/666\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
 
   // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint

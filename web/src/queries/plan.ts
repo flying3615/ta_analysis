@@ -10,5 +10,5 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
   useQuery({
     ...params,
     queryKey: getPlanQueryKey(transactionId),
-    queryFn: () => new PlanControllerApi(apiConfig()).plan({ transactionId }),
+    queryFn: () => new PlanControllerApi(apiConfig()).getPlan({ transactionId }),
   });
