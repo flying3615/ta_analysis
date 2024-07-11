@@ -11,6 +11,7 @@ import { Route, Routes } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import { DefineDiagrams as DefineDiagramsOld } from "@/components/DefineDiagrams/DefineDiagramsOld.tsx";
 import LandingPage from "@/components/LandingPage/LandingPage";
 import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
@@ -29,7 +30,10 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
     FEATUREFLAGS.SURVEY_PLAN_GENERATION,
   );
 
-  if (loadingApplicationAvailable) {
+  const { result: isDefineDiagramsOn, loading: isDefineDiagramsToggleLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS,
+  );
+  if (loadingApplicationAvailable || isDefineDiagramsToggleLoading) {
     return <LuiLoadingSpinner />;
   }
 
@@ -48,7 +52,11 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
   return (
     <Routes>
       <Route path={Paths.root} element={<LandingPage />} />
-      <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
+      {isDefineDiagramsOn ? (
+        <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
+      ) : (
+        <Route path={Paths.defineDiagrams} element={<DefineDiagramsOld mock={props.mockMap} />} />
+      )}
       <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
       <Route path="*" element={<NoMatchingRouteFound />} />
     </Routes>

@@ -2,6 +2,7 @@ import { MockedFeaturesMap } from "@splitsoftware/splitio/types/splitio";
 
 export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION = "survey-plan-generation",
+  SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS = "survey-plan-generation-define-diagrams",
 }
 
 export enum TREATMENTS {
