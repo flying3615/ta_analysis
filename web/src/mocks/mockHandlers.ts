@@ -28,12 +28,12 @@ export const handlers: HttpHandler[] = [
 
   http.get(/\/plan\/123$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
 
-  http.post(/\/diagrams\/123$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/diagrams\/124$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/diagrams\/125$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/diagrams\/126$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/diagrams\/456$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/diagrams\/666$/, () =>
+  http.post(/\/123\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/125\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/126\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/666\/prepare$/, () =>
     HttpResponse.json(
       { ok: false, statusCode: 20001, message: "prepare dataset application error" },
       { status: 200, statusText: "OK" },
@@ -53,7 +53,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagrams\/124$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
+  http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
 
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
@@ -88,13 +88,13 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagrams\/123$/, () =>
+  http.get(/\/123\/diagrams$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
-  http.get(/\/diagrams\/125$/, () =>
+  http.get(/\/125\/diagrams$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
-  http.get(/\/diagrams\/126$/, () =>
+  http.get(/\/126\/diagrams$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
 
@@ -115,7 +115,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Application errors
-  http.post(/\/diagrams\/666$/, () =>
+  http.post(/\/666\/diagrams$/, () =>
     HttpResponse.json(
       { ok: false, statusCode: 20001, message: "prepare dataset application error" },
       { status: 200, statusText: "OK" },
@@ -126,13 +126,13 @@ export const handlers: HttpHandler[] = [
   http.get(/\/survey-features\/404/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
-  http.get(/\/diagrams\/404/, () =>
+  http.get(/\/404\/diagrams/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.get(/\/plan\/404/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
-  http.post(/\/diagrams\/404$/, () =>
+  http.post(/\/404\/diagrams$/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
 ];

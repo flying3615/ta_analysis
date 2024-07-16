@@ -92,7 +92,7 @@ describe("DefineDiagrams", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
-          url: "http://localhost/api/v1/generate-plans/diagrams/123",
+          url: "http://localhost/api/v1/generate-plans/123/prepare",
         }),
       }),
     );
@@ -110,7 +110,7 @@ describe("DefineDiagrams", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/api/v1/generate-plans/diagrams/123",
+          url: "http://localhost/api/v1/generate-plans/123/diagrams",
         }),
       }),
     );
@@ -245,7 +245,7 @@ describe("DefineDiagrams", () => {
   });
 
   it("displays loading spinner when survey data hasn't been loaded", async () => {
-    server.use(http.get(/\/diagrams\/123$/, () => HttpResponse.text(null, { status: 404 })));
+    server.use(http.get(/\/123\/diagrams$/, () => HttpResponse.text(null, { status: 404 })));
     server.use(http.get(/\/survey-features\/123$/, () => HttpResponse.text(null, { status: 404 })));
 
     renderCompWithReduxAndRoute(
