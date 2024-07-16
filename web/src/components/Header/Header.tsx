@@ -14,7 +14,7 @@ export interface HeaderProps {
   view: ViewMode;
 }
 
-export const VerticalSpacer = () => <div className="verticalSpacer" />;
+export const VerticalSpacer = () => <div className="vertical-spacer" />;
 
 const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
   const navigate = useNavigate();

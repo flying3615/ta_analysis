@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsActionType.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 
 export interface DefineDiagramsState {
   action: DefineDiagramsActionType;

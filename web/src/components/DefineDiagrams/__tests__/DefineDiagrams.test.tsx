@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
+import { DefineDiagramMenuLabels } from "@/components/DefineDiagrams/defineDiagramsType";
 import {
   DIAGRAMS_LAYER_NAME,
   MARKS_LAYER_NAME,
@@ -17,23 +18,16 @@ import { server } from "@/mocks/mockServer.ts";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const buttonLabels = [
-  "Delete",
-  "Zoom in",
-  "Zoom out",
-  "Zoom centre",
-  "Select RT lines",
-  "Add RT lines",
-  "Draw RT boundary",
-  "Draw abuttal",
-  "Select line",
-  "Define primary diagram",
-  "Define non-primary diagram",
-  "Define survey diagram rectangle",
-  "Select diagram",
-  "Label diagrams",
-  "Enlarge diagram",
-  "Reduce diagram",
-  "Manage labels",
+  DefineDiagramMenuLabels.ZoomIn,
+  DefineDiagramMenuLabels.ZoomOut,
+  DefineDiagramMenuLabels.ZoomCentre,
+  DefineDiagramMenuLabels.SelectRTLines,
+  DefineDiagramMenuLabels.AddRTLines,
+  DefineDiagramMenuLabels.DrawRTBoundary,
+  DefineDiagramMenuLabels.DrawAbuttal,
+  DefineDiagramMenuLabels.SelectLine,
+  DefineDiagramMenuLabels.SelectDiagram,
+  DefineDiagramMenuLabels.LabelDiagrams,
 ];
 
 describe("DefineDiagrams", () => {

@@ -1,9 +1,4 @@
 .HeaderToggle {
-  // needed to override specificity in lui
-  .Header & {
-    padding-right: 0.4375rem;
-  }
-
   &__dropdownIcon {
     // needed to override specificity in lui
     .Header .lui-button-icon & {

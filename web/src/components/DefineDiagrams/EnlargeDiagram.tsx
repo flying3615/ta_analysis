@@ -1,4 +1,4 @@
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsActionType.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";

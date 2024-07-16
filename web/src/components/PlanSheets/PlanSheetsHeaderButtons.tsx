@@ -1,91 +1,199 @@
-import { LuiButton, LuiIcon, LuiMenu } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
+import { useState } from "react";
 
 import { VerticalSpacer } from "@/components/Header/Header";
-import { luiColors } from "@/constants";
+import { HeaderButton } from "@/components/Header/HeaderButton";
+import { HeaderMenu } from "@/components/Header/HeaderMenu";
+
+import { PlanSheetMenuLabels } from "./PlanSheetType";
 
 const PlanSheetsHeaderButtons = () => {
+  const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+
+  const handleHeaderButtonClick = (label: string) => {
+    setSelectedButtonLabel(label);
+  };
+
   return (
     <>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_line_arc_reverse" alt="Line arc reverse" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_delete_forever" alt="Delete" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.LineArcReverse}
+        iconName="ic_line_arc_reverse"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.LineArcReverse);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.Delete}
+        iconName="ic_delete_forever"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.Delete);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_pan_map_alt" alt="Pan map" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_zoom_out" alt="Zoom out" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_add" alt="Zoom in" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_zoom_previous" alt="Zoom previous" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_zoom_centre" alt="Zoom centre" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.PanMap}
+        iconName="ic_pan_map_alt"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.PanMap);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.ZoomOut}
+        iconName="ic_zoom_out"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomOut);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.ZoomIn}
+        iconName="ic_add"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomIn);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.ZoomPrevious}
+        iconName="ic_zoom_previous"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomPrevious);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.ZoomCentre}
+        iconName="ic_zoom_centre"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomCentre);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton className="lui-button-icon-only" level="tertiary" style={{ whiteSpace: "nowrap" }}>
-            <LuiIcon name="ic_manage_labels" alt="Manage labels" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      <HeaderMenu
+        primaryButtonLabel={PlanSheetMenuLabels.ManageLabels}
+        primaryButtonIcon="ic_manage_labels"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>View labels</MenuHeader>
         {/* see https://www.figma.com/design/1BgaquDso4nMqlGAJ2bLdj/Plan-Generation-(Survey-Q)?node-id=0-1&t=w9XoSPwjxgkeJioP-0 */}
         <MenuItem>Dynamically gen list</MenuItem>
-      </LuiMenu>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_view" alt="View" size="md" />
-      </LuiButton>
+      </HeaderMenu>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.View}
+        iconName="ic_view"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.View);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_pointer_outlined" alt="Cursor" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_diagram" alt="Select diagram" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_label" alt="Select label" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_coordinates" alt="Select coordinates" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_line" alt="Select line" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.Cursor}
+        iconName="ic_pointer_outlined"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.Cursor);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectDiagram}
+        iconName="ic_select_diagram"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectDiagram);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectLabel}
+        iconName="ic_select_label"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectLabel);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectCoordinates}
+        iconName="ic_select_coordinates"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectCoordinates);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectLine}
+        iconName="ic_select_line"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectLine);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_polygon_selection" alt="Select polygon" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectPolygon}
+        iconName="ic_polygon_selection"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectPolygon);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_add_label" alt="Add label" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_add_line" alt="Add line" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_format_lines_text" alt="Format lines text" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.AddLabel}
+        iconName="ic_add_label"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.AddLabel);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.AddLine}
+        iconName="ic_add_line"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.AddLine);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.FormatLinesText}
+        iconName="ic_format_lines_text"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.FormatLinesText);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_square_selection" alt="Select rectangle" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={PlanSheetMenuLabels.SelectRectangle}
+        iconName="ic_square_selection"
+        onClick={() => {
+          handleHeaderButtonClick(PlanSheetMenuLabels.SelectRectangle);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
     </>
   );
 };

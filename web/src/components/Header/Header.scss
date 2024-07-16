@@ -10,18 +10,113 @@ $headerHeight: 56px;
   flex-direction: row;
   height: $headerHeight;
   width: 100vw;
-  padding-left: 8px;
+  padding-left: lui.$unit-xs;
 
   color: lui.$charcoal;
   fill: lui.$fuscous;
 
-  .verticalSpacer {
-    height: calc($headerHeight / 2);
+  .vertical-spacer {
+    height: lui.$unit-md;
     border-left: 1px solid lui.$dew;
     margin: 0 lui.$unit-xs;
   }
 
-  .nestedButtonMenu {
-    margin: 0 lui.$unit-xs;
+  .lui-button-icon-only,
+  .lui-button-menu {
+    &:active,
+    &:active:enabled {
+      background-color: lui.$polar;
+      & .LuiIcon {
+        & circle,
+        ellipse,
+        line,
+        path,
+        polygon,
+        polyline,
+        rect {
+          fill: rgba(lui.$sea, 0.7);
+          opacity: 0.7;
+        }
+      }
+    }
+    &:active:disabled {
+      background-color: inherit;
+      & .LuiIcon {
+        & circle,
+        ellipse,
+        line,
+        path,
+        polygon,
+        polyline,
+        rect {
+          fill: lui.$gray;
+          opacity: inherit;
+        }
+      }
+    }
+    &.selected {
+      background-color: lui.$teal;
+      & .LuiIcon {
+        & circle,
+        ellipse,
+        line,
+        path,
+        polygon,
+        polyline,
+        rect {
+          fill: lui.$snow;
+        }
+      }
+    }
+  }
+
+  .lui-button-menu {
+    margin: 0 lui.$unit-xxs;
+    padding: lui.$unit-xxs;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & .loading-spinner {
+    background-color: lui.$polar;
+    padding: 10px;
+
+    &__nested {
+      background-color: lui.$polar;
+      padding: 10px 20px;
+    }
+  }
+
+  .szh-menu {
+    width: 274px;
+    padding: 0;
+
+    &__header {
+      color: lui.$fuscous;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 32px;
+      padding: 0 lui.$unit-xs;
+      text-transform: none;
+    }
+
+    &__item {
+      color: lui.$charcoal;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 40px;
+      padding: 0 lui.$unit-xs;
+
+      &--active {
+        background-color: lui.$polar;
+      }
+    }
+
+    .LuiIcon {
+      fill: lui.$fuscous;
+      margin-right: lui.$unit-xs;
+    }
   }
 }

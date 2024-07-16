@@ -1,218 +1,249 @@
-import { LuiButton, LuiIcon, LuiMenu } from "@linzjs/lui";
+import { LuiIcon } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
+import { useState } from "react";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsActionType.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { VerticalSpacer } from "@/components/Header/Header";
-import { luiColors } from "@/constants.tsx";
+import { HeaderButton } from "@/components/Header/HeaderButton";
+import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
+import { DefineDiagramMenuLabels } from "./defineDiagramsType";
+
 export const DefineDiagramMenuButtons = () => {
+  const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+
   const dispatch = useAppDispatch();
   const changeActiveAction = (action: DefineDiagramsActionType) => () => dispatch(setActiveAction(action));
 
+  const handleHeaderButtonClick = (label: string) => {
+    setSelectedButtonLabel(label);
+  };
+
   return (
     <>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_delete_forever" alt="Delete" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_add" alt="Zoom in" size="md" />
-      </LuiButton>
+      <HeaderButton
+        isDisabled={true}
+        headerMenuLabel={DefineDiagramMenuLabels.Delete}
+        iconName="ic_delete_forever"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.Delete);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_zoom_out" alt="Zoom out" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_zoom_centre" alt="Zoom centre" size="md" />
-      </LuiButton>
+      <HeaderButton
+        // isLoading={true}
+        headerMenuLabel={DefineDiagramMenuLabels.ZoomIn}
+        iconName="ic_add"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomIn);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.ZoomOut}
+        iconName="ic_zoom_out"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomOut);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.ZoomCentre}
+        iconName="ic_zoom_centre"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomCentre);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_rt_lines" alt="Select RT lines" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_add_rt_lines" alt="Add RT lines" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_draw_rt_bdry" alt="Draw RT boundary" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_draw_abuttal" alt="Draw abuttal" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_line" alt="Select line" size="md" />
-      </LuiButton>
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.SelectRTLines}
+        iconName="ic_select_rt_lines"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.SelectRTLines);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.AddRTLines}
+        iconName="ic_add_rt_lines"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.AddRTLines);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.DrawRTBoundary}
+        iconName="ic_draw_rt_bdry"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.DrawRTBoundary);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.DrawAbuttal}
+        iconName="ic_draw_abuttal"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.DrawAbuttal);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.SelectLine}
+        iconName="ic_select_line"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.SelectLine);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
       <VerticalSpacer />
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton
-            className="lui-button-icon-only"
-            level="tertiary"
-            style={{ whiteSpace: "nowrap" }}
-            title="Define primary diagram"
-          >
-            <LuiIcon name="ic_define_primary_diagram_rectangle" alt="Define primary diagram" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      <HeaderMenu
+        // isDisabled={true}
+        // isLoading={true}
+        primaryButtonLabel={DefineDiagramMenuLabels.DefinePrimaryDiagram}
+        primaryButtonIcon="ic_define_primary_diagram_rectangle"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
-        <MenuHeader>Define primary diagram</MenuHeader>
-        <MenuItem>
-          <LuiIcon name="ic_define_primary_diagram_rectangle" alt="Define primary diagram by rectangle" size="md" />
-          Rectangle
-        </MenuItem>
-        <MenuItem>
-          <LuiIcon name="ic_define_primary_diagram_polygon" alt="Define primary diagram by polygon" size="md" />
-          Polygon
-        </MenuItem>
-      </LuiMenu>
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton
-            className="lui-button-icon-only"
-            level="tertiary"
-            style={{ whiteSpace: "nowrap" }}
-            title="Define non-primary diagram"
-          >
-            <LuiIcon name="ic_define_nonprimary_diagram_rectangle" alt="Define non-primary diagram" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
-      >
-        <MenuHeader>Define non-primary diagram</MenuHeader>
+        <MenuHeader>{DefineDiagramMenuLabels.DefinePrimaryDiagram}</MenuHeader>
         <MenuItem>
           <LuiIcon
-            name="ic_define_nonprimary_diagram_rectangle"
-            alt="Define non-primary diagram by rectangle"
+            name="ic_define_primary_diagram_rectangle"
+            alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByRectangle}
             size="md"
           />
           Rectangle
         </MenuItem>
         <MenuItem>
-          <LuiIcon name="ic_define_nonprimary_diagram_polygon" alt="Define non-primary diagram by polygon" size="md" />
+          <LuiIcon
+            name="ic_define_primary_diagram_polygon"
+            alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByPolygon}
+            size="md"
+          />
           Polygon
         </MenuItem>
-      </LuiMenu>
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton
-            className="lui-button-icon-only"
-            level="tertiary"
-            style={{ whiteSpace: "nowrap" }}
-            title="Define survey diagram"
-          >
-            <LuiIcon name="ic_define_survey_diagram_rectangle" alt="Define survey diagram rectangle" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      </HeaderMenu>
+      <HeaderMenu
+        primaryButtonLabel={DefineDiagramMenuLabels.DefineNonPrimaryDiagram}
+        primaryButtonIcon="ic_define_nonprimary_diagram_rectangle"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
-        <MenuHeader>Define survey diagram</MenuHeader>
+        <MenuHeader>{DefineDiagramMenuLabels.DefineNonPrimaryDiagram}</MenuHeader>
         <MenuItem>
-          <LuiIcon name="ic_define_survey_diagram_rectangle" alt="Define survey diagram by rectangle" size="md" />
+          <LuiIcon
+            name="ic_define_nonprimary_diagram_rectangle"
+            alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByRectangle}
+            size="md"
+          />
           Rectangle
         </MenuItem>
         <MenuItem>
-          <LuiIcon name="ic_define_survey_diagram_polygon" alt="Define survey diagram by polygon" size="md" />
+          <LuiIcon
+            name="ic_define_nonprimary_diagram_polygon"
+            alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByPolygon}
+            size="md"
+          />
           Polygon
         </MenuItem>
-      </LuiMenu>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_select_diagram" alt="Select diagram" size="md" />
-      </LuiButton>
-      <LuiButton level="tertiary" onClick={() => alert("Not Yet Implemented")} className="lui-button-icon-only">
-        <LuiIcon name="ic_label_diagrams" alt="Label diagrams" size="md" />
-      </LuiButton>
-      <VerticalSpacer />
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton className="lui-button-icon-only" level="tertiary" style={{ whiteSpace: "nowrap" }}>
-            <LuiIcon name="ic_zoomin_snippet_rectangle" alt="Enlarge diagram" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      </HeaderMenu>
+      <HeaderMenu
+        primaryButtonLabel={DefineDiagramMenuLabels.DefineSurveyDiagram}
+        primaryButtonIcon="ic_define_survey_diagram_rectangle"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
-        <MenuHeader>Enlarge diagram</MenuHeader>
+        <MenuHeader>{DefineDiagramMenuLabels.DefineSurveyDiagram}</MenuHeader>
+        <MenuItem>
+          <LuiIcon
+            name="ic_define_survey_diagram_rectangle"
+            alt={DefineDiagramMenuLabels.DefineSurveyDiagramByRectangle}
+            size="md"
+          />
+          Rectangle
+        </MenuItem>
+        <MenuItem>
+          <LuiIcon
+            name="ic_define_survey_diagram_polygon"
+            alt={DefineDiagramMenuLabels.DefineSurveyDiagramByPolygon}
+            size="md"
+          />
+          Polygon
+        </MenuItem>
+      </HeaderMenu>
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.SelectDiagram}
+        iconName="ic_select_diagram"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.SelectDiagram);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <HeaderButton
+        headerMenuLabel={DefineDiagramMenuLabels.LabelDiagrams}
+        iconName="ic_label_diagrams"
+        onClick={() => {
+          handleHeaderButtonClick(DefineDiagramMenuLabels.LabelDiagrams);
+          alert("Not Yet Implemented");
+        }}
+        selectedButtonLabel={selectedButtonLabel}
+      />
+      <VerticalSpacer />
+      <HeaderMenu
+        primaryButtonLabel={DefineDiagramMenuLabels.EnlargeDiagram}
+        primaryButtonIcon="ic_zoomin_snippet_rectangle"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
+      >
+        <MenuHeader>{DefineDiagramMenuLabels.EnlargeDiagram}</MenuHeader>
         <MenuItem onClick={changeActiveAction("enlarge_diagram_rectangle")}>
-          <LuiIcon name="ic_zoomin_snippet_rectangle" alt="Enlarge by rectangle" size="md" />
+          <LuiIcon name="ic_zoomin_snippet_rectangle" alt={DefineDiagramMenuLabels.EnlargeByRectangle} size="md" />
           Rectangle
         </MenuItem>
         <MenuItem onClick={changeActiveAction("enlarge_diagram_polygon")}>
-          <LuiIcon name="ic_zoomin_snippet_polygon" alt="Enlarge by polygon" size="md" />
+          <LuiIcon name="ic_zoomin_snippet_polygon" alt={DefineDiagramMenuLabels.EnlargeByPolygon} size="md" />
           Polygon
         </MenuItem>
-      </LuiMenu>
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton className="lui-button-icon-only" level="tertiary" style={{ whiteSpace: "nowrap" }}>
-            <LuiIcon name="ic_zoomout_snippet_rectangle" alt="Reduce diagram" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      </HeaderMenu>
+      <HeaderMenu
+        primaryButtonLabel={DefineDiagramMenuLabels.ReduceDiagram}
+        primaryButtonIcon="ic_zoomout_snippet_rectangle"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
-        <MenuHeader>Reduce diagram</MenuHeader>
+        <MenuHeader>{DefineDiagramMenuLabels.ReduceDiagram}</MenuHeader>
         <MenuItem>
-          <LuiIcon name="ic_zoomout_snippet_rectangle" alt="Reduce by rectangle" size="md" />
+          <LuiIcon name="ic_zoomout_snippet_rectangle" alt={DefineDiagramMenuLabels.ReduceByRectangle} size="md" />
           Rectangle
         </MenuItem>
         <MenuItem>
-          <LuiIcon name="ic_zoomout_snippet_polygon" alt="Reduce by polygon" size="md" />
+          <LuiIcon name="ic_zoomout_snippet_polygon" alt={DefineDiagramMenuLabels.ReduceByPolygon} size="md" />
           Polygon
         </MenuItem>
-      </LuiMenu>
-      <LuiMenu
-        className="nestedButtonMenu"
-        menuButton={
-          <LuiButton className="lui-button-icon-only" level="tertiary" style={{ whiteSpace: "nowrap" }}>
-            <LuiIcon name="ic_manage_labels" alt="Manage labels" size="md" />
-            <LuiIcon
-              alt="Dropdown icon"
-              className="HeaderToggle__dropdownIcon"
-              color={luiColors.sea}
-              name="ic_arrow_drop_down"
-              size="md"
-            />
-          </LuiButton>
-        }
+      </HeaderMenu>
+      <HeaderMenu
+        primaryButtonLabel={DefineDiagramMenuLabels.ManageLabels}
+        primaryButtonIcon="ic_manage_labels"
+        selectedButtonLabel={selectedButtonLabel}
+        setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>View labels</MenuHeader>
         {/* see https://www.figma.com/design/1BgaquDso4nMqlGAJ2bLdj/Plan-Generation-(Survey-Q)?node-id=0-1&t=w9XoSPwjxgkeJioP-0 */}
         <MenuItem>Dynamically gen list</MenuItem>
-      </LuiMenu>
+      </HeaderMenu>
     </>
   );
 };
