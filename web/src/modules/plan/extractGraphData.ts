@@ -20,7 +20,20 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
       };
     };
 
+    const symbolToNode = (label: ILabel) => {
+      return {
+        id: label.id.toString(),
+        position: label.position,
+        label: label.displayText,
+        diagramIndex,
+        properties: {
+          symbolId: label.displayText,
+        },
+      };
+    };
+
     const notSymbol = (label: ILabel) => label.font !== "LOLsymbols";
+    const isSymbol = (label: ILabel) => label.font === "LOLsymbols";
 
     return [
       ...diagram.coordinates.map((coordinate) => {
@@ -33,10 +46,13 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
           },
         };
       }),
+
       ...diagram.labels.filter(notSymbol).map(labelToNode),
       ...diagram.coordinateLabels.filter(notSymbol).map(labelToNode),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode),
       ...diagram.parcelLabels.filter(notSymbol).map(labelToNode),
+
+      ...diagram.coordinateLabels.filter(isSymbol).map(symbolToNode),
     ];
   });
 };

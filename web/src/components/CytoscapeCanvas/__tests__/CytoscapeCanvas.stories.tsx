@@ -5,7 +5,7 @@ import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__t
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
 
-import CytoscapeCanvas from "../CytoscapeCanvas";
+import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
 export default {
   title: "CytoscapeCanvas",
@@ -28,13 +28,20 @@ const fromBuilder = () =>
     y: -90,
   });
 
-const CanvasFromMockData = (props: { data: PlanResponseDTO }) => {
+const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
+
+const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom }) => {
   const nodeData = extractNodes(props.data.diagrams);
   const edgeData = extractEdges(props.data.diagrams);
 
   return (
     <div style={{ height: "100vh" }}>
-      <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={props.data.diagrams} />
+      <CytoscapeCanvas
+        nodeData={nodeData}
+        edgeData={edgeData}
+        diagrams={props.data.diagrams}
+        initZoom={props.initZoom}
+      />
     </div>
   );
 };
@@ -115,6 +122,70 @@ export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
   parameters: {
     viewport: {
       defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+
+    allSymbolCodes.forEach((code, idx) => {
+      const ypos = -10 - 4 * idx;
+
+      builder.addSymbolLabel(idx * 10, code.toString(), {
+        x: 20,
+        y: ypos,
+      });
+      builder.addLabel(
+        "coordinateLabels",
+        idx * 10 + 1,
+        code.toString(),
+        {
+          x: 24,
+          y: ypos - 1,
+        },
+        undefined,
+        undefined,
+        "display",
+        "Tahoma",
+        8,
+      );
+    });
+    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 1.5, pan: { x: 0, y: 0 } }} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    // Calculated as 1 plan pixels => 0.1079 meters @3.64 ground metres per cm
+    const spacingPixels = 0.1079;
+
+    allSymbolCodes.forEach((code, idx) => {
+      // Codes can be ascii codes or characters
+      builder.addSymbolLabel(idx * 10, String.fromCharCode(code), {
+        x: 60 + idx * 20 * spacingPixels,
+        y: -50,
+      });
+      builder.addSymbolLabel(idx * 10 + 1, code.toString(), {
+        x: 60 + idx * 20 * spacingPixels,
+        y: -50 - 20 * spacingPixels,
+      });
+    });
+
+    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 4.0, pan: { x: -800, y: -550 } }} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
       defaultOrientation: "landscape",
     },
   },

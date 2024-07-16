@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CPG_XML01 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" transactionId="2290194">
+	<Diagram id="1" diagramType="sysGenTraverseDiag" listOrder="1" zoomScale="831.00" originPageOffset="0.015 -0.015" bottomRightPoint="227.420 -205.133" displayState="systemDisplay" pageRef="1">
+		<Coordinate id="10001" coordType="node" lolId="1" lolIdSource="ZMRK" originalCoord="28.183 -27.868" userEdited="false">28.183 -27.868<Label id="4" labelType="markName" displayText="IT" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">28.183 -27.868</Label>
+			<Label id="5" labelType="markDescription" displayText="(PRM New)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="315.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">28.183 -27.868</Label>
+			<Label id="6" labelType="nodeSymbol1" displayText="96" font="LOLsymbols" fontSize="14" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">28.183 -27.868</Label>
+		</Coordinate>
+		<Coordinate id="10002" coordType="node" lolId="2" lolIdSource="ZMRK" originalCoord="206.389 -166.498" userEdited="false">206.389 -166.498<Label id="7" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="36.8" anchorAngle="2.4" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">206.389 -166.498</Label>
+			<Label id="8" labelType="markDescription" displayText="(CSNM Adopt)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="34.7" anchorAngle="356.7" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">206.389 -166.498</Label>
+			<Label id="9" labelType="nodeSymbol1" displayText="63" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">206.389 -166.498</Label>
+		</Coordinate>
+		<Coordinate id="10003" coordType="node" lolId="3" lolIdSource="ZMRK" originalCoord="198.905 -172.930" userEdited="false">198.905 -172.930<Label id="10" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="23.3" anchorAngle="356.9" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">198.905 -172.930</Label>
+			<Label id="11" labelType="markDescription" displayText="(CSNM Old)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="30.7" anchorAngle="0.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">198.905 -172.930</Label>
+			<Label id="12" labelType="nodeSymbol1" displayText="117" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">198.905 -172.930</Label>
+		</Coordinate>
+		<Coordinate id="10004" coordType="node" lolId="4" lolIdSource="ZMRK" originalCoord="189.720 -176.568" userEdited="false">189.720 -176.568<Label id="13" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="24.9" anchorAngle="334.2" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">189.720 -176.568</Label>
+			<Label id="14" labelType="markDescription" displayText="(Bound Post Adopt)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="23.8" anchorAngle="334.1" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">189.720 -176.568</Label>
+			<Label id="15" labelType="nodeSymbol1" displayText="111" font="LOLsymbols" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">189.720 -176.568</Label>
+		</Coordinate>
+		<Coordinate id="10005" coordType="node" lolId="5" lolIdSource="ZMRK" originalCoord="179.986 -177.264" userEdited="false">179.986 -177.264<Label id="16" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="21.7" anchorAngle="248.3" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">179.986 -177.264</Label>
+			<Label id="17" labelType="markDescription" displayText="(Bound POST new)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="36.3" anchorAngle="227.5" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">179.986 -177.264</Label>
+			<Label id="18" labelType="nodeSymbol1" displayText="111" font="LOLsymbols" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">179.986 -177.264</Label>
+		</Coordinate>
+		<Coordinate id="10006" coordType="node" lolId="6" lolIdSource="ZMRK" originalCoord="170.526 -174.515" userEdited="false">170.526 -174.515<Label id="19" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="31.0" anchorAngle="220.6" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">170.526 -174.515</Label>
+			<Label id="20" labelType="markDescription" displayText="(Bound POST Old)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="47.1" anchorAngle="206.3" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">170.526 -174.515</Label>
+			<Label id="21" labelType="nodeSymbol1" displayText="110" font="LOLsymbols" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">170.526 -174.515</Label>
+		</Coordinate>
+		<Coordinate id="10007" coordType="node" lolId="7" lolIdSource="ZMRK" originalCoord="162.853 -171.269" userEdited="false">162.853 -171.269<Label id="22" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="31.5" anchorAngle="193.7" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">162.853 -171.269</Label>
+			<Label id="23" labelType="markDescription" displayText="(UNMK new)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="22.3" anchorAngle="203.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">162.853 -171.269</Label>
+			<Label id="24" labelType="nodeSymbol1" displayText="179" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">162.853 -171.269</Label>
+		</Coordinate>
+		<Coordinate id="10008" coordType="node" lolId="8" lolIdSource="ZMRK" originalCoord="150.781 -169.286" userEdited="false">150.781 -169.286<Label id="25" labelType="markName" displayText="IT II SO 36952" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="64.9" anchorAngle="211.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">150.781 -169.286</Label>
+			<Label id="26" labelType="markDescription" displayText="(UNMK adopted)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="68.9" anchorAngle="213.8" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">150.781 -169.286</Label>
+			<Label id="27" labelType="nodeSymbol1" displayText="179" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">150.781 -169.286</Label>
+		</Coordinate>
+		<Coordinate id="10009" coordType="node" lolId="9" lolIdSource="ZMRK" originalCoord="124.723 -165.141" userEdited="false">124.723 -165.141<Label id="28" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">124.723 -165.141</Label>
+			<Label id="29" labelType="markDescription" displayText="(Other Adopted)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="315.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">124.723 -165.141</Label>
+			<Label id="30" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">124.723 -165.141</Label>
+		</Coordinate>
+		<Coordinate id="10010" coordType="node" lolId="10" lolIdSource="ZMRK" originalCoord="93.369 -151.822" userEdited="false">91.992 -150.411<Label id="31" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="21.1" anchorAngle="4.2" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">91.992 -150.411</Label>
+			<Label id="32" labelType="markDescription" displayText="(Other New)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="21.4" anchorAngle="358.5" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">91.992 -150.411</Label>
+			<Label id="33" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">91.992 -150.411</Label>
+		</Coordinate>
+		<Coordinate id="10011" coordType="node" lolId="11" lolIdSource="ZMRK" originalCoord="90.878 -150.737" userEdited="false">90.579 -150.411<Label id="34" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="43.5" anchorAngle="185.8" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">90.579 -150.411</Label>
+			<Label id="35" labelType="markDescription" displayText="(Other Old)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="47.9" anchorAngle="186.1" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">90.579 -150.411</Label>
+			<Label id="36" labelType="nodeSymbol1" displayText="182" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">90.579 -150.411</Label>
+		</Coordinate>
+		<Coordinate id="10012" coordType="node" lolId="15" lolIdSource="ZMRK" originalCoord="21.025 -92.091" userEdited="false">21.025 -92.091<Label id="37" labelType="markName" displayText="IT 1014" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">21.025 -92.091</Label>
+			<Label id="38" labelType="markDescription" displayText="(PRM Old)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="315.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">21.025 -92.091</Label>
+			<Label id="39" labelType="nodeSymbol1" displayText="97" font="LOLsymbols" fontSize="14" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">21.025 -92.091</Label>
+		</Coordinate>
+		<Line id="1001" lineType="observation" lolId="1000" lolIdSource="ZOBN" lineSegment="1" style="dot2" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10002</CoordRefs>
+			<Label id="40" labelType="obsBearing" displayText="100°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="322.1" pointOffset="2.0" anchorAngle="52.1" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">117.287 -97.181</Label>
+			<Label id="41" labelType="obsDistance" displayText="200.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="322.1" pointOffset="2.0" anchorAngle="232.1" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">117.287 -97.181</Label>
+			<Label id="42" labelType="obsCode" displayText="ob0" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="322.1" pointOffset="2.0" anchorAngle="52.1" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">117.287 -97.181</Label>
+		</Line>
+		<Line id="1002" lineType="observation" lolId="1001" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10003</CoordRefs>
+			<Label id="43" labelType="obsBearing" displayText="105°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="319.6" pointOffset="2.0" anchorAngle="49.6" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">113.545 -100.398</Label>
+			<Label id="44" labelType="obsDistance" displayText="200.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="319.6" pointOffset="2.0" anchorAngle="229.6" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">113.545 -100.398</Label>
+			<Label id="45" labelType="obsCode" displayText="ob1" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="319.6" pointOffset="2.0" anchorAngle="49.6" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">113.545 -100.398</Label>
+		</Line>
+		<Line id="1003" lineType="observation" lolId="1002" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10004</CoordRefs>
+			<Label id="46" labelType="obsBearing" displayText="110°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="317.4" pointOffset="2.0" anchorAngle="47.4" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">108.952 -102.217</Label>
+			<Label id="47" labelType="obsDistance" displayText="200.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="317.4" pointOffset="2.0" anchorAngle="227.4" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">108.952 -102.217</Label>
+			<Label id="48" labelType="obsCode" displayText="ob2" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="317.4" pointOffset="2.0" anchorAngle="47.4" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">108.952 -102.217</Label>
+		</Line>
+		<Line id="1004" lineType="observation" lolId="1003" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10005</CoordRefs>
+			<Label id="49" labelType="obsBearing" displayText="115°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="315.5" pointOffset="2.0" anchorAngle="45.5" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">104.085 -102.565</Label>
+			<Label id="50" labelType="obsDistance" displayText="190.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="315.5" pointOffset="2.0" anchorAngle="225.5" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">104.085 -102.565</Label>
+			<Label id="51" labelType="obsCode" displayText="ob3" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="315.5" pointOffset="2.0" anchorAngle="45.5" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">104.085 -102.565</Label>
+		</Line>
+		<Line id="1005" lineType="observation" lolId="1004" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10006</CoordRefs>
+			<Label id="52" labelType="obsBearing" displayText="120°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="314.1" pointOffset="2.0" anchorAngle="44.1" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">99.356 -101.190</Label>
+			<Label id="53" labelType="obsDistance" displayText="190.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="314.1" pointOffset="2.0" anchorAngle="224.1" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">99.356 -101.190</Label>
+			<Label id="54" labelType="obsCode" displayText="ob4" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="314.1" pointOffset="2.0" anchorAngle="44.1" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">99.356 -101.190</Label>
+		</Line>
+		<Line id="1006" lineType="observation" lolId="1005" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10007</CoordRefs>
+			<Label id="55" labelType="obsBearing" displayText="125°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="313.2" pointOffset="2.0" anchorAngle="43.2" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">95.519 -99.568</Label>
+			<Label id="56" labelType="obsDistance" displayText="185.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="313.2" pointOffset="2.0" anchorAngle="223.2" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">95.519 -99.568</Label>
+			<Label id="57" labelType="obsCode" displayText="ob5" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="313.2" pointOffset="2.0" anchorAngle="43.2" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">95.519 -99.568</Label>
+		</Line>
+		<Line id="1007" lineType="observation" lolId="1006" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10008</CoordRefs>
+			<Label id="58" labelType="obsBearing" displayText="130°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="310.9" pointOffset="2.0" anchorAngle="40.9" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">89.483 -98.576</Label>
+			<Label id="59" labelType="obsDistance" displayText="190.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="310.9" pointOffset="2.0" anchorAngle="220.9" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">89.483 -98.576</Label>
+			<Label id="60" labelType="obsCode" displayText="ob6" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="310.9" pointOffset="2.0" anchorAngle="40.9" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">89.483 -98.576</Label>
+		</Line>
+		<Line id="1008" lineType="observation" lolId="1007" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10009</CoordRefs>
+			<Label id="61" labelType="obsBearing" displayText="135°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="305.1" pointOffset="2.0" anchorAngle="35.1" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">76.454 -96.504</Label>
+			<Label id="62" labelType="obsDistance" displayText="175.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="305.1" pointOffset="2.0" anchorAngle="215.1" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">76.454 -96.504</Label>
+			<Label id="63" labelType="obsCode" displayText="ob7" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="305.1" pointOffset="2.0" anchorAngle="35.1" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">76.454 -96.504</Label>
+		</Line>
+		<Line id="1009" lineType="observation" lolId="1008" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10010</CoordRefs>
+			<Label id="64" labelType="obsBearing" displayText="145°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.5" pointOffset="2.0" anchorAngle="27.7" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">60.088 -89.138</Label>
+			<Label id="65" labelType="obsDistance" displayText="165.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.5" pointOffset="2.0" anchorAngle="207.7" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">60.088 -89.138</Label>
+			<Label id="66" labelType="obsCode" displayText="ob8" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.5" pointOffset="2.0" anchorAngle="27.7" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">60.088 -89.138</Label>
+		</Line>
+		<Line id="1010" lineType="observation" lolId="1009" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10001 10011</CoordRefs>
+			<Label id="67" labelType="obsBearing" displayText="147°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="27.0" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">59.382 -89.138</Label>
+			<Label id="68" labelType="obsDistance" displayText="165.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="207.0" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">59.382 -89.138</Label>
+			<Label id="69" labelType="obsCode" displayText="ob9" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="27.0" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">59.382 -89.138</Label>
+		</Line>
+		<Line id="1011" lineType="observation" lolId="1010" lolIdSource="ZOBN" lineSegment="1" style="peck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10012 10001</CoordRefs>
+			<Label id="70" labelType="obsBearing" displayText="190°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="83.6" pointOffset="2.0" anchorAngle="173.6" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">24.604 -59.978</Label>
+			<Label id="71" labelType="obsDistance" displayText="100.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="83.6" pointOffset="2.0" anchorAngle="353.6" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">24.604 -59.978</Label>
+			<Label id="72" labelType="obsCode" displayText="ob10" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="83.6" pointOffset="2.0" anchorAngle="173.6" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">24.604 -59.978</Label>
+		</Line>
+		<ChildDiagram diagramRef="2">
+			<Label id="2" labelType="childDiagram" displayText="Diag. A" font="Tahoma" fontSize="12" fontStyle="bold" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter" effect="halo" displayState="systemDisplay" userEdited="false">91.404 -135.063</Label>
+			<Label id="3" labelType="childDiagramPage" displayText="See S?" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="topCenter" effect="halo" displayState="systemDisplay" userEdited="false">91.404 -135.063</Label>
+		</ChildDiagram>
+		<Label id="1" labelType="diagram" displayText="System Generated Traverse Diagram" font="Tahoma" fontSize="16" fontStyle="bold" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter" effect="none" displayState="systemHide" userEdited="false">113.710 0.000</Label>
+	</Diagram>
+	<Diagram id="2" diagramType="userDefnTraverseDiag" listOrder="2" zoomScale="212.70" originPageOffset="0.22821686747 -0.054759036145" bottomRightPoint="27.511 -27.507" displayState="systemDisplay" pageRef="1">
+		<Coordinate id="10013" coordType="node" lolId="10" lolIdSource="ZMRK" originalCoord="15.721 -16.759" userEdited="false">13.567 -15.663<Label id="74" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="14.9" anchorAngle="17.1" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">13.567 -15.663</Label>
+			<Label id="75" labelType="markDescription" displayText="(Other New)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="13.0" anchorAngle="342.3" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">13.567 -15.663</Label>
+			<Label id="76" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">13.567 -15.663</Label>
+		</Coordinate>
+		<Coordinate id="10014" coordType="node" lolId="11" lolIdSource="ZMRK" originalCoord="13.230 -15.674" userEdited="false">13.230 -15.674<Label id="77" labelType="markName" displayText="DCDB" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="51.5" anchorAngle="176.1" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">13.230 -15.674</Label>
+			<Label id="78" labelType="markDescription" displayText="(Other Old)" font="Tahoma" fontSize="8" fontStyle="regular" rotationAngle="0.0" pointOffset="42.7" anchorAngle="188.0" textAlignment="topLeft" effect="none" displayState="display" userEdited="false">13.230 -15.674</Label>
+			<Label id="79" labelType="nodeSymbol1" displayText="182" font="LOLsymbols" fontSize="12" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">13.230 -15.674</Label>
+		</Coordinate>
+		<Coordinate id="10015" coordType="calculated" lolId="1008" lolIdSource="ZOBN" originalCoord="7.668 -1.445" userEdited="false">7.668 -1.445<Label id="80" labelType="markName" displayText="To IT" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">7.668 -1.445</Label>
+			<Label id="81" labelType="nodeSymbol1" displayText="96" font="LOLsymbols" fontSize="14" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">7.668 -1.445</Label>
+		</Coordinate>
+		<Coordinate id="10016" coordType="calculated" lolId="1009" lolIdSource="ZOBN" originalCoord="6.358 -2.204" userEdited="false">6.358 -2.204<Label id="85" labelType="markName" displayText="To IT" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">6.358 -2.204</Label>
+			<Label id="86" labelType="nodeSymbol1" displayText="96" font="LOLsymbols" fontSize="14" fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo" symbolType="lolSymbols" displayState="display" userEdited="false">6.358 -2.204</Label>
+		</Coordinate>
+		<Line id="1012" lineType="observation" lolId="1008" lolIdSource="ZOBN" lineSegment="1" style="brokenPeck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10015 10013</CoordRefs>
+			<Label id="82" labelType="obsBearing" displayText="145°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="292.5" pointOffset="2.0" anchorAngle="27.7" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">10.618 -8.553</Label>
+			<Label id="83" labelType="obsDistance" displayText="165.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="292.5" pointOffset="2.0" anchorAngle="207.7" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">10.618 -8.553</Label>
+			<Label id="84" labelType="obsCode" displayText="ob8" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="292.5" pointOffset="2.0" anchorAngle="27.7" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">10.618 -8.553</Label>
+		</Line>
+		<Line id="1013" lineType="observation" lolId="1009" lolIdSource="ZOBN" lineSegment="1" style="brokenPeck1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10016 10014</CoordRefs>
+			<Label id="87" labelType="obsBearing" displayText="147°00'00&quot;" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="27.0" textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">9.794 -8.938</Label>
+			<Label id="88" labelType="obsDistance" displayText="165.00" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="207.0" textAlignment="topCenter" effect="halo" displayState="display" userEdited="false">9.794 -8.938</Label>
+			<Label id="89" labelType="obsCode" displayText="ob9" font="Tahoma" fontSize="10" fontStyle="regular" rotationAngle="297.0" pointOffset="2.0" anchorAngle="27.0" textAlignment="bottomCenter" effect="halo" displayState="hide" userEdited="false">9.794 -8.938</Label>
+		</Line>
+		<Label id="73" labelType="diagram" displayText="Diag. A" font="Tahoma" fontSize="16" fontStyle="bold" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter" effect="none" displayState="systemDisplay" userEdited="false">13.756 0.000</Label>
+	</Diagram>
+	<Page id="1" pageType="survey" pageNumber="1">
+		<Coordinate id="10017" coordType="userDefined" userEdited="false">27.503313253012 -21.440060240964</Coordinate>
+		<Coordinate id="10018" coordType="userDefined" userEdited="false">26.539156626506 -21.549397590361</Coordinate>
+		<Coordinate id="10019" coordType="userDefined" userEdited="false">26.539156626506 -21.549397590361</Coordinate>
+		<Coordinate id="10020" coordType="userDefined" userEdited="false">26.539156626506 -21.549397590361</Coordinate>
+		<Coordinate id="10021" coordType="userDefined" userEdited="false">26.310542168675 -22.453915662651</Coordinate>
+		<Coordinate id="10022" coordType="userDefined" userEdited="false">25.594879518072 -22.294879518072</Coordinate>
+		<Coordinate id="10023" coordType="userDefined" userEdited="false">24.928915662651 -23.199397590361</Coordinate>
+		<Coordinate id="10024" coordType="userDefined" userEdited="false">24.461746987952 -22.871385542169</Coordinate>
+		<Coordinate id="10025" coordType="userDefined" userEdited="false">21.072289156627 -22.384337349398</Coordinate>
+		<Coordinate id="10026" coordType="userDefined" userEdited="false">21.072289156627 -22.205421686747</Coordinate>
+		<Coordinate id="10027" coordType="userDefined" userEdited="false">21.072289156627 -22.205421686747</Coordinate>
+		<Coordinate id="10028" coordType="userDefined" userEdited="false">23.119879518072 -23.726204819277</Coordinate>
+		<Coordinate id="10029" coordType="userDefined" userEdited="false">23.129819277108 -23.010542168675</Coordinate>
+		<Coordinate id="10030" coordType="userDefined" userEdited="false">21.380421686747 -23.209337349398</Coordinate>
+		<Coordinate id="10031" coordType="userDefined" userEdited="false">21.817771084337 -22.682530120482</Coordinate>
+		<Coordinate id="10032" coordType="userDefined" userEdited="false">18.507831325301 -23.159638554217</Coordinate>
+		<Coordinate id="10033" coordType="userDefined" userEdited="false">19.49186746988 -22.066265060241</Coordinate>
+		<Coordinate id="10034" coordType="userDefined" userEdited="false">11.977409638554 -19.988855421687</Coordinate>
+		<Coordinate id="10035" coordType="userDefined" userEdited="false">12.295481927711 -19.760240963855</Coordinate>
+		<Coordinate id="10036" coordType="userDefined" userEdited="false">13.242395833333 -19.8040625</Coordinate>
+		<Coordinate id="10037" coordType="userDefined" userEdited="false">12.736380208333 -19.632083333333</Coordinate>
+		<Coordinate id="10038" coordType="userDefined" userEdited="false">12.736380208333 -19.632083333333</Coordinate>
+		<Line id="1014" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10017 10018 10019 10020</CoordRefs>
+		</Line>
+		<Line id="1015" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10021 10022</CoordRefs>
+		</Line>
+		<Line id="1016" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10023 10024</CoordRefs>
+		</Line>
+		<Line id="1017" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10025 10026 10027</CoordRefs>
+		</Line>
+		<Line id="1018" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10028 10029</CoordRefs>
+		</Line>
+		<Line id="1019" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10030 10031</CoordRefs>
+		</Line>
+		<Line id="1020" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10032 10033</CoordRefs>
+		</Line>
+		<Line id="1021" lineType="userDefined" style="arrow1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10034 10035</CoordRefs>
+		</Line>
+		<Line id="1022" lineType="userDefined" style="peckDot1" pointWidth="0.7" displayState="display" userEdited="false">
+			<CoordRefs>10036 10037 10038</CoordRefs>
+		</Line>
+		<Label id="90" labelType="userAnnotation" displayText="PRM Old" font="Tahoma" fontSize="14" fontStyle="italic" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="none" displayState="display" userEdited="false">0.043523958333 -0.129910416667</Label>
+	</Page>
+	<ConfigData>
+		<ElementTypeConfig element="Label" elementType="parcelAppellation">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="arcRadius">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngleOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="2.0"/>
+			<AttribDefault attribute="originalAnchorAngleOffset" defaultValue="270.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="parcelArea">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="2.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="270.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="obsBearing">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngleOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="2.0"/>
+			<AttribDefault attribute="originalAnchorAngleOffset" defaultValue="90.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="childDiagram">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="childDiagramPage">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="obsCode">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngleOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="2.0"/>
+			<AttribDefault attribute="originalAnchorAngleOffset" defaultValue="90.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="diagram">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="diagramType">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="obsDistance">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngleOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="2.0"/>
+			<AttribDefault attribute="originalAnchorAngleOffset" defaultValue="270.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="lineLongDescription">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="lineDescription">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="markDescription">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="315.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="markName">
+			<NonModifiableAttribList>displayText</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="1.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="45.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="nodeSymbol1">
+			<NonModifiableAttribList>displayText font fontSize fontStyle rotationAngle pointOffset anchorAngle textAlignment effect</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="nodeSymbol2">
+			<NonModifiableAttribList>displayText font fontSize fontStyle rotationAngle pointOffset anchorAngle textAlignment effect</NonModifiableAttribList>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Label" elementType="userAnnotation">
+			<NonModifiableAttribList>none</NonModifiableAttribList>
+			<AttribDefault attribute="displayState" defaultValue="display"/>
+			<AttribDefault attribute="font" defaultValue="Tahoma"/>
+			<AttribDefault attribute="fontSize" defaultValue="14"/>
+			<AttribDefault attribute="fontStyle" defaultValue="italic"/>
+			<AttribDefault attribute="rotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="pointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="anchorAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="textAlignment" defaultValue="centerCenter"/>
+			<AttribDefault attribute="effect" defaultValue="none"/>
+			<AttribDefault attribute="originalRotationAngle" defaultValue="0.0"/>
+			<AttribDefault attribute="originalPointOffset" defaultValue="0.0"/>
+			<AttribDefault attribute="originalAnchorAngle" defaultValue="0.0"/>
+			<AttribOptions attribute="font" optionsList="&quot;Tahoma&quot; &quot;Times New Roman&quot; &quot;Arial&quot;"/>
+			<AttribOptions attribute="fontSize" optionsList="8 10 12 14 16"/>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Line" elementType="ctAbuttal">
+			<NonModifiableAttribList>style pointWidth</NonModifiableAttribList>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Line" elementType="observation">
+			<NonModifiableAttribList>style pointWidth</NonModifiableAttribList>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Line" elementType="parcelBoundary">
+			<NonModifiableAttribList>style pointWidth</NonModifiableAttribList>
+		</ElementTypeConfig>
+		<ElementTypeConfig element="Line" elementType="userDefined">
+			<NonModifiableAttribList>none</NonModifiableAttribList>
+			<AttribDefault attribute="displayState" defaultValue="display"/>
+			<AttribDefault attribute="style" defaultValue="solid"/>
+			<AttribDefault attribute="pointWidth" defaultValue="0.7"/>
+			<AttribOptions attribute="style" optionsList="solid peck1 peckDot1 arrow1 doubleArrow1"/>
+			<AttribOptions attribute="pointWidth" optionsList="0.7 1 1.4 2 2.5"/>
+		</ElementTypeConfig>
+		<DiagramConfig minDiagDimension="0.05" observationGapDefaultPercent="30" observationGapDefaultMax="3.5"/>
+		<PageConfig pageScale="100" unprintableMargin="1.500" diagramLimitOrigin="1.5 -1.5" diagramLimitBottomRight="40.5 -26.2" coordLimitOrigin="1.65 -1.65" coordLimitBottomRight="40.35 -26.05">
+			<Coordinate id="1001" coordType="userDefined" userEdited="false">1.5 -1.5</Coordinate>
+			<Coordinate id="1002" coordType="userDefined" userEdited="false">40.5 -1.5</Coordinate>
+			<Coordinate id="1003" coordType="userDefined" userEdited="false">1.5 -26.2</Coordinate>
+			<Coordinate id="1004" coordType="userDefined" userEdited="false">8.5 -26.2</Coordinate>
+			<Coordinate id="1005" coordType="userDefined" userEdited="false">26.5 -26.2</Coordinate>
+			<Coordinate id="1006" coordType="userDefined" userEdited="false">33.5 -26.2</Coordinate>
+			<Coordinate id="1007" coordType="userDefined" userEdited="false">40.5 -26.2</Coordinate>
+			<Coordinate id="1008" coordType="userDefined" userEdited="false">1.5 -28.2</Coordinate>
+			<Coordinate id="1009" coordType="userDefined" userEdited="false">8.5 -28.2</Coordinate>
+			<Coordinate id="1010" coordType="userDefined" userEdited="false">26.5 -28.2</Coordinate>
+			<Coordinate id="1011" coordType="userDefined" userEdited="false">33.5 -28.2</Coordinate>
+			<Coordinate id="1012" coordType="userDefined" userEdited="false">40.5 -28.2</Coordinate>
+			<Coordinate id="1013" coordType="userDefined" userEdited="false">38.55 -1.6</Coordinate>
+			<Coordinate id="1014" coordType="userDefined" userEdited="false">40.45 -3.5</Coordinate>
+			<Line id="101" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1001 1002</CoordRefs>
+			</Line>
+			<Line id="102" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1001 1003</CoordRefs>
+			</Line>
+			<Line id="103" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1002 1007</CoordRefs>
+			</Line>
+			<Line id="104" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1003 1004</CoordRefs>
+			</Line>
+			<Line id="105" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1003 1008</CoordRefs>
+			</Line>
+			<Line id="106" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1004 1005</CoordRefs>
+			</Line>
+			<Line id="107" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1004 1009</CoordRefs>
+			</Line>
+			<Line id="108" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1005 1006</CoordRefs>
+			</Line>
+			<Line id="109" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1005 1010</CoordRefs>
+			</Line>
+			<Line id="110" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1006 1007</CoordRefs>
+			</Line>
+			<Line id="111" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1006 1011</CoordRefs>
+			</Line>
+			<Line id="112" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1007 1012</CoordRefs>
+			</Line>
+			<Line id="113" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1008 1009</CoordRefs>
+			</Line>
+			<Line id="114" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1009 1010</CoordRefs>
+			</Line>
+			<Line id="115" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1010 1011</CoordRefs>
+			</Line>
+			<Line id="116" lineType="userDefined" style="solid" pointWidth="1" displayState="systemDisplay" userEdited="false">
+				<CoordRefs>1011 1012</CoordRefs>
+			</Line>
+			<Image imageFilePath="C:\Program Files (x86)\Land Information New Zealand\Landonline Workspace\Data\NorthArrow.bmp" imageOrigin="1013" imageBottomRight="1014"/>
+		</PageConfig>
+		<MaxElemId element="Coordinate" maxId="10038"/>
+		<MaxElemId element="Page" maxId="1"/>
+		<MaxElemId element="Line" maxId="1022"/>
+		<MaxElemId element="Label" maxId="90"/>
+	</ConfigData>
+</CPG_XML01>

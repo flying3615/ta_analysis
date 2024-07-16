@@ -67,6 +67,20 @@ export class PlanDataBuilder {
     return this;
   }
 
+  addSymbolLabel(id: number, displayText: string, position: ICartesianCoords, fontSize: number = 8) {
+    return this.addLabel(
+      "coordinateLabels",
+      id,
+      displayText,
+      position,
+      undefined,
+      undefined,
+      "display",
+      "LOLsymbols",
+      fontSize,
+    );
+  }
+
   addLabel(
     intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
     id: number,
@@ -103,6 +117,7 @@ export class PlanDataBuilder {
   }
 
   build() {
+    console.log(`Build returns ${JSON.stringify(this.planData)}`);
     return this.planData;
   }
 }
