@@ -137,7 +137,7 @@ services:
       SPRING_PROFILES_ACTIVE: local
       SPLIT_ENV_API_KEY_SDK: localhost
       OIDC_ISSUER_URL: "http://$HOSTNAME:8083/realms/landonline"
-      AUTHZ_BASE_URL: "http://$HOSTNAME:8082"
+      AUTHZ_BASEURL: "http://$HOSTNAME:8082"
       CLIENT_ID: survey-plangen-service
       CLIENT_SECRET: localclientsecret
       GEOSERVER_URL: "http://$HOSTNAME:14005/geoserver"

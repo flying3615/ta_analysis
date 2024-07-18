@@ -59,4 +59,7 @@ npm run htmlreport
 You can run only one test or a set of test with the following command :
 `npm test 'path of the test who want to run'`
 
+## CI Infra
 
+The `E2E_SECRETS` repository variable must be set in Github Actions.
+See [template/e2e_secrets.json](./template/e2e_secrets.json) for what this value should be.
