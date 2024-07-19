@@ -1,6 +1,7 @@
+import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { LuiIcon } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { VerticalSpacer } from "@/components/Header/Header";
@@ -13,6 +14,8 @@ import { DefineDiagramMenuLabels } from "./defineDiagramsType";
 
 export const DefineDiagramMenuButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+
+  const map = useContext(LolOpenLayersMapContext);
 
   const dispatch = useAppDispatch();
   const changeActiveAction = (action: DefineDiagramsActionType) => () => dispatch(setActiveAction(action));
@@ -35,12 +38,12 @@ export const DefineDiagramMenuButtons = () => {
       />
       <VerticalSpacer />
       <HeaderButton
-        // isLoading={true}
         headerMenuLabel={DefineDiagramMenuLabels.ZoomIn}
         iconName="ic_add"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomIn);
-          alert("Not Yet Implemented");
+          map.zoomByDelta(1);
+          setSelectedButtonLabel("");
         }}
         selectedButtonLabel={selectedButtonLabel}
       />
@@ -49,7 +52,8 @@ export const DefineDiagramMenuButtons = () => {
         iconName="ic_zoom_out"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomOut);
-          alert("Not Yet Implemented");
+          map.zoomByDelta(-1);
+          setSelectedButtonLabel("");
         }}
         selectedButtonLabel={selectedButtonLabel}
       />
@@ -58,7 +62,8 @@ export const DefineDiagramMenuButtons = () => {
         iconName="ic_zoom_centre"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomCentre);
-          alert("Not Yet Implemented");
+          map.zoomToFit();
+          setSelectedButtonLabel("");
         }}
         selectedButtonLabel={selectedButtonLabel}
       />

@@ -18,9 +18,6 @@ import { server } from "@/mocks/mockServer.ts";
 import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const buttonLabels = [
-  DefineDiagramMenuLabels.ZoomIn,
-  DefineDiagramMenuLabels.ZoomOut,
-  DefineDiagramMenuLabels.ZoomCentre,
   DefineDiagramMenuLabels.SelectRTLines,
   DefineDiagramMenuLabels.AddRTLines,
   DefineDiagramMenuLabels.DrawRTBoundary,
