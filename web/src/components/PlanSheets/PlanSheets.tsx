@@ -1,13 +1,15 @@
 import "./PlanSheets.scss";
 
-import { LuiIcon, LuiLoadingSpinner } from "@linzjs/lui";
+import { LuiIcon, LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { luiColors } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
@@ -28,7 +30,17 @@ const PlanSheets = () => {
 
   const activeDiagramType = useAppSelector((state) => getActiveDiagramType(state));
 
-  const { data: planData, isLoading: planDataIsLoading, error: planDataError } = useGetPlanQuery({ transactionId });
+  const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
+    useCheckAndRegeneratePlan(transactionId);
+
+  const {
+    data: planData,
+    isLoading: planDataIsLoading,
+    error: planDataError,
+  } = useGetPlanQuery({
+    transactionId,
+    enabled: regenerateDoneOrNotNeeded, // Don't fetch features until the dataset is prepared
+  });
 
   useEffect(() => {
     if (planDataError) {
@@ -37,6 +49,42 @@ const PlanSheets = () => {
       showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
+
+  useEffect(() => {
+    if (planCheckError) {
+      const serializedError = errorFromSerializedError(planCheckError);
+      newrelic.noticeError(serializedError);
+      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
+    }
+  }, [planCheckError, transactionId, navigate, showPrefabModal]);
+
+  useEffect(() => {
+    if (regeneratePlanError) {
+      const serializedError = errorFromSerializedError(regeneratePlanError);
+      newrelic.noticeError(serializedError);
+
+      // We get a regeneratePlanError here if we delegated to regenerating a plan
+      // and that caused an application error
+      showPrefabModal(prepareDatasetErrorModal(regeneratePlanError)).then(() =>
+        navigate(`/plan-generation/${transactionId}`),
+      );
+    }
+  }, [regeneratePlanError, transactionId, navigate, showPrefabModal]);
+
+  if (isRegenerating) {
+    return (
+      <div ref={modalOwnerRef}>
+        <Header view="Sheets" />
+        <LuiStatusSpinner>
+          <div className="PlanSheetsRegenText">
+            Preparing survey and diagrams for Layout Plan Sheets.
+            <br />
+            This may take a few moments...
+          </div>
+        </LuiStatusSpinner>
+      </div>
+    );
+  }
 
   if (planDataIsLoading || !planData) {
     return (

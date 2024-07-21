@@ -100,6 +100,7 @@ export const lineEdges: IEdgeData[] = [
 
 export const diagrams: IDiagram[] = [
   {
+    id: 1,
     bottomRightPoint: { x: 1500, y: -1000 },
     diagramType: "sysGenPrimaryDiag",
     coordinateLabels: [],

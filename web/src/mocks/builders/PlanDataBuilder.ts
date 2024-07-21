@@ -5,6 +5,7 @@ export class PlanDataBuilder {
   planData: PlanResponseDTO = {
     diagrams: [],
     pages: [],
+    configs: [],
   };
 
   addDiagram(
@@ -16,6 +17,7 @@ export class PlanDataBuilder {
     diagramType: "sysGenPrimaryDiag" | "sysGenNonPrimaryDiag" | "sysGenTraverseDiag" = "sysGenPrimaryDiag",
   ): PlanDataBuilder {
     this.planData.diagrams.push({
+      id: 1,
       bottomRightPoint,
       originPageOffset,
       coordinates: [],

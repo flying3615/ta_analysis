@@ -1,4 +1,4 @@
-import { http, HttpHandler, HttpResponse } from "msw";
+import { delay, http, HttpHandler, HttpResponse } from "msw";
 
 import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
@@ -27,6 +27,9 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/plan\/123$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.get(/\/plan\/check\/123$/, () =>
+    HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
+  ),
 
   http.post(/\/123\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
@@ -40,7 +43,8 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  // Survey 124 = diagrams with context
+  // Survey 124 = diagrams with context, regular plan
+  http.get(/\/plan\/124$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
   http.get(/\/survey-features\/124$/, () =>
     HttpResponse.json(
       {
@@ -52,7 +56,14 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
-
+  http.get(/\/plan\/check\/124$/, () =>
+    HttpResponse.json({ refreshRequired: true }, { status: 200, statusText: "OK" }),
+  ),
+  // regenerate xml with delay
+  http.post(/\/plan\/124$/, async () => {
+    await delay(2000);
+    return HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" });
+  }),
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
 
@@ -130,6 +141,9 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.get(/\/plan\/404/, () =>
+    HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
+  ),
+  http.get(/\/plan\/check\/404/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.post(/\/404\/diagrams$/, () =>

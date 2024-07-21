@@ -81,4 +81,68 @@ describe("PlanSheets", () => {
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
     expect(screen.queryByTestId("CytoscapeCanvas")).not.toBeInTheDocument();
   });
+
+  it("regenerates plan and displays message when refreshRequired", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    renderCompWithReduxAndRoute(
+      <PlanSheets />,
+      "/plan-generation/layout-plan-sheets/124",
+      "/plan-generation/layout-plan-sheets/:transactionId",
+    );
+
+    expect(await screen.findByText(/Preparing survey and diagrams for Layout Plan Sheets/)).toBeVisible();
+    expect(await screen.findByText(/This may take a few moments\.\.\./)).toBeVisible();
+    // then
+    expect(await screen.findByText("Survey sheet diagrams")).toBeVisible();
+
+    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/plan/check/124",
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "POST",
+          url: "http://localhost/api/v1/generate-plans/plan/124",
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/plan/124",
+        }),
+      }),
+    );
+  });
+
+  it("displays error when regenerate fails", async () => {
+    server.use(
+      http.post(/\/plan\/124$/, async () => {
+        return HttpResponse.json(
+          { ok: false, statusCode: 20001, message: "prepare dataset application error" },
+          { status: 200, statusText: "OK" },
+        );
+      }),
+    );
+
+    renderCompWithReduxAndRoute(
+      <PlanSheets />,
+      "/plan-generation/layout-plan-sheets/124",
+      "/plan-generation/layout-plan-sheets/:transactionId",
+    );
+
+    expect(await screen.findByText(/prepare dataset application error/)).not.toBeNull();
+  });
 });
