@@ -22,4 +22,14 @@ $footerHeight: 56px;
       text-transform: uppercase;
     }
   }
+
+  &-right {
+    margin-left: auto;
+  }
+
+  &-saveButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 }

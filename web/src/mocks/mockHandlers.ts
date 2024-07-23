@@ -9,6 +9,8 @@ import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
 
+import { mockInternalServerError } from "./data/mockError";
+
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features
   // use $ in regex to force exact match for transaction id
@@ -27,6 +29,14 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/plan\/123$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.get(/\/plan\/124$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+
+  http.put(/\/plan\/123$/, async () => {
+    await delay(2000);
+    return HttpResponse.json({}, { status: 200 });
+  }),
+  http.put(/\/plan\/124$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
+
   http.get(/\/plan\/check\/123$/, () =>
     HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
   ),
@@ -138,6 +148,9 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.get(/\/404\/diagrams/, () =>
+    HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
+  ),
+  http.post(/\/404\/prepare/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.get(/\/plan\/404/, () =>

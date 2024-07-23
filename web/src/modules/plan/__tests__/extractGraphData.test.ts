@@ -10,17 +10,20 @@ describe("extractGraphData", () => {
     const node10001 = extractedNodes[0];
     expect(node10001?.id).toBe("10001");
     expect(node10001?.position).toStrictEqual({ x: 20, y: -10 });
-    expect(node10001?.diagramIndex).toBe(0);
+    expect(node10001?.properties?.["diagramId"]).toBe(1);
+    expect(node10001?.properties?.["elementType"]).toBe("coordinates");
 
     const node10002 = extractedNodes[1];
     expect(node10002?.id).toBe("10002");
     expect(node10002?.position).toStrictEqual({ x: 50, y: -10 });
-    expect(node10002?.diagramIndex).toBe(0);
+    expect(node10002?.properties?.["diagramId"]).toBe(1);
+    expect(node10002?.properties?.["elementType"]).toBe("coordinates");
 
     const node10003 = extractedNodes[2];
     expect(node10003?.id).toBe("10003");
     expect(node10003?.position).toStrictEqual({ x: 80, y: -10 });
-    expect(node10003?.diagramIndex).toBe(0);
+    expect(node10003?.properties?.["diagramId"]).toBe(1);
+    expect(node10003?.properties?.["elementType"]).toBe("coordinates");
   });
 
   test("extractNodes extracts label node data", () => {
@@ -32,7 +35,8 @@ describe("extractGraphData", () => {
     expect(labelNode10?.id).toBe("1");
     expect(labelNode10?.label).toBe("System Generated Primary Diagram");
     expect(labelNode10?.position).toStrictEqual({ x: 50, y: -5 });
-    expect(labelNode10?.diagramIndex).toBe(0);
+    expect(labelNode10?.properties?.["diagramId"]).toBe(1);
+    expect(labelNode10?.properties?.["elementType"]).toBe("labels");
     expect(labelNode10?.properties?.["labelType"]).toBe("diagram");
     expect(labelNode10?.properties?.["featureId"]).toBeUndefined();
     expect(labelNode10?.properties?.["featureType"]).toBeUndefined();
@@ -43,7 +47,8 @@ describe("extractGraphData", () => {
     expect(labelNode11?.id).toBe("11");
     expect(labelNode11?.label).toBe("Label 11");
     expect(labelNode11?.position).toStrictEqual({ x: 55, y: -10 });
-    expect(labelNode11?.diagramIndex).toBe(0);
+    expect(labelNode11?.properties?.["diagramId"]).toBe(1);
+    expect(labelNode11?.properties?.["elementType"]).toBe("coordinateLabels");
     expect(labelNode11?.properties?.["labelType"]).toBe("display");
     expect(labelNode11?.properties?.["featureId"]).toBe(10001);
     expect(labelNode11?.properties?.["featureType"]).toBe("mark");
@@ -54,7 +59,8 @@ describe("extractGraphData", () => {
     expect(labelNode12?.id).toBe("12");
     expect(labelNode12?.label).toBe("Label 12");
     expect(labelNode12?.position).toStrictEqual({ x: 52, y: -40 });
-    expect(labelNode12?.diagramIndex).toBe(0);
+    expect(labelNode12?.properties?.["diagramId"]).toBe(1);
+    expect(labelNode12?.properties?.["elementType"]).toBe("lineLabels");
     expect(labelNode12?.properties?.["labelType"]).toBe("display");
     expect(labelNode12?.properties?.["featureId"]).toBe(1001);
     expect(labelNode12?.properties?.["featureType"]).toBe("line");
@@ -65,7 +71,8 @@ describe("extractGraphData", () => {
     expect(labelNode13?.id).toBe("13");
     expect(labelNode13?.label).toBe("Label 13");
     expect(labelNode13?.position).toStrictEqual({ x: 35, y: -35 });
-    expect(labelNode13?.diagramIndex).toBe(0);
+    expect(labelNode13?.properties?.["diagramId"]).toBe(1);
+    expect(labelNode13?.properties?.["elementType"]).toBe("parcelLabels");
     expect(labelNode13?.properties?.["labelType"]).toBe("display");
     expect(labelNode13?.properties?.["featureId"]).toBe(1);
     expect(labelNode13?.properties?.["featureType"]).toBe("parcel");
@@ -80,19 +87,22 @@ describe("extractGraphData", () => {
     expect(extractedEdges[0]?.id).toBe("1001");
     expect(extractedEdges[0]?.sourceNodeId).toBe("10001");
     expect(extractedEdges[0]?.destNodeId).toBe("10002");
-    expect(extractedEdges[0]?.diagramIndex).toBe(0);
+    expect(extractedEdges[0]?.properties?.["diagramId"]).toBe(1);
+    expect(extractedEdges[0]?.properties?.["elementType"]).toBe("lines");
     expect(extractedEdges[0]?.properties?.["pointWidth"]).toBe(0.75);
 
     expect(extractedEdges[1]?.id).toBe("1002");
     expect(extractedEdges[1]?.sourceNodeId).toBe("10002");
     expect(extractedEdges[1]?.destNodeId).toBe("10003");
-    expect(extractedEdges[1]?.diagramIndex).toBe(0);
+    expect(extractedEdges[1]?.properties?.["diagramId"]).toBe(1);
+    expect(extractedEdges[1]?.properties?.["elementType"]).toBe("lines");
     expect(extractedEdges[1]?.properties?.["pointWidth"]).toBe(1.0);
 
     expect(extractedEdges[2]?.id).toBe("1003");
     expect(extractedEdges[2]?.sourceNodeId).toBe("10003");
     expect(extractedEdges[2]?.destNodeId).toBe("10004");
-    expect(extractedEdges[2]?.diagramIndex).toBe(0);
+    expect(extractedEdges[2]?.properties?.["diagramId"]).toBe(1);
+    expect(extractedEdges[2]?.properties?.["elementType"]).toBe("lines");
     expect(extractedEdges[2]?.properties?.["pointWidth"]).toBe(4.0);
   });
 

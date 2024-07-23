@@ -7,9 +7,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
+  edgeDataFromDefinitions,
   edgeDefinitionsFromData,
   IEdgeData,
   INodeData,
+  nodeDataFromDefinitions,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
@@ -25,23 +27,25 @@ export interface ICytoscapeCanvasProps {
   edgeData: IEdgeData[];
   diagrams: IDiagram[];
   initZoom?: IInitZoom;
+  onChange: (data: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => void;
 }
 
-const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom }: ICytoscapeCanvasProps) => {
+const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom, onChange }: ICytoscapeCanvasProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [initDone, setInitDone] = useState<boolean>(false);
+  const [cy, setCy] = useState<cytoscape.Core>();
+  const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
+  const [pan, setPan] = useState<cytoscape.Position>(initZoom?.pan ?? { x: 0, y: 0 });
 
   const initCytoscape = useCallback(() => {
     if (!canvasRef.current) {
       throw Error("CytoscapeCanvas::initCytoscape - no canvas");
     }
-    const canvasViewport = { width: canvasRef.current.clientWidth, height: canvasRef.current.clientHeight };
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasViewport, diagrams);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
 
-    cytoscape({
+    const cyRef = cytoscape({
       container: canvasRef.current,
-      zoom: initZoom?.zoom ?? 1,
-      pan: initZoom?.pan ?? { x: 0, y: 0 },
+      zoom,
+      pan,
       elements: {
         nodes: nodeDefinitionsFromData(nodeData),
         edges: edgeDefinitionsFromData(edgeData),
@@ -54,30 +58,30 @@ const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom }: ICytoscapeC
       // the stylesheet for the graph
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),
     });
+    setCy(cyRef);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData, edgeData, diagrams, initZoom]);
 
+  // Set up cytoscape instance
   useEffect(() => {
     if (!canvasRef.current) {
       return;
     }
 
-    if (initDone || (nodeData.length === 0 && edgeData.length === 0)) {
+    if (cy || (nodeData.length === 0 && edgeData.length === 0)) {
       return;
     }
 
     initCytoscape();
+  }, [cy, edgeData, nodeData, initCytoscape]);
 
-    setInitDone(true);
-  }, [initDone, edgeData, nodeData, initCytoscape]);
-
+  // Handle viewport resizing
   useEffect(() => {
     if (!canvasRef.current) {
-      throw Error("CytoscapeCanvas::setup observer - no viewport");
+      throw Error("CytoscapeCanvas::resize observer - no viewport");
     }
 
-    // We want to call initCytoscape directly but after a short delay
-    const ms20 = 20;
-    const debouncedInitCytoscape = debounce(initCytoscape, ms20);
+    const debouncedInitCytoscape = debounce(initCytoscape, 20);
 
     const resizeObserver = new ResizeObserver(() => {
       debouncedInitCytoscape();
@@ -87,6 +91,36 @@ const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom }: ICytoscapeC
       resizeObserver.disconnect();
     };
   }, [initCytoscape]);
+
+  // Listen and handle cytoscape events
+  useEffect(() => {
+    const emitChange = (event: cytoscape.EventObject) => {
+      if (!canvasRef.current) {
+        throw Error("CytoscapeCanvas::event listener - no viewport");
+      }
+
+      const json = event.cy.json() as {
+        elements: { nodes: cytoscape.NodeDefinition[]; edges: cytoscape.EdgeDefinition[] };
+      };
+
+      const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
+      const nodeData = nodeDataFromDefinitions(json.elements.nodes, cytoscapeCoordinateMapper);
+      const edgeData = edgeDataFromDefinitions(json.elements.edges);
+
+      onChange({ nodeData, edgeData });
+    };
+
+    cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
+    cy?.addListener("position", debounce(emitChange, 1000)); // 1s debounce since lots of position events are fired very quickly
+
+    cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
+    cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
+
+    return () => {
+      cy?.removeAllListeners();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cy, onChange, canvasRef.current]);
 
   return <div className="CytoscapeCanvas" data-testid="CytoscapeCanvas" ref={canvasRef} />;
 };

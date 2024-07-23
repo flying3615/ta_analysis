@@ -7,18 +7,11 @@ import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { useGetPlanQuery } from "@/queries/plan.ts";
-import { getActiveSheet } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActiveSheet, getDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const DiagramSelector = () => {
-  const view = useAppSelector((state) => getActiveSheet(state));
-  const transactionId = useTransactionId();
-  const { data, isLoading } = useGetPlanQuery({ transactionId });
-  if (isLoading || !data) {
-    return <></>;
-  }
-  const diagrams = data.diagrams.filter(filterBySheetType(view));
+  const view = useAppSelector(getActiveSheet);
+  const diagrams = useAppSelector(getDiagrams).filter(filterBySheetType(view));
   const header = headerForSheet(view);
   return (
     <div className="PlanSheetsDiagramOptions">

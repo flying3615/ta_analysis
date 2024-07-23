@@ -17,7 +17,14 @@ type Story = StoryObj<typeof CytoscapeCanvas>;
 export const Default: Story = {
   render: () => (
     <div style={{ height: "100vh" }}>
-      <CytoscapeCanvas nodeData={markNodes} edgeData={lineEdges} diagrams={diagrams} />
+      <CytoscapeCanvas
+        nodeData={markNodes}
+        edgeData={lineEdges}
+        diagrams={diagrams}
+        onChange={(data) => {
+          console.info("Cytoscape canvas changed", data);
+        }}
+      />
     </div>
   ),
 };
@@ -41,6 +48,9 @@ const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom
         edgeData={edgeData}
         diagrams={props.data.diagrams}
         initZoom={props.initZoom}
+        onChange={(data) => {
+          console.info("Cytoscape canvas changed", data);
+        }}
       />
     </div>
   );

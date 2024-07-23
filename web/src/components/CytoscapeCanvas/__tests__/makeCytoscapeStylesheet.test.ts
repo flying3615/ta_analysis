@@ -6,7 +6,10 @@ import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeS
 
 describe("makeCytoscapeStylesheet", () => {
   test("Generates bound functions to make the SVG data", () => {
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper({ width: 500, height: 300 }, diagrams);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 500, clientHeight: 300 } as HTMLElement,
+      diagrams,
+    );
 
     const stylesheet = makeCytoscapeStylesheet(cytoscapeCoordinateMapper);
     const symbolEntry = stylesheet.find((s) => s.selector === "node[symbolId]") as cytoscape.Stylesheet;

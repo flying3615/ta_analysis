@@ -1,7 +1,7 @@
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
-import { LuiErrorPage, LuiLoadingSpinner, LuiStaticMessage } from "@linzjs/lui";
+import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ErrorInfo, ReactNode, useEffect } from "react";
@@ -126,17 +126,19 @@ const App = () => {
   return (
     <LuiModalAsyncContextProvider>
       <ErrorBoundary FallbackComponent={ShowUnhandledModal} onError={errorHandler}>
-        <BrowserRouter>
-          <AuthContextProvider>
-            <FeatureFlagProvider>
-              <QueryClientProvider client={queryClient}>
-                <Provider store={store}>
-                  <PlangenApp />
-                </Provider>
-              </QueryClientProvider>
-            </FeatureFlagProvider>
-          </AuthContextProvider>
-        </BrowserRouter>
+        <LuiMessagingContextProvider version="v2">
+          <BrowserRouter>
+            <AuthContextProvider>
+              <FeatureFlagProvider>
+                <QueryClientProvider client={queryClient}>
+                  <Provider store={store}>
+                    <PlangenApp />
+                  </Provider>
+                </QueryClientProvider>
+              </FeatureFlagProvider>
+            </AuthContextProvider>
+          </BrowserRouter>
+        </LuiMessagingContextProvider>
       </ErrorBoundary>
     </LuiModalAsyncContextProvider>
   );

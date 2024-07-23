@@ -1,16 +1,20 @@
+import cytoscape from "cytoscape";
+
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
+  edgeDataFromDefinitions,
   edgeDefinitionsFromData,
   IEdgeData,
   INodeData,
+  nodeDataFromDefinitions,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
 const inputNodes = [
-  { id: "node1", label: "Node 1", diagramIndex: 0, properties: { a: 1 }, position: { x: 10, y: -50 } },
-  { id: "node2", diagramIndex: 0, properties: { b: 2 }, position: { x: 100, y: -20 } },
+  { id: "node1", label: "Node 1", properties: { a: 1, diagramId: 1 }, position: { x: 10, y: -50 } },
+  { id: "node2", properties: { b: 2, diagramId: 1 }, position: { x: 100, y: -20 } },
 ] as INodeData[];
 
 describe("nodeDefinitionsFromData", () => {
@@ -27,12 +31,51 @@ describe("nodeDefinitionsFromData", () => {
   });
 });
 
+describe("nodeDataFromDefinitions", () => {
+  test("creates node data from cytoscape node definitions", () => {
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 300, clientHeight: 500 } as HTMLElement,
+      diagrams,
+    );
+    const cytoscapeNodes = [
+      { data: { id: "root", label: "" } },
+      {
+        group: "nodes",
+        data: { id: "1", label: "Node 1", "font-family": "Tahoma", "font-size": 16, diagramId: 1 },
+        position: { x: 100, y: -20 },
+      },
+      {
+        group: "nodes",
+        data: { id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 },
+        position: { x: 10, y: -50 },
+      },
+    ] as cytoscape.NodeDefinition[];
+
+    expect(cytoscapeNodes).toHaveLength(3);
+
+    const nodeData = nodeDataFromDefinitions(cytoscapeNodes, cytoscapeCoordinateMapper);
+
+    expect(nodeData).toHaveLength(2);
+    expect(nodeData[0]).toStrictEqual({
+      id: "1",
+      label: "Node 1",
+      properties: { diagramId: 1 },
+      position: { x: 526.31579, y: 921.05263 },
+    });
+    expect(nodeData[1]).toStrictEqual({
+      id: "2",
+      properties: { diagramId: 1 },
+      position: { x: 52.63158, y: 1078.94737 },
+    });
+  });
+});
+
+const inputEdges = [
+  { id: "edge1", sourceNodeId: "node1", destNodeId: "node2", properties: { a: 1, diagramId: 1 } },
+] as IEdgeData[];
+
 describe("edgeDefinitionsFromData", () => {
   test("creates cytoscape edge definitions", () => {
-    const inputEdges = [
-      { id: "edge1", sourceNodeId: "node1", destNodeId: "node2", diagramIndex: 0, properties: { a: 1 } },
-    ] as IEdgeData[];
-
     const cytoscapeEdges = edgeDefinitionsFromData(inputEdges);
 
     expect(cytoscapeEdges).toHaveLength(1);
@@ -40,6 +83,20 @@ describe("edgeDefinitionsFromData", () => {
     expect(cytoscapeEdges[0]?.data?.source).toBe("node1");
     expect(cytoscapeEdges[0]?.data?.target).toBe("node2");
     expect((cytoscapeEdges[0]?.data as unknown as Record<string, number>)["a"]).toBe(1);
+  });
+});
+
+describe("edgeDataFromDefinitions", () => {
+  test("creates edge data from cytoscape edge definitions", () => {
+    const cytoscapeEdges = edgeDefinitionsFromData(inputEdges);
+
+    const edgeData = edgeDataFromDefinitions(cytoscapeEdges);
+
+    expect(edgeData).toHaveLength(1);
+    expect(edgeData[0]?.id).toBe("edge1");
+    expect(edgeData[0]?.sourceNodeId).toBe("node1");
+    expect(edgeData[0]?.destNodeId).toBe("node2");
+    expect(edgeData[0]?.properties?.["a"]).toBe(1);
   });
 });
 
@@ -56,7 +113,10 @@ describe("nodePositionsFromData", () => {
   };
 
   test("creates cytoscape NodePositionMap from node positions converting coordinates for wide display", () => {
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper({ width: 500, height: 300 }, diagrams);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 500, clientHeight: 300 } as HTMLElement,
+      diagrams,
+    );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
     expect(cytoscapePositions["node1"]?.x).toBeCloseTo(16.2, 1);
@@ -67,7 +127,10 @@ describe("nodePositionsFromData", () => {
   });
 
   test("creates cytoscape NodePositionMap from node positions converting coordinates for tall display", () => {
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper({ width: 300, height: 500 }, diagrams);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 300, clientHeight: 500 } as HTMLElement,
+      diagrams,
+    );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
     expect(cytoscapePositions["node1"]?.x).toBeCloseTo(1.9, 1);

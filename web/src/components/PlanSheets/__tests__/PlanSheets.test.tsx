@@ -97,7 +97,7 @@ describe("PlanSheets", () => {
     // then
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
 
-    expect(requestSpy).toHaveBeenCalledTimes(4);
+    expect(requestSpy).toHaveBeenCalledTimes(3);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({

@@ -1,4 +1,5 @@
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { keyBy } from "lodash-es";
 
 import { GroundMetresPosition } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -6,7 +7,8 @@ export class CytoscapeCoordinateMapper {
   private readonly scalePixelsPerCm: number;
   private readonly offsetXPixels: number;
   private readonly offsetYPixels: number;
-  private readonly diagramScalesMetresPerCm: number[];
+  private readonly diagrams: Record<number, IDiagram>;
+  private readonly diagramScalesMetresPerCm: Record<number, number>;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL
   // they define the page size in cm
@@ -16,18 +18,17 @@ export class CytoscapeCoordinateMapper {
   public static readonly diagramLimitBottomRightX = 40.5;
   public static readonly diagramLimitBottomRightY = -26.2;
 
-  constructor(
-    viewport: { width: number; height: number },
-    private diagrams: IDiagram[],
-  ) {
+  constructor(canvas: HTMLElement, diagrams: IDiagram[]) {
+    this.diagrams = keyBy(diagrams, "id");
+
     // The diagram limit is actually the page size in cm.
     const diagramWidth =
       CytoscapeCoordinateMapper.diagramLimitBottomRightX - CytoscapeCoordinateMapper.diagramLimitOriginX;
     const diagramHeight =
       CytoscapeCoordinateMapper.diagramLimitBottomRightY - CytoscapeCoordinateMapper.diagramLimitOriginY;
     // Scales are in pixels per centimetre
-    const scaleX = viewport.width / diagramWidth;
-    const scaleY = Math.abs(viewport.height / diagramHeight);
+    const scaleX = canvas.clientWidth / diagramWidth;
+    const scaleY = Math.abs(canvas.clientHeight / diagramHeight);
 
     // We want to scale the page to fit within the viewport whilst maintaining the
     // shape of the plan - so we have the same scale for X and Y.
@@ -40,19 +41,20 @@ export class CytoscapeCoordinateMapper {
     this.offsetYPixels = 0;
     if (scaleX > scaleY) {
       this.scalePixelsPerCm = scaleY;
-      this.offsetXPixels = (viewport.width - diagramWidth * this.scalePixelsPerCm) / 2;
+      this.offsetXPixels = (canvas.clientWidth - diagramWidth * this.scalePixelsPerCm) / 2;
     } else {
       this.scalePixelsPerCm = scaleX;
-      this.offsetYPixels = (viewport.height - Math.abs(diagramHeight) * this.scalePixelsPerCm) / 2;
+      this.offsetYPixels = (canvas.clientHeight - Math.abs(diagramHeight) * this.scalePixelsPerCm) / 2;
     }
 
     // We now want to scale each diagrams points into page coordinates
     // To do this we find the limits of out diagram and compute the scale
     // (again based on the longest side) in diagram coordinates (map cm) per page coordinate
-    this.diagramScalesMetresPerCm = this.diagrams.map((diagram) => {
+    this.diagramScalesMetresPerCm = {};
+    diagrams.forEach((diagram) => {
       const diagramScaleX = (diagram.bottomRightPoint.x - diagram.originPageOffset.x) / diagramWidth;
       const diagramScaleY = (diagram.bottomRightPoint.y - diagram.originPageOffset.y) / diagramHeight;
-      return Math.max(diagramScaleX, diagramScaleY);
+      this.diagramScalesMetresPerCm[diagram.id] = Math.max(diagramScaleX, diagramScaleY);
     });
   }
 
@@ -60,11 +62,14 @@ export class CytoscapeCoordinateMapper {
    * Convert a position in ground coordinates (metres) into cytoscape pixels
    *
    * @param position the position to convert
-   * @param diagramIndex the index of the diagram, used to offset
+   * @param diagramId the id of the diagram, used to offset
    */
-  groundCoordToCytoscape(position: GroundMetresPosition, diagramIndex: number): cytoscape.Position {
-    const diagram = this.diagrams[diagramIndex] as IDiagram;
-    const diagramScale = this.diagramScalesMetresPerCm[diagramIndex] as number;
+  groundCoordToCytoscape(position: GroundMetresPosition, diagramId: number): cytoscape.Position {
+    const diagram = this.diagrams[diagramId];
+    const diagramScale = this.diagramScalesMetresPerCm[diagramId];
+    if (!diagram || !diagramScale) {
+      throw new Error(`Diagram with id ${diagramId} not found`);
+    }
 
     const xPosCm = (position?.x - diagram.originPageOffset.x) / diagramScale;
     const yPosCm = (position?.y - diagram.originPageOffset.y) / diagramScale;
@@ -75,11 +80,45 @@ export class CytoscapeCoordinateMapper {
   }
 
   /**
+   * Convert a position in cytoscape pixels into ground coordinates (metres)
+   *
+   * @param position the position to convert
+   * @param diagramId the id of the diagram, used to offset
+   */
+  cytoscapeToGroundCoord(position: cytoscape.Position, diagramId: number): GroundMetresPosition {
+    const diagram = this.diagrams[diagramId];
+    const diagramScale = this.diagramScalesMetresPerCm[diagramId];
+    if (!diagram || !diagramScale) {
+      throw new Error(`Diagram with id ${diagramId} not found`);
+    }
+
+    const xPosCm = this.cytoscapeToPlanCm(position.x - this.offsetXPixels);
+    const yPosCm = this.cytoscapeToPlanCm(-position.y + this.offsetYPixels);
+    return {
+      x: this.round(xPosCm * diagramScale + diagram.originPageOffset.x),
+      y: this.round(yPosCm * diagramScale + diagram.originPageOffset.y),
+    };
+  }
+
+  /**
    * Convert relative centimetres on plan into cytoscape pixels
    *
    * @param cm a distance in cm
    */
   planCmToCytoscape(cm: number): number {
     return cm * this.scalePixelsPerCm;
+  }
+
+  /**
+   * Convert cytoscape pixels into relative centimetres on plan
+   *
+   * @param pixels a distance in pixels
+   */
+  private cytoscapeToPlanCm(pixels: number): number {
+    return pixels / this.scalePixelsPerCm;
+  }
+
+  private round(number: number, precision = 5): number {
+    return parseFloat(number.toFixed(precision));
   }
 }

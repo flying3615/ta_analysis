@@ -21,10 +21,10 @@ export class PlanDataBuilder {
       | "userDefnPrimaryDiag"
       | "userDefnNonPrimaryDiag"
       | "userDefnTraverseDiag" = "sysGenPrimaryDiag",
-    id: number = 1,
+    id?: number,
   ): PlanDataBuilder {
     this.planData.diagrams.push({
-      id,
+      id: id ?? this.planData.diagrams.length + 1,
       bottomRightPoint,
       originPageOffset,
       coordinates: [],
@@ -136,7 +136,6 @@ export class PlanDataBuilder {
   }
 
   build() {
-    console.log(`Build returns ${JSON.stringify(this.planData)}`);
     return this.planData;
   }
 }

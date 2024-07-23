@@ -8,6 +8,11 @@ import { server } from "@/mocks/mockServer.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 describe("Diagram Selector panel", () => {
+  const planSheetsState = {
+    diagrams: [],
+    pages: [],
+  };
+
   beforeAll(() => {
     const plan = new PlanDataBuilder()
       .addDiagram(
@@ -45,6 +50,7 @@ describe("Diagram Selector panel", () => {
       {
         preloadedState: {
           planSheets: {
+            ...planSheetsState,
             activeSheet: PlanSheetType.SURVEY,
           },
         },
@@ -62,6 +68,7 @@ describe("Diagram Selector panel", () => {
       {
         preloadedState: {
           planSheets: {
+            ...planSheetsState,
             activeSheet: PlanSheetType.TITLE,
           },
         },

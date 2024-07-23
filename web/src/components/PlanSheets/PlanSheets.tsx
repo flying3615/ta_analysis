@@ -6,17 +6,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import { reconstructDiagrams } from "@/modules/plan/reconstructDiagrams.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
-import { getActiveDiagramType } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActiveDiagrams, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
@@ -24,11 +26,12 @@ import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
 const PlanSheets = () => {
   const transactionId = useTransactionId();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
 
-  const activeDiagramType = useAppSelector((state) => getActiveDiagramType(state));
+  const activeDiagrams = useAppSelector(getActiveDiagrams);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
@@ -71,33 +74,32 @@ const PlanSheets = () => {
     }
   }, [regeneratePlanError, transactionId, navigate, showPrefabModal]);
 
-  if (isRegenerating) {
+  if (planDataIsLoading || !planData || isRegenerating) {
     return (
       <div ref={modalOwnerRef}>
         <Header view="Sheets" />
-        <LuiStatusSpinner>
-          <div className="PlanSheetsRegenText">
-            Preparing survey and diagrams for Layout Plan Sheets.
-            <br />
-            This may take a few moments...
-          </div>
-        </LuiStatusSpinner>
+        {isRegenerating ? (
+          <LuiStatusSpinner>
+            <div className="PlanSheetsRegenText">
+              Preparing survey and diagrams for Layout Plan Sheets.
+              <br />
+              This may take a few moments...
+            </div>
+          </LuiStatusSpinner>
+        ) : (
+          <LuiLoadingSpinner />
+        )}
       </div>
     );
   }
 
-  if (planDataIsLoading || !planData) {
-    return (
-      <div ref={modalOwnerRef}>
-        <Header view="Sheets" />
-        <LuiLoadingSpinner />
-      </div>
-    );
-  }
+  const nodeData = extractNodes(activeDiagrams);
+  const edgeData = extractEdges(activeDiagrams);
 
-  const diagrams = planData.diagrams.filter((d) => d.diagramType === activeDiagramType);
-  const nodeData = extractNodes(diagrams);
-  const edgeData = extractEdges(diagrams);
+  const onCytoscapeChange = ({ nodeData, edgeData }: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => {
+    const reconstructedDiagrams = reconstructDiagrams(activeDiagrams, nodeData, edgeData);
+    dispatch(replaceDiagrams(reconstructedDiagrams));
+  };
 
   return (
     <>
@@ -108,7 +110,12 @@ const PlanSheets = () => {
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
           <DiagramSelector />
         </SidePanel>
-        <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={diagrams} />
+        <CytoscapeCanvas
+          nodeData={nodeData}
+          edgeData={edgeData}
+          diagrams={activeDiagrams}
+          onChange={onCytoscapeChange}
+        />
       </div>
       <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
     </>
