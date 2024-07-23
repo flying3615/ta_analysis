@@ -39,6 +39,7 @@ export const DefineDiagramMenuButtons = () => {
       <VerticalSpacer />
       <HeaderButton
         headerMenuLabel={DefineDiagramMenuLabels.ZoomIn}
+        headerButtonLabel="Zoom in"
         iconName="ic_add"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomIn);
@@ -49,6 +50,7 @@ export const DefineDiagramMenuButtons = () => {
       />
       <HeaderButton
         headerMenuLabel={DefineDiagramMenuLabels.ZoomOut}
+        headerButtonLabel="Zoom out"
         iconName="ic_zoom_out"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomOut);
@@ -59,6 +61,7 @@ export const DefineDiagramMenuButtons = () => {
       />
       <HeaderButton
         headerMenuLabel={DefineDiagramMenuLabels.ZoomCentre}
+        headerButtonLabel="Zoom to fit"
         iconName="ic_zoom_centre"
         onClick={() => {
           handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomCentre);

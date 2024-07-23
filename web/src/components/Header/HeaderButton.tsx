@@ -1,4 +1,4 @@
-import { LuiButton, LuiIcon, LuiMiniSpinner } from "@linzjs/lui";
+import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
 import { LuiButtonProps } from "@linzjs/lui/dist/components/LuiButton/LuiButton";
 import clsx from "clsx";
 
@@ -8,6 +8,7 @@ import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType";
 interface HeaderButtonProps {
   headerMenuLabel: DefineDiagramMenuLabels | PlanSheetMenuLabels;
   iconName: string;
+  headerButtonLabel?: string;
   isDisabled?: boolean;
   isLoading?: boolean;
   selectedButtonLabel?: string;
@@ -16,6 +17,7 @@ interface HeaderButtonProps {
 
 export const HeaderButton = ({
   isDisabled,
+  headerButtonLabel,
   iconName,
   headerMenuLabel,
   isLoading,
@@ -29,14 +31,29 @@ export const HeaderButton = ({
           <LuiMiniSpinner size={20} />
         </LuiButton>
       ) : (
-        <LuiButton
-          disabled={isDisabled}
-          level="tertiary"
-          onClick={onClick}
-          className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
-        >
-          <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
-        </LuiButton>
+        <>
+          {headerButtonLabel ? (
+            <LuiTooltip message={headerButtonLabel} placement="bottom" appendTo="parent">
+              <LuiButton
+                disabled={isDisabled}
+                level="tertiary"
+                onClick={onClick}
+                className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
+              >
+                <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
+              </LuiButton>
+            </LuiTooltip>
+          ) : (
+            <LuiButton
+              disabled={isDisabled}
+              level="tertiary"
+              onClick={onClick}
+              className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
+            >
+              <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
+            </LuiButton>
+          )}
+        </>
       )}
     </>
   );
