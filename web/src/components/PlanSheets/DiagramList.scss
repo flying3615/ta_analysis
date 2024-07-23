@@ -1,0 +1,33 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.DiagramListWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.DiagramListLabel {
+  font-size: 14px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  line-height: 20px;
+  cursor: default;
+  padding: 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  color: lui.$charcoal;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  &:hover {
+    background-color: lui.$hint;
+  }
+}
+
+.DiagramListIcon {
+  fill: lui.$fuscous;
+  margin-right: 4px;
+  > svg {
+    height: 20px;
+    width: 20px;
+  }
+}

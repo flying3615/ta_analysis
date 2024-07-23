@@ -9,23 +9,6 @@
   display: flex;
 }
 
-.PlanSheetsDiagramOptions {
-  padding: 8px;
-
-  &-heading {
-    display: flex;
-
-    & h2 {
-      color: lui.$fuscous;
-      font-size: 15px;
-      font-weight: 500;
-      margin: 0;
-      display: inline;
-      padding-left: 4px;
-    }
-  }
-}
-
 .PlanSheetsRegenText {
   width: 100em;
   color: lui.$charcoal;

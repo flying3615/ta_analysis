@@ -17,20 +17,20 @@ describe("PlanSheets", () => {
       "/plan-generation/layout-plan-sheets/:transactionId",
     );
 
-    expect(await screen.findByText("Survey sheet diagrams")).toBeVisible();
+    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
     const diagramsSidePanelButton = screen.getByTitle("Toggle diagrams panel");
     expect(diagramsSidePanelButton).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("diagrams-sidepanel")).toHaveAttribute("aria-hidden", "false");
   });
 
-  it("closes the survey sheet diagrams when toggle button is pressed", async () => {
+  it("closes the title sheet diagrams when toggle button is pressed", async () => {
     renderCompWithReduxAndRoute(
       <PlanSheets />,
       "/plan-generation/layout-plan-sheets/123",
       "/plan-generation/layout-plan-sheets/:transactionId",
     );
 
-    expect(await screen.findByText("Survey sheet diagrams")).toBeVisible();
+    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
     expect(screen.getByTestId("diagrams-sidepanel")).toHaveAttribute("aria-hidden", "false");
 
     const diagramsSidePanelButton = screen.getByTitle("Toggle diagrams panel");
@@ -95,9 +95,9 @@ describe("PlanSheets", () => {
     expect(await screen.findByText(/Preparing survey and diagrams for Layout Plan Sheets/)).toBeVisible();
     expect(await screen.findByText(/This may take a few moments\.\.\./)).toBeVisible();
     // then
-    expect(await screen.findByText("Survey sheet diagrams")).toBeVisible();
+    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
 
-    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenCalledTimes(4);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({

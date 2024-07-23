@@ -14,10 +14,17 @@ export class PlanDataBuilder {
       x: 0,
       y: 0,
     },
-    diagramType: "sysGenPrimaryDiag" | "sysGenNonPrimaryDiag" | "sysGenTraverseDiag" = "sysGenPrimaryDiag",
+    diagramType:
+      | "sysGenPrimaryDiag"
+      | "sysGenNonPrimaryDiag"
+      | "sysGenTraverseDiag"
+      | "userDefnPrimaryDiag"
+      | "userDefnNonPrimaryDiag"
+      | "userDefnTraverseDiag" = "sysGenPrimaryDiag",
+    id: number = 1,
   ): PlanDataBuilder {
     this.planData.diagrams.push({
-      id: 1,
+      id,
       bottomRightPoint,
       originPageOffset,
       coordinates: [],
@@ -27,6 +34,7 @@ export class PlanDataBuilder {
       coordinateLabels: [],
       lineLabels: [],
       diagramType,
+      childDiagrams: [],
     });
     return this;
   }
@@ -114,6 +122,15 @@ export class PlanDataBuilder {
       fontSize,
       featureId,
       featureType,
+    });
+    return this;
+  }
+
+  addChildDiagram({ diagramRef }: { diagramRef: number }) {
+    const lasDiagram = last(this.planData.diagrams);
+    lasDiagram?.childDiagrams?.push({
+      diagramRef,
+      labels: [],
     });
     return this;
   }

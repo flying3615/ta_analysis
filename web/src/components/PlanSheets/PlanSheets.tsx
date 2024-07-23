@@ -1,6 +1,6 @@
 import "./PlanSheets.scss";
 
-import { LuiIcon, LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
+import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,8 +10,8 @@ import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDat
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
+import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel";
-import { luiColors } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
@@ -106,12 +106,7 @@ const PlanSheets = () => {
       </Header>
       <div className="PlanSheets" ref={modalOwnerRef}>
         <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
-          <div className="PlanSheetsDiagramOptions">
-            <div className="PlanSheetsDiagramOptions-heading">
-              <LuiIcon alt="Survey sheet icon" color={luiColors.fuscous} name="ic_survey_sheet" size="md" />
-              <h2>Survey sheet diagrams</h2>
-            </div>
-          </div>
+          <DiagramSelector />
         </SidePanel>
         <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={diagrams} />
       </div>

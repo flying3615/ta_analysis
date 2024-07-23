@@ -36,6 +36,6 @@ describe("LandingPage", () => {
 
     const button = await screen.findByText("Layout Plan Sheets");
     fireEvent.click(button);
-    expect(await screen.findByRole("heading", { name: /Survey sheet diagrams/ })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Title sheet diagrams/ })).toBeInTheDocument();
   });
 });
