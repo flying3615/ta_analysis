@@ -107,7 +107,7 @@ const createChildDiagrams = (diagramMap: DiagramMap, level: number, diagramIds?:
 };
 
 const getDiagramName = (labels: ILabel[], diagramNumber: number): string => {
-  const diagramLabel = labels.find((l) => (l.labelType = "diagram"));
+  const diagramLabel = labels.find((l) => l.labelType === "diagram");
   if (diagramLabel) {
     return diagramLabel.displayText;
   } else {
