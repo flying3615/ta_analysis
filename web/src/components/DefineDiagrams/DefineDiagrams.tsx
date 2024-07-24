@@ -1,5 +1,6 @@
 import "./DefineDiagrams.scss";
 
+import { LabelsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
@@ -11,6 +12,7 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram.tsx";
 import {
   diagramsLayer,
+  labelsLayer,
   linesLayer,
   marksLayer,
   parcelsLayer,
@@ -23,6 +25,7 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetDiagramsQuery } from "@/queries/diagrams";
+import { useGetLabelsQuery } from "@/queries/labels.ts";
 import { useGetLinesQuery } from "@/queries/lines.ts";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
@@ -30,6 +33,7 @@ import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import {
   getDiagramsForOpenLayers,
+  getLabelsForOpenLayers,
   getLinesForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
@@ -88,8 +92,22 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     enabled: prepareDatasetIsSuccess, // Don't fetch lines until the dataset is prepared
   });
 
-  const error = prepareDatasetError ?? featuresError ?? diagramsError ?? diagramLinesError;
-  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramsIsLoading || diagramLinesIsLoading;
+  const {
+    data: diagramLabels,
+    isLoading: diagramLabelsIsLoading,
+    error: diagramLabelsError,
+  } = useGetLabelsQuery({
+    transactionId,
+    enabled: prepareDatasetIsSuccess, // Don't fetch labels until the dataset is prepared
+  });
+
+  const error = prepareDatasetError ?? featuresError ?? diagramsError ?? diagramLinesError ?? diagramLabelsError;
+  const isLoading =
+    !prepareDatasetIsSuccess ||
+    featuresIsLoading ||
+    diagramsIsLoading ||
+    diagramLinesIsLoading ||
+    diagramLabelsIsLoading;
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -133,6 +151,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
               vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
               diagramsLayer(getDiagramsForOpenLayers(diagrams), maxZoom),
               linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
+              labelsLayer(getLabelsForOpenLayers(diagramLabels as LabelsResponseDTO), maxZoom),
             ]}
           />
         )}

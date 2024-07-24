@@ -1,5 +1,6 @@
 import {
   DiagramsResponseDTO,
+  LabelsResponseDTO,
   LinesResponseDTO,
   SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
@@ -57,4 +58,14 @@ export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSour
     shape: {
       geometry: d.shape,
     },
+  }));
+
+export const getLabelsForOpenLayers = ({ labels }: LabelsResponseDTO): IFeatureSource[] =>
+  labels.map((d) => ({
+    id: d.id,
+    name: d.name,
+    shape: {
+      geometry: d.shape,
+    },
+    type: d.diagramType,
   }));
