@@ -1,3 +1,4 @@
+import { SYMBOLS_FONT } from "@/constants";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
@@ -6,7 +7,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(22); // 15 mark nodes + 7 labels
+    expect(extractedNodes).toHaveLength(23); // 15 mark nodes + 8 labels
     const node10001 = extractedNodes[0];
     expect(node10001?.id).toBe("10001");
     expect(node10001?.position).toStrictEqual({ x: 20, y: -10 });
@@ -29,7 +30,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(22); // 4 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(23); // 5 labels after mark nodes in first diagram
 
     const labelNode10 = extractedNodes[10];
     expect(labelNode10?.id).toBe("1");
@@ -42,6 +43,7 @@ describe("extractGraphData", () => {
     expect(labelNode10?.properties?.["featureType"]).toBeUndefined();
     expect(labelNode10?.properties?.["font"]).toBe("Tahoma");
     expect(labelNode10?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode10?.properties?.["symbolId"]).toBeUndefined();
 
     const labelNode11 = extractedNodes[11];
     expect(labelNode11?.id).toBe("11");
@@ -54,30 +56,46 @@ describe("extractGraphData", () => {
     expect(labelNode11?.properties?.["featureType"]).toBe("mark");
     expect(labelNode11?.properties?.["font"]).toBe("Times New Roman");
     expect(labelNode11?.properties?.["fontSize"]).toBe(10);
+    expect(labelNode11?.properties?.["symbolId"]).toBeUndefined();
 
     const labelNode12 = extractedNodes[12];
     expect(labelNode12?.id).toBe("12");
-    expect(labelNode12?.label).toBe("Label 12");
-    expect(labelNode12?.position).toStrictEqual({ x: 52, y: -40 });
+    expect(labelNode12?.label).toBe("96");
+    expect(labelNode12?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode12?.properties?.["diagramId"]).toBe(1);
-    expect(labelNode12?.properties?.["elementType"]).toBe("lineLabels");
+    expect(labelNode12?.properties?.["elementType"]).toBe("coordinateLabels");
     expect(labelNode12?.properties?.["labelType"]).toBe("display");
-    expect(labelNode12?.properties?.["featureId"]).toBe(1001);
-    expect(labelNode12?.properties?.["featureType"]).toBe("line");
-    expect(labelNode12?.properties?.["font"]).toBe("Arial");
-    expect(labelNode12?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode12?.properties?.["featureId"]).toBeUndefined();
+    expect(labelNode12?.properties?.["featureType"]).toBeUndefined();
+    expect(labelNode12?.properties?.["font"]).toBe(SYMBOLS_FONT);
+    expect(labelNode12?.properties?.["fontSize"]).toBe(10);
+    expect(labelNode12?.properties?.["symbolId"]).toBe("96");
 
     const labelNode13 = extractedNodes[13];
     expect(labelNode13?.id).toBe("13");
     expect(labelNode13?.label).toBe("Label 13");
-    expect(labelNode13?.position).toStrictEqual({ x: 35, y: -35 });
+    expect(labelNode13?.position).toStrictEqual({ x: 52, y: -40 });
     expect(labelNode13?.properties?.["diagramId"]).toBe(1);
-    expect(labelNode13?.properties?.["elementType"]).toBe("parcelLabels");
+    expect(labelNode13?.properties?.["elementType"]).toBe("lineLabels");
     expect(labelNode13?.properties?.["labelType"]).toBe("display");
-    expect(labelNode13?.properties?.["featureId"]).toBe(1);
-    expect(labelNode13?.properties?.["featureType"]).toBe("parcel");
-    expect(labelNode13?.properties?.["font"]).toBe("Tahoma");
-    expect(labelNode13?.properties?.["fontSize"]).toBe(16);
+    expect(labelNode13?.properties?.["featureId"]).toBe(1001);
+    expect(labelNode13?.properties?.["featureType"]).toBe("line");
+    expect(labelNode13?.properties?.["font"]).toBe("Arial");
+    expect(labelNode13?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode13?.properties?.["symbolId"]).toBeUndefined();
+
+    const labelNode14 = extractedNodes[14];
+    expect(labelNode14?.id).toBe("14");
+    expect(labelNode14?.label).toBe("Label 14");
+    expect(labelNode14?.position).toStrictEqual({ x: 35, y: -35 });
+    expect(labelNode14?.properties?.["diagramId"]).toBe(1);
+    expect(labelNode14?.properties?.["elementType"]).toBe("parcelLabels");
+    expect(labelNode14?.properties?.["labelType"]).toBe("display");
+    expect(labelNode14?.properties?.["featureId"]).toBe(1);
+    expect(labelNode14?.properties?.["featureType"]).toBe("parcel");
+    expect(labelNode14?.properties?.["font"]).toBe("Tahoma");
+    expect(labelNode14?.properties?.["fontSize"]).toBe(16);
+    expect(labelNode14?.properties?.["symbolId"]).toBeUndefined();
   });
 
   test("extractEdges extracts edge data", () => {

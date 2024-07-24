@@ -1,4 +1,5 @@
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { SYMBOLS_FONT } from "@/constants";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 import { reconstructDiagrams } from "../reconstructDiagrams";
@@ -58,6 +59,12 @@ describe("reconstructDiagrams", () => {
         id: "5",
         label: "Node 5",
         properties: { diagramId: 2, elementType: "parcelLabels" },
+        position: { x: 100, y: -20 },
+      },
+      {
+        id: "6",
+        label: "117",
+        properties: { diagramId: 2, elementType: "coordinateLabels", fontSize: 10, font: SYMBOLS_FONT },
         position: { x: 100, y: -20 },
       },
     ] as INodeData[];
@@ -134,7 +141,18 @@ describe("reconstructDiagrams", () => {
           fontSize: undefined,
         },
       ],
-      coordinateLabels: [],
+      coordinateLabels: [
+        {
+          id: 6,
+          displayText: "117",
+          position: { x: 100, y: -20 },
+          featureId: undefined,
+          featureType: undefined,
+          labelType: undefined,
+          font: SYMBOLS_FONT,
+          fontSize: 10,
+        },
+      ],
       lineLabels: [
         {
           id: 4,

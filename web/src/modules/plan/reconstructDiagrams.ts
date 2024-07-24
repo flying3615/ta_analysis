@@ -2,6 +2,7 @@ import { ICoordinate, IDiagram } from "@linz/survey-plan-generation-api-client";
 import { groupBy } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { SYMBOLS_FONT } from "@/constants";
 
 import { getLineStyling } from "./styling";
 
@@ -18,16 +19,21 @@ export const reconstructDiagrams = (diagrams: IDiagram[], nodeData: INodeData[],
 
     const filterByElementType = (key: string) => (node: INodeData) => node.properties["elementType"] === key;
 
-    const mapLabels = (node: INodeData) => ({
-      id: parseInt(node.id),
-      displayText: node.label,
-      position: node.position,
-      font: node.properties["font"],
-      fontSize: node.properties["fontSize"],
-      featureId: node.properties["featureId"],
-      featureType: node.properties["featureType"],
-      labelType: node.properties["labelType"],
-    });
+    const mapLabels = (node: INodeData) => {
+      const isSymbol = node.properties["symbolId"] !== undefined;
+      const displayText = isSymbol ? node.properties["symbolId"] : node.label;
+      const font = isSymbol ? SYMBOLS_FONT : node.properties["font"];
+      return {
+        id: parseInt(node.id),
+        displayText,
+        position: node.position,
+        font,
+        fontSize: node.properties["fontSize"],
+        featureId: node.properties["featureId"],
+        featureType: node.properties["featureType"],
+        labelType: node.properties["labelType"],
+      };
+    };
 
     return {
       ...diagram,

@@ -1,6 +1,8 @@
 import { ICartesianCoords, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
 
+import { SYMBOLS_FONT } from "@/constants";
+
 export class PlanDataBuilder {
   planData: PlanResponseDTO = {
     diagrams: [],
@@ -86,7 +88,7 @@ export class PlanDataBuilder {
       undefined,
       undefined,
       "display",
-      "LOLsymbols",
+      SYMBOLS_FONT,
       fontSize,
     );
   }

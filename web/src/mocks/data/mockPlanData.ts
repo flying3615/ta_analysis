@@ -59,8 +59,9 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(2001, [20001, 20002], 0.75, "observation", "arrow1")
   .addLine(3001, [30001, 30002], 0.75, "observation", "doubleArrow1")
   .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "display", "Times New Roman", 10)
-  .addLabel("lineLabels", 12, "Label 12", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
-  .addLabel("parcelLabels", 13, "Label 13", { x: 35, y: -35 }, 1, "parcel", "display", "Tahoma", 16)
+  .addSymbolLabel(12, "96", { x: 20, y: -10 }, 10)
+  .addLabel("lineLabels", 13, "Label 13", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
+  .addLabel("parcelLabels", 14, "Label 14", { x: 35, y: -35 }, 1, "parcel", "display", "Tahoma", 16)
   .addLabel(
     "labels",
     1,

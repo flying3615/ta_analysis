@@ -54,6 +54,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node shown as a symbol
       selector: "node[symbolId]",
       style: {
+        label: "",
         "background-image": (ele) => svgDataForSymbol(ele).svg,
         width: (ele: cytoscape.NodeSingular) => svgDataForSymbol(ele).width,
         height: (ele) => svgDataForSymbol(ele).height,
