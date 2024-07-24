@@ -92,7 +92,7 @@ describe("DefineDiagrams", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/api/v1/generate-plans/survey-features/123",
+          url: "http://localhost/api/v1/generate-plans/123/survey-features",
         }),
       }),
     );

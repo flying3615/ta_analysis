@@ -61,7 +61,7 @@ export const Default: Story = {
       handlers: [
         ...handlers,
         // Return two marks in order to center the map on the geotiles fixture data we have manually defined
-        http.get(/\/survey-features\/456$/, async () =>
+        http.get(/\/456\/survey-features$/, async () =>
           HttpResponse.json(
             {
               marks: [

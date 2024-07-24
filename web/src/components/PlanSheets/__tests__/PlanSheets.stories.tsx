@@ -71,10 +71,10 @@ export const SystemGeneratedPrimaryDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/plan\/check\/123$/, () =>
+        http.get(/\/123\/plan-check$/, () =>
           HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
         ),
-        http.get(/\/plan\/123$/, () =>
+        http.get(/\/123\/plan$/, () =>
           HttpResponse.json(planData("sysGenPrimaryDiag"), { status: 200, statusText: "OK" }),
         ),
       ],
@@ -87,10 +87,10 @@ export const SystemGeneratedSurveyDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/plan\/check\/123$/, () =>
+        http.get(/\/123\/plan-check$/, () =>
           HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
         ),
-        http.get(/\/plan\/123$/, () =>
+        http.get(/\/123\/plan$/, () =>
           HttpResponse.json(planData("sysGenTraverseDiag"), { status: 200, statusText: "OK" }),
         ),
       ],
@@ -110,10 +110,10 @@ export const SystemGeneratedNonPrimaryDiagram: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/plan\/check\/123$/, () =>
+        http.get(/\/123\/plan-check$/, () =>
           HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
         ),
-        http.get(/\/plan\/123$/, () => {
+        http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(planData("sysGenNonPrimaryDiag"), { status: 200, statusText: "OK" });
         }),
       ],

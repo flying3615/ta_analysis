@@ -16,7 +16,7 @@ import { mockInternalServerError } from "./data/mockError";
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features
   // use $ in regex to force exact match for transaction id
-  http.get(/\/survey-features\/123$/, () =>
+  http.get(/\/123\/survey-features$/, () =>
     HttpResponse.json(
       {
         marks: mockMarks(),
@@ -30,16 +30,16 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/plan\/123$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.get(/\/plan\/124$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
 
   http.put(/\/plan\/123$/, async () => {
     await delay(2000);
     return HttpResponse.json({}, { status: 200 });
   }),
-  http.put(/\/plan\/124$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
+  http.put(/\/124\/plan$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
 
-  http.get(/\/plan\/check\/123$/, () =>
+  http.get(/\/123\/plan-check$/, () =>
     HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
   ),
 
@@ -56,8 +56,8 @@ export const handlers: HttpHandler[] = [
   ),
 
   // Survey 124 = diagrams with context, regular plan
-  http.get(/\/plan\/124$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.get(/\/survey-features\/124$/, () =>
+  http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.get(/\/124\/survey-features$/, () =>
     HttpResponse.json(
       {
         marks: [],
@@ -68,11 +68,9 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
-  http.get(/\/plan\/check\/124$/, () =>
-    HttpResponse.json({ refreshRequired: true }, { status: 200, statusText: "OK" }),
-  ),
+  http.get(/\/124\/plan-check$/, () => HttpResponse.json({ refreshRequired: true }, { status: 200, statusText: "OK" })),
   // regenerate xml with delay
-  http.post(/\/plan\/124$/, async () => {
+  http.post(/\/124\/plan$/, async () => {
     await delay(2000);
     return HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" });
   }),
@@ -80,7 +78,7 @@ export const handlers: HttpHandler[] = [
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
   http.get(/\/124\/labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
-  http.get(/\/survey-features\/125$/, () =>
+  http.get(/\/125\/survey-features$/, () =>
     HttpResponse.json(
       {
         marks: [
@@ -96,7 +94,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   // Survey 126: Return two marks in order to center the map on the geotiles fixture data we have manually defined
-  http.get(/\/survey-features\/126$/, () =>
+  http.get(/\/126\/survey-features$/, () =>
     HttpResponse.json(
       {
         marks: [
@@ -151,7 +149,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   // 404 cases
-  http.get(/\/survey-features\/404/, () =>
+  http.get(/404\/survey-features/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
   http.get(/\/404\/diagrams/, () =>

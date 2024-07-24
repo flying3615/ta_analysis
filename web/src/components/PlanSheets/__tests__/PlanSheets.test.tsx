@@ -103,7 +103,7 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/api/v1/generate-plans/plan/check/124",
+          url: "http://localhost/api/v1/generate-plans/124/plan-check",
         }),
       }),
     );
@@ -112,7 +112,7 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
-          url: "http://localhost/api/v1/generate-plans/plan/124",
+          url: "http://localhost/api/v1/generate-plans/124/plan",
         }),
       }),
     );
@@ -121,7 +121,7 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/api/v1/generate-plans/plan/124",
+          url: "http://localhost/api/v1/generate-plans/124/plan",
         }),
       }),
     );
@@ -129,7 +129,7 @@ describe("PlanSheets", () => {
 
   it("displays error when regenerate fails", async () => {
     server.use(
-      http.post(/\/plan\/124$/, async () => {
+      http.post(/\/124\/plan$/, async () => {
         return HttpResponse.json(
           { ok: false, statusCode: 20001, message: "prepare dataset application error" },
           { status: 200, statusText: "OK" },
