@@ -1,11 +1,27 @@
+import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
+import { kinks } from "@turf/kinks";
+import { lineString } from "@turf/turf";
+import { chunk, isEmpty, isEqual } from "lodash-es";
+import { EventsKey } from "ol/events";
+import BaseEvent from "ol/events/Event";
+import { Polygon } from "ol/geom";
 import Geometry, { Type } from "ol/geom/Geometry";
 import { Draw } from "ol/interaction";
 import { createBox, DrawEvent, GeometryFunction, Options } from "ol/interaction/Draw";
 import { useCallback, useContext, useEffect, useRef } from "react";
 
+import {
+  drawInteractionBoundaryBorder,
+  drawInteractionBoundaryBorderError,
+  drawInteractionBoundaryFill,
+  drawInteractionBoundaryFillError,
+} from "@/components/DefineDiagrams/diagramStyles.ts";
+import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
+import { useEscapeKey } from "@/hooks/useEscape.ts";
 import { usePrevious } from "@/hooks/usePrevious.ts";
+import { flatCoordsToGeogCoords } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
 
@@ -22,44 +38,156 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
 };
 
 export interface useOpenLayersDrawInteractionProps {
-  drawEnd: (props: { event: DrawEvent; geometry: Geometry }) => void;
+  drawAbort: (event: DrawEvent) => void | Promise<void>;
+  drawEnd: (props: {
+    event: DrawEvent;
+    geometry: Geometry;
+    cartesianCoordinates: ICartesianCoords[];
+  }) => void | Promise<void>;
   enabled: boolean;
   options: Omit<Options, "type"> & { type: DrawInteractionType | undefined };
+  maxPoints?: {
+    count: number;
+    errorCallback: () => void;
+  };
 }
 
 /**
  * Manages map draw interaction.
  *
+ * @param drawAbort When user cancels draw by right click or escape this is called.
  * @param drawEnd On draw end event callback
  * @param enabled true if enabled
+ * @param maxPoints Limit to number of points in polygon if required.
  * @param options Standard ol draw interaction properties, extended to include custom type: "Rectangle"
  */
-export const useOpenLayersDrawInteraction = ({ drawEnd, enabled, options }: useOpenLayersDrawInteractionProps) => {
+export const useOpenLayersDrawInteraction = ({
+  drawAbort,
+  drawEnd,
+  enabled,
+  maxPoints,
+  options,
+}: useOpenLayersDrawInteractionProps) => {
   const { map } = useContext(LolOpenLayersMapContext);
-  const drawInteractionRef = useRef<Draw>();
-  const drawEndEventRef = useConstFunctionRef((event: DrawEvent) => {
-    event.stopPropagation();
-    const geometry = event.feature.getGeometry();
-    if (!geometry) return;
 
-    drawEnd({ event, geometry });
-  });
+  const drawInteractionRef = useRef<Draw>();
+  const drawListenerRef = useRef<EventsKey>();
+  // If the polygon is self intersecting this is set to false
+  const allowDrawAddPoint = useRef(false);
+  // The current feature needs to be retained as it's needed for finishEvent which has no access to the feature
+  const currentFeatureRef = useRef<Polygon>();
 
   const currentType = options.type;
+
+  /**
+   * Abort drawing on escape.
+   */
+  useEscapeKey({ enabled, callback: () => drawInteractionRef?.current?.abortDrawing() });
+
+  /**
+   * Checks if geometry is self intersecting
+   */
+  const geometryValid = useCallback(() => {
+    const c = currentFeatureRef.current?.getFlatCoordinates();
+    const k = kinks(lineString(chunk(c, 2)));
+    return isEmpty(k.features);
+  }, []);
+
+  /**
+   * Call back for draw end.  Garnishes the normal DrawEvent with some more useful values.
+   */
+  const drawEndEventRef = useConstFunctionRef((event: DrawEvent) => {
+    event.stopPropagation();
+    const polygon = currentFeatureRef.current;
+    if (!polygon) return;
+
+    const cartesianCoordinates = flatCoordsToGeogCoords(polygon.getFlatCoordinates());
+    // check the points aren't all the same
+    const first = cartesianCoordinates[0];
+    if (!first || !cartesianCoordinates.some((coord) => !isEqual(coord, first))) {
+      drawAbort(event);
+      return;
+    }
+
+    drawEnd({
+      event,
+      geometry: polygon,
+      cartesianCoordinates,
+    });
+  });
+
+  /**
+   * Callback for draw abort.
+   */
+  const drawAbortEventRef = useConstFunctionRef((event: DrawEvent) => {
+    event.stopPropagation();
+    drawAbort(event);
+  });
+
+  /**
+   * Only hooked in if the maxPoints validation is added.
+   * Checks number of points and calls error callback if exceeded, then aborts the interaction.
+   */
+  const onDrawStart = useCallback(
+    (event: DrawEvent) => {
+      if (!map || !maxPoints) return;
+
+      const feature = event.feature;
+      drawListenerRef.current = feature.getGeometry()!.on("change", (evt: BaseEvent) => {
+        const geom = evt.target as Polygon;
+        currentFeatureRef.current = geom;
+        if (geom.getType() !== "Polygon") throw "Unsupported Geometry type";
+
+        // Disable the ability to add a point if it would cause a self intersection.
+        // The last coordinate hasn't been saved yet, so it's excluded
+        const coords = chunk(geom.getFlatCoordinates(), 2);
+
+        // Self intersection disables drawing points
+        allowDrawAddPoint.current = coords.length <= 3 || isEmpty(kinks(lineString(coords.slice(0, -1))).features);
+
+        const pointCount = coords.length - 1;
+        if (pointCount > maxPoints.count) {
+          maxPoints.errorCallback();
+          drawInteractionRef.current?.abortDrawing();
+        }
+      });
+    },
+    [map, maxPoints],
+  );
 
   /**
    * Add draw interaction if no present.
    */
   const addInteractions = useCallback(() => {
+    allowDrawAddPoint.current = true;
     if (!map || !enabled || drawInteractionRef.current || !currentType) return;
+    const drawInteraction = (drawInteractionRef.current = new BlockableDraw(
+      {
+        style: (feature) => {
+          switch (feature.getGeometry()?.getType()) {
+            case "LineString":
+              return allowDrawAddPoint.current ? drawInteractionBoundaryBorder : drawInteractionBoundaryBorderError;
+            case "Polygon":
+              return allowDrawAddPoint.current ? drawInteractionBoundaryFill : drawInteractionBoundaryFillError;
+            default:
+              return false;
+          }
+        },
+        stopClick: true,
+        ...options,
+        ...extendedTypes[currentType]?.(),
+        finishCondition: () => geometryValid(),
+        condition: (e) => e.originalEvent.buttons === 1,
+      } as Options,
+      allowDrawAddPoint,
+    ));
 
-    const drawInteraction = (drawInteractionRef.current = new Draw({
-      ...options,
-      ...extendedTypes[currentType]?.(),
-    } as Options));
+    maxPoints && drawInteraction.on("drawstart", onDrawStart);
     drawInteraction.on("drawend", drawEndEventRef.current);
+    drawInteraction.on("drawabort", drawAbortEventRef.current);
+
     map.addInteraction(drawInteraction);
-  }, [currentType, drawEndEventRef, enabled, map, options]);
+  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, geometryValid, map, maxPoints, onDrawStart, options]);
 
   /**
    * Remove draw interaction if present.
@@ -87,9 +215,11 @@ export const useOpenLayersDrawInteraction = ({ drawEnd, enabled, options }: useO
   /**
    * Dis/enable the drawInteraction if enabled state changes
    */
+  const lastEnabled = usePrevious(enabled);
   useEffect(() => {
+    if (!!lastEnabled == enabled) return;
     enabled ? addInteractions() : removeInteractions();
-  }, [addInteractions, enabled, removeInteractions]);
+  }, [addInteractions, enabled, lastEnabled, removeInteractions]);
 
   /**
    * When unmounting remove the map interactions

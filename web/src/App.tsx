@@ -3,7 +3,7 @@ import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorInfo, ReactNode, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
@@ -23,7 +23,6 @@ import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { appClientId } from "./constants.tsx";
 import { mockUser } from "./mocks/mockAuthUser.ts";
 import { Paths } from "./Paths.ts";
-import { queryClient } from "./queries/index.ts";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
@@ -91,6 +90,23 @@ const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; reset
 
   return <div ref={modalOwnerRef} />;
 };
+
+const commonDefaultOptions = {
+  // Don't retry in storybook to avoid chromatic screenshot timing issues
+  retry: window.isStorybook ? 0 : 2,
+};
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      ...commonDefaultOptions,
+    },
+    mutations: {
+      ...commonDefaultOptions,
+    },
+  },
+});
 
 const App = () => {
   const oidcConfig: OidcConfig = {

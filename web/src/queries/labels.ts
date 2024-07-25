@@ -6,9 +6,9 @@ import { PlanGenQuery } from "@/queries/types.ts";
 
 export const getLabelsQueryKey = (transactionId: number) => ["labels", transactionId];
 
-export const useGetLabelsQuery: PlanGenQuery<LabelsResponseDTO> = ({ transactionId, ...params }) =>
+export const useGetLabelsQuery: PlanGenQuery<LabelsResponseDTO> = ({ transactionId, enabled }) =>
   useQuery({
-    ...params,
     queryKey: getLabelsQueryKey(transactionId),
     queryFn: () => new LabelsControllerApi(apiConfig()).labels({ transactionId }),
+    enabled,
   });

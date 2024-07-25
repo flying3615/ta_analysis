@@ -1,25 +1,23 @@
 import { PlanControllerApi, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
 
-import { queryClient } from ".";
-
 export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactionId];
 
-export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, ...params }) => {
+export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, enabled }) => {
   const dispatch = useAppDispatch();
   return useQuery({
-    ...params,
     queryKey: getPlanQueryKey(transactionId),
     queryFn: async () => {
       const response = await new PlanControllerApi(apiConfig()).getPlan({ transactionId });
       dispatch(setPlanData(response));
       return response;
     },
+    enabled,
   });
 };
 
@@ -27,6 +25,8 @@ export const updatePlanQueryKey = (transactionId: number) => ["updatePlan", tran
 
 export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ...params }) => {
   const planData = useAppSelector(getPlanData);
+  const queryClient = useQueryClient();
+
   return useMutation({
     ...params,
     mutationKey: updatePlanQueryKey(transactionId),

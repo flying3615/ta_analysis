@@ -1,4 +1,13 @@
-export type DefineDiagramsActionType = "idle" | "enlarge_diagram_rectangle" | "enlarge_diagram_polygon";
+export type DefineDiagramsActionType =
+  | "idle"
+  | "enlarge_diagram_rectangle"
+  | "enlarge_diagram_polygon"
+  | "define_primary_diagram_rectangle"
+  | "define_primary_diagram_polygon"
+  | "define_non_primary_diagram_rectangle"
+  | "define_non_primary_diagram_polygon"
+  | "define_survey_diagram_rectangle"
+  | "define_survey_diagram_polygon";
 
 export enum DefineDiagramMenuLabels {
   Delete = "Delete",

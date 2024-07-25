@@ -95,7 +95,7 @@ describe("featureMapper", () => {
     const diagrams = getDiagramsForOpenLayers(mockDiagrams());
 
     expect(diagrams[0]?.id).toBe(1);
-    expect((diagrams[0] as Record<string, string>)?.["diagramType"]).toBe(CpgDiagramType.SYSN);
+    expect(diagrams[0]?.["diagramType"]).toBe(CpgDiagramType.SYSN);
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 250]);
@@ -104,7 +104,7 @@ describe("featureMapper", () => {
     expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
 
     expect(diagrams[1]?.id).toBe(2);
-    expect((diagrams[1] as Record<string, string>)?.["diagramType"]).toBe(CpgDiagramType.SYSP);
+    expect(diagrams[1]?.["diagramType"]).toBe(CpgDiagramType.SYSP);
     expect(diagrams[1]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
     expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
     expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 250]);

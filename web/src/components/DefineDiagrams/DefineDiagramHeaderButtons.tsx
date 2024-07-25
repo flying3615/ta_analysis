@@ -1,14 +1,14 @@
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { LuiIcon } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
-import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
 import { DefineDiagramMenuLabels } from "./defineDiagramsType";
 
@@ -16,6 +16,14 @@ export const DefineDiagramMenuButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
 
   const map = useContext(LolOpenLayersMapContext);
+
+  // MATT temporary until I have removed selected button label
+  const activeAction = useAppSelector(getActiveAction);
+  useEffect(() => {
+    if (activeAction === "idle") {
+      setSelectedButtonLabel("");
+    }
+  }, [activeAction]);
 
   const dispatch = useAppDispatch();
   const changeActiveAction = (action: DefineDiagramsActionType) => () => dispatch(setActiveAction(action));
@@ -126,7 +134,7 @@ export const DefineDiagramMenuButtons = () => {
         setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>{DefineDiagramMenuLabels.DefinePrimaryDiagram}</MenuHeader>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_primary_diagram_rectangle")}>
           <LuiIcon
             name="ic_define_primary_diagram_rectangle"
             alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByRectangle}
@@ -134,7 +142,7 @@ export const DefineDiagramMenuButtons = () => {
           />
           Rectangle
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_primary_diagram_polygon")}>
           <LuiIcon
             name="ic_define_primary_diagram_polygon"
             alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByPolygon}
@@ -150,7 +158,7 @@ export const DefineDiagramMenuButtons = () => {
         setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>{DefineDiagramMenuLabels.DefineNonPrimaryDiagram}</MenuHeader>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_non_primary_diagram_rectangle")}>
           <LuiIcon
             name="ic_define_nonprimary_diagram_rectangle"
             alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByRectangle}
@@ -158,7 +166,7 @@ export const DefineDiagramMenuButtons = () => {
           />
           Rectangle
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_non_primary_diagram_polygon")}>
           <LuiIcon
             name="ic_define_nonprimary_diagram_polygon"
             alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByPolygon}
@@ -174,7 +182,7 @@ export const DefineDiagramMenuButtons = () => {
         setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>{DefineDiagramMenuLabels.DefineSurveyDiagram}</MenuHeader>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_survey_diagram_rectangle")}>
           <LuiIcon
             name="ic_define_survey_diagram_rectangle"
             alt={DefineDiagramMenuLabels.DefineSurveyDiagramByRectangle}
@@ -182,7 +190,7 @@ export const DefineDiagramMenuButtons = () => {
           />
           Rectangle
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={changeActiveAction("define_survey_diagram_polygon")}>
           <LuiIcon
             name="ic_define_survey_diagram_polygon"
             alt={DefineDiagramMenuLabels.DefineSurveyDiagramByPolygon}

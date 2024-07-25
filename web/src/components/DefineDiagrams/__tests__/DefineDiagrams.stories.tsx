@@ -3,7 +3,7 @@ import "ol/ol.css";
 
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { Meta, StoryObj } from "@storybook/react";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router";
@@ -13,7 +13,6 @@ import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
-import { queryClient } from "@/queries";
 import { DefineDiagramsState } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
@@ -31,6 +30,8 @@ export default {
 const initialState: DefineDiagramsState = {
   action: "idle",
 };
+
+const queryClient = new QueryClient();
 
 const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => (
   <LuiModalAsyncContextProvider>

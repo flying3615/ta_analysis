@@ -6,9 +6,9 @@ import { PlanGenQuery } from "@/queries/types";
 
 export const getLinesQueryKey = (transactionId: number) => ["lines", transactionId];
 
-export const useGetLinesQuery: PlanGenQuery<LinesResponseDTO> = ({ transactionId, ...params }) =>
+export const useGetLinesQuery: PlanGenQuery<LinesResponseDTO> = ({ transactionId, enabled }) =>
   useQuery({
-    ...params,
     queryKey: getLinesQueryKey(transactionId),
     queryFn: () => new LinesControllerApi(apiConfig()).lines({ transactionId }),
+    enabled,
   });

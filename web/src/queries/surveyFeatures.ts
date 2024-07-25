@@ -6,9 +6,9 @@ import { PlanGenQuery } from "@/queries/types";
 
 export const getSurveyFeaturesQueryKey = (transactionId: number) => ["surveyFeatures", transactionId];
 
-export const useSurveyFeaturesQuery: PlanGenQuery<SurveyFeaturesResponseDTO> = ({ transactionId, ...params }) =>
+export const useSurveyFeaturesQuery: PlanGenQuery<SurveyFeaturesResponseDTO> = ({ transactionId, enabled }) =>
   useQuery({
-    ...params,
     queryKey: getSurveyFeaturesQueryKey(transactionId),
     queryFn: () => new SurveyFeaturesControllerApi(apiConfig()).getSurveyFeatures({ transactionId }),
+    enabled,
   });

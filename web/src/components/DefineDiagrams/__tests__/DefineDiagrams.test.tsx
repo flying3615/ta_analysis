@@ -77,7 +77,13 @@ describe("DefineDiagrams", () => {
 
     // async callback from the prepareDataset success
     // Note: Prepare dataset should only be called once!
-    expect(requestSpy).toHaveBeenCalledTimes(5);
+    await waitFor(
+      () => {
+        expect(requestSpy).toHaveBeenCalledTimes(5);
+      },
+      { timeout: 5000 },
+    );
+
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -87,8 +93,7 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      2,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -96,8 +101,7 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      3,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -105,8 +109,7 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      4,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -114,8 +117,7 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      5,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",

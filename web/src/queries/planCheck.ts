@@ -6,12 +6,8 @@ import { PlanGenQuery } from "@/queries/types";
 
 export const planCheckQueryKey = (transactionId: number) => ["getPlanCheck", transactionId];
 
-export const usePlanCheckQuery: PlanGenQuery<PlanCheckResponseDTO> = ({ transactionId, ...params }) =>
+export const usePlanCheckQuery: PlanGenQuery<PlanCheckResponseDTO> = ({ transactionId }) =>
   useQuery({
-    ...params,
     queryKey: planCheckQueryKey(transactionId),
-    queryFn: async () => {
-      const res = await new PlanCheckControllerApi(apiConfig()).planCheck({ transactionId });
-      return res;
-    },
+    queryFn: () => new PlanCheckControllerApi(apiConfig()).planCheck({ transactionId }),
   });

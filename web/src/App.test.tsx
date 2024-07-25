@@ -1,12 +1,13 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 import { PlangenApp } from "@/App.tsx";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 
-import { queryClient } from "./queries/index.ts";
 import { renderWithReduxProvider } from "./test-utils/jest-utils.tsx";
+
+const queryClient = new QueryClient();
 
 const renderPlangenApp = (url: string) => {
   renderWithReduxProvider(

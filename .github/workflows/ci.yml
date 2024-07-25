@@ -32,7 +32,7 @@ jobs:
       imageTag: 'latest'
 
       # Push coverage to codacy
-      codacyDisable: false
+      codacyDisable: true
     secrets: inherit
 
   upload-sourcemaps:

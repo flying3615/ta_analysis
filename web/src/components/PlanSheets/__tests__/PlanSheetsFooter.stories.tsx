@@ -1,12 +1,11 @@
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-import { queryClient } from "@/queries";
 import { store } from "@/redux/store.ts";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
@@ -22,6 +21,8 @@ export default {
 } as Meta<typeof PlanSheetsFooter>;
 
 type Story = StoryObj<typeof PlanSheetsFooter>;
+
+const queryClient = new QueryClient();
 
 const TemplatePlanSheetsFooter = () => {
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);

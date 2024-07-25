@@ -1,3 +1,4 @@
+import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
 import {
   IFeatureSource,
   LayerType,
@@ -11,9 +12,11 @@ import {
 } from "@linzjs/landonline-openlayers-map";
 
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
+import { getDiagramsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
 import { lineStyles } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
+import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
 
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
@@ -30,6 +33,8 @@ export const DIAGRAMS_LAYER_NAME = "diagrams";
 export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
 export const LINES_LAYER_NAME = "lines";
 export const LABELS_LAYER_NAME = "labels";
+
+import { apiConfig } from "@/queries/apiConfig.ts";
 
 const zIndexes: Record<string, number> = {
   LABELS_LAYER_NAME: 52,
@@ -112,6 +117,7 @@ export const vectorsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLa
   } as LolOpenLayersVectorLayerDef;
 };
 
+// Old diagrams code
 export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
     name: DIAGRAMS_LAYER_NAME,
@@ -125,6 +131,26 @@ export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenL
     source: {
       type: SourceType.FEATURES,
       data,
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: DIAGRAMS_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: true,
+    inInitialZoom: true,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[DIAGRAMS_LAYER_NAME],
+    style: diagramStyles,
+    source: {
+      type: SourceType.FEATURES,
+      queryKey: getDiagramsQueryKey(transactionId),
+      queryFun: async () =>
+        getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig()).diagrams({ transactionId })),
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;

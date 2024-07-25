@@ -4,14 +4,23 @@ import { LabelsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
+import { useQueryClient } from "@tanstack/react-query";
 import { register } from "ol/proj/proj4";
 import proj4 from "proj4";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
-import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram.tsx";
+import { DefineDiagram } from "@/components/DefineDiagrams/DefineDiagram";
+import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram";
 import {
-  diagramsLayer,
+  getLabelsForOpenLayers,
+  getLinesForOpenLayers,
+  getMarksForOpenLayers,
+  getParcelsForOpenLayers,
+  getVectorsForOpenLayers,
+} from "@/components/DefineDiagrams/featureMapper";
+import {
+  diagramsQueryLayer,
   labelsLayer,
   linesLayer,
   marksLayer,
@@ -21,24 +30,15 @@ import {
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import Header from "@/components/Header/Header";
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
-import { useGetDiagramsQuery } from "@/queries/diagrams";
-import { useGetLabelsQuery } from "@/queries/labels.ts";
-import { useGetLinesQuery } from "@/queries/lines.ts";
+import { useGetLabelsQuery } from "@/queries/labels";
+import { useGetLinesQuery } from "@/queries/lines";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
-import {
-  getDiagramsForOpenLayers,
-  getLabelsForOpenLayers,
-  getLinesForOpenLayers,
-  getMarksForOpenLayers,
-  getParcelsForOpenLayers,
-  getVectorsForOpenLayers,
-} from "./featureMapper";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 
 export interface DefineDiagramsProps {
@@ -55,6 +55,7 @@ register(proj4);
 const maxZoom = 24;
 
 export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
+  const queryClient = useQueryClient();
   const transactionId = useTransactionId();
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -75,15 +76,6 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   });
 
   const {
-    data: diagrams,
-    isLoading: diagramsIsLoading,
-    error: diagramsError,
-  } = useGetDiagramsQuery({
-    transactionId,
-    enabled: prepareDatasetIsSuccess, // Don't fetch diagrams until the dataset is prepared
-  });
-
-  const {
     data: diagramLines,
     isLoading: diagramLinesIsLoading,
     error: diagramLinesError,
@@ -101,13 +93,8 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     enabled: prepareDatasetIsSuccess, // Don't fetch labels until the dataset is prepared
   });
 
-  const error = prepareDatasetError ?? featuresError ?? diagramsError ?? diagramLinesError ?? diagramLabelsError;
-  const isLoading =
-    !prepareDatasetIsSuccess ||
-    featuresIsLoading ||
-    diagramsIsLoading ||
-    diagramLinesIsLoading ||
-    diagramLabelsIsLoading;
+  const error = prepareDatasetError ?? featuresError ?? diagramLabelsError ?? diagramLinesError ?? diagramLabelsError;
+  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading || diagramLabelsIsLoading;
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -126,6 +113,24 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     ).then(() => navigate(generatePath(Paths.root, { transactionId })));
   }, [error, navigate, showPrefabModal, transactionId]);
 
+  const layers = useMemo(
+    () =>
+      prepareDatasetIsSuccess &&
+      features &&
+      diagramLines &&
+      diagramLabels && [
+        underlyingParcelsLayer(maxZoom),
+        underlyingRoadCentreLine(maxZoom),
+        parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
+        marksLayer(getMarksForOpenLayers(features), maxZoom),
+        vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
+        diagramsQueryLayer(transactionId, maxZoom),
+        linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
+        labelsLayer(getLabelsForOpenLayers(diagramLabels as LabelsResponseDTO), maxZoom),
+      ],
+    [diagramLabels, diagramLines, features, prepareDatasetIsSuccess, transactionId],
+  );
+
   return (
     <LolOpenLayersMapContextProvider>
       <Header view="Diagrams">
@@ -133,8 +138,9 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
       </Header>
       <div className="DefineDiagrams" ref={modalOwnerRef}>
         {isLoading && <LuiLoadingSpinner />}
-        {!isLoading && features && diagrams && diagramLines && (
+        {layers && (
           <LolOpenLayersMap
+            queryClient={queryClient}
             view={{
               projection: "EPSG:3857",
               center: [19457143.791, -5057154.019],
@@ -143,20 +149,12 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
             }}
             bufferFactor={1.2}
             mock={mock}
-            layers={[
-              underlyingParcelsLayer(maxZoom),
-              underlyingRoadCentreLine(maxZoom),
-              parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
-              marksLayer(getMarksForOpenLayers(features), maxZoom),
-              vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
-              diagramsLayer(getDiagramsForOpenLayers(diagrams), maxZoom),
-              linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
-              labelsLayer(getLabelsForOpenLayers(diagramLabels as LabelsResponseDTO), maxZoom),
-            ]}
+            layers={layers}
           />
         )}
         {children}
       </div>
+      <DefineDiagram />
       <EnlargeDiagram />
     </LolOpenLayersMapContextProvider>
   );

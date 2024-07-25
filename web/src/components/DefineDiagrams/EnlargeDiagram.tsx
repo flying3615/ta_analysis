@@ -20,6 +20,9 @@ export const EnlargeDiagram = (_props: EnlargeDiagramProps) => {
 
   useOpenLayersDrawInteraction({
     options: { type, stopClick: true },
+    drawAbort: () => {
+      dispatch(setActiveAction("idle"));
+    },
     drawEnd: ({ geometry }) => {
       console.log("Enlarge diagram:", geometry);
 

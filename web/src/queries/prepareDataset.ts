@@ -1,7 +1,6 @@
 import { PostPrepareResponseDTO, PrepareControllerApi } from "@linz/survey-plan-generation-api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { queryClient } from "@/queries";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenMutation } from "@/queries/types";
 
@@ -23,8 +22,9 @@ export class PrepareDatasetError extends Error {
 
 export const getPrepareDatasetQueryKey = (transactionId: number) => ["prepareDataset", transactionId];
 
-export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> = ({ transactionId, ...params }) =>
-  useMutation({
+export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> = ({ transactionId, ...params }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
     ...params,
     mutationKey: getPrepareDatasetQueryKey(transactionId),
     mutationFn: async () => {
@@ -39,3 +39,4 @@ export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> 
       queryClient.invalidateQueries({ queryKey: getDiagramsQueryKey(transactionId) });
     },
   });
+};

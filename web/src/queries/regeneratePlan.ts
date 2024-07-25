@@ -1,7 +1,6 @@
 import { PlanControllerApi, RegeneratePlanResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { queryClient } from "@/queries";
 import { apiConfig } from "@/queries/apiConfig";
 import { getPlanQueryKey } from "@/queries/plan.ts";
 import { PrepareDatasetError } from "@/queries/prepareDataset.ts";
@@ -9,8 +8,10 @@ import { PlanGenMutation } from "@/queries/types";
 
 export const regeneratePlanQueryKey = (transactionId: number) => ["regeneratePlan", transactionId];
 
-export const useRegeneratePlanMutation: PlanGenMutation<RegeneratePlanResponseDTO> = ({ transactionId, ...params }) =>
-  useMutation({
+export const useRegeneratePlanMutation: PlanGenMutation<RegeneratePlanResponseDTO> = ({ transactionId, ...params }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     ...params,
     mutationKey: regeneratePlanQueryKey(transactionId),
     mutationFn: async () => {
@@ -27,3 +28,4 @@ export const useRegeneratePlanMutation: PlanGenMutation<RegeneratePlanResponseDT
       queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
     },
   });
+};

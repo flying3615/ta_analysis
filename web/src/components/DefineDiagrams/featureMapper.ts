@@ -4,6 +4,7 @@ import {
   LinesResponseDTO,
   SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
+import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner.ts";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 
 export const getMarksForOpenLayers = (features: SurveyFeaturesResponseDTO): IFeatureSource[] =>
@@ -42,14 +43,18 @@ export const getVectorsForOpenLayers = (features: SurveyFeaturesResponseDTO): IF
     },
   }));
 
-export const getDiagramsForOpenLayers = ({ diagrams }: DiagramsResponseDTO): IFeatureSource[] =>
-  diagrams.map((d) => ({
-    id: d.id,
-    diagramType: d.diagramType,
-    shape: {
-      geometry: d.shape,
-    },
-  }));
+export type IFeatureSourceDiagram = IFeatureSource & { diagramType: string };
+
+export const getDiagramsForOpenLayers = ({ diagrams }: DiagramsResponseDTO): IFeatureSourceDiagram[] =>
+  diagrams.map(MapDiagramToOpenLayers);
+
+export const MapDiagramToOpenLayers = (diagramId: DiagramsResponseDTODiagramsInner): IFeatureSourceDiagram => ({
+  id: diagramId.id,
+  diagramType: diagramId.diagramType,
+  shape: {
+    geometry: diagramId.shape,
+  },
+});
 
 export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSource[] =>
   lines.map((d) => ({
