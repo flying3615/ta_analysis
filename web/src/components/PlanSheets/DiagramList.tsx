@@ -1,7 +1,8 @@
 import "./DiagramList.scss";
 
 import { IDiagram, ILabel } from "@linz/survey-plan-generation-api-client";
-import { LuiIcon } from "@linzjs/lui";
+import { LuiIcon, LuiTooltip } from "@linzjs/lui";
+import { right } from "@popperjs/core";
 import { isEmpty, isNil } from "lodash-es";
 import { useMemo } from "react";
 
@@ -9,11 +10,12 @@ export interface DiagramListProps {
   diagrams: IDiagram[];
 }
 
-interface DiagramDisplay {
+export interface DiagramDisplay {
   diagramId: number;
   diagramLabel: string;
   diagramChildren: DiagramDisplay[];
   level: number;
+  listOrder: number;
 }
 
 type DiagramMap = Record<number, IDiagram>;
@@ -30,18 +32,23 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
 };
 
 const DiagramTileComponent = ({ diagramDisplay }: { diagramDisplay: DiagramDisplay }) => {
+  const paddingMultiple = diagramDisplay.level <= 1 ? 0 : diagramDisplay.level - 1;
   return (
     <div>
       <div
         style={{
-          paddingLeft: 12 * diagramDisplay.level,
+          paddingLeft: 12 * paddingMultiple + 8,
         }}
         className="DiagramListLabel"
       >
-        {diagramDisplay.level != 0 && (
-          <LuiIcon size="sm" name="ic_subdirectory_arrow_right" alt="subdirectory" className="DiagramListIcon" />
-        )}
-        {diagramDisplay.diagramLabel}
+        <LuiTooltip mode="default-withDelay" message={diagramDisplay.diagramLabel} placement={right}>
+          <span>
+            {diagramDisplay.level != 0 && (
+              <LuiIcon size="sm" name="ic_subdirectory_arrow_right" alt="subdirectory" className="DiagramListIcon" />
+            )}
+            {diagramDisplay.diagramLabel}
+          </span>
+        </LuiTooltip>
       </div>
       {diagramDisplay.diagramChildren.map((d, index) => (
         <DiagramTileComponent key={index} diagramDisplay={d} />
@@ -72,7 +79,7 @@ const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
     }
   }
 
-  return rootDiagrams;
+  return rootDiagrams.sort(diagramDisplaySortFn);
 };
 
 const diagramToDiagramDisplay = (diagram: IDiagram, level: number, diagramMap: DiagramMap): DiagramDisplay => ({
@@ -85,6 +92,7 @@ const diagramToDiagramDisplay = (diagram: IDiagram, level: number, diagramMap: D
     level,
     diagram.childDiagrams?.map((c) => c.diagramRef),
   ),
+  listOrder: diagram.listOrder,
 });
 /**
  * Recursive function for building the diagram hierarchy
@@ -103,7 +111,7 @@ const createChildDiagrams = (diagramMap: DiagramMap, level: number, diagramIds?:
       diagramDisplayItems.push(diagramToDiagramDisplay(diagram, level + 1, diagramMap));
     }
   }
-  return diagramDisplayItems;
+  return diagramDisplayItems.sort(diagramDisplaySortFn);
 };
 
 const getDiagramName = (labels: ILabel[], diagramNumber: number): string => {
@@ -113,4 +121,8 @@ const getDiagramName = (labels: ILabel[], diagramNumber: number): string => {
   } else {
     return `Diagram ${diagramNumber}`;
   }
+};
+
+const diagramDisplaySortFn = (a: DiagramDisplay, b: DiagramDisplay) => {
+  return a.listOrder - b.listOrder;
 };

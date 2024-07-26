@@ -24,6 +24,7 @@ export class PlanDataBuilder {
       | "userDefnNonPrimaryDiag"
       | "userDefnTraverseDiag" = "sysGenPrimaryDiag",
     id?: number,
+    listOrder?: number,
   ): PlanDataBuilder {
     this.planData.diagrams.push({
       id: id ?? this.planData.diagrams.length + 1,
@@ -37,6 +38,7 @@ export class PlanDataBuilder {
       lineLabels: [],
       diagramType,
       childDiagrams: [],
+      listOrder: listOrder ?? this.planData.diagrams.length + 1,
     });
     return this;
   }

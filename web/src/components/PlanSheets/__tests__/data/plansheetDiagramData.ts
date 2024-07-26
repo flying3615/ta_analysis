@@ -9,6 +9,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "sysGenPrimaryDiag",
     1,
+    1,
   )
   .addLabel(
     "labels",
@@ -30,6 +31,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnPrimaryDiag",
     3,
+    11,
   )
   .addLabel(
     "labels",
@@ -52,6 +54,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnPrimaryDiag",
     4,
+    7,
   )
   .addLabel(
     "labels",
@@ -74,6 +77,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnPrimaryDiag",
     6,
+    12,
   )
   .addLabel(
     "labels",
@@ -94,27 +98,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     },
     undefined,
     "userDefnPrimaryDiag",
-    6,
-  )
-  .addLabel(
-    "labels",
-    37,
-    "Diag. ACA",
-    {
-      x: 2.299,
-      y: 0,
-    },
-    6,
-    "diagram",
-    "diagram",
-  )
-  .addDiagram(
-    {
-      x: 0.015,
-      y: -0.015,
-    },
-    undefined,
-    "userDefnPrimaryDiag",
+    8,
     8,
   )
   .addLabel(
@@ -138,6 +122,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnPrimaryDiag",
     9,
+    9,
   )
   .addLabel(
     "labels",
@@ -160,6 +145,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnPrimaryDiag",
     10,
+    10,
   )
   .addLabel(
     "labels",
@@ -181,6 +167,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "sysGenNonPrimaryDiag",
     11,
+    2,
   )
   .addLabel(
     "labels",
@@ -202,6 +189,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnNonPrimaryDiag",
     12,
+    4,
   )
   .addLabel(
     "labels",
@@ -224,6 +212,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnNonPrimaryDiag",
     13,
+    3,
   )
   .addLabel(
     "labels",
@@ -249,6 +238,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnNonPrimaryDiag",
     14,
+    13,
   )
   .addLabel(
     "labels",
@@ -270,6 +260,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnNonPrimaryDiag",
     15,
+    5,
   )
   .addLabel(
     "labels",
@@ -292,6 +283,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     undefined,
     "userDefnNonPrimaryDiag",
     16,
+    6,
   )
   .addLabel(
     "labels",

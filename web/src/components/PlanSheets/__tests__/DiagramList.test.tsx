@@ -15,6 +15,23 @@ describe("The Diagram list tree", () => {
     for (const diagramLabel of allLabelsForDiagrams) {
       expect(screen.getByText(diagramLabel)).toBeInTheDocument();
     }
+
+    const orderedDiagramNames = screen.queryAllByText(/Diag/).map((elem) => elem.textContent);
+    expect(orderedDiagramNames).toEqual([
+      "System Generated Primary Diagram",
+      "System Generated Non Primary Diagram",
+      "Diag. A",
+      "Diag. AA",
+      "Diag. AAA",
+      "Diag. AAAA",
+      "Diag. AB",
+      "Diag. ABA",
+      "Diag. ABAA",
+      "Diag. ABAAA",
+      "Diag. AC",
+      "Diag. ACA",
+      "Diag. AD",
+    ]);
   });
 
   it("displays all survey diagram labels correctly", () => {
@@ -28,5 +45,8 @@ describe("The Diagram list tree", () => {
     for (const diagramLabel of allLabelsForDiagrams) {
       expect(screen.getByText(diagramLabel)).toBeInTheDocument();
     }
+
+    const orderedDiagramNames = screen.queryAllByText(/Diag/).map((elem) => elem.textContent);
+    expect(orderedDiagramNames).toEqual(["System Generated Traverse Diagram", "Diag. A", "Diag. AA"]);
   });
 });

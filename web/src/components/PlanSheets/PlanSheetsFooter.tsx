@@ -59,24 +59,32 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
     <footer className="PlanSheetsFooter" ref={modalOwnerRef}>
       <Menu
         menuButton={
-          <LuiButton title="Change sheet view" className="lui-button-tertiary lui-button-icon">
+          <LuiButton title="Change sheet view" className="change-sheet-button lui-button-tertiary lui-button-icon">
             <LuiIcon
               alt={`${activeSheet} icon`}
-              color={luiColors.sea}
+              color={luiColors.fuscous}
               name={activeSheet === PlanSheetType.TITLE ? "ic_title_sheet" : "ic_survey_sheet"}
               size="md"
             />
-            <LuiIcon alt="Dropdown icon" color={luiColors.sea} name="ic_arrow_drop_down" size="md" />
+            <LuiIcon alt="Dropdown icon" color={luiColors.fuscous} name="ic_arrow_drop_down" size="md" />
           </LuiButton>
         }
       >
         <MenuHeader className="change-sheet-header">Change sheet view</MenuHeader>
-        <MenuItem disabled={activeSheet === PlanSheetType.TITLE} onClick={onChangeSheet(PlanSheetType.TITLE)}>
-          <LuiIcon alt={`${activeSheet} icon`} color={luiColors.sea} name="ic_title_sheet" size="md" />
+        <MenuItem
+          disabled={activeSheet === PlanSheetType.TITLE}
+          onClick={onChangeSheet(PlanSheetType.TITLE)}
+          className="PlanSheetFooterMenuItem"
+        >
+          <LuiIcon alt={`${activeSheet} icon`} color={luiColors.fuscous} name="ic_title_sheet" size="md" />
           Title sheet
         </MenuItem>
-        <MenuItem disabled={activeSheet === PlanSheetType.SURVEY} onClick={onChangeSheet(PlanSheetType.SURVEY)}>
-          <LuiIcon alt={`${activeSheet} icon`} color={luiColors.sea} name="ic_survey_sheet" size="md" />
+        <MenuItem
+          disabled={activeSheet === PlanSheetType.SURVEY}
+          onClick={onChangeSheet(PlanSheetType.SURVEY)}
+          className="PlanSheetFooterMenuItem"
+        >
+          <LuiIcon alt={`${activeSheet} icon`} color={luiColors.fuscous} name="ic_survey_sheet" size="md" />
           Survey sheet
         </MenuItem>
       </Menu>

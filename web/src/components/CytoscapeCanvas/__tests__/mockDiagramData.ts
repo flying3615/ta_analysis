@@ -126,5 +126,6 @@ export const diagrams: IDiagram[] = [
     lines: [],
     originPageOffset: { x: 0, y: -0 },
     parcelLabels: [],
+    listOrder: 1,
   },
 ];

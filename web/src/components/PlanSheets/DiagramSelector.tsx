@@ -15,10 +15,7 @@ export const DiagramSelector = () => {
   const header = headerForSheet(view);
   return (
     <div className="PlanSheetsDiagramOptions">
-      <div className="PlanSheetsDiagramOptions-heading">
-        <LuiIcon alt="Survey sheet icon" color={luiColors.fuscous} name="ic_survey_sheet" size="md" />
-        {header}
-      </div>
+      <div className="PlanSheetsDiagramOptions-heading">{header}</div>
       <DiagramList diagrams={diagrams} />
     </div>
   );
@@ -27,9 +24,19 @@ export const DiagramSelector = () => {
 const headerForSheet = (view: PlanSheetType) => {
   switch (view) {
     case PlanSheetType.SURVEY:
-      return <h2>Survey sheet diagrams</h2>;
+      return (
+        <>
+          <LuiIcon alt="Survey sheet icon" color={luiColors.fuscous} name="ic_survey_sheet" size="md" />
+          <h2>Survey sheet diagrams</h2>
+        </>
+      );
     case PlanSheetType.TITLE:
-      return <h2>Title sheet diagrams</h2>;
+      return (
+        <>
+          <LuiIcon alt="Title sheet icon" color={luiColors.fuscous} name="ic_title_sheet" size="md" />
+          <h2>Title sheet diagrams</h2>
+        </>
+      );
     default:
       return <></>;
   }

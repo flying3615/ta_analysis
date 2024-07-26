@@ -5,10 +5,12 @@
 
   &-heading {
     display: flex;
-
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
     & h2 {
-      color: lui.$fuscous;
-      font-size: 15px;
+      color: lui.$charcoal;
+      font-size: 14px;
       font-weight: 500;
       margin: 0;
       display: inline;

@@ -92,6 +92,7 @@ describe("reconstructDiagrams", () => {
       bottomRightPoint: { x: 80, y: -90 },
       originPageOffset: { x: 0, y: 0 },
       coordinates: [{ id: 1, position: { x: 10, y: -50 }, coordType: "node" }],
+      listOrder: 1,
       labels: [
         {
           id: 2,
@@ -129,6 +130,7 @@ describe("reconstructDiagrams", () => {
       coordinates: [],
       labels: [],
       lines: [{ id: 2, coordRefs: [4, 5], style: "arrow1", lineType: "userDefined", pointWidth: 2 }],
+      listOrder: 2,
       parcelLabels: [
         {
           id: 5,

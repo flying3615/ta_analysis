@@ -14,9 +14,22 @@ $footerHeight: 56px;
   padding-right: 8px;
   bottom: 0;
   position: absolute;
+  .change-sheet-button {
+    height: 40px;
+    padding-right: 4px;
+    span.LuiIcon {
+      margin: 0;
+    }
+  }
+  .PlanSheetFooterMenuItem {
+    font-weight: 400;
+  }
 
   .change-sheet-header {
     text-transform: lowercase;
+    font-size: 14px;
+    font-weight: 500;
+    color: lui.$fuscous;
 
     &:first-letter {
       text-transform: uppercase;

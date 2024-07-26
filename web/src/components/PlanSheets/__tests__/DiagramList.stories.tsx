@@ -25,3 +25,11 @@ export const NestedDiagramSurveyList: Story = {
     </div>
   ),
 };
+
+export const DiagramListIsSortedBasedOnListOrder: Story = {
+  render: () => (
+    <div style={{ height: "100vh" }}>
+      <DiagramList diagrams={nestedTitlePlan.diagrams.reverse()} />
+    </div>
+  ),
+};
