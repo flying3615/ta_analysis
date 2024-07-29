@@ -30,6 +30,13 @@ Verify you have file `.env` in the landonline-survey-plan-generation root direct
 In landonline-survey-plan-generation root directory launch the following docker command :
 `docker compose up -d`
 
+### Set up test data
+
+We use flyway for importing test survey data, the same as in the backend.
+To import the data, run the `./setupTestData` script located in this directory.
+
+To add test data, add a file with the name **Vxx__some_description.sql** in the `data` directory.
+
 ### Run the e2e tests
 
 ```

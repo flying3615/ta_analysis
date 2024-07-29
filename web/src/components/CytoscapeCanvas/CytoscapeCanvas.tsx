@@ -16,6 +16,7 @@ import {
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { isPlaywrightTest, saveCytoscapeStateToStorage } from "@/test-utils/playwright-utils";
 
 export interface IInitZoom {
   zoom?: number;
@@ -28,9 +29,18 @@ export interface ICytoscapeCanvasProps {
   diagrams: IDiagram[];
   initZoom?: IInitZoom;
   onChange: (data: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => void;
+  "data-testid"?: string;
 }
 
-const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom, onChange }: ICytoscapeCanvasProps) => {
+const CytoscapeCanvas = ({
+  nodeData,
+  edgeData,
+  diagrams,
+  initZoom,
+  onChange,
+  "data-testid": dataTestId,
+}: ICytoscapeCanvasProps) => {
+  const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
   const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
@@ -59,6 +69,10 @@ const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom, onChange }: I
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),
     });
     setCy(cyRef);
+
+    if (isPlaywrightTest()) {
+      saveCytoscapeStateToStorage(cyRef, testId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData, edgeData, diagrams, initZoom]);
 
@@ -122,7 +136,7 @@ const CytoscapeCanvas = ({ nodeData, edgeData, diagrams, initZoom, onChange }: I
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cy, onChange, canvasRef.current]);
 
-  return <div className="CytoscapeCanvas" data-testid="CytoscapeCanvas" ref={canvasRef} />;
+  return <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />;
 };
 
 export default CytoscapeCanvas;

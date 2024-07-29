@@ -115,6 +115,7 @@ const PlanSheets = () => {
           edgeData={edgeData}
           diagrams={activeDiagrams}
           onChange={onCytoscapeChange}
+          data-testid="MainCytoscapeCanvas"
         />
       </div>
       <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />

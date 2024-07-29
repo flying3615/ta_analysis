@@ -1,6 +1,7 @@
 services:
   frontend:
     container_name: frontend
+    #build: web
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-fe:${CI_BUILD_FRONTEND_IMAGE_TAG:-latest}"
     ports:
       - "11065:8080"
@@ -129,7 +130,7 @@ services:
       - "${HOSTNAME}:host-gateway"
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
     environment:
-      DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;IFX_LOCK_MODE_WAIT=15;IFX_ISOLATION_LEVEL=5U
+      DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=5
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_POOL_SIZE_MAX: ${DB_POOL_SIZE_MAX:-30}
@@ -137,10 +138,12 @@ services:
       SPRING_PROFILES_ACTIVE: local
       SPLIT_ENV_API_KEY_SDK: localhost
       OIDC_ISSUER_URL: "http://$HOSTNAME:8083/realms/landonline"
-      AUTHZ_BASEURL: "http://$HOSTNAME:8082"
+      AUTHZ_BASEURL: "http://host.docker.internal:8082"
       CLIENT_ID: survey-plangen-service
       CLIENT_SECRET: localclientsecret
-      GEOSERVER_URL: "http://$HOSTNAME:14005/geoserver"
+      GEOSERVER_URL: "http://host.docker.internal:14005/geoserver"
+      SPRING_APPLICATION_JSON: >
+        { "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}} }
     ports:
       - "12065:8080"
     depends_on:

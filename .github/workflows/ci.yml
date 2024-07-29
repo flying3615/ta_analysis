@@ -26,6 +26,9 @@ jobs:
       e2eDir: ./test/e2e
       e2eLintCommand: "npm run lint"
       e2eTestReportDir: "test/e2e/output"
+      e2etestDataLoadEnable: true
+      e2etestDataLoadDir: ./test/e2e/flyway
+      e2etestDataLoadScript: chmod +x ./gradlew && ./gradlew flywayMigrate -i -Pflyway.configFiles=flyway.conf -Pflyway.user=${DB_USERNAME} -Pflyway.password=${DB_PASSWORD}
 
       # These are needed for playwright to work
       image: "step/survey/step-landonline-web-survey-plan-generation-fe"

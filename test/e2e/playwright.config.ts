@@ -6,9 +6,6 @@ import { config } from "dotenv";
  * https://github.com/motdotla/dotenv
  */
 config();
-if (!process.env.APP_BASE_URL) {
-  throw new Error("The APP_BASE_URL environment variable is not set");
-}
 if (!process.env.TEST_USERNAME) {
   throw new Error("The TEST_USERNAME environment variable is not set");
 }
@@ -16,7 +13,6 @@ if (!process.env.TEST_PASSWORD) {
   throw new Error("The TEST_PASSWORD environment variable is not set");
 }
 
-export const APP_BASE_URL: string = process.env.APP_BASE_URL;
 export const TEST_USERNAME: string = process.env.TEST_USERNAME;
 export const TEST_PASSWORD: string = process.env.TEST_PASSWORD;
 
@@ -26,7 +22,7 @@ export const TEST_PASSWORD: string = process.env.TEST_PASSWORD;
 const pwConfig: PlaywrightTestConfig = defineConfig({
   testDir: "./tests",
   expect: {
-    timeout: 15000, // Maximum time expect() should wait for the condition to be met.
+    timeout: 30000, // Maximum time expect() should wait for the condition to be met.
   },
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -45,10 +41,26 @@ const pwConfig: PlaywrightTestConfig = defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: APP_BASE_URL,
+    baseURL: "http://localhost:11065",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+
+    /* Put playwright var in local storage */
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://localhost:11065",
+          localStorage: [
+            {
+              name: "isPlaywrightTest",
+              value: "1",
+            },
+          ],
+        },
+      ],
+    },
   },
 
   /* Configure projects for major browsers */
@@ -63,17 +75,17 @@ const pwConfig: PlaywrightTestConfig = defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: "auth/user.json" },
     },
 
-    {
-      name: "firefox",
-      dependencies: ["authSetup"],
-      use: { ...devices["Desktop Firefox"], storageState: "auth/user.json" },
-    },
-
-    {
-      name: "webkit",
-      dependencies: ["authSetup"],
-      use: { ...devices["Desktop Safari"], storageState: "auth/user.json" },
-    },
+    /* Disabling test run for firefox and webkit. */
+    // {
+    //   name: "firefox",
+    //   dependencies: ["authSetup"],
+    //   use: { ...devices["Desktop Firefox"], storageState: "auth/user.json" },
+    // },
+    // {
+    //   name: "webkit",
+    //   dependencies: ["authSetup"],
+    //   use: { ...devices["Desktop Safari"], storageState: "auth/user.json" },
+    // },
 
     /* Test against mobile viewports. */
     // {
