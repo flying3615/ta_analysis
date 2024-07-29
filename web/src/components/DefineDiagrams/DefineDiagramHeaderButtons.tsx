@@ -1,18 +1,28 @@
+import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { LuiIcon } from "@linzjs/lui";
+import { useLuiModalPrefab } from "@linzjs/windows";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
-import { useContext, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { isEmpty } from "lodash-es";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useTransactionId } from "@/hooks/useTransactionId.ts";
+import { getSurveyFeaturesQueryKey } from "@/queries/surveyFeatures.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
 import { DefineDiagramMenuLabels } from "./defineDiagramsType";
 
 export const DefineDiagramMenuButtons = () => {
+  const queryClient = useQueryClient();
+  const { showPrefabModal } = useLuiModalPrefab();
+  const transactionId = useTransactionId();
+
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
 
   const map = useContext(LolOpenLayersMapContext);
@@ -31,6 +41,24 @@ export const DefineDiagramMenuButtons = () => {
   const handleHeaderButtonClick = (label: string) => {
     setSelectedButtonLabel(label);
   };
+
+  const precheckAddNonPrimaryDiagram = useCallback(() => {
+    const data = queryClient.getQueryData<SurveyFeaturesResponseDTO>(getSurveyFeaturesQueryKey(transactionId));
+    if (!data) return false;
+
+    const hasNonPrimaryParcel = !isEmpty(data.nonPrimaryParcels);
+    if (!hasNonPrimaryParcel) {
+      showPrefabModal({
+        level: "error",
+        title: "Message: 32026",
+        children:
+          "Non Primary user defined diagrams cannot be created, as\n" +
+          "there is no boundary information included in this survey.",
+      });
+      return false;
+    }
+    return true;
+  }, [queryClient, showPrefabModal, transactionId]);
 
   return (
     <>
@@ -126,8 +154,6 @@ export const DefineDiagramMenuButtons = () => {
       />
       <VerticalSpacer />
       <HeaderMenu
-        // isDisabled={true}
-        // isLoading={true}
         primaryButtonLabel={DefineDiagramMenuLabels.DefinePrimaryDiagram}
         primaryButtonIcon="ic_define_primary_diagram_rectangle"
         selectedButtonLabel={selectedButtonLabel}
@@ -156,6 +182,7 @@ export const DefineDiagramMenuButtons = () => {
         primaryButtonIcon="ic_define_nonprimary_diagram_rectangle"
         selectedButtonLabel={selectedButtonLabel}
         setSelectedButtonLabel={setSelectedButtonLabel}
+        allowOpen={precheckAddNonPrimaryDiagram}
       >
         <MenuHeader>{DefineDiagramMenuLabels.DefineNonPrimaryDiagram}</MenuHeader>
         <MenuItem onClick={changeActiveAction("define_non_primary_diagram_rectangle")}>
@@ -180,6 +207,7 @@ export const DefineDiagramMenuButtons = () => {
         primaryButtonIcon="ic_define_survey_diagram_rectangle"
         selectedButtonLabel={selectedButtonLabel}
         setSelectedButtonLabel={setSelectedButtonLabel}
+        allowOpen={precheckAddNonPrimaryDiagram}
       >
         <MenuHeader>{DefineDiagramMenuLabels.DefineSurveyDiagram}</MenuHeader>
         <MenuItem onClick={changeActiveAction("define_survey_diagram_rectangle")}>

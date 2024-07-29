@@ -7,32 +7,28 @@ import { luiColors } from "@/constants";
 interface HeaderButtonProps {
   headerButtonLabel: string;
   iconName: string;
-  isDisabled?: boolean;
+  disabled?: boolean;
   isLoading?: boolean;
   selectedButtonLabel?: string;
-  onClick?: (e: MouseEvent) => void;
-  setSelectedButtonLabel: (label: string) => void;
+  onClick?: (e: MouseEvent) => void | boolean;
+  allowOpen?: () => boolean;
 }
 
 export const HeaderMenuButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(function headerMenuButton(
-  { isDisabled, headerButtonLabel, iconName, selectedButtonLabel, onClick, setSelectedButtonLabel },
+  { disabled, headerButtonLabel, iconName, selectedButtonLabel, allowOpen, onClick },
   ref,
 ) {
-  const handleHeaderButtonClick = () => {
-    setSelectedButtonLabel(headerButtonLabel);
-  };
-
   return (
     <>
       <LuiTooltip message={headerButtonLabel} placement="bottom" appendTo="parent">
         <LuiButton
-          disabled={isDisabled}
+          disabled={disabled}
           className={clsx("lui-button-menu", { selected: headerButtonLabel === selectedButtonLabel })}
           level="tertiary"
           style={{ whiteSpace: "nowrap" }}
           onClick={(e) => {
-            handleHeaderButtonClick();
-            typeof onClick === "function" && onClick(e);
+            if (allowOpen?.() === false) return;
+            onClick?.(e);
           }}
           ref={ref}
         >

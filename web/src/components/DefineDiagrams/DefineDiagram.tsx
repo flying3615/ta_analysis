@@ -1,17 +1,13 @@
-import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import { PostDiagramsRequestDTODiagramTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useQueryClient } from "@tanstack/react-query";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
-import { usePrevious } from "@/hooks/usePrevious.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { getDiagramsQueryKey, useInsertDiagramMutation } from "@/queries/diagrams.ts";
+import { useInsertDiagramMutation } from "@/queries/diagrams.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
 const actionToDiagramType: Partial<Record<DefineDiagramsActionType, PostDiagramsRequestDTODiagramTypeEnum>> = {
@@ -26,8 +22,6 @@ const actionToDiagramType: Partial<Record<DefineDiagramsActionType, PostDiagrams
 const maxSides = 47;
 
 export const DefineDiagram = () => {
-  const queryClient = useQueryClient();
-
   const transactionId = useTransactionId();
   const { showPrefabModal } = useLuiModalPrefab();
   const { map } = useContext(LolOpenLayersMapContext);
@@ -44,30 +38,6 @@ export const DefineDiagram = () => {
         : undefined;
 
   const enabled = !!type;
-
-  const prevEnabled = usePrevious(enabled);
-  const prevAction = usePrevious(activeAction);
-  useEffect(() => {
-    if (
-      enabled &&
-      prevAction !== activeAction &&
-      activeAction !== "idle" &&
-      !["define_primary_diagram_rectangle", "define_primary_diagram_polygon"].includes(activeAction)
-    ) {
-      const diagrams = queryClient.getQueryData<IFeatureSourceDiagram[]>(getDiagramsQueryKey(transactionId));
-      if (!diagrams || !diagrams.some((f) => CpgDiagramType.UDFP.valueOf() === f.diagramType)) {
-        showPrefabModal({
-          level: "error",
-          title: "Message: 32026",
-          children:
-            "Non Primary user defined diagrams cannot be created, as\n" +
-            "there is no boundary information included in this survey.",
-        }).then(() => {
-          dispatch(setActiveAction("idle"));
-        });
-      }
-    }
-  }, [activeAction, dispatch, enabled, prevAction, prevEnabled, queryClient, showPrefabModal, transactionId]);
 
   useOpenLayersDrawInteraction({
     options: { type },

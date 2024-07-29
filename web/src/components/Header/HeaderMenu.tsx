@@ -5,22 +5,24 @@ import { HeaderMenuButton } from "./HeaderMenuButton";
 
 interface HeaderMenuProps {
   children: ReactNode;
-  isDisabled?: boolean;
+  disabled?: boolean;
   isLoading?: boolean;
   primaryButtonIcon: string;
   primaryButtonLabel: string;
   selectedButtonLabel?: string;
   setSelectedButtonLabel: (label: string) => void;
+  allowOpen?: () => boolean;
 }
 
 export const HeaderMenu = ({
   children,
-  isDisabled,
+  disabled,
   primaryButtonIcon,
   primaryButtonLabel,
   isLoading,
   selectedButtonLabel,
   setSelectedButtonLabel,
+  allowOpen,
 }: HeaderMenuProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   return (
@@ -36,9 +38,12 @@ export const HeaderMenu = ({
               ref={buttonRef}
               headerButtonLabel={primaryButtonLabel}
               iconName={primaryButtonIcon}
-              isDisabled={isDisabled}
+              disabled={disabled}
               selectedButtonLabel={selectedButtonLabel}
-              setSelectedButtonLabel={setSelectedButtonLabel}
+              allowOpen={allowOpen}
+              onClick={() => {
+                setSelectedButtonLabel(primaryButtonLabel);
+              }}
             />
           }
         >

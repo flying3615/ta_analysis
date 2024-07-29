@@ -16,7 +16,7 @@ export class BlockableDraw extends Draw {
 
   override handleEvent(mapBrowserEvent: MapBrowserEvent<MouseEvent>): boolean {
     if (mapBrowserEvent.type === "pointerdown") {
-      if (mapBrowserEvent.originalEvent.buttons !== 1) {
+      if (mapBrowserEvent.originalEvent.buttons === 2) {
         // @ts-expect-error access private is the easiest way to do this
         const sketchCoords = this.sketchLineCoords_;
         // Rectangle as no sketchCoords so just abort

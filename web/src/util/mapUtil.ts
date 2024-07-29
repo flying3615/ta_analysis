@@ -1,4 +1,5 @@
 import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
+import { Feature, LineString } from "geojson";
 import { chunk } from "lodash-es";
 import proj4 from "proj4";
 
@@ -20,3 +21,14 @@ export const flatCoordsToGeogCoords = (pointList: number[]): ICartesianCoords[] 
   chunk(pointList, 2)
     .map(metersToGeogs)
     .map(([x, y]) => ({ x: calculateLongitude(x!), y }) as ICartesianCoords);
+
+export const lineStringFromFlatCoords = (coords: number[]): Feature<LineString> => {
+  return {
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: chunk(coords, 2),
+    },
+    properties: {},
+  };
+};

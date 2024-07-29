@@ -1,8 +1,7 @@
 import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { kinks } from "@turf/kinks";
-import { lineString } from "@turf/turf";
-import { chunk, isEmpty, isEqual } from "lodash-es";
+import { isEmpty, isEqual } from "lodash-es";
 import { EventsKey } from "ol/events";
 import BaseEvent from "ol/events/Event";
 import { Polygon } from "ol/geom";
@@ -21,7 +20,7 @@ import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
 import { useEscapeKey } from "@/hooks/useEscape.ts";
 import { usePrevious } from "@/hooks/usePrevious.ts";
-import { flatCoordsToGeogCoords } from "@/util/mapUtil.ts";
+import { flatCoordsToGeogCoords, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
 
@@ -85,15 +84,6 @@ export const useOpenLayersDrawInteraction = ({
   useEscapeKey({ enabled, callback: () => drawInteractionRef?.current?.abortDrawing() });
 
   /**
-   * Checks if geometry is self intersecting
-   */
-  const geometryValid = useCallback(() => {
-    const c = currentFeatureRef.current?.getFlatCoordinates();
-    const k = kinks(lineString(chunk(c, 2)));
-    return isEmpty(k.features);
-  }, []);
-
-  /**
    * Call back for draw end.  Garnishes the normal DrawEvent with some more useful values.
    */
   const drawEndEventRef = useConstFunctionRef((event: DrawEvent) => {
@@ -140,12 +130,13 @@ export const useOpenLayersDrawInteraction = ({
 
         // Disable the ability to add a point if it would cause a self intersection.
         // The last coordinate hasn't been saved yet, so it's excluded
-        const coords = chunk(geom.getFlatCoordinates(), 2);
+        const flatCoords = geom.getFlatCoordinates();
 
         // Self intersection disables drawing points
-        allowDrawAddPoint.current = coords.length <= 3 || isEmpty(kinks(lineString(coords.slice(0, -1))).features);
+        allowDrawAddPoint.current =
+          flatCoords.length <= 3 || isEmpty(kinks(lineStringFromFlatCoords(flatCoords.slice(0, -2))).features);
 
-        const pointCount = coords.length - 1;
+        const pointCount = flatCoords.length / 2 - 1;
         if (pointCount > maxPoints.count) {
           maxPoints.errorCallback();
           drawInteractionRef.current?.abortDrawing();
@@ -159,6 +150,16 @@ export const useOpenLayersDrawInteraction = ({
    * Add draw interaction if no present.
    */
   const addInteractions = useCallback(() => {
+    /**
+     * Checks if geometry is self intersecting
+     */
+    const finishCondition = () => {
+      const c = currentFeatureRef.current?.getFlatCoordinates();
+      if (!c) return false;
+      const k = kinks(lineStringFromFlatCoords(c));
+      return isEmpty(k.features);
+    };
+
     allowDrawAddPoint.current = true;
     if (!map || !enabled || drawInteractionRef.current || !currentType) return;
     const drawInteraction = (drawInteractionRef.current = new BlockableDraw(
@@ -176,8 +177,7 @@ export const useOpenLayersDrawInteraction = ({
         stopClick: true,
         ...options,
         ...extendedTypes[currentType]?.(),
-        finishCondition: () => geometryValid(),
-        condition: (e) => e.originalEvent.buttons === 1,
+        finishCondition,
       } as Options,
       allowDrawAddPoint,
     ));
@@ -187,7 +187,7 @@ export const useOpenLayersDrawInteraction = ({
     drawInteraction.on("drawabort", drawAbortEventRef.current);
 
     map.addInteraction(drawInteraction);
-  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, geometryValid, map, maxPoints, onDrawStart, options]);
+  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, map, maxPoints, onDrawStart, options]);
 
   /**
    * Remove draw interaction if present.
