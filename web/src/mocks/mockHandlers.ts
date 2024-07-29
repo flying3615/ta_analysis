@@ -119,6 +119,8 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
 
+  http.post(/\/125\/diagrams$/, () => HttpResponse.json({ diagramId: 22 }, { status: 201 })),
+
   http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/126\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),

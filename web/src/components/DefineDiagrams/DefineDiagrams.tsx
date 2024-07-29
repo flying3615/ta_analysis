@@ -1,13 +1,17 @@
 import "./DefineDiagrams.scss";
 
 import { LabelsResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { LolOpenLayersMap, LolOpenLayersMapContextProvider } from "@linzjs/landonline-openlayers-map";
+import {
+  LolOpenLayersMap,
+  LolOpenLayersMapContext,
+  LolOpenLayersMapContextProvider,
+} from "@linzjs/landonline-openlayers-map";
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
 import { register } from "ol/proj/proj4";
 import proj4 from "proj4";
-import { ReactNode, useEffect, useMemo } from "react";
+import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
 import { DefineDiagram } from "@/components/DefineDiagrams/DefineDiagram";
@@ -43,7 +47,6 @@ import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 
 export interface DefineDiagramsProps {
   mock?: boolean;
-  children?: ReactNode;
 }
 
 // adding projection definitions to allow conversions between them
@@ -54,11 +57,22 @@ register(proj4);
 
 const maxZoom = 24;
 
-export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
+export const DefineDiagrams = (props: PropsWithChildren<DefineDiagramsProps>) => {
+  return (
+    <LolOpenLayersMapContextProvider>
+      <DefineDiagramsInner {...props} />
+    </LolOpenLayersMapContextProvider>
+  );
+};
+
+export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<DefineDiagramsProps>) => {
   const queryClient = useQueryClient();
   const transactionId = useTransactionId();
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+  const mapContext = useContext(LolOpenLayersMapContext);
+  /* eslint-disable */
+  (window as any)["map"] = mapContext.map;
 
   const {
     mutate: prepareDataset,
@@ -132,7 +146,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
   );
 
   return (
-    <LolOpenLayersMapContextProvider>
+    <>
       <Header view="Diagrams">
         <DefineDiagramMenuButtons />
       </Header>
@@ -156,6 +170,6 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
       </div>
       <DefineDiagram />
       <EnlargeDiagram />
-    </LolOpenLayersMapContextProvider>
+    </>
   );
 };
