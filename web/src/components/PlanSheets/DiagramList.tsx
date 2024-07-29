@@ -3,7 +3,7 @@ import "./DiagramList.scss";
 import { IDiagram, ILabel } from "@linz/survey-plan-generation-api-client";
 import { LuiIcon, LuiTooltip } from "@linzjs/lui";
 import { right } from "@popperjs/core";
-import { isEmpty, isNil } from "lodash-es";
+import { isArray, isEmpty, isNil } from "lodash-es";
 import { useMemo } from "react";
 
 export interface DiagramListProps {
@@ -19,6 +19,7 @@ export interface DiagramDisplay {
 }
 
 type DiagramMap = Record<number, IDiagram>;
+type ChildDiagramMap = Record<number, number[]>;
 
 export const DiagramList = ({ diagrams }: DiagramListProps) => {
   const diagramHierarchy = useMemo(() => buildDiagramHierarchy(diagrams), [diagrams]);
@@ -60,12 +61,20 @@ const DiagramTileComponent = ({ diagramDisplay }: { diagramDisplay: DiagramDispl
 const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
   // a list of all the child diagramIds, these will be excluded as root diagrams
   const childDiagrams: number[] = [];
+  // map of diagramId to a listOf their children diagrams
+  const childDiagramMap: ChildDiagramMap = {};
   // build a map from diagramId to diagram
   const diagramMap: DiagramMap = diagrams.reduce((previousValue: DiagramMap, currentValue): DiagramMap => {
     // populate child diagram list while building the map
-    const childReferenceList = currentValue.childDiagrams?.map((c) => c.diagramRef);
-    if (childReferenceList) {
-      childDiagrams.push(...childReferenceList);
+    const parentRef = currentValue.listParentRef;
+    if (parentRef) {
+      childDiagrams.push(currentValue.id);
+      // build a map from diagram parents and a list of child diagramIds
+      if (isArray(childDiagramMap[parentRef])) {
+        childDiagramMap[parentRef]?.push(currentValue.id);
+      } else {
+        childDiagramMap[parentRef] = [currentValue.id];
+      }
     }
     previousValue[currentValue.id] = currentValue;
     return previousValue;
@@ -74,7 +83,7 @@ const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
   const level = 0;
   for (const diagram of diagrams) {
     if (!childDiagrams.includes(diagram.id)) {
-      const rootDiagram: DiagramDisplay = diagramToDiagramDisplay(diagram, level, diagramMap);
+      const rootDiagram: DiagramDisplay = diagramToDiagramDisplay(diagram, level, diagramMap, childDiagramMap);
       rootDiagrams.push(rootDiagram);
     }
   }
@@ -82,25 +91,32 @@ const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
   return rootDiagrams.sort(diagramDisplaySortFn);
 };
 
-const diagramToDiagramDisplay = (diagram: IDiagram, level: number, diagramMap: DiagramMap): DiagramDisplay => ({
+const diagramToDiagramDisplay = (
+  diagram: IDiagram,
+  level: number,
+  diagramMap: DiagramMap,
+  childDiagramMap: ChildDiagramMap,
+): DiagramDisplay => ({
   diagramId: diagram.id,
   diagramLabel: getDiagramName(diagram.labels, diagram.id),
   level: level,
   // Recursively create more child diagrams
-  diagramChildren: createChildDiagrams(
-    diagramMap,
-    level,
-    diagram.childDiagrams?.map((c) => c.diagramRef),
-  ),
+  diagramChildren: createChildDiagrams(diagramMap, childDiagramMap, level, childDiagramMap[diagram.id]),
   listOrder: diagram.listOrder,
 });
 /**
  * Recursive function for building the diagram hierarchy
  * @param diagramMap a map from diagramId to diagram
+ * @param childDiagramMap a map from a diagram map to a list of the diagram ids of its direct children
  * @param level the level in the tree
  * @param diagramIds the ids of all diagrams to create
  */
-const createChildDiagrams = (diagramMap: DiagramMap, level: number, diagramIds?: number[]): DiagramDisplay[] => {
+const createChildDiagrams = (
+  diagramMap: DiagramMap,
+  childDiagramMap: ChildDiagramMap,
+  level: number,
+  diagramIds?: number[],
+): DiagramDisplay[] => {
   if (isNil(diagramIds) || isEmpty(diagramIds)) {
     return [];
   }
@@ -108,14 +124,14 @@ const createChildDiagrams = (diagramMap: DiagramMap, level: number, diagramIds?:
   for (const diagramId of diagramIds) {
     const diagram = diagramMap[diagramId];
     if (diagram) {
-      diagramDisplayItems.push(diagramToDiagramDisplay(diagram, level + 1, diagramMap));
+      diagramDisplayItems.push(diagramToDiagramDisplay(diagram, level + 1, diagramMap, childDiagramMap));
     }
   }
   return diagramDisplayItems.sort(diagramDisplaySortFn);
 };
 
 const getDiagramName = (labels: ILabel[], diagramNumber: number): string => {
-  const diagramLabel = labels.find((l) => l.labelType === "diagram");
+  const diagramLabel = labels.find((l) => "diagram" === l.labelType);
   if (diagramLabel) {
     return diagramLabel.displayText;
   } else {

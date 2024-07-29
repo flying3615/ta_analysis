@@ -25,6 +25,7 @@ export class PlanDataBuilder {
       | "userDefnTraverseDiag" = "sysGenPrimaryDiag",
     id?: number,
     listOrder?: number,
+    listParentRef?: number,
   ): PlanDataBuilder {
     this.planData.diagrams.push({
       id: id ?? this.planData.diagrams.length + 1,
@@ -39,6 +40,7 @@ export class PlanDataBuilder {
       diagramType,
       childDiagrams: [],
       listOrder: listOrder ?? this.planData.diagrams.length + 1,
+      listParentRef,
     });
     return this;
   }

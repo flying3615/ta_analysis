@@ -32,6 +32,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     3,
     11,
+    13,
   )
   .addLabel(
     "labels",
@@ -55,6 +56,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     4,
     7,
+    13,
   )
   .addLabel(
     "labels",
@@ -78,6 +80,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     6,
     12,
+    3,
   )
   .addLabel(
     "labels",
@@ -100,6 +103,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     8,
     8,
+    4,
   )
   .addLabel(
     "labels",
@@ -123,6 +127,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     9,
     9,
+    8,
   )
   .addLabel(
     "labels",
@@ -146,6 +151,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnPrimaryDiag",
     10,
     10,
+    9,
   )
   .addLabel(
     "labels",
@@ -190,6 +196,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnNonPrimaryDiag",
     12,
     4,
+    13,
   )
   .addLabel(
     "labels",
@@ -239,6 +246,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnNonPrimaryDiag",
     14,
     13,
+    13,
   )
   .addLabel(
     "labels",
@@ -261,6 +269,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnNonPrimaryDiag",
     15,
     5,
+    12,
   )
   .addLabel(
     "labels",
@@ -284,6 +293,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "userDefnNonPrimaryDiag",
     16,
     6,
+    15,
   )
   .addLabel(
     "labels",
@@ -308,6 +318,7 @@ export const nestedSurveyPlan = new PlanDataBuilder()
     undefined,
     "sysGenTraverseDiag",
     2,
+    1,
   )
   .addLabel(
     "labels",
@@ -329,6 +340,7 @@ export const nestedSurveyPlan = new PlanDataBuilder()
     undefined,
     "userDefnTraverseDiag",
     5,
+    2,
   )
   .addLabel(
     "labels",
@@ -351,6 +363,8 @@ export const nestedSurveyPlan = new PlanDataBuilder()
     undefined,
     "userDefnTraverseDiag",
     7,
+    3,
+    5,
   )
   .addLabel(
     "labels",
