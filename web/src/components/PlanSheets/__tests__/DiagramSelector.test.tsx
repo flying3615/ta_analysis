@@ -52,6 +52,10 @@ describe("Diagram Selector panel", () => {
           planSheets: {
             ...planSheetsState,
             activeSheet: PlanSheetType.SURVEY,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },
@@ -70,6 +74,10 @@ describe("Diagram Selector panel", () => {
           planSheets: {
             ...planSheetsState,
             activeSheet: PlanSheetType.TITLE,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },

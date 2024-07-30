@@ -7,12 +7,17 @@ export interface PlanSheetsState {
   diagrams: IDiagram[];
   pages: IPage[];
   activeSheet: PlanSheetType;
+  activePageNumbers: { [key in PlanSheetType]: number };
 }
 
 const initialState: PlanSheetsState = {
   diagrams: [],
   pages: [],
   activeSheet: PlanSheetType.TITLE,
+  activePageNumbers: {
+    [PlanSheetType.TITLE]: 0,
+    [PlanSheetType.SURVEY]: 0,
+  },
 };
 
 const planSheetsSlice = createSlice({
@@ -22,6 +27,13 @@ const planSheetsSlice = createSlice({
     setPlanData: (state, action: PayloadAction<{ diagrams: IDiagram[]; pages: IPage[] }>) => {
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
+
+      const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
+      sheetTypes.forEach((type) => {
+        if (state.pages.some((page) => page.pageType === type)) {
+          state.activePageNumbers[type] = 1;
+        }
+      });
     },
     replaceDiagrams: (state, action: PayloadAction<IDiagram[]>) => {
       action.payload.forEach((diagram) => {
@@ -31,6 +43,9 @@ const planSheetsSlice = createSlice({
     },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;
+    },
+    setActivePageNumber: (state, action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>) => {
+      state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
     },
   },
   selectors: {
@@ -46,11 +61,29 @@ const planSheetsSlice = createSlice({
       const activeDiagramType = SheetToDiagramMap[state.activeSheet];
       return state.diagrams.filter((diagram) => diagram.diagramType === activeDiagramType);
     },
+    getActivePageNumber: (state) => {
+      const pageType = state.activeSheet;
+      return state.activePageNumbers[pageType];
+    },
+    getFilteredPages: (state) => {
+      const filteredPages = state.pages.filter((page) => page.pageType === state.activeSheet);
+      return {
+        totalPages: filteredPages.length,
+      };
+    },
   },
 });
 
-export const { setPlanData, replaceDiagrams, setActiveSheet } = planSheetsSlice.actions;
+export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber } = planSheetsSlice.actions;
 
-export const { getPlanData, getDiagrams, getPages, getActiveSheet, getActiveDiagrams } = planSheetsSlice.selectors;
+export const {
+  getPlanData,
+  getDiagrams,
+  getPages,
+  getActiveSheet,
+  getActiveDiagrams,
+  getActivePageNumber,
+  getFilteredPages,
+} = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

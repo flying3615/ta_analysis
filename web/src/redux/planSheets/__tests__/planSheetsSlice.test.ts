@@ -4,8 +4,10 @@ import { setupStore } from "@/redux/store";
 
 import planSheetsSlice, {
   getActiveDiagrams,
+  getActivePageNumber,
   getActiveSheet,
   getDiagrams,
+  getFilteredPages,
   getPages,
   getPlanData,
   PlanSheetsState,
@@ -16,6 +18,10 @@ describe("planSheetsSlice", () => {
     diagrams: [],
     pages: [],
     activeSheet: PlanSheetType.TITLE,
+    activePageNumbers: {
+      [PlanSheetType.TITLE]: 0,
+      [PlanSheetType.SURVEY]: 0,
+    },
   };
 
   let store = setupStore();
@@ -50,7 +56,40 @@ describe("planSheetsSlice", () => {
     expect(getActiveSheet(store.getState())).toBe(PlanSheetType.SURVEY);
   });
 
-  test("getActiveDiagramType should return active diagram type", () => {
+  test("getActivePageNumber should return active page number", () => {
+    expect(getActivePageNumber(store.getState())).toBe(0);
+
+    store.dispatch(
+      planSheetsSlice.actions.setActivePageNumber({
+        pageType: PlanSheetType.TITLE,
+        pageNumber: 2,
+      }),
+    );
+    expect(getActivePageNumber(store.getState())).toBe(2);
+  });
+
+  test("getFilteredPages should return filtered pages", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        pages: [
+          {
+            pageType: PlanSheetType.TITLE,
+            id: 0,
+            pageNumber: 1,
+          },
+          {
+            pageType: PlanSheetType.SURVEY,
+            id: 1,
+            pageNumber: 2,
+          },
+        ],
+      },
+    });
+    expect(getFilteredPages(store.getState())).toEqual({ totalPages: 1 });
+  });
+
+  test("getActiveDiagrams should return active diagrams", () => {
     store = setupStore({
       planSheets: {
         ...initialState,

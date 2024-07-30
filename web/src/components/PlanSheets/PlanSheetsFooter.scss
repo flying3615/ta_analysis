@@ -36,6 +36,12 @@ $footerHeight: 56px;
     }
   }
 
+  .vertical-spacer {
+    height: lui.$unit-md;
+    border-left: 1px solid lui.$dew;
+    margin: 0 lui.$unit-xs;
+  }
+
   &-right {
     margin-left: auto;
   }

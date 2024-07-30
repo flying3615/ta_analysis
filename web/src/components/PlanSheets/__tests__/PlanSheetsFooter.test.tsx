@@ -7,6 +7,7 @@ import { delay, http, HttpResponse } from "msw";
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { server } from "@/mocks/mockServer.ts";
+import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
@@ -18,6 +19,15 @@ describe("PlanSheetsFooter", () => {
     activeSheet: PlanSheetType.TITLE,
   };
 
+  const renderWithState = (state: PlanSheetsState) => {
+    renderCompWithReduxAndRoute(
+      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
+      "/plan-generation/layout-plan-sheets/123",
+      "/plan-generation/layout-plan-sheets/:transactionId",
+      { preloadedState: { planSheets: state } },
+    );
+  };
+
   it("renders", async () => {
     renderCompWithReduxAndRoute(
       <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
@@ -26,6 +36,12 @@ describe("PlanSheetsFooter", () => {
     );
 
     expect(await screen.findByTitle("Toggle diagrams panel")).toBeInTheDocument();
+    expect(await screen.findByTitle("Change sheet view")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /save layout/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /first/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /previous/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /last/i })).toBeInTheDocument();
   });
 
   it("displays menu with Title sheet selected", async () => {
@@ -38,6 +54,10 @@ describe("PlanSheetsFooter", () => {
           planSheets: {
             ...planSheetsState,
             activeSheet: PlanSheetType.TITLE,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },
@@ -62,6 +82,10 @@ describe("PlanSheetsFooter", () => {
           planSheets: {
             ...planSheetsState,
             activeSheet: PlanSheetType.SURVEY,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },
@@ -93,6 +117,10 @@ describe("PlanSheetsFooter", () => {
           planSheets: {
             ...planSheetsState,
             diagrams,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },
@@ -218,6 +246,10 @@ describe("PlanSheetsFooter", () => {
           planSheets: {
             ...planSheetsState,
             diagrams,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
           },
         },
       },
@@ -236,5 +268,159 @@ describe("PlanSheetsFooter", () => {
         }),
       }),
     );
+  });
+
+  it("displays the number of pages", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 0,
+          pageNumber: 1,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 1,
+          pageNumber: 2,
+        },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+    });
+    const paginationElement = screen.getByText((content, element) => {
+      return element?.textContent === "Page 1 of 2";
+    });
+    expect(paginationElement).toBeInTheDocument();
+  });
+
+  it("shows current page number and it's non-editable", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 0,
+          pageNumber: 1,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 1,
+          pageNumber: 2,
+        },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 2,
+        [PlanSheetType.SURVEY]: 0,
+      },
+    });
+
+    const paginationElement = screen.getByText((content, element) => {
+      return element?.textContent === "Page 2 of 2";
+    });
+    expect(paginationElement).toBeInTheDocument();
+    expect(paginationElement).not.toHaveAttribute("contenteditable", "true");
+  });
+
+  it("disable appropriate navigation buttons when on the first page", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 0,
+          pageNumber: 1,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 1,
+          pageNumber: 2,
+        },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+    });
+
+    expect(screen.getByRole("button", { name: /First/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Previous/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Next/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Last/i })).toBeEnabled();
+  });
+
+  it("disable appropriate navigation buttons when on the last page", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 0,
+          pageNumber: 1,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 1,
+          pageNumber: 2,
+        },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 2,
+        [PlanSheetType.SURVEY]: 2,
+      },
+    });
+
+    expect(screen.getByRole("button", { name: /First/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Previous/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Next/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Last/i })).toBeDisabled();
+  });
+
+  it("enable appropriate navigation buttons when on 3rd page out of 4 pages", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 0,
+          pageNumber: 1,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 1,
+          pageNumber: 2,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 2,
+          pageNumber: 3,
+        },
+        {
+          pageType: PlanSheetType.TITLE,
+          id: 3,
+          pageNumber: 4,
+        },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 4,
+        [PlanSheetType.SURVEY]: 2,
+      },
+    });
+    await userEvent.click(await screen.findByRole("button", { name: /Previous/i }));
+    const paginationElement = screen.getByText((content, element) => {
+      return element?.textContent === "Page 3 of 4";
+    });
+    expect(paginationElement).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /First/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Previous/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Next/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Last/i })).toBeEnabled();
   });
 });

@@ -5,6 +5,7 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import React, { useEffect } from "react";
 
+import FooterPagination from "@/components/Footer/FooterPagination";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
@@ -12,7 +13,13 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useUpdatePlanMutation } from "@/queries/plan";
-import { getActiveSheet, setActiveSheet } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePageNumber,
+  getActiveSheet,
+  getFilteredPages,
+  setActivePageNumber,
+  setActiveSheet,
+} from "@/redux/planSheets/planSheetsSlice";
 
 export interface FooterProps {
   diagramsPanelOpen: boolean;
@@ -27,6 +34,9 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
 
   const activeSheet = useAppSelector(getActiveSheet);
   const onChangeSheet = (sheet: PlanSheetType) => () => dispatch(setActiveSheet(sheet));
+
+  const currentPage = useAppSelector(getActivePageNumber);
+  const { totalPages } = useAppSelector(getFilteredPages);
 
   const {
     mutate: updatePlanMutate,
@@ -54,6 +64,10 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
     newrelic.noticeError(serializedError);
     showPrefabModal(unhandledErrorModal(serializedError));
   }, [updatePlanError, showPrefabModal, transactionId]);
+
+  const handlePageChange = (pageNumber: number) => () => {
+    dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
+  };
 
   return (
     <footer className="PlanSheetsFooter" ref={modalOwnerRef}>
@@ -97,6 +111,10 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
       >
         <LuiIcon alt="Toggle diagrams icon" color={luiColors.sea} name="ic_open_diagrams" size="md" />
       </LuiButton>
+
+      <div className="vertical-spacer" />
+
+      <FooterPagination totalPages={totalPages} currentPage={currentPage} onPageChange={handlePageChange} />
 
       <div className="PlanSheetsFooter-right">
         <LuiButton className="PlanSheetsFooter-saveButton lui-button-tertiary" onClick={updatePlan}>

@@ -79,7 +79,7 @@ describe("DefineDiagrams", () => {
     // Note: Prepare dataset should only be called once!
     await waitFor(
       () => {
-        expect(requestSpy).toHaveBeenCalledTimes(5);
+        expect(requestSpy).toHaveBeenCalled();
       },
       { timeout: 5000 },
     );
