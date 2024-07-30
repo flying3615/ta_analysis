@@ -1,12 +1,12 @@
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
-    const extractedNodes = extractNodes(mockPlanData.diagrams);
+    const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(24); // 15 mark nodes, 8 labels, one symbol label
+    expect(extractedNodes).toHaveLength(24); // 15 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
     const node10001 = extractedNodes[0];
     expect(node10001?.id).toBe("10001");
     expect(node10001?.position).toStrictEqual({ x: 20, y: -10 });
@@ -27,7 +27,7 @@ describe("extractGraphData", () => {
   });
 
   test("extractNodes extracts label node data", () => {
-    const extractedNodes = extractNodes(mockPlanData.diagrams);
+    const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
     expect(extractedNodes).toHaveLength(24); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
@@ -118,7 +118,7 @@ describe("extractGraphData", () => {
   });
 
   test("extractEdges extracts edge data", () => {
-    const extractedEdges = extractEdges(mockPlanData.diagrams);
+    const extractedEdges = extractDiagramEdges(mockPlanData.diagrams);
 
     expect(extractedEdges).toHaveLength(15);
     expect(extractedEdges[0]?.id).toBe("1001");
@@ -158,8 +158,8 @@ describe("extractGraphData", () => {
 
     test("Styles with `peck1`", () => {
       const diagrams = makeStyledLineDiagram("peck1", 2.0);
-      const nodes = extractNodes(diagrams);
-      const [edge] = extractEdges(diagrams);
+      const nodes = extractDiagramNodes(diagrams);
+      const [edge] = extractDiagramEdges(diagrams);
 
       // Two nodes, dashed pattern
       expect(nodes).toHaveLength(2);
@@ -173,8 +173,8 @@ describe("extractGraphData", () => {
 
     test("Styles with `dot1`", () => {
       const diagrams = makeStyledLineDiagram("dot1", 2.0);
-      const nodes = extractNodes(diagrams);
-      const [edge] = extractEdges(diagrams);
+      const nodes = extractDiagramNodes(diagrams);
+      const [edge] = extractDiagramEdges(diagrams);
 
       // Two nodes, dot pattern
       expect(nodes).toHaveLength(2);
@@ -188,8 +188,8 @@ describe("extractGraphData", () => {
 
     test("Styles with `dot2` as `dot1`", () => {
       const diagrams = makeStyledLineDiagram("dot2");
-      const nodes = extractNodes(diagrams);
-      const [edge] = extractEdges(diagrams);
+      const nodes = extractDiagramNodes(diagrams);
+      const [edge] = extractDiagramEdges(diagrams);
 
       expect(nodes).toHaveLength(2);
       expect(edge?.sourceNodeId).toBe("1");
@@ -201,8 +201,8 @@ describe("extractGraphData", () => {
 
     test("Styles with `arrow1`", () => {
       const diagrams = makeStyledLineDiagram("arrow1");
-      const nodes = extractNodes(diagrams);
-      const [edge] = extractEdges(diagrams);
+      const nodes = extractDiagramNodes(diagrams);
+      const [edge] = extractDiagramEdges(diagrams);
 
       // Arrow points at target (end)
       expect(nodes).toHaveLength(2);
@@ -212,8 +212,8 @@ describe("extractGraphData", () => {
 
     test("Styles with `doubleArrow1`", () => {
       const diagrams = makeStyledLineDiagram("doubleArrow1");
-      const nodes = extractNodes(diagrams);
-      const [edge] = extractEdges(diagrams);
+      const nodes = extractDiagramNodes(diagrams);
+      const [edge] = extractDiagramEdges(diagrams);
 
       // Arrow points at target (end)
       expect(nodes).toHaveLength(2);

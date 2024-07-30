@@ -1,9 +1,16 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { Meta, StoryObj } from "@storybook/react";
+import { Core } from "cytoscape";
 
-import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
+import {
+  diagrams,
+  lineEdges,
+  markNodes,
+  pageBorderEdges,
+  pageBorderNodes,
+} from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
-import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
@@ -38,8 +45,8 @@ const fromBuilder = () =>
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
 
 const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom }) => {
-  const nodeData = extractNodes(props.data.diagrams);
-  const edgeData = extractEdges(props.data.diagrams);
+  const nodeData = extractDiagramNodes(props.data.diagrams);
+  const edgeData = extractDiagramEdges(props.data.diagrams);
 
   return (
     <div style={{ height: "100vh" }}>
@@ -54,6 +61,40 @@ const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom
       />
     </div>
   );
+};
+
+let cyRef: Core;
+
+export const PageConfigBorder: Story = () => {
+  const nodeData = [...pageBorderNodes, ...markNodes];
+  const edgeData = [...pageBorderEdges, ...lineEdges];
+
+  return (
+    <div className="CytoscapeCanvasWrapper" style={{ height: "100vh" }}>
+      <CytoscapeCanvas
+        nodeData={nodeData}
+        edgeData={edgeData}
+        diagrams={diagrams}
+        onCyInit={(cy) => {
+          cyRef = cy;
+        }}
+        onChange={(data) => {
+          console.info("Cytoscape canvas changed", data);
+        }}
+      />
+    </div>
+  );
+};
+
+PageConfigBorder.play = async () => {
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  const node = cy.getElementById("border_page_no");
+  if (!node) {
+    throw new Error("Node 'border_page_no' not found");
+  }
 };
 
 export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {

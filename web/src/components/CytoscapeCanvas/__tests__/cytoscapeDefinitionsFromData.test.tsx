@@ -19,7 +19,11 @@ const inputNodes = [
 
 describe("nodeDefinitionsFromData", () => {
   test("creates cytoscape node definitions including root node", () => {
-    const cytoscapeNodes = nodeDefinitionsFromData(inputNodes);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 300, clientHeight: 500 } as HTMLElement,
+      diagrams,
+    );
+    const cytoscapeNodes = nodeDefinitionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
     expect(cytoscapeNodes).toHaveLength(3);
     expect(cytoscapeNodes[0]?.data?.id).toBe("root");

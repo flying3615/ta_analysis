@@ -1,5 +1,6 @@
 import cytoscape, { Stylesheet } from "cytoscape";
 
+import compassSvg from "@/assets/compass.svg";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   circleLabel,
@@ -37,6 +38,22 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     );
 
     return makeScaledSVG(symbolSvg!, widthPixels, heightPixels);
+  };
+
+  // Dimensions for the compass in plan units
+  const compassPlanWidthCm = 50;
+  const compassPlanHeightCm = 50;
+
+  // Convert to Cytoscape units
+  const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape((compassPlanWidthCm * pixelsPerPoint) / pointsPerCm);
+  const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
+    (compassPlanHeightCm * pixelsPerPoint) / pointsPerCm,
+  );
+
+  const svgDataForCompass = {
+    svg: `url(${compassSvg})`,
+    width: widthPixels,
+    height: heightPixels,
   };
 
   const labelBaseStyle = {
@@ -117,6 +134,37 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         ...noNodeMarker,
         height: 1,
         width: 1,
+      },
+    },
+    {
+      // Node style for the page border
+      selector: "node[id^='border_']",
+      style: {
+        "background-color": "black",
+      },
+    },
+    {
+      // Node shown as compass
+      selector: "node[id='border_1013']",
+      style: {
+        "background-image": svgDataForCompass.svg,
+        "background-color": "white",
+        "background-fit": "contain",
+        width: svgDataForCompass.width,
+        height: svgDataForCompass.height,
+      },
+    },
+    {
+      // Node styles for the page number overlay
+      selector: "node[id='border_page_no']",
+      style: {
+        shape: "rectangle",
+        width: "label",
+        height: "label",
+        label: "data(label)",
+        "background-opacity": 0,
+        "text-valign": "center",
+        "text-halign": "center",
       },
     },
     {

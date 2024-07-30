@@ -129,3 +129,374 @@ export const diagrams: IDiagram[] = [
     listOrder: 1,
   },
 ];
+
+export const pageBorderNodes: INodeData[] = [
+  {
+    id: "border_1012",
+    position: { x: 750.5, y: -528.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1007",
+    position: { x: 750.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1002",
+    position: { x: 750.5, y: -1.5 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1013",
+    position: { x: 735.75, y: -16.25 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1011",
+    position: { x: 590.5, y: -528.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1004",
+    position: { x: 138.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1005",
+    position: { x: 426.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1006",
+    position: { x: 590.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1010",
+    position: { x: 426.5, y: -528.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1009",
+    position: { x: 138.5, y: -528.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1008",
+    position: { x: 0.5, y: -528.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1003",
+    position: { x: 1.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_1001",
+    position: { x: 1.5, y: -1.5 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_page_no0",
+    position: { x: 750.5, y: -466.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_page_no1",
+    position: { x: 720.5, y: -466.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_page_no2",
+    position: { x: 720.5, y: -486.2 },
+    label: "",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+  {
+    id: "border_page_no",
+    position: { x: 735.5, y: -476.2 },
+    label: "T/1",
+    properties: {
+      coordType: "userDefined",
+      featureId: 1,
+      featureType: "",
+      font: "Arial",
+      fontSize: "10%",
+      labelType: "",
+    },
+  },
+];
+
+export const pageBorderEdges: IEdgeData[] = [
+  {
+    id: "border_101",
+    sourceNodeId: "border_1001",
+    destNodeId: "border_1002",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_102",
+    sourceNodeId: "border_1001",
+    destNodeId: "border_1003",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_103",
+    sourceNodeId: "border_1002",
+    destNodeId: "border_1007",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_104",
+    sourceNodeId: "border_1003",
+    destNodeId: "border_1004",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_105",
+    sourceNodeId: "border_1003",
+    destNodeId: "border_1008",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_106",
+    sourceNodeId: "border_1004",
+    destNodeId: "border_1005",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_107",
+    sourceNodeId: "border_1004",
+    destNodeId: "border_1009",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_108",
+    sourceNodeId: "border_1005",
+    destNodeId: "border_1006",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_109",
+    sourceNodeId: "border_1005",
+    destNodeId: "border_1010",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_110",
+    sourceNodeId: "border_1006",
+    destNodeId: "border_1007",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_111",
+    sourceNodeId: "border_1006",
+    destNodeId: "border_1011",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_112",
+    sourceNodeId: "border_1007",
+    destNodeId: "border_1012",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_113",
+    sourceNodeId: "border_1008",
+    destNodeId: "border_1009",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_114",
+    sourceNodeId: "border_1009",
+    destNodeId: "border_1010",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_115",
+    sourceNodeId: "border_1010",
+    destNodeId: "border_1011",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_116",
+    sourceNodeId: "border_1011",
+    destNodeId: "border_1012",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_9999",
+    sourceNodeId: "border_page_no0",
+    destNodeId: "border_page_no1",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+  {
+    id: "border_99999",
+    sourceNodeId: "border_page_no1",
+    destNodeId: "border_page_no2",
+    properties: {
+      pointWidth: 1,
+    },
+  },
+];

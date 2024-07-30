@@ -9,6 +9,7 @@ export class CytoscapeCoordinateMapper {
   private readonly offsetYPixels: number;
   private readonly diagrams: Record<number, IDiagram>;
   private readonly diagramScalesMetresPerCm: Record<number, number>;
+  private pageBorderScale: number = 1;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL
   // they define the page size in cm
@@ -39,13 +40,9 @@ export class CytoscapeCoordinateMapper {
     // and we apply an offset to centre the page in the other axis.
     this.offsetXPixels = 0;
     this.offsetYPixels = 0;
-    if (scaleX > scaleY) {
-      this.scalePixelsPerCm = scaleY;
-      this.offsetXPixels = (canvas.clientWidth - diagramWidth * this.scalePixelsPerCm) / 2;
-    } else {
-      this.scalePixelsPerCm = scaleX;
-      this.offsetYPixels = (canvas.clientHeight - Math.abs(diagramHeight) * this.scalePixelsPerCm) / 2;
-    }
+    this.scalePixelsPerCm = Math.min(scaleX, scaleY);
+    this.offsetXPixels = (canvas.clientWidth - diagramWidth * this.scalePixelsPerCm) / 2;
+    this.offsetYPixels = (canvas.clientHeight - Math.abs(diagramHeight) * this.scalePixelsPerCm) / 2;
 
     // We now want to scale each diagrams points into page coordinates
     // To do this we find the limits of out diagram and compute the scale
@@ -54,7 +51,9 @@ export class CytoscapeCoordinateMapper {
     diagrams.forEach((diagram) => {
       const diagramScaleX = (diagram.bottomRightPoint.x - diagram.originPageOffset.x) / diagramWidth;
       const diagramScaleY = (diagram.bottomRightPoint.y - diagram.originPageOffset.y) / diagramHeight;
-      this.diagramScalesMetresPerCm[diagram.id] = Math.max(diagramScaleX, diagramScaleY);
+      const diagramScale = Math.max(diagramScaleX, diagramScaleY);
+      this.diagramScalesMetresPerCm[diagram.id] = diagramScale;
+      this.pageBorderScale = diagramScale;
     });
   }
 
@@ -97,6 +96,20 @@ export class CytoscapeCoordinateMapper {
     return {
       x: this.round(xPosCm * diagramScale + diagram.originPageOffset.x),
       y: this.round(yPosCm * diagramScale + diagram.originPageOffset.y),
+    };
+  }
+
+  /**
+   * Converts plan coordinates (centimeters) to Cytoscape pixel coordinates.
+   * @param position - Plan coordinates to convert.
+   * @returns Cytoscape pixel coordinates.
+   */
+  planCoordToCytoscape(position: GroundMetresPosition): cytoscape.Position {
+    const xPosCm = ((position.x - 1) / this.pageBorderScale) * 2;
+    const yPosCm = ((position.y - 1) / this.pageBorderScale) * 2;
+    return {
+      x: this.planCmToCytoscape(xPosCm) + this.offsetXPixels,
+      y: -this.planCmToCytoscape(yPosCm) + this.offsetYPixels,
     };
   }
 

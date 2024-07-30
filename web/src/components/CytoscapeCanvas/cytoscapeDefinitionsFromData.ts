@@ -23,10 +23,18 @@ export interface IEdgeData extends IGraphData {
   destNodeId: string;
 }
 
-export const nodeDefinitionsFromData = (data: INodeData[]): cytoscape.NodeDefinition[] => {
+export const nodeDefinitionsFromData = (
+  data: INodeData[],
+  cytoscapeCoordMapper: CytoscapeCoordinateMapper,
+): cytoscape.NodeDefinition[] => {
   return [
     { data: { id: "root", label: "" } },
     ...data.map((nodeDataEntry) => {
+      const nodePositionPixels =
+        nodeDataEntry.properties["coordType"] === "userDefined"
+          ? cytoscapeCoordMapper.planCoordToCytoscape(nodeDataEntry.position)
+          : { x: 0, y: 0 };
+
       return {
         group: "nodes" as ElementGroup,
         data: {
@@ -36,6 +44,9 @@ export const nodeDefinitionsFromData = (data: INodeData[]): cytoscape.NodeDefini
           "font-size": nodeDataEntry.properties["fontSize"],
           ...nodeDataEntry.properties,
         },
+        // Note that we need a position here also in order to lock the node position
+        locked: nodeDataEntry.properties["coordType"] === "userDefined",
+        position: nodePositionPixels,
       };
     }),
   ];
@@ -106,14 +117,21 @@ export const nodePositionsFromData = (
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): cytoscape.NodePositionMap => {
   return nodeData.reduce((acc, node) => {
-    const diagramId = node.properties["diagramId"];
-    if (typeof diagramId !== "number") {
-      throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
+    let nodePositionPixels;
+
+    if (node.properties["coordType"] === "userDefined") {
+      nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
+    } else {
+      const diagramId = node.properties["diagramId"];
+      if (typeof diagramId !== "number") {
+        throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
+      }
+      nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
     }
-    const nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
+
     return {
       ...acc,
-      [`${node.id}`]: nodePositionPixels,
+      [node.id]: nodePositionPixels,
     };
-  }, {});
+  }, {} as cytoscape.NodePositionMap);
 };

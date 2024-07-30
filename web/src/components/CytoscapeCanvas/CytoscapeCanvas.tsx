@@ -1,6 +1,7 @@
 import "./CytoscapeCanvas.scss";
 
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { LuiTooltip } from "@linzjs/lui";
 import cytoscape from "cytoscape";
 import { debounce } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -29,6 +30,7 @@ export interface ICytoscapeCanvasProps {
   diagrams: IDiagram[];
   initZoom?: IInitZoom;
   onChange: (data: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => void;
+  onCyInit?: (cy: cytoscape.Core) => void;
   "data-testid"?: string;
 }
 
@@ -38,6 +40,7 @@ const CytoscapeCanvas = ({
   diagrams,
   initZoom,
   onChange,
+  onCyInit,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
   const testId = dataTestId ?? "CytoscapeCanvas";
@@ -46,10 +49,32 @@ const CytoscapeCanvas = ({
   const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
   const [pan, setPan] = useState<cytoscape.Position>(initZoom?.pan ?? { x: 0, y: 0 });
 
+  const [tooltipContent, setTooltipContent] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+
+  const handleMouseOver = (event: cytoscape.EventObject) => {
+    const node = event.target;
+    if (node.id() === "border_page_no") {
+      const { x, y } = node.renderedPosition();
+
+      if (canvasRef.current) {
+        const canvasRect = canvasRef.current.getBoundingClientRect();
+        setTooltipContent("Reserved for sheet numbers");
+        setTooltipPosition({ x: x + canvasRect.left, y: y + canvasRect.top });
+      }
+    }
+  };
+
+  const handleMouseOut = () => {
+    setTooltipContent(null);
+    setTooltipPosition(null);
+  };
+
   const initCytoscape = useCallback(() => {
     if (!canvasRef.current) {
       throw Error("CytoscapeCanvas::initCytoscape - no canvas");
     }
+
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
 
     const cyRef = cytoscape({
@@ -57,7 +82,7 @@ const CytoscapeCanvas = ({
       zoom,
       pan,
       elements: {
-        nodes: nodeDefinitionsFromData(nodeData),
+        nodes: nodeDefinitionsFromData(nodeData, cytoscapeCoordinateMapper),
         edges: edgeDefinitionsFromData(edgeData),
       },
       layout: {
@@ -68,7 +93,12 @@ const CytoscapeCanvas = ({
       // the stylesheet for the graph
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),
     });
+
     setCy(cyRef);
+
+    if (onCyInit) {
+      onCyInit(cyRef);
+    }
 
     if (isPlaywrightTest()) {
       saveCytoscapeStateToStorage(cyRef, testId);
@@ -130,13 +160,25 @@ const CytoscapeCanvas = ({
     cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
     cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
 
+    cy?.addListener("mouseover", "node", handleMouseOver);
+    cy?.addListener("mouseout", "node", handleMouseOut);
+
     return () => {
       cy?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cy, onChange, canvasRef.current]);
 
-  return <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />;
+  return (
+    <>
+      <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
+      {tooltipContent && tooltipPosition && (
+        <LuiTooltip content={tooltipContent} visible={true} placement="left" appendTo={() => document.body}>
+          <div style={{ position: "absolute", top: tooltipPosition.y, left: tooltipPosition.x - 20 }} />
+        </LuiTooltip>
+      )}
+    </>
+  );
 };
 
 export default CytoscapeCanvas;

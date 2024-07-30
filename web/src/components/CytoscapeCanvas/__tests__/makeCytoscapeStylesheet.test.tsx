@@ -61,4 +61,17 @@ describe("makeCytoscapeStylesheet", () => {
     const textMarginY = styleEntry["text-margin-y"]?.(ele);
     expect(textMarginY).toBe(0); // Because `measureText` stub
   });
+
+  test("Generates function to show north arrow on the appropriate special node", () => {
+    render(<canvas data-id="layer2-node" />);
+
+    const northArrowNode = stylesheet.find((s) => s.selector === "node[id='border_1013']") as cytoscape.Stylesheet;
+
+    const styleEntry = getStyleEntryFromStylesheet(northArrowNode);
+
+    const svg = styleEntry["background-image"];
+    expect(svg).toBe("url(compass.svg)");
+    expect(styleEntry["width"]).toBeCloseTo(16.1, 1);
+    expect(styleEntry["height"]).toBeCloseTo(16.1, 1);
+  });
 });

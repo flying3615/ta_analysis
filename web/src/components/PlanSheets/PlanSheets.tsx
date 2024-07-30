@@ -15,7 +15,12 @@ import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
+import {
+  extractDiagramEdges,
+  extractDiagramNodes,
+  extractPageEdges,
+  extractPageNodes,
+} from "@/modules/plan/extractGraphData.ts";
 import { reconstructDiagrams } from "@/modules/plan/reconstructDiagrams.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { getActiveDiagrams, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
@@ -93,8 +98,15 @@ const PlanSheets = () => {
     );
   }
 
-  const nodeData = extractNodes(activeDiagrams);
-  const edgeData = extractEdges(activeDiagrams);
+  const pageConfigs = planData.configs?.[0]?.pageConfigs ?? [];
+  const pageConfigsNodeData = extractPageNodes(pageConfigs);
+  const pageConfigsEdgeData = extractPageEdges(pageConfigs);
+
+  const diagramNodeData = extractDiagramNodes(activeDiagrams);
+  const diagramEdgeData = extractDiagramEdges(activeDiagrams);
+
+  const nodeData = [...pageConfigsNodeData, ...diagramNodeData];
+  const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData];
 
   const onCytoscapeChange = ({ nodeData, edgeData }: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => {
     const reconstructedDiagrams = reconstructDiagrams(activeDiagrams, nodeData, edgeData);

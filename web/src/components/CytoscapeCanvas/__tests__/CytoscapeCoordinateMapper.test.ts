@@ -26,4 +26,36 @@ describe("CytoscapeCoordinateMapper", () => {
       y: 1240.5,
     });
   });
+
+  test("cytoscapeToGroundCoord maps cytoscape pixels onto ground coordinates", () => {
+    expect(cytoscapeCoordinateMapper.cytoscapeToGroundCoord({ x: 0, y: 5.5 }, 1)).toStrictEqual({
+      x: 0,
+      y: 0,
+    });
+
+    const corner = cytoscapeCoordinateMapper.cytoscapeToGroundCoord({ x: 370.5, y: 252.5 }, 1);
+    expect(corner.x).toBeCloseTo(30, 1);
+    expect(corner.y).toBeCloseTo(-20, 1);
+
+    expect(
+      cytoscapeCoordinateMapper.cytoscapeToGroundCoord(
+        {
+          x: 1852.5,
+          y: 1240.5,
+        },
+        1,
+      ),
+    ).toStrictEqual({ x: 150, y: -100 });
+  });
+
+  test("planCoordToCytoscape maps plan cm to cytoscape pixels", () => {
+    expect(cytoscapeCoordinateMapper.planCoordToCytoscape({ x: 10, y: 15 })).toStrictEqual({
+      x: 2223,
+      y: -3452.5,
+    });
+  });
+
+  test("planCmToCytoscape scales plan cm into cytoscape pixels", () => {
+    expect(cytoscapeCoordinateMapper.planCmToCytoscape(1.0)).toBe(10.0);
+  });
 });
