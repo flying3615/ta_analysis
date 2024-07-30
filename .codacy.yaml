@@ -1,0 +1,12 @@
+---
+exclude_paths:
+  - "**/__tests__/**"
+  - "infra/**"
+  - "*.md"
+  - "web/vite.config.ts"
+  - "web/config/**"
+  - "**/*.stories.tsx"
+  - ".husky"
+  - ".github"
+  - "web/.storybook/**"
+  - "web/viteEnv/**"
