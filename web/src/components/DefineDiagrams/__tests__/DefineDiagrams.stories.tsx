@@ -185,3 +185,67 @@ DrawNonPrimaryDiagramByPolygonBoundaryError.play = async () => {
   const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
   await userEvent.click(nonPrimaryDiagramButton);
 };
+
+export const DrawNonPrimaryDiagramByPolygon: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+
+DrawNonPrimaryDiagramByPolygon.play = async () => {
+  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
+  await userEvent.click(nonPrimaryDiagramButton);
+  const nonPrimaryDiagramByPolygonButton = await screen.findByRole("menuitem", {
+    name: /Polygon/,
+  });
+  await userEvent.click(nonPrimaryDiagramByPolygonButton);
+
+  const drawPolygon: Coordinate[] = [
+    [19461563.508509796, -5057886.183127218],
+    [19461498.683984406, -5057952.186280345],
+    [19461563.508509796, -5058035.868849486],
+    [19461654.262845345, -5058028.79708308],
+    [19461653.08421761, -5057952.775594211],
+    [19461563.508509796, -5057886.183127218],
+  ];
+  //   draw polygon around features to select them
+  await drawOnMap(drawPolygon);
+};
+
+export const DrawSurveyDiagramByPolygon: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+
+DrawSurveyDiagramByPolygon.play = async () => {
+  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  const surveyDiagramButton = await screen.findByLabelText("Define survey diagram");
+  await userEvent.click(surveyDiagramButton);
+  const surveyDiagramByPolygonButton = await screen.findByRole("menuitem", {
+    name: /Polygon/,
+  });
+  await userEvent.click(surveyDiagramByPolygonButton);
+
+  const drawPolygon: Coordinate[] = [
+    [19461563.508509796, -5057886.183127218],
+    [19461498.683984406, -5057952.186280345],
+    [19461563.508509796, -5058035.868849486],
+    [19461654.262845345, -5058028.79708308],
+    [19461653.08421761, -5057952.775594211],
+    [19461563.508509796, -5057886.183127218],
+  ];
+  //   draw polygon around features to select them
+  await drawOnMap(drawPolygon);
+};

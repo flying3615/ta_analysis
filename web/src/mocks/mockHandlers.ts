@@ -120,6 +120,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.post(/\/125\/diagrams$/, () => HttpResponse.json({ diagramId: 22 }, { status: 201 })),
+  http.post(/\/123\/diagrams$/, () => HttpResponse.json({ diagramId: 22 }, { status: 201 })),
 
   http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
