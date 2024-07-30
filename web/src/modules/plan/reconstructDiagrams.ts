@@ -44,7 +44,7 @@ export const reconstructDiagrams = (diagrams: IDiagram[], nodeData: INodeData[],
       })),
       lines: edgesForDiagram.map((edge) => ({
         id: parseInt(edge.id),
-        coordRefs: [parseInt(edge.sourceNodeId), parseInt(edge.destNodeId)],
+        coordRefs: JSON.parse(edge.properties["coordRefs"] as string),
         lineType: edge.properties["lineType"],
         ...getLineStyling(edge),
       })),

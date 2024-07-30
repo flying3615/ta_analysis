@@ -60,12 +60,12 @@ describe("nodeDataFromDefinitions", () => {
       id: "1",
       label: "Node 1",
       properties: { diagramId: 1 },
-      position: { x: 526.31579, y: 921.05263 },
+      position: { x: 526.316, y: 921.053 },
     });
     expect(nodeData[1]).toStrictEqual({
       id: "2",
       properties: { diagramId: 1 },
-      position: { x: 52.63158, y: 1078.94737 },
+      position: { x: 52.632, y: 1078.947 },
     });
   });
 });

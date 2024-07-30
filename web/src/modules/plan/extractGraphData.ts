@@ -108,6 +108,7 @@ export const extractEdges = (diagrams: IDiagram[]): IEdgeData[] => {
             diagramId: diagram.id,
             elementType: "lines",
             lineType: line.lineType,
+            coordRefs: JSON.stringify(line.coordRefs),
           },
         } as IEdgeData;
       });

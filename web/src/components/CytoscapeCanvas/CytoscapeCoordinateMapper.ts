@@ -118,7 +118,7 @@ export class CytoscapeCoordinateMapper {
     return pixels / this.scalePixelsPerCm;
   }
 
-  private round(number: number, precision = 5): number {
+  private round(number: number, precision = 3): number {
     return parseFloat(number.toFixed(precision));
   }
 }

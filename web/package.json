@@ -8,6 +8,7 @@
     "dev": "vite  --force",
     "mock": "vite --mode mock",
     "start:nonprod": "vite --mode local-nonprod",
+    "start:preprod": "vite --mode local-preprod",
     "build": "tsc && cross-env NODE_OPTIONS='--max-old-space-size=8192' vite build --mode production",
     "postbuild": "rm build/mockServiceWorker.js",
     "preview": "vite preview",

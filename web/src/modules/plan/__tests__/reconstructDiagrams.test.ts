@@ -74,13 +74,25 @@ describe("reconstructDiagrams", () => {
         id: "1",
         sourceNodeId: "1",
         destNodeId: "2",
-        properties: { diagramId: 1, lineType: "observation", pointWidth: 1, originalStyle: "solid" },
+        properties: {
+          diagramId: 1,
+          lineType: "observation",
+          pointWidth: 1,
+          originalStyle: "solid",
+          coordRefs: JSON.stringify([1, 2]),
+        },
       },
       {
         id: "2",
         sourceNodeId: "4",
         destNodeId: "5",
-        properties: { diagramId: 2, lineType: "userDefined", pointWidth: 2, originalStyle: "arrow1" },
+        properties: {
+          diagramId: 2,
+          lineType: "userDefined",
+          pointWidth: 2,
+          originalStyle: "arrow1",
+          coordRefs: JSON.stringify([4, 5, 6, 7]),
+        },
       },
     ] as IEdgeData[];
 
@@ -130,7 +142,7 @@ describe("reconstructDiagrams", () => {
       originPageOffset: { x: 0, y: 0 },
       coordinates: [],
       labels: [],
-      lines: [{ id: 2, coordRefs: [4, 5], style: "arrow1", lineType: "userDefined", pointWidth: 2 }],
+      lines: [{ id: 2, coordRefs: [4, 5, 6, 7], style: "arrow1", lineType: "userDefined", pointWidth: 2 }],
       listOrder: 2,
       listParentRef: undefined,
       parcelLabels: [

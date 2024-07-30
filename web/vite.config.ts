@@ -40,6 +40,8 @@ export default defineConfig(async ({ mode }) => ({
           let configDir = "config/local";
           if (mode === "local-nonprod" && requestedFileName === "env.json") {
             configDir = "config/nonprod";
+          } else if (mode === "local-preprod" && requestedFileName === "env.json") {
+            configDir = "config/preprod";
           }
           const localFilePath = path.join(__dirname, configDir, requestedFileName);
           console.log(`proxying ${req.url} to ${localFilePath}`);
