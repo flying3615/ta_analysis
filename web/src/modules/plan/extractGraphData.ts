@@ -4,13 +4,11 @@ import { negate } from "lodash-es";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { SYMBOLS_FONT } from "@/constants";
 
-import { getEdgeStyling } from "./styling";
-
-const LABEL_EFFECT_HALO = "halo";
+import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity } from "./styling";
 
 export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
-  return diagrams.flatMap((diagram, diagramIndex) => {
-    const labelToNode = (label: ILabel) => {
+  return diagrams.flatMap((diagram) => {
+    const labelToNode = (label: ILabel): INodeData => {
       return {
         id: label.id.toString(),
         position: label.position,
@@ -20,9 +18,9 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
           font: label.font,
           fontSize: label.fontSize,
           fontStyle: label.fontStyle,
-          fontColor: ["hide", "systemHide"].includes(label.displayState) ? "#C0C0C0" : "black",
-          circled: label.symbolType === "circle" ? 1 : undefined,
-          textBackgroundOpacity: label.effect === LABEL_EFFECT_HALO ? 1 : 0,
+          fontColor: getFontColor(label),
+          circled: getIsCircled(label),
+          textBackgroundOpacity: getTextBackgroundOpacity(label),
           textBorderOpacity: label.borderWidth ? 1 : 0,
           textBorderWidth: label.borderWidth,
           textRotation: label.rotationAngle,
@@ -30,23 +28,11 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
           pointOffset: label.pointOffset,
           textAlignment: label.textAlignment,
           borderWidth: label.borderWidth,
+          displayState: label.displayState,
           featureId: label.featureId,
           featureType: label.featureType,
           diagramId: diagram.id,
           ...(isSymbol(label) && { symbolId: label.displayText }),
-        },
-      };
-    };
-
-    const symbolToNode = (label: ILabel) => {
-      return {
-        id: label.id.toString(),
-        position: label.position,
-        label: label.displayText,
-        diagramIndex,
-        properties: {
-          symbolId: label.displayText,
-          diagramId: diagram.id,
         },
       };
     };
@@ -74,16 +60,7 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
         };
       }) as INodeData[]),
       ...diagram.labels.filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")),
-      ...diagram.coordinateLabels
-        .filter(notSymbol)
-
-        .map(labelToNode)
-        .map(addDiagramKey("coordinateLabels")),
-      ...diagram.coordinateLabels
-        .filter(isSymbol)
-
-        .map(symbolToNode)
-        .map(addDiagramKey("coordinateLabels")),
+      ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
       ...diagram.parcelLabels
         .filter(notSymbol)

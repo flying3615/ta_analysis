@@ -1,10 +1,10 @@
-import { ICoordinate, IDiagram } from "@linz/survey-plan-generation-api-client";
+import { ICoordinate, IDiagram, ILabel } from "@linz/survey-plan-generation-api-client";
 import { groupBy } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { SYMBOLS_FONT } from "@/constants";
 
-import { getLineStyling } from "./styling";
+import { getEffect, getLineStyling, getSymbolType } from "./styling";
 
 export const reconstructDiagrams = (diagrams: IDiagram[], nodeData: INodeData[], edgeData: IEdgeData[]): IDiagram[] => {
   const nodesByDiagramId = groupBy(nodeData, (node) => node.properties["diagramId"]);
@@ -19,19 +19,29 @@ export const reconstructDiagrams = (diagrams: IDiagram[], nodeData: INodeData[],
 
     const filterByElementType = (key: string) => (node: INodeData) => node.properties["elementType"] === key;
 
-    const mapLabels = (node: INodeData) => {
+    const mapLabels = (node: INodeData): ILabel => {
       const isSymbol = node.properties["symbolId"] !== undefined;
       const displayText = isSymbol ? node.properties["symbolId"] : node.label;
       const font = isSymbol ? SYMBOLS_FONT : node.properties["font"];
       return {
         id: parseInt(node.id),
-        displayText,
+        displayText: displayText as string,
         position: node.position,
-        font,
-        fontSize: node.properties["fontSize"],
-        featureId: node.properties["featureId"],
-        featureType: node.properties["featureType"],
-        labelType: node.properties["labelType"],
+        font: font as string,
+        fontSize: node.properties["fontSize"] as number,
+        fontStyle: node.properties["fontStyle"] as string,
+        symbolType: getSymbolType(node),
+        effect: getEffect(node),
+        rotationAngle: node.properties["textRotation"] as number,
+        anchorAngle: node.properties["anchorAngle"] as number,
+        pointOffset: node.properties["pointOffset"] as number,
+        textAlignment: node.properties["textAlignment"] as string,
+        borderWidth: node.properties["borderWidth"] as number,
+        labelType: node.properties["labelType"] as string,
+        displayState: node.properties["displayState"] as string,
+        featureId: node.properties["featureId"] as number,
+        featureType: node.properties["featureType"] as string,
+        userEdited: false,
       };
     };
 

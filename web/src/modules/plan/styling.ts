@@ -1,6 +1,6 @@
-import { ILine } from "@linz/survey-plan-generation-api-client";
+import { ILabel, ILine } from "@linz/survey-plan-generation-api-client";
 
-import { IEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 
 const SOLID = "solid";
 const PECK1 = "peck1";
@@ -10,6 +10,13 @@ const ARROW1 = "arrow1";
 const DOUBLE_ARROW_1 = "doubleArrow1";
 
 const CYTOSCAPE_ARROW_TRIANGLE = "triangle";
+
+const LABEL_SYMBOL_CIRCLE = "circle";
+
+enum LabelEffect {
+  NONE = "none",
+  HALO = "halo",
+}
 
 interface StyledLineStyle {
   dashStyle?: string;
@@ -75,4 +82,33 @@ export const getLineStyling = (edge: IEdgeData): Partial<ILine> => {
   }
 
   return { pointWidth, style };
+};
+
+export const getTextBackgroundOpacity = (label: ILabel): number => (label.effect === LabelEffect.HALO ? 1 : 0);
+
+export const getEffect = (node: INodeData) => {
+  if (node.properties["textBackgroundOpacity"] === 1) {
+    return LabelEffect.HALO;
+  }
+  return LabelEffect.NONE;
+};
+
+export const getFontColor = (label: ILabel): string => {
+  if (["hide", "systemHide"].includes(label.displayState)) {
+    return "#C0C0C0";
+  }
+  return "black";
+};
+
+export const getIsCircled = (label: ILabel): number | undefined =>
+  label.symbolType === LABEL_SYMBOL_CIRCLE ? 1 : undefined;
+
+export const getSymbolType = (node: INodeData): string | undefined => {
+  if (node.properties["symbolId"]) {
+    return "lolSymbols";
+  }
+  if (node.properties["circled"]) {
+    return LABEL_SYMBOL_CIRCLE;
+  }
+  return undefined;
 };

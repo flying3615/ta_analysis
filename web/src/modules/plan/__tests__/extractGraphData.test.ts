@@ -70,7 +70,7 @@ describe("extractGraphData", () => {
     expect(labelNode12?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode12?.properties?.["diagramId"]).toBe(1);
     expect(labelNode12?.properties?.["elementType"]).toBe("coordinateLabels");
-    expect(labelNode12?.properties?.["labelType"]).toBeUndefined();
+    expect(labelNode12?.properties?.["labelType"]).toBe("display");
     expect(labelNode12?.properties?.["featureId"]).toBeUndefined();
     expect(labelNode12?.properties?.["featureType"]).toBeUndefined();
     expect(labelNode12?.properties?.["symbolId"]).toBe("96");
