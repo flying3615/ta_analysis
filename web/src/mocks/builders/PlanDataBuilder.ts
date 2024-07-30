@@ -107,6 +107,11 @@ export class PlanDataBuilder {
     labelType: string = "markName",
     font: string = "Tahoma",
     fontSize: number = 10,
+    effect: string = "none",
+    displayState: string = "display",
+    symbolType: string | undefined = undefined,
+    textAlignment: string | undefined = undefined,
+    borderWidth: number | undefined = undefined,
   ) {
     if (this.planData.diagrams.length == 0) {
       throw new Error(
@@ -120,6 +125,13 @@ export class PlanDataBuilder {
     }
 
     into.push({
+      anchorAngle: 0,
+      displayState,
+      effect,
+      symbolType,
+      pointOffset: 0,
+      rotationAngle: 0,
+      userEdited: false,
       id,
       displayText,
       position,
@@ -128,6 +140,48 @@ export class PlanDataBuilder {
       fontSize,
       featureId,
       featureType,
+      textAlignment: textAlignment || "centerCenter",
+      borderWidth,
+    });
+    return this;
+  }
+
+  addRotatedLabel(
+    intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
+    id: number,
+    displayText: string,
+    position: ICartesianCoords,
+    font: string = "Tahoma",
+    fontSize: number = 10,
+    rotationAngle: number,
+    anchorAngle: number,
+    pointOffset: number,
+  ) {
+    if (this.planData.diagrams.length == 0) {
+      throw new Error(
+        "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addRotatedLabel()",
+      );
+    }
+
+    const into = last(this.planData.diagrams)?.[intoWhere];
+    if (!into) {
+      throw new Error(`${intoWhere} is not a label array`);
+    }
+
+    into.push({
+      anchorAngle,
+      displayState: "display",
+      effect: "none",
+      pointOffset,
+      rotationAngle,
+      textAlignment: "centerCenter",
+      userEdited: false,
+      id,
+      displayText,
+      position,
+      labelType: "markName",
+      font,
+      fontSize,
     });
     return this;
   }

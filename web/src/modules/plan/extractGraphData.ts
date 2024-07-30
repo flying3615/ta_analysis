@@ -6,11 +6,10 @@ import { SYMBOLS_FONT } from "@/constants";
 
 import { getEdgeStyling } from "./styling";
 
-export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
-  const isSymbol = (label: ILabel) => label.font === SYMBOLS_FONT;
-  const notSymbol = negate(isSymbol);
+const LABEL_EFFECT_HALO = "halo";
 
-  return diagrams.flatMap((diagram) => {
+export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
+  return diagrams.flatMap((diagram, diagramIndex) => {
     const labelToNode = (label: ILabel) => {
       return {
         id: label.id.toString(),
@@ -20,10 +19,34 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
           labelType: label.labelType,
           font: label.font,
           fontSize: label.fontSize,
+          fontStyle: label.fontStyle,
+          fontColor: ["hide", "systemHide"].includes(label.displayState) ? "#C0C0C0" : "black",
+          circled: label.symbolType === "circle" ? 1 : undefined,
+          textBackgroundOpacity: label.effect === LABEL_EFFECT_HALO ? 1 : 0,
+          textBorderOpacity: label.borderWidth ? 1 : 0,
+          textBorderWidth: label.borderWidth,
+          textRotation: label.rotationAngle,
+          anchorAngle: label.anchorAngle,
+          pointOffset: label.pointOffset,
+          textAlignment: label.textAlignment,
+          borderWidth: label.borderWidth,
           featureId: label.featureId,
           featureType: label.featureType,
           diagramId: diagram.id,
           ...(isSymbol(label) && { symbolId: label.displayText }),
+        },
+      };
+    };
+
+    const symbolToNode = (label: ILabel) => {
+      return {
+        id: label.id.toString(),
+        position: label.position,
+        label: label.displayText,
+        diagramIndex,
+        properties: {
+          symbolId: label.displayText,
+          diagramId: diagram.id,
         },
       };
     };
@@ -34,6 +57,9 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
         node.properties["elementType"] = elementType;
         return node;
       };
+
+    const isSymbol = (label: ILabel) => label.font === SYMBOLS_FONT;
+    const notSymbol = negate(isSymbol);
 
     return [
       ...(diagram.coordinates.map((coordinate) => {
@@ -48,9 +74,22 @@ export const extractNodes = (diagrams: IDiagram[]): INodeData[] => {
         };
       }) as INodeData[]),
       ...diagram.labels.filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")),
-      ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
+      ...diagram.coordinateLabels
+        .filter(notSymbol)
+
+        .map(labelToNode)
+        .map(addDiagramKey("coordinateLabels")),
+      ...diagram.coordinateLabels
+        .filter(isSymbol)
+
+        .map(symbolToNode)
+        .map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
-      ...diagram.parcelLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("parcelLabels")),
+      ...diagram.parcelLabels
+        .filter(notSymbol)
+
+        .map(labelToNode)
+        .map(addDiagramKey("parcelLabels")),
     ];
   });
 };

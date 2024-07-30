@@ -1,4 +1,3 @@
-import { SYMBOLS_FONT } from "@/constants";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { extractEdges, extractNodes } from "@/modules/plan/extractGraphData.ts";
@@ -7,7 +6,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(23); // 15 mark nodes + 8 labels
+    expect(extractedNodes).toHaveLength(24); // 15 mark nodes, 8 labels, one symbol label
     const node10001 = extractedNodes[0];
     expect(node10001?.id).toBe("10001");
     expect(node10001?.position).toStrictEqual({ x: 20, y: -10 });
@@ -30,9 +29,10 @@ describe("extractGraphData", () => {
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(23); // 5 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(24); // 5 labels after mark nodes in first diagram
+    const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
-    const labelNode10 = extractedNodes[10];
+    const labelNode10 = extractedNodeMap[1];
     expect(labelNode10?.id).toBe("1");
     expect(labelNode10?.label).toBe("System Generated Primary Diagram");
     expect(labelNode10?.position).toStrictEqual({ x: 50, y: -5 });
@@ -42,10 +42,13 @@ describe("extractGraphData", () => {
     expect(labelNode10?.properties?.["featureId"]).toBeUndefined();
     expect(labelNode10?.properties?.["featureType"]).toBeUndefined();
     expect(labelNode10?.properties?.["font"]).toBe("Tahoma");
+    expect(labelNode10?.properties?.["fontColor"]).toBe("black");
     expect(labelNode10?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode10?.properties?.["circled"]).toBeFalsy();
+    expect(labelNode10?.properties?.["textBackgroundOpacity"]).toBe(0);
     expect(labelNode10?.properties?.["symbolId"]).toBeUndefined();
 
-    const labelNode11 = extractedNodes[11];
+    const labelNode11 = extractedNodeMap[11];
     expect(labelNode11?.id).toBe("11");
     expect(labelNode11?.label).toBe("Label 11");
     expect(labelNode11?.position).toStrictEqual({ x: 55, y: -10 });
@@ -55,23 +58,24 @@ describe("extractGraphData", () => {
     expect(labelNode11?.properties?.["featureId"]).toBe(10001);
     expect(labelNode11?.properties?.["featureType"]).toBe("mark");
     expect(labelNode11?.properties?.["font"]).toBe("Times New Roman");
+    expect(labelNode11?.properties?.["fontColor"]).toBe("black");
     expect(labelNode11?.properties?.["fontSize"]).toBe(10);
     expect(labelNode11?.properties?.["symbolId"]).toBeUndefined();
+    expect(labelNode11?.properties?.["circled"]).toBeFalsy();
+    expect(labelNode11?.properties?.["textBackgroundOpacity"]).toBe(0);
 
-    const labelNode12 = extractedNodes[12];
+    const labelNode12 = extractedNodeMap[12];
     expect(labelNode12?.id).toBe("12");
     expect(labelNode12?.label).toBe("96");
     expect(labelNode12?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode12?.properties?.["diagramId"]).toBe(1);
     expect(labelNode12?.properties?.["elementType"]).toBe("coordinateLabels");
-    expect(labelNode12?.properties?.["labelType"]).toBe("display");
+    expect(labelNode12?.properties?.["labelType"]).toBeUndefined();
     expect(labelNode12?.properties?.["featureId"]).toBeUndefined();
     expect(labelNode12?.properties?.["featureType"]).toBeUndefined();
-    expect(labelNode12?.properties?.["font"]).toBe(SYMBOLS_FONT);
-    expect(labelNode12?.properties?.["fontSize"]).toBe(10);
     expect(labelNode12?.properties?.["symbolId"]).toBe("96");
 
-    const labelNode13 = extractedNodes[13];
+    const labelNode13 = extractedNodeMap[13];
     expect(labelNode13?.id).toBe("13");
     expect(labelNode13?.label).toBe("Label 13");
     expect(labelNode13?.position).toStrictEqual({ x: 52, y: -40 });
@@ -81,8 +85,10 @@ describe("extractGraphData", () => {
     expect(labelNode13?.properties?.["featureId"]).toBe(1001);
     expect(labelNode13?.properties?.["featureType"]).toBe("line");
     expect(labelNode13?.properties?.["font"]).toBe("Arial");
+    expect(labelNode13?.properties?.["fontColor"]).toBe("black");
     expect(labelNode13?.properties?.["fontSize"]).toBe(14);
-    expect(labelNode13?.properties?.["symbolId"]).toBeUndefined();
+    expect(labelNode13?.properties?.["circled"]).toBeFalsy();
+    expect(labelNode13?.properties?.["textBackgroundOpacity"]).toBe(0);
 
     const labelNode14 = extractedNodes[14];
     expect(labelNode14?.id).toBe("14");
@@ -96,6 +102,19 @@ describe("extractGraphData", () => {
     expect(labelNode14?.properties?.["font"]).toBe("Tahoma");
     expect(labelNode14?.properties?.["fontSize"]).toBe(16);
     expect(labelNode14?.properties?.["symbolId"]).toBeUndefined();
+
+    const labelNode23 = extractedNodeMap[23];
+    expect(labelNode23?.id).toBe("23");
+    expect(labelNode23?.label).toBe("A");
+    expect(labelNode23?.position).toStrictEqual({ x: 20, y: -35 });
+    expect(labelNode23?.properties?.["labelType"]).toBe("display");
+    expect(labelNode23?.properties?.["featureId"]).toBe(1);
+    expect(labelNode23?.properties?.["featureType"]).toBe("parcel");
+    expect(labelNode23?.properties?.["font"]).toBe("Tahoma");
+    expect(labelNode23?.properties?.["fontColor"]).toBe("#C0C0C0");
+    expect(labelNode23?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode23?.properties?.["circled"]).toBeTruthy();
+    expect(labelNode23?.properties?.["textBackgroundOpacity"]).toBe(1);
   });
 
   test("extractEdges extracts edge data", () => {

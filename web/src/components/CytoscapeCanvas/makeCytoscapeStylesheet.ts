@@ -1,10 +1,22 @@
-import { Stylesheet } from "cytoscape";
+import cytoscape, { Stylesheet } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import {
+  circleLabel,
+  fontStyle,
+  fontWeight,
+  LABEL_PADDING_PX,
+  rotatedMargin,
+  textDiameter,
+  textHAlign,
+  textJustification,
+  textMarginY,
+  textRotationClockwiseFromH,
+  textVAlign,
+} from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
-
-const pixelsPerPoint = 0.75;
-const pointsPerCm = 28.3465;
+import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
+import { pixelsPerPoint, pointsPerCm } from "@/util/pixelConversions.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
   const svgDataForSymbol = (ele: cytoscape.NodeSingular) => {
@@ -24,30 +36,58 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       (symbolSvg!.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
     );
 
-    // symbolSvg contains the nominal image sizes and the SVG text
-    // which is called by substituting the %WIDTH% and %HEIGHT% below
-    return {
-      svg:
-        "data:image/svg+xml;utf8," +
-        encodeURIComponent(
-          symbolSvg!.svg.replace("%WIDTH%", widthPixels.toString()).replace("%HEIGHT%", heightPixels.toString()),
-        ),
-      width: widthPixels,
-      height: heightPixels,
-    };
+    return makeScaledSVG(symbolSvg!, widthPixels, heightPixels);
+  };
+
+  const labelBaseStyle = {
+    label: "data(label)",
+    "line-height": 1,
+    "text-wrap": "wrap",
+    "text-max-width": "8000px",
+    "font-family": "data(font)",
+    "font-size": "data(fontSize)",
+    "font-style": fontStyle,
+    "font-weight": fontWeight,
+    "text-halign": textHAlign,
+    "text-valign": textVAlign,
+    "text-justification": textJustification,
+    color: "data(fontColor)",
+    "text-background-color": "#FFFFFF",
+    "text-background-opacity": "data(textBackgroundOpacity)",
+    "text-border-opacity": "data(textBorderOpacity)",
+    "text-border-width": "data(textBorderWidth)",
+    "text-background-padding": LABEL_PADDING_PX,
+    "text-rotation": textRotationClockwiseFromH,
+    "background-clip": "none",
+    "bounds-expansion": 12, // ensure circles are visible
+    "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele).x,
+    "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele).y,
+  };
+
+  const noNodeMarker = {
+    "background-opacity": 0,
   };
 
   return [
     {
-      // Node with label
-      selector: "node[label][font-family][font-size]",
+      // Node with label, circled
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
       style: {
-        "background-color": "#FFFFFF",
-        label: "data(label)",
-        "font-family": "data(font)",
-        "font-size": "data(fontSize)",
-        height: 5,
-        width: 5,
+        ...labelBaseStyle,
+        "background-image": circleLabel,
+        height: textDiameter,
+        width: textDiameter,
+        "text-margin-y": textMarginY,
+        "bounds-expansion": 80,
+      },
+    },
+    {
+      // Node with label
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled]",
+
+      style: {
+        ...labelBaseStyle,
+        ...noNodeMarker,
       },
     },
     {
@@ -65,6 +105,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "node[label]",
       style: {
+        ...noNodeMarker,
         height: 1,
         width: 1,
       },
@@ -73,7 +114,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node with no label
       selector: "node[^label]",
       style: {
-        visibility: "hidden",
+        ...noNodeMarker,
         height: 1,
         width: 1,
       },

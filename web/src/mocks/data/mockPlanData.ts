@@ -109,7 +109,21 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(1007, [40002, 40005], 1.0, "observation", "peck1")
   .addLine(1008, [40005, 40003], 1.0, "observation", "peck1")
   .addLabel("lineLabels", 21, "Line", { x: 85, y: -40 }, 1001, "line", "display", "Tahoma", 14)
-  .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14)
+  .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14, "halo")
+  .addLabel(
+    "parcelLabels",
+    23,
+    "A",
+    { x: 20, y: -35 },
+    1,
+    "parcel",
+    "display",
+    "Tahoma",
+    14,
+    "halo",
+    "systemHide",
+    "circle",
+  )
   .addLabel(
     "labels",
     2,

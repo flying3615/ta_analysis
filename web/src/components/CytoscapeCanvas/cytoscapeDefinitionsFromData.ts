@@ -5,7 +5,7 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 export interface IGraphData {
   id: string;
   label?: string;
-  properties: Record<string, string | number | undefined>;
+  properties: Record<string, string | number | boolean | undefined>;
 }
 
 export interface GroundMetresPosition {

@@ -169,4 +169,7 @@ export const handlers: HttpHandler[] = [
   http.post(/\/404\/diagrams$/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
+  http.post(/\/prepare\/404$/, () =>
+    HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
+  ),
 ];
