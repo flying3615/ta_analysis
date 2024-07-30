@@ -14,17 +14,16 @@
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-
     "baseUrl": "./",
     "paths": {
       "@/*": [
         "src/*"
-      ],
-    },
+      ]
+    }
   },
   "exclude": [
     "allure-report",
-    "allure-results",
+    "allure-results"
   ],
   "include": [
     "config",

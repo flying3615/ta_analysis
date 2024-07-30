@@ -10,3 +10,6 @@ exclude_paths:
   - ".github"
   - "web/.storybook/**"
   - "web/viteEnv/**"
+  - "test/e2e/data/**"
+  - "test/e2e/flyway/**"
+  - "web/Dockerfile"

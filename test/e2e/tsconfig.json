@@ -6,6 +6,6 @@
     "target": "es2021",
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
