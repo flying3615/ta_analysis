@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
-import { getCytoscapeData, getCytoscapeNode } from "utils/cytoscape-utils";
+import { PlanSheetsPage } from "pages/PlanSheetsPage";
 
-test.describe("Save Layout Plan Sheets", () => {
+test.describe("Layout Plan Sheets", () => {
   test("Save layout in title sheet diagram", async ({ page, baseURL }) => {
+    const planSheetsPage = new PlanSheetsPage(page, baseURL);
+
     await page.goto("/plan-generation/layout-plan-sheets/5000056");
     await expect(page.getByRole("heading", { name: "Title sheet diagrams" })).toBeVisible({ timeout: 180000 });
-    const cytoscapeData = await getCytoscapeData(page, baseURL);
-    const { position: cytoscapeNodePosition } = getCytoscapeNode(2, cytoscapeData);
+
+    const { position: cytoscapeNodePosition } = (await planSheetsPage.fetchCytoscapeData()).getCytoscapeNode(2);
 
     // Move a mark to trigger a layout change
     await page.hover("canvas", {
