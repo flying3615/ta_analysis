@@ -4,9 +4,11 @@ import { userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { generatePath, Route } from "react-router-dom";
 
+import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
+import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
 
@@ -30,16 +32,14 @@ const TemplatePlanSheetsFooter = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <MemoryRouter initialEntries={["/plan-generation/layout-plan-sheets/123"]}>
-          <Routes>
-            <Route
-              path="/plan-generation/layout-plan-sheets/:transactionId"
-              element={
-                <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
-              }
-            />
-          </Routes>
-        </MemoryRouter>
+        <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+          <Route
+            path={Paths.layoutPlanSheets}
+            element={
+              <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
+            }
+          />
+        </StorybookRouter>
       </Provider>
     </QueryClientProvider>
   );

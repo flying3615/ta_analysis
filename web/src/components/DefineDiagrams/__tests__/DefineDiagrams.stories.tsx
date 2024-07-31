@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Coordinate } from "ol/coordinate";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
 import { drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil.tsx";
@@ -19,7 +19,7 @@ import { Paths } from "@/Paths";
 import { DefineDiagramsState } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { sleep } from "@/test-utils/storybook-utils.ts";
+import { sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {
   title: "DefineDiagrams",
@@ -42,11 +42,9 @@ const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => 
     <QueryClientProvider client={queryClient}>
       <Provider store={setupStore({ defineDiagrams: initialState })}>
         <FeatureFlagProvider>
-          <MemoryRouter initialEntries={[generatePath(Paths.defineDiagrams, { transactionId })]}>
-            <Routes>
-              <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
-            </Routes>
-          </MemoryRouter>
+          <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
+            <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+          </StorybookRouter>
         </FeatureFlagProvider>
       </Provider>
     </QueryClientProvider>

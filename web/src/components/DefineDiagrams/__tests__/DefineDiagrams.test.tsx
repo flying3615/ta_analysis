@@ -2,6 +2,7 @@ import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
+import { generatePath, Route } from "react-router-dom";
 
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { DefineDiagramMenuLabels } from "@/components/DefineDiagrams/defineDiagramsType";
@@ -15,7 +16,8 @@ import {
 } from "@/components/DefineDiagrams/MapLayers.ts";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import { server } from "@/mocks/mockServer.ts";
-import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { Paths } from "@/Paths";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const buttonLabels = [
   DefineDiagramMenuLabels.SelectRTLines,
@@ -36,9 +38,8 @@ describe("DefineDiagrams", () => {
 
   it("should render", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
     // header toggle label is visible
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
@@ -46,9 +47,8 @@ describe("DefineDiagrams", () => {
 
   it("should have all navigation buttons", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
     window.alert = jest.fn();
 
@@ -66,9 +66,8 @@ describe("DefineDiagrams", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
     await waitFor(() => {
@@ -129,9 +128,8 @@ describe("DefineDiagrams", () => {
 
   it("should show marks on the map", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
     await waitFor(() => {
@@ -147,9 +145,8 @@ describe("DefineDiagrams", () => {
 
   it("should show parcels on the map", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
     // openlayers map and it's layers should render
@@ -166,9 +163,8 @@ describe("DefineDiagrams", () => {
 
   it("should show underlying parcels on the map", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
     // openlayers map and it's layers should render
@@ -188,9 +184,8 @@ describe("DefineDiagrams", () => {
 
   it("should show diagrams on the map", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/124",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "124" }),
     );
 
     // openlayers map and it's layers should render
@@ -215,31 +210,22 @@ describe("DefineDiagrams", () => {
 
   it("displays error when survey not found", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/404",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "404" }),
     );
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
   }, 120000);
 
-  it("navigate back to landing page when clicked on dismiss button on Unexpected error dialog", async () => {
-    renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [
-      { component: <DefineDiagrams mock={true} />, route: "/plan-generation/define-diagrams/:transactionId" },
-      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
-    ]);
-
-    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
-    await userEvent.click(screen.getByText("Dismiss"));
-    expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
-  });
-
-  it("navigate back to landing page when clicked on dismiss button on preparedataset error dialog", async () => {
-    renderMultiCompWithReduxAndRoute("/plan-generation/define-diagrams/404", [
-      { component: <DefineDiagrams mock={true} />, route: "/plan-generation/define-diagrams/:transactionId" },
-      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
-    ]);
+  it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
+    renderCompWithReduxAndRoute(
+      <>
+        <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />
+        <Route element={<LandingPage />} path={Paths.root} />
+      </>,
+      generatePath(Paths.defineDiagrams, { transactionId: "404" }),
+    );
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     await userEvent.click(screen.getByText("Dismiss"));
@@ -251,9 +237,8 @@ describe("DefineDiagrams", () => {
     server.use(http.get(/\/survey-features\/123$/, () => HttpResponse.text(null, { status: 404 })));
 
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
@@ -263,9 +248,8 @@ describe("DefineDiagrams", () => {
 
   it("should show vectors on the map", async () => {
     renderCompWithReduxAndRoute(
-      <DefineDiagrams mock={true} />,
-      "/plan-generation/define-diagrams/123",
-      "/plan-generation/define-diagrams/:transactionId",
+      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
     // openlayers map and it's layers should render
     await waitFor(() => {

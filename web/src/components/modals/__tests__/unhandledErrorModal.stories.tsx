@@ -5,7 +5,7 @@ import { waitFor } from "@storybook/testing-library";
 import { useEffect } from "react";
 
 import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import { sleep } from "@/test-utils/storybook-utils.ts";
+import { sleep } from "@/test-utils/storybook-utils";
 
 const TestModalTemplate = (props: { defaultToOpen?: boolean }) => {
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();

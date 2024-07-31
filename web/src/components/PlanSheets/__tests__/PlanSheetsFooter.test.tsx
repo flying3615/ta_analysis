@@ -3,10 +3,12 @@ import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
+import { generatePath, Route } from "react-router-dom";
 
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { server } from "@/mocks/mockServer.ts";
+import { Paths } from "@/Paths.ts";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
@@ -17,22 +19,27 @@ describe("PlanSheetsFooter", () => {
     diagrams: [],
     pages: [],
     activeSheet: PlanSheetType.TITLE,
+    hasChanges: false,
   };
 
   const renderWithState = (state: PlanSheetsState) => {
     renderCompWithReduxAndRoute(
-      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       { preloadedState: { planSheets: state } },
     );
   };
 
   it("renders", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
 
     expect(await screen.findByTitle("Toggle diagrams panel")).toBeInTheDocument();
@@ -46,9 +53,11 @@ describe("PlanSheetsFooter", () => {
 
   it("displays menu with Title sheet selected", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {
@@ -74,9 +83,11 @@ describe("PlanSheetsFooter", () => {
 
   it("displays menu with Survey sheet selected", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {
@@ -107,11 +118,15 @@ describe("PlanSheetsFooter", () => {
     server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
 
     renderCompWithReduxAndRoute(
-      <LuiMessagingContextProvider version="v2">
-        <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
-      </LuiMessagingContextProvider>,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={
+          <LuiMessagingContextProvider version="v2">
+            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+          </LuiMessagingContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {
@@ -176,9 +191,11 @@ describe("PlanSheetsFooter", () => {
     );
 
     renderCompWithReduxAndRoute(
-      <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
 
     expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
@@ -204,11 +221,15 @@ describe("PlanSheetsFooter", () => {
     server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 500 })));
 
     renderCompWithReduxAndRoute(
-      <LuiModalAsyncContextProvider>
-        <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
-      </LuiModalAsyncContextProvider>,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={
+          <LuiModalAsyncContextProvider>
+            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+          </LuiModalAsyncContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
 
     jest.spyOn(console, "error").mockImplementation(jest.fn());
@@ -236,11 +257,15 @@ describe("PlanSheetsFooter", () => {
     server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
 
     renderCompWithReduxAndRoute(
-      <LuiMessagingContextProvider version="v2">
-        <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
-      </LuiMessagingContextProvider>,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route
+        element={
+          <LuiMessagingContextProvider version="v2">
+            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+          </LuiMessagingContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {

@@ -6,10 +6,11 @@ import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { generatePath, Route } from "react-router-dom";
 
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store.ts";
+import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import Header from "../Header";
 
@@ -26,12 +27,10 @@ export const Default: Story = {
   render: () => (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <MemoryRouter initialEntries={["/plan-generation/define-diagrams/12345"]}>
-          <Routes>
-            <Route path={Paths.defineDiagrams} element={<Header view="Diagrams" />} />
-            <Route path={Paths.layoutPlanSheets} element={<Header view="Sheets" />} />
-          </Routes>
-        </MemoryRouter>
+        <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId: "12345" })}>
+          <Route path={Paths.defineDiagrams} element={<Header view="Diagrams" />} />
+          <Route path={Paths.layoutPlanSheets} element={<Header view="Sheets" />} />
+        </StorybookRouter>
       </Provider>
     </QueryClientProvider>
   ),

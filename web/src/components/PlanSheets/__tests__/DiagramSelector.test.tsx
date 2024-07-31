@@ -1,16 +1,19 @@
 import { screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
+import { generatePath, Route } from "react-router-dom";
 
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { server } from "@/mocks/mockServer.ts";
+import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 describe("Diagram Selector panel", () => {
   const planSheetsState = {
     diagrams: [],
     pages: [],
+    hasChanges: false,
   };
 
   beforeAll(() => {
@@ -44,9 +47,8 @@ describe("Diagram Selector panel", () => {
   });
   it("Displays the survey heading when survey sheet is selected", async () => {
     renderCompWithReduxAndRoute(
-      <DiagramSelector />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<DiagramSelector />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {
@@ -66,9 +68,8 @@ describe("Diagram Selector panel", () => {
 
   it("Displays the title heading when title sheet is selected", async () => {
     renderCompWithReduxAndRoute(
-      <DiagramSelector />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<DiagramSelector />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
           planSheets: {
@@ -82,6 +83,7 @@ describe("Diagram Selector panel", () => {
         },
       },
     );
+
     expect(await screen.findByText("Title sheet diagrams")).toBeInTheDocument();
   });
 });

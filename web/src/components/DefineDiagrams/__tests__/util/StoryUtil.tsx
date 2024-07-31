@@ -2,7 +2,7 @@ import { userEvent } from "@storybook/testing-library";
 import { Map } from "ol";
 import { Coordinate } from "ol/coordinate";
 
-import { sleep } from "@/test-utils/storybook-utils.ts";
+import { sleep } from "@/test-utils/storybook-utils";
 
 export const drawOnMap = async (coordinatesToClick: Coordinate[]) => {
   // eslint-disable-next-line testing-library/no-node-access

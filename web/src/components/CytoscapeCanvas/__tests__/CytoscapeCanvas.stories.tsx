@@ -11,6 +11,7 @@ import {
 } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { sleep } from "@/test-utils/storybook-utils";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
@@ -87,6 +88,7 @@ export const PageConfigBorder: Story = () => {
 };
 
 PageConfigBorder.play = async () => {
+  await sleep(500);
   const cy = cyRef;
   if (!cy) {
     throw new Error("Cytoscape instance is not available");

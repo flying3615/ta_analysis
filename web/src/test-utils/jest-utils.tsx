@@ -2,9 +2,9 @@ import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import { chunk, flattenDeep } from "lodash-es";
-import React, { PropsWithChildren, ReactElement } from "react";
+import React, { PropsWithChildren, ReactNode } from "react";
 import { Provider } from "react-redux";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
 import { APPROX_DEGREES_PER_METRE, CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder.ts";
 import { AppStore, RootState, setupStore } from "@/redux/store";
@@ -53,36 +53,14 @@ export function renderWithReduxProvider(
 }
 
 export const renderCompWithReduxAndRoute = (
-  component: ReactElement,
+  routes: ReactNode,
   url = "/",
-  route = "/",
   options?: ExtendedRenderOptions,
 ): RenderResult => {
-  return renderWithReduxProvider(
-    <MemoryRouter initialEntries={[url]}>
-      <Routes>
-        <Route path={route} element={component} />
-      </Routes>
-    </MemoryRouter>,
-    options,
-  );
-};
-
-export const renderMultiCompWithReduxAndRoute = (
-  url = "/",
-  routes: { route: string; component: ReactElement }[],
-  options?: ExtendedRenderOptions,
-): RenderResult => {
-  return renderWithReduxProvider(
-    <MemoryRouter initialEntries={[url]}>
-      <Routes>
-        {routes.map((r, idx) => {
-          return <Route key={idx} path={r.route} element={r.component} />;
-        })}
-      </Routes>
-    </MemoryRouter>,
-    options,
-  );
+  const router = createMemoryRouter(createRoutesFromElements(routes), {
+    initialEntries: [url],
+  });
+  return renderWithReduxProvider(<RouterProvider router={router} />, options);
 };
 
 interface CoordinateMatchers<R = unknown> {

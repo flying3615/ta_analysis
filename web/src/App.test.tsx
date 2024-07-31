@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
 
 import { PlangenApp } from "@/App.tsx";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
@@ -9,14 +8,12 @@ import { renderWithReduxProvider } from "./test-utils/jest-utils.tsx";
 
 const queryClient = new QueryClient();
 
-const renderPlangenApp = (url: string) => {
+const renderPlangenApp = () => {
   renderWithReduxProvider(
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={[url]}>
-        <QueryClientProvider client={queryClient}>
-          <PlangenApp mockMap={true} />
-        </QueryClientProvider>
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <PlangenApp mockMap={true} />
+      </QueryClientProvider>
     </FeatureFlagProvider>,
   );
 };
@@ -30,7 +27,8 @@ describe("Verify rendering of application", () => {
     ["/plan-", "This page does not exist, please check the url and try again."],
   ];
   test.each(validRoutes)("verify route with %s", async (route, expected) => {
-    renderPlangenApp(route);
+    window.history.pushState({}, "Test page", route);
+    renderPlangenApp();
     expect(await screen.findByText(expected)).toBeTruthy();
   });
 });

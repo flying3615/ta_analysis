@@ -4,11 +4,11 @@ import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ErrorInfo, ReactNode, useEffect } from "react";
+import React, { ErrorInfo, ReactNode, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
-import { Route, Routes } from "react-router";
-import { BrowserRouter } from "react-router-dom";
+import { Route, useRouteError } from "react-router";
+import { createBrowserRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
 import { DefineDiagrams as DefineDiagramsOld } from "@/components/DefineDiagrams/DefineDiagramsOld.tsx";
@@ -48,18 +48,30 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
     );
   }
 
-  return (
-    <Routes>
-      <Route path={Paths.root} element={<LandingPage />} />
-      {isDefineDiagramsOn ? (
-        <Route path={Paths.defineDiagrams} element={<DefineDiagrams mock={props.mockMap} />} />
-      ) : (
-        <Route path={Paths.defineDiagrams} element={<DefineDiagramsOld mock={props.mockMap} />} />
-      )}
-      <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-      <Route path="*" element={<NoMatchingRouteFound />} />
-    </Routes>
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route path={Paths.root} element={<LandingPage />} ErrorBoundary={RouteErrorBoundary} />
+        {isDefineDiagramsOn ? (
+          <Route
+            path={Paths.defineDiagrams}
+            element={<DefineDiagrams mock={props.mockMap} />}
+            ErrorBoundary={RouteErrorBoundary}
+          />
+        ) : (
+          <Route
+            path={Paths.defineDiagrams}
+            element={<DefineDiagramsOld mock={props.mockMap} />}
+            ErrorBoundary={RouteErrorBoundary}
+          />
+        )}
+        <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} ErrorBoundary={RouteErrorBoundary} />
+        <Route path="*" element={<NoMatchingRouteFound />} ErrorBoundary={RouteErrorBoundary} />
+      </>,
+    ),
   );
+
+  return <RouterProvider router={router} />;
 };
 
 function NoMatchingRouteFound(): React.JSX.Element {
@@ -74,9 +86,21 @@ function NoMatchingRouteFound(): React.JSX.Element {
   );
 }
 
-const errorHandler = (error: Error, info: ErrorInfo) => {
+const errorHandler = (error: Error, info?: ErrorInfo) => {
   console.error(error, info);
   newrelic.noticeError(error);
+};
+
+const RouteErrorBoundary = () => {
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+  const error = useRouteError() as Error;
+
+  useEffect(() => {
+    errorHandler(error);
+    showPrefabModal(unhandledErrorModal(error));
+  }, [showPrefabModal, error]);
+
+  return <div ref={modalOwnerRef} />;
 };
 
 const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
@@ -143,17 +167,15 @@ const App = () => {
     <LuiModalAsyncContextProvider>
       <ErrorBoundary FallbackComponent={ShowUnhandledModal} onError={errorHandler}>
         <LuiMessagingContextProvider version="v2">
-          <BrowserRouter>
-            <AuthContextProvider>
-              <FeatureFlagProvider>
-                <QueryClientProvider client={queryClient}>
-                  <Provider store={store}>
-                    <PlangenApp />
-                  </Provider>
-                </QueryClientProvider>
-              </FeatureFlagProvider>
-            </AuthContextProvider>
-          </BrowserRouter>
+          <AuthContextProvider>
+            <FeatureFlagProvider>
+              <QueryClientProvider client={queryClient}>
+                <Provider store={store}>
+                  <PlangenApp />
+                </Provider>
+              </QueryClientProvider>
+            </FeatureFlagProvider>
+          </AuthContextProvider>
         </LuiMessagingContextProvider>
       </ErrorBoundary>
     </LuiModalAsyncContextProvider>

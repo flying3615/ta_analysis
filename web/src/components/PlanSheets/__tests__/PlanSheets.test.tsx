@@ -1,20 +1,21 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
+import { generatePath, Route } from "react-router-dom";
 
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { server } from "@/mocks/mockServer";
-import { renderCompWithReduxAndRoute, renderMultiCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { Paths } from "@/Paths";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 import PlanSheets from "../PlanSheets";
 
 describe("PlanSheets", () => {
   it("renders with the survey sheet diagrams side panel open by default", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
 
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
@@ -25,9 +26,8 @@ describe("PlanSheets", () => {
 
   it("closes the title sheet diagrams when toggle button is pressed", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
 
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
@@ -43,19 +43,21 @@ describe("PlanSheets", () => {
 
   it("displays error when survey not found", async () => {
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/404",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "404" }),
     );
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
   });
 
   it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
-    renderMultiCompWithReduxAndRoute("/plan-generation/layout-plan-sheets/404", [
-      { component: <PlanSheets />, route: "/plan-generation/layout-plan-sheets/:transactionId" },
-      { component: <LandingPage />, route: "/plan-generation/:transactionId" },
-    ]);
+    renderCompWithReduxAndRoute(
+      <>
+        <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />
+        <Route element={<LandingPage />} path={Paths.root} />
+      </>,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "404" }),
+    );
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     await userEvent.click(screen.getByText("Dismiss"));
@@ -72,9 +74,8 @@ describe("PlanSheets", () => {
     );
 
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/123",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
     // await new Promise((resolve) => setTimeout(resolve, 3000)); // uncomment to make test fail
 
@@ -87,9 +88,8 @@ describe("PlanSheets", () => {
     server.events.on("request:start", requestSpy);
 
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/124",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
     );
 
     expect(await screen.findByText(/Preparing survey and diagrams for Layout Plan Sheets/)).toBeVisible();
@@ -138,9 +138,8 @@ describe("PlanSheets", () => {
     );
 
     renderCompWithReduxAndRoute(
-      <PlanSheets />,
-      "/plan-generation/layout-plan-sheets/124",
-      "/plan-generation/layout-plan-sheets/:transactionId",
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
     );
 
     expect(await screen.findByText(/prepare dataset application error/)).not.toBeNull();

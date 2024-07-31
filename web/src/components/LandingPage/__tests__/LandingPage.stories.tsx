@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react";
-import { MemoryRouter } from "react-router";
+import { generatePath, Route } from "react-router-dom";
 
-import { PlangenApp } from "@/App.tsx";
+import { Paths } from "@/Paths";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import LandingPage from "../LandingPage";
 
@@ -15,9 +16,9 @@ type Story = StoryObj<typeof LandingPage>;
 export const Default: Story = {
   render: () => (
     <FeatureFlagProvider>
-      <MemoryRouter initialEntries={["/plan-generation/12345"]}>
-        <PlangenApp />
-      </MemoryRouter>
+      <StorybookRouter url={generatePath(Paths.root, { transactionId: "12345" })}>
+        <Route path={Paths.root} element={<LandingPage />} />
+      </StorybookRouter>
     </FeatureFlagProvider>
   ),
 };
