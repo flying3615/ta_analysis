@@ -76,7 +76,7 @@ export const handlers: HttpHandler[] = [
   }),
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
-  http.get(/\/124\/labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
+  http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/125\/survey-features$/, () =>
     HttpResponse.json(
@@ -127,10 +127,22 @@ export const handlers: HttpHandler[] = [
   http.get(/\/126\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/666\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
 
-  http.get(/\/123\/labels/, () => HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" })),
-  http.get(/\/125\/labels/, () => HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" })),
-  http.get(/\/126\/labels/, () => HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" })),
-  http.get(/\/666\/labels/, () => HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/123\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/123\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+  http.get(/\/125\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/125\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+  http.get(/\/126\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/126\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+  http.get(/\/666\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/666\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
   // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint

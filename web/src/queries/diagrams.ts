@@ -5,6 +5,7 @@ import { useRef } from "react";
 
 import { getDiagramsForOpenLayers, IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig";
+import { useDiagramLabelsHook } from "@/queries/labels.ts";
 import { PlanGenQuery } from "@/queries/types";
 
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
@@ -26,6 +27,7 @@ export const insertDiagram = async (props: InsertUserDefinedDiagramRequest): Pro
  */
 export const useInsertDiagramMutation = (transactionId: number) => {
   const queryClient = useQueryClient();
+  const diagramLabels = useDiagramLabelsHook(transactionId);
   const queryKey = getDiagramsQueryKey(transactionId);
 
   const tempDiagramIdRef = useRef(-1);
@@ -71,6 +73,7 @@ export const useInsertDiagramMutation = (transactionId: number) => {
             : item,
         );
       });
+      diagramLabels.updateLabels();
     },
   });
 };

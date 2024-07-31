@@ -1,14 +1,17 @@
-import { LabelsControllerApi, LabelsResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { useQuery } from "@tanstack/react-query";
+import { DiagramLabelsControllerApi } from "@linz/survey-plan-generation-api-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig.ts";
-import { PlanGenQuery } from "@/queries/types.ts";
 
 export const getLabelsQueryKey = (transactionId: number) => ["labels", transactionId];
-
-export const useGetLabelsQuery: PlanGenQuery<LabelsResponseDTO> = ({ transactionId, enabled }) =>
-  useQuery({
-    queryKey: getLabelsQueryKey(transactionId),
-    queryFn: () => new LabelsControllerApi(apiConfig()).labels({ transactionId }),
-    enabled,
-  });
+export interface DiagramLabelsHook {
+  updateLabels: () => void;
+}
+export const useDiagramLabelsHook = (transactionId: number): DiagramLabelsHook => {
+  const queryClient = useQueryClient();
+  const updateLabels = async (): Promise<void> => {
+    await new DiagramLabelsControllerApi(apiConfig() as never).updateDiagramLabels({ transactionId });
+    await queryClient.invalidateQueries({ queryKey: getLabelsQueryKey(transactionId) });
+  };
+  return { updateLabels };
+};

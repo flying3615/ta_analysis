@@ -1,4 +1,4 @@
-import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
+import { DiagramLabelsControllerApi, DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
 import {
   IFeatureSource,
   LayerType,
@@ -12,7 +12,7 @@ import {
 } from "@linzjs/landonline-openlayers-map";
 
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
-import { getDiagramsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
+import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
 import { lineStyles } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
@@ -35,6 +35,7 @@ export const LINES_LAYER_NAME = "lines";
 export const LABELS_LAYER_NAME = "labels";
 
 import { apiConfig } from "@/queries/apiConfig.ts";
+import { getLabelsQueryKey } from "@/queries/labels.ts";
 
 const zIndexes: Record<string, number> = {
   LABELS_LAYER_NAME: 52,
@@ -174,7 +175,7 @@ export const linesLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLaye
   } as LolOpenLayersVectorLayerDef;
 };
 
-export const labelsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
+export const labelsLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
     name: LABELS_LAYER_NAME,
     type: LayerType.VECTOR,
@@ -186,7 +187,9 @@ export const labelsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLay
     style: labelStyles,
     source: {
       type: SourceType.FEATURES,
-      data,
+      queryKey: getLabelsQueryKey(transactionId),
+      queryFun: async () =>
+        getLabelsForOpenLayers(await new DiagramLabelsControllerApi(apiConfig()).getLabels({ transactionId })),
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;

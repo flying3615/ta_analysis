@@ -1,6 +1,5 @@
 import "./DefineDiagrams.scss";
 
-import { LabelsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import {
   LolOpenLayersMap,
   LolOpenLayersMapContext,
@@ -17,7 +16,6 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { DefineDiagram } from "@/components/DefineDiagrams/DefineDiagram";
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram";
 import {
-  getLabelsForOpenLayers,
   getLinesForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
@@ -37,7 +35,6 @@ import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
-import { useGetLabelsQuery } from "@/queries/labels";
 import { useGetLinesQuery } from "@/queries/lines";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
@@ -98,17 +95,8 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     enabled: prepareDatasetIsSuccess, // Don't fetch lines until the dataset is prepared
   });
 
-  const {
-    data: diagramLabels,
-    isLoading: diagramLabelsIsLoading,
-    error: diagramLabelsError,
-  } = useGetLabelsQuery({
-    transactionId,
-    enabled: prepareDatasetIsSuccess, // Don't fetch labels until the dataset is prepared
-  });
-
-  const error = prepareDatasetError ?? featuresError ?? diagramLabelsError ?? diagramLinesError ?? diagramLabelsError;
-  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading || diagramLabelsIsLoading;
+  const error = prepareDatasetError ?? featuresError ??  diagramLinesError;
+  const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading;
 
   useEffect(() => {
     // Call prepareDataset only once, when initially mounting
@@ -131,8 +119,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     () =>
       prepareDatasetIsSuccess &&
       features &&
-      diagramLines &&
-      diagramLabels && [
+      diagramLines && [
         underlyingParcelsLayer(maxZoom),
         underlyingRoadCentreLine(maxZoom),
         parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
@@ -140,9 +127,9 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
         diagramsQueryLayer(transactionId, maxZoom),
         linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
-        labelsLayer(getLabelsForOpenLayers(diagramLabels as LabelsResponseDTO), maxZoom),
+        labelsLayer(transactionId, maxZoom),
       ],
-    [diagramLabels, diagramLines, features, prepareDatasetIsSuccess, transactionId],
+    [diagramLines, features, prepareDatasetIsSuccess, transactionId],
   );
 
   return (
