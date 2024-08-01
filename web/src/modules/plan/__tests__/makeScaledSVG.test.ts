@@ -8,7 +8,7 @@ describe("makeScaledSvg", () => {
       '    <circle cx="4" cy="4" r="3.8" />' +
       "</svg>";
 
-    const scaledSvg = makeScaledSVG({ svg }, 10, 20);
+    const scaledSvg = makeScaledSVG(svg, 10, 20);
     expect(scaledSvg.height).toBe(20);
     expect(scaledSvg.width).toBe(10);
     expect(decodeURIComponent(scaledSvg.svg)).toBe(

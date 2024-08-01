@@ -12,6 +12,7 @@ import {
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { sleep } from "@/test-utils/storybook-utils";
+import { pointsPerCm } from "@/util/pixelConversions.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
@@ -39,8 +40,8 @@ export const Default: Story = {
 
 const fromBuilder = () =>
   new PlanDataBuilder().addDiagram({
-    x: 80,
-    y: -90,
+    x: 39,
+    y: -24,
   });
 
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
@@ -111,10 +112,10 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
       "doubleArrow1",
     ];
 
-    const gap = 5;
-    const xStart = 20;
-    const yStart = 20;
-    const xEnd = 120;
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 5;
+    const xEnd = 30;
 
     const builder = fromBuilder();
     lineStyles.forEach((lineStyle, index) => {
@@ -142,10 +143,10 @@ export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const fonts = ["Tahoma", "Arial", "Times New Roman"];
 
-    const gap = 10;
+    const gap = 2;
     const xStart = 10;
-    const yStart = 10;
-    const columnWidth = 120 / fonts.length;
+    const yStart = 2;
+    const columnWidth = 30 / fonts.length;
 
     const smallestFontSize = 8;
     const largestFontSize = 16;
@@ -184,7 +185,7 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const borderWidths = [undefined, 0.7, 1.0, 2.0];
 
-    const gap = 10;
+    const gap = 2;
 
     const builder = fromBuilder();
     borderWidths.forEach((borderWidth, index) => {
@@ -193,8 +194,8 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
         index * 100,
         `borderWidth: ${borderWidth}`,
         {
-          x: 20,
-          y: -(20 + index * gap),
+          x: 5,
+          y: -(5 + index * gap),
         },
         undefined,
         undefined,
@@ -212,8 +213,8 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
         index * 100 + 1,
         `borderWidth: ${borderWidth} halo`,
         {
-          x: 80,
-          y: -(20 + index * gap),
+          x: 20,
+          y: -(5 + index * gap),
         },
         undefined,
         undefined,
@@ -243,10 +244,10 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
     const effects = ["none", "halo"];
     const displayStates = ["display", "hide", "systemDisplay", "systemHide"];
 
-    const gap = 10;
-    const xStart = 10;
-    const yStart = 10;
-    const columnWidth = 120 / (effects.length * displayStates.length);
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 2;
+    const columnWidth = 30 / (effects.length * displayStates.length);
 
     const builder = fromBuilder();
     effects.forEach((effect, effectIdx) => {
@@ -260,7 +261,7 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
           `${effect}\n${displayState}`,
           {
             x: x,
-            y: -(yStart + effectIdx * gap),
+            y: -(yStart + effectIdx * gap + 2),
           },
           undefined,
           undefined,
@@ -272,10 +273,10 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
           undefined,
           "bottomCenter,textCenter",
         );
-        builder.addCooordinate(id + 1, { x: x, y: 6 - (yStart + effectIdx * gap) });
+        builder.addCooordinate(id + 1, { x: x, y: -(yStart + effectIdx * gap) });
         builder.addCooordinate(id + 2, {
           x: x,
-          y: -(2 + yStart + effectIdx * gap),
+          y: -(yStart + effectIdx * gap + 4),
         });
         builder.addLine(id + 3, [id + 1, id + 2], 5, "observation", "solid");
       });
@@ -286,8 +287,8 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
       9000001,
       "A",
       {
-        x: 30,
-        y: -50,
+        x: 10,
+        y: -20,
       },
       undefined,
       undefined,
@@ -304,8 +305,8 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
       9000002,
       "ZZ",
       {
-        x: 50,
-        y: -50,
+        x: 15,
+        y: -20,
       },
       undefined,
       undefined,
@@ -322,8 +323,8 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
       9000003,
       "QQ",
       {
-        x: 70,
-        y: -50,
+        x: 20,
+        y: -20,
       },
       undefined,
       undefined,
@@ -348,8 +349,8 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
 
 export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
-    const centreX = 30;
-    const centreY = -50;
+    const centreX = 5;
+    const centreY = -15;
 
     const builder = fromBuilder();
     for (let angle = 0; angle < 360; angle += 60) {
@@ -372,7 +373,7 @@ export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas
         angle * 100 + 1,
         `anchor=${angle}`,
         {
-          x: centreX + 30,
+          x: centreX + 10,
           y: centreY,
         },
         "Arial",
@@ -386,7 +387,7 @@ export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas
         angle * 100 + 2,
         `anchor&rotate=${angle}`,
         {
-          x: centreX + 70,
+          x: centreX + 20,
           y: centreY,
         },
         "Arial",
@@ -407,12 +408,74 @@ export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas
   },
 };
 
+const addOffsetLabel = (
+  builder: PlanDataBuilder,
+  idBase: number,
+  label: string,
+  x: number,
+  y: number,
+  anchorAngle: number,
+  circle: boolean,
+) => {
+  const pointOffset = (50 * 72) / 96; // 50px in points
+
+  builder.addSymbolLabel(idBase * 100 + 1, "63", {
+    x,
+    y,
+  });
+  builder.addRotatedLabel(
+    "labels",
+    idBase * 100,
+    label,
+    {
+      x,
+      y,
+    },
+    "Arial",
+    50,
+    0,
+    anchorAngle,
+    pointOffset,
+    circle ? "circle" : undefined,
+  );
+  builder.addCooordinate(idBase * 100 + 2, { x, y });
+  const anchorAngleRads = (anchorAngle * Math.PI) / 180;
+  const cmOffset = pointOffset / pointsPerCm;
+  console.log(`cmOffset=${cmOffset} (line length)`);
+  builder.addCooordinate(idBase * 100 + 3, {
+    x: x + cmOffset * Math.cos(anchorAngleRads),
+    y: y + cmOffset * Math.sin(anchorAngleRads),
+  });
+  builder.addLine(idBase * 100 + 4, [idBase * 100 + 2, idBase * 100 + 3]);
+};
+
+export const RendersOffsetCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    addOffsetLabel(builder, 1, "A", 10, -5, 45, true);
+    addOffsetLabel(builder, 2, "B", 10, -10, 135, true);
+    addOffsetLabel(builder, 3, "C", 10, -15, 225, true);
+    addOffsetLabel(builder, 4, "D", 10, -20, 270, true);
+    addOffsetLabel(builder, 5, "A", 20, -5, 45, false);
+    addOffsetLabel(builder, 6, "B", 20, -10, 135, false);
+    addOffsetLabel(builder, 7, "C", 20, -15, 225, false);
+    addOffsetLabel(builder, 8, "D", 20, -20, 270, false);
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
 export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
-    const startX = 20;
+    const startX = 5;
     const startY = 0;
-    const xStep = 30;
-    const yStep = 10;
+    const xStep = 5;
+    const yStep = 2.2;
     const numColumns = 3;
 
     const textAlignments = [
@@ -460,10 +523,68 @@ export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = 
         undefined,
         undefined,
         "Arial",
-        14,
+        20,
         "none",
         "display",
         undefined,
+        textAlignment,
+        0.7,
+      );
+      builder.addSymbolLabel(10000 + idx, "63", {
+        x,
+        y,
+      });
+    });
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const startX = 5;
+    const startY = -5;
+    const xStep = 12;
+    const yStep = 8;
+    const numColumns = 3;
+
+    const textAlignments = [
+      "bottomCenter",
+      "bottomLeft",
+      "bottomRight",
+      "centerCenter",
+      "centerLeft",
+      "centerRight",
+      "topCenter",
+      "topLeft",
+      "topRight",
+    ];
+
+    const builder = fromBuilder();
+
+    textAlignments.forEach((textAlignment, idx) => {
+      const x = startX + (idx % numColumns) * xStep;
+      const y = startY - Math.trunc(idx / numColumns) * yStep;
+
+      builder.addLabel(
+        "labels",
+        idx,
+        textAlignment.replace(",", "\n"),
+        { x, y },
+        undefined,
+        undefined,
+        undefined,
+        "Arial",
+        20,
+        "none",
+        "display",
+        "circle",
         textAlignment,
         0.7,
       );
@@ -488,10 +609,10 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
     const builder = fromBuilder();
 
     allSymbolCodes.forEach((code, idx) => {
-      const ypos = -10 - 4 * idx;
+      const ypos = -2 * idx;
 
       builder.addSymbolLabel(idx * 10, code.toString(), {
-        x: 20,
+        x: 5,
         y: ypos,
       });
       builder.addLabel(
@@ -499,7 +620,7 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
         idx * 10 + 1,
         code.toString(),
         {
-          x: 24,
+          x: 10,
           y: ypos,
         },
         undefined,
@@ -528,12 +649,12 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
     allSymbolCodes.forEach((code, idx) => {
       // Codes can be ascii codes or characters
       builder.addSymbolLabel((idx + 1) * 10, String.fromCharCode(code), {
-        x: 60 + idx * 20 * spacingPixels,
-        y: -50,
+        x: 15 + idx * 5 * spacingPixels,
+        y: -12.5,
       });
       builder.addSymbolLabel((idx + 1) * 10 + 1, code.toString(), {
-        x: 60 + idx * 20 * spacingPixels,
-        y: -50 - 20 * spacingPixels,
+        x: 15 + idx * 5 * spacingPixels,
+        y: -12.5 - 5 * spacingPixels,
       });
       builder.addLine((idx + 1) * 10 + 2, [(idx + 1) * 10, (idx + 1) * 10 + 1], 0.7);
       if (idx > 0) {
@@ -541,7 +662,7 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
       }
     });
 
-    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 4.0, pan: { x: -800, y: -550 } }} />;
+    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 4.0, pan: { x: -750, y: -500 } }} />;
   },
   parameters: {
     viewport: {

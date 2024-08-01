@@ -48,6 +48,7 @@ describe("makeCytoscapeStylesheet", () => {
       fontSize: 14,
       font: "Tahoma",
       label: "QQ",
+      textAlignment: "centerCenter",
     };
     const ele = { data: (name: string) => nodeData[name as keyof typeof nodeData] } as cytoscape.NodeSingular;
     const styleEntry = getStyleEntryFromStylesheet(nodeWithLabelCircledEntry);
@@ -55,11 +56,11 @@ describe("makeCytoscapeStylesheet", () => {
     const svg = styleEntry["background-image"]?.(ele);
     expect(svg).toBe("data:image/svg+xml;utf8,circle.svg");
     const height = styleEntry["height"]?.(ele);
-    expect(height).toBeCloseTo(10.82, 1);
+    expect(height).toBeCloseTo(6.82, 1);
     const width = styleEntry["width"]?.(ele);
-    expect(width).toBeCloseTo(10.82, 1);
+    expect(width).toBeCloseTo(8.82, 1);
     const textMarginY = styleEntry["text-margin-y"]?.(ele);
-    expect(textMarginY).toBe(0); // Because `measureText` stub
+    expect(textMarginY).toBe(1); // Because `measureText` stub
   });
 
   test("Generates function to show north arrow on the appropriate special node", () => {

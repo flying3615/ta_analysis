@@ -1,6 +1,7 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import cytoscape from "cytoscape";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   circleLabel,
   rotatedMargin,
@@ -35,15 +36,18 @@ describe("styleNodeMethods", () => {
   test("textDiameter should return calculated diameter", () => {
     renderDummyCanvas();
     const diam = textDiameter(testEle);
-    expect(diam).toBeCloseTo(25.0, 1);
+    expect(diam).toBeCloseTo(17.0, 1);
   });
 
   test("circleLabel should return an SVG circle scaled around label", () => {
     renderDummyCanvas();
-    const circle = circleLabel(testEle);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
+    const circle = circleLabel(testEle, cytoscapeCoordinateMapper);
     // We don't get the actual SVG because of jest
     // this is covered in SB
-    expect(circle).toBe("data:image/svg+xml;utf8,circle.svg");
+    expect(circle.svg).toBe("data:image/svg+xml;utf8,circle.svg");
+    expect(circle.height).toBeCloseTo(21.0, 1);
+    expect(circle.width).toBeCloseTo(37.0, 1);
   });
 
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
@@ -64,11 +68,13 @@ describe("styleNodeMethods", () => {
   });
 
   test("rotatedMargin calculates the margin with offset and anchor adjust", () => {
-    const margin = rotatedMargin(testEle);
+    renderDummyCanvas();
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
+    const margin = rotatedMargin(testEle, cytoscapeCoordinateMapper);
 
-    expect(margin.x).toBeCloseTo(8.5, 1);
-    expect(margin.y).toBeCloseTo(-1.75, 2);
+    expect(margin.x).toBeCloseTo(2, 1);
+    expect(margin.y).toBeCloseTo(0, 1);
   });
 
-  const renderDummyCanvas = () => render(<canvas data-id="layer2-node" />);
+  const renderDummyCanvas = () => render(<canvas data-id="layer2-node" data-testid="dummyCanvas" />);
 });

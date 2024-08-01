@@ -41,6 +41,7 @@ export class CytoscapeCoordinateMapper {
     this.offsetXPixels = 0;
     this.offsetYPixels = 0;
     this.scalePixelsPerCm = Math.min(scaleX, scaleY);
+
     this.offsetXPixels = (canvas.clientWidth - diagramWidth * this.scalePixelsPerCm) / 2;
     this.offsetYPixels = (canvas.clientHeight - Math.abs(diagramHeight) * this.scalePixelsPerCm) / 2;
 
@@ -65,9 +66,21 @@ export class CytoscapeCoordinateMapper {
    */
   groundCoordToCytoscape(position: GroundMetresPosition, diagramId: number): cytoscape.Position {
     const diagram = this.diagrams[diagramId];
+
     const diagramScale = this.diagramScalesMetresPerCm[diagramId];
     if (!diagram || !diagramScale) {
       throw new Error(`Diagram with id ${diagramId} not found`);
+    }
+
+    if (
+      position.x < 0 ||
+      position.x > diagram.bottomRightPoint.x ||
+      position.y > 0 ||
+      position.y < diagram.bottomRightPoint.y
+    ) {
+      console.warn(
+        `groundCoordToCytoscape has position ${JSON.stringify(position)} outside range (0,0)->(${JSON.stringify(diagram.bottomRightPoint)}`,
+      );
     }
 
     const xPosCm = (position?.x - diagram.originPageOffset.x) / diagramScale;

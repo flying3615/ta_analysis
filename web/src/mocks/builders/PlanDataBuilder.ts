@@ -156,6 +156,7 @@ export class PlanDataBuilder {
     rotationAngle: number,
     anchorAngle: number,
     pointOffset: number,
+    symbolType: string | undefined = undefined,
   ) {
     if (this.planData.diagrams.length == 0) {
       throw new Error(
@@ -182,6 +183,7 @@ export class PlanDataBuilder {
       labelType: "markName",
       font,
       fontSize,
+      symbolType,
     });
     return this;
   }

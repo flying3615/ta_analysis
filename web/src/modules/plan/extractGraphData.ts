@@ -110,7 +110,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
           circled: getIsCircled(label),
           textBackgroundOpacity: getTextBackgroundOpacity(label),
           textBorderOpacity: label.borderWidth ? 1 : 0,
-          textBorderWidth: label.borderWidth,
+          textBorderWidth: label.borderWidth ?? 0,
           textRotation: label.rotationAngle,
           anchorAngle: label.anchorAngle,
           pointOffset: label.pointOffset,

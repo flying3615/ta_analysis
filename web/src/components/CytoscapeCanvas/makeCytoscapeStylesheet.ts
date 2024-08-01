@@ -8,10 +8,8 @@ import {
   fontWeight,
   LABEL_PADDING_PX,
   rotatedMargin,
-  textDiameter,
   textHAlign,
   textJustification,
-  textMarginY,
   textRotationClockwiseFromH,
   textVAlign,
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
@@ -28,6 +26,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       : symbolSvgs[symbolId as keyof typeof symbolSvgs];
     if (!symbolSvg) {
       console.warn(`Symbol ${symbolId} not recognised`);
+      return { svg: "", width: 0, height: 0 };
     }
 
     const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
@@ -37,7 +36,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       (symbolSvg!.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
     );
 
-    return makeScaledSVG(symbolSvg!, widthPixels, heightPixels);
+    return makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels);
   };
 
   // Dimensions for the compass in plan units
@@ -77,8 +76,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-rotation": textRotationClockwiseFromH,
     "background-clip": "none",
     "bounds-expansion": 12, // ensure circles are visible
-    "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele).x,
-    "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele).y,
+    "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).x,
+    "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).y,
   };
 
   const noNodeMarker = {
@@ -91,11 +90,10 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
       style: {
         ...labelBaseStyle,
-        "background-image": circleLabel,
-        height: textDiameter,
-        width: textDiameter,
-        "text-margin-y": textMarginY,
-        "bounds-expansion": 80,
+        "background-image": (ele) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
+        height: (ele) => circleLabel(ele, cytoscapeCoordinateMapper).width,
+        width: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).height,
+        "bounds-expansion": 300,
       },
     },
     {
