@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
 
 export interface useEscapeKeyProps {
-  enabled: boolean | undefined;
-  callback: () => unknown | Promise<unknown>;
+  enabled?: boolean;
+  callback: () => unknown;
 }
 
 /**
@@ -18,7 +18,7 @@ export const useEscapeKey = ({ callback, enabled }: useEscapeKeyProps): void => 
 
   /** Register keyboard event handlers */
   useEffect(() => {
-    if (enabled) {
+    if (enabled !== false) {
       /**
        * Prevent listeners of keydown from handling escape
        */

@@ -8,10 +8,13 @@ import { isEmpty } from "lodash-es";
 import { useCallback, useContext, useEffect, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
+import { error32026_NonPrimaryCannotBeCreated } from "@/components/DefineDiagrams/prefabErrors.tsx";
+import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu.tsx";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useEscapeKey } from "@/hooks/useEscape.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { getSurveyFeaturesQueryKey } from "@/queries/surveyFeatures.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
@@ -42,19 +45,15 @@ export const DefineDiagramMenuButtons = () => {
     setSelectedButtonLabel(label);
   };
 
+  useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
+
   const precheckAddNonPrimaryDiagram = useCallback(() => {
     const data = queryClient.getQueryData<SurveyFeaturesResponseDTO>(getSurveyFeaturesQueryKey(transactionId));
     if (!data) return false;
 
     const hasNonPrimaryParcel = !isEmpty(data.nonPrimaryParcels);
     if (!hasNonPrimaryParcel) {
-      showPrefabModal({
-        level: "error",
-        title: "Message: 32026",
-        children:
-          "Non Primary user defined diagrams cannot be created, as\n" +
-          "there is no boundary information included in this survey.",
-      });
+      showPrefabModal(error32026_NonPrimaryCannotBeCreated);
       return false;
     }
     return true;
@@ -77,22 +76,14 @@ export const DefineDiagramMenuButtons = () => {
         headerMenuLabel={DefineDiagramMenuLabels.ZoomIn}
         headerButtonLabel="Zoom in"
         iconName="ic_add"
-        onClick={() => {
-          handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomIn);
-          map.zoomByDelta(1);
-          setSelectedButtonLabel("");
-        }}
+        onClick={() => map.zoomByDelta(1)}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton
         headerMenuLabel={DefineDiagramMenuLabels.ZoomOut}
         headerButtonLabel="Zoom out"
         iconName="ic_zoom_out"
-        onClick={() => {
-          handleHeaderButtonClick(DefineDiagramMenuLabels.ZoomOut);
-          map.zoomByDelta(-1);
-          setSelectedButtonLabel("");
-        }}
+        onClick={() => map.zoomByDelta(-1)}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton
@@ -153,80 +144,53 @@ export const DefineDiagramMenuButtons = () => {
         selectedButtonLabel={selectedButtonLabel}
       />
       <VerticalSpacer />
-      <HeaderMenu
-        primaryButtonLabel={DefineDiagramMenuLabels.DefinePrimaryDiagram}
-        primaryButtonIcon="ic_define_primary_diagram_rectangle"
-        selectedButtonLabel={selectedButtonLabel}
-        setSelectedButtonLabel={setSelectedButtonLabel}
-      >
-        <MenuHeader>{DefineDiagramMenuLabels.DefinePrimaryDiagram}</MenuHeader>
-        <MenuItem onClick={changeActiveAction("define_primary_diagram_rectangle")}>
-          <LuiIcon
-            name="ic_define_primary_diagram_rectangle"
-            alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByRectangle}
-            size="md"
-          />
-          Rectangle
-        </MenuItem>
-        <MenuItem onClick={changeActiveAction("define_primary_diagram_polygon")}>
-          <LuiIcon
-            name="ic_define_primary_diagram_polygon"
-            alt={DefineDiagramMenuLabels.DefinePrimaryDiagramByPolygon}
-            size="md"
-          />
-          Polygon
-        </MenuItem>
-      </HeaderMenu>
-      <HeaderMenu
-        primaryButtonLabel={DefineDiagramMenuLabels.DefineNonPrimaryDiagram}
-        primaryButtonIcon="ic_define_nonprimary_diagram_rectangle"
-        selectedButtonLabel={selectedButtonLabel}
-        setSelectedButtonLabel={setSelectedButtonLabel}
+      <ActionHeaderMenu
+        title="Define primary diagram"
+        options={[
+          {
+            label: "Rectangle",
+            title: "Define primary diagram by rectangle",
+            action: "define_primary_diagram_rectangle",
+          },
+          {
+            label: "Polygon",
+            title: "Define primary diagram by polygon",
+            action: "define_primary_diagram_polygon",
+          },
+        ]}
+      />
+      <ActionHeaderMenu
+        title="Define non-primary diagram"
         allowOpen={precheckAddNonPrimaryDiagram}
-      >
-        <MenuHeader>{DefineDiagramMenuLabels.DefineNonPrimaryDiagram}</MenuHeader>
-        <MenuItem onClick={changeActiveAction("define_non_primary_diagram_rectangle")}>
-          <LuiIcon
-            name="ic_define_nonprimary_diagram_rectangle"
-            alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByRectangle}
-            size="md"
-          />
-          Rectangle
-        </MenuItem>
-        <MenuItem onClick={changeActiveAction("define_non_primary_diagram_polygon")}>
-          <LuiIcon
-            name="ic_define_nonprimary_diagram_polygon"
-            alt={DefineDiagramMenuLabels.DefineNonPrimaryDiagramByPolygon}
-            size="md"
-          />
-          Polygon
-        </MenuItem>
-      </HeaderMenu>
-      <HeaderMenu
-        primaryButtonLabel={DefineDiagramMenuLabels.DefineSurveyDiagram}
-        primaryButtonIcon="ic_define_survey_diagram_rectangle"
-        selectedButtonLabel={selectedButtonLabel}
-        setSelectedButtonLabel={setSelectedButtonLabel}
+        options={[
+          {
+            label: "Rectangle",
+            title: "Define non-primary diagram by rectangle",
+            action: "define_nonprimary_diagram_rectangle",
+          },
+          {
+            label: "Polygon",
+            title: "Define non-primary diagram by polygon",
+            action: "define_nonprimary_diagram_polygon",
+          },
+        ]}
+      />
+      <ActionHeaderMenu
+        title="Define survey diagram"
         allowOpen={precheckAddNonPrimaryDiagram}
-      >
-        <MenuHeader>{DefineDiagramMenuLabels.DefineSurveyDiagram}</MenuHeader>
-        <MenuItem onClick={changeActiveAction("define_survey_diagram_rectangle")}>
-          <LuiIcon
-            name="ic_define_survey_diagram_rectangle"
-            alt={DefineDiagramMenuLabels.DefineSurveyDiagramByRectangle}
-            size="md"
-          />
-          Rectangle
-        </MenuItem>
-        <MenuItem onClick={changeActiveAction("define_survey_diagram_polygon")}>
-          <LuiIcon
-            name="ic_define_survey_diagram_polygon"
-            alt={DefineDiagramMenuLabels.DefineSurveyDiagramByPolygon}
-            size="md"
-          />
-          Polygon
-        </MenuItem>
-      </HeaderMenu>
+        options={[
+          {
+            label: "Rectangle",
+            title: "Define survey diagram by rectangle",
+            action: "define_survey_diagram_rectangle",
+          },
+          {
+            label: "Polygon",
+            title: "Define survey diagram by polygon",
+            action: "define_survey_diagram_polygon",
+          },
+        ]}
+      />
       <HeaderButton
         headerMenuLabel={DefineDiagramMenuLabels.SelectDiagram}
         iconName="ic_select_diagram"

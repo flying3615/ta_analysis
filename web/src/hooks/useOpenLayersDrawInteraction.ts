@@ -18,7 +18,6 @@ import {
 } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
-import { useEscapeKey } from "@/hooks/useEscape.ts";
 import { usePrevious } from "@/hooks/usePrevious.ts";
 import { flatCoordsToGeogCoords, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
 
@@ -37,12 +36,8 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
 };
 
 export interface useOpenLayersDrawInteractionProps {
-  drawAbort: (event: DrawEvent) => void | Promise<void>;
-  drawEnd: (props: {
-    event: DrawEvent;
-    geometry: Geometry;
-    cartesianCoordinates: ICartesianCoords[];
-  }) => void | Promise<void>;
+  drawAbort: (event: DrawEvent) => unknown;
+  drawEnd: (props: { event: DrawEvent; geometry: Geometry; cartesianCoordinates: ICartesianCoords[] }) => unknown;
   enabled: boolean;
   options: Omit<Options, "type"> & { type: DrawInteractionType | undefined };
   maxPoints?: {
@@ -77,11 +72,6 @@ export const useOpenLayersDrawInteraction = ({
   const currentFeatureRef = useRef<Polygon>();
 
   const currentType = options.type;
-
-  /**
-   * Abort drawing on escape.
-   */
-  useEscapeKey({ enabled, callback: () => drawInteractionRef?.current?.abortDrawing() });
 
   /**
    * Call back for draw end.  Garnishes the normal DrawEvent with some more useful values.

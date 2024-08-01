@@ -13,7 +13,6 @@ import proj4 from "proj4";
 import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
-import { DefineDiagram } from "@/components/DefineDiagrams/DefineDiagram";
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram";
 import {
   getLinesForOpenLayers,
@@ -31,6 +30,7 @@ import {
   underlyingRoadCentreLine,
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
+import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook.ts";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -66,10 +66,13 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const queryClient = useQueryClient();
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
   const mapContext = useContext(LolOpenLayersMapContext);
+  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+
   /* eslint-disable */
   (window as any)["map"] = mapContext.map;
+
+  useInsertDiagramHook();
 
   const {
     mutate: prepareDataset,
@@ -155,7 +158,6 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         )}
         {children}
       </div>
-      <DefineDiagram />
       <EnlargeDiagram />
     </>
   );

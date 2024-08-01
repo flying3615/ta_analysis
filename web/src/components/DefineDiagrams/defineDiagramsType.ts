@@ -4,8 +4,8 @@ export type DefineDiagramsActionType =
   | "enlarge_diagram_polygon"
   | "define_primary_diagram_rectangle"
   | "define_primary_diagram_polygon"
-  | "define_non_primary_diagram_rectangle"
-  | "define_non_primary_diagram_polygon"
+  | "define_nonprimary_diagram_rectangle"
+  | "define_nonprimary_diagram_polygon"
   | "define_survey_diagram_rectangle"
   | "define_survey_diagram_polygon";
 
@@ -19,15 +19,6 @@ export enum DefineDiagramMenuLabels {
   DrawRTBoundary = "Draw RT boundary",
   DrawAbuttal = "Draw abuttal",
   SelectLine = "Select line",
-  DefinePrimaryDiagram = "Define primary diagram",
-  DefinePrimaryDiagramByRectangle = "Define primary diagram by rectangle",
-  DefinePrimaryDiagramByPolygon = "Define primary diagram by polygon",
-  DefineNonPrimaryDiagram = "Define non-primary diagram",
-  DefineNonPrimaryDiagramByRectangle = "Define non-primary diagram by rectangle",
-  DefineNonPrimaryDiagramByPolygon = "Define non-primary diagram by polygon",
-  DefineSurveyDiagram = "Define survey diagram",
-  DefineSurveyDiagramByRectangle = "Define survey diagram by rectangle",
-  DefineSurveyDiagramByPolygon = "Define survey diagram by polygon",
   SelectDiagram = "Select diagram",
   LabelDiagrams = "Label diagrams",
   EnlargeDiagram = "Enlarge diagram",
@@ -37,5 +28,4 @@ export enum DefineDiagramMenuLabels {
   ReduceByRectangle = "Reduce by rectangle",
   ReduceByPolygon = "Reduce by polygon",
   ManageLabels = "Manage labels",
-  DropdownIcon = "Dropdown icon",
 }
