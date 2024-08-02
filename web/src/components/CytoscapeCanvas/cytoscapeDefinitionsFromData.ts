@@ -52,35 +52,26 @@ export const nodeDefinitionsFromData = (
   ];
 };
 
-export const nodeDataFromDefinitions = (
-  nodeDefinitions: cytoscape.NodeDefinition[],
+export const getNodeData = (
+  node: cytoscape.NodeSingular,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
-): INodeData[] => {
-  return nodeDefinitions
-    .filter((node) => node.data.id !== "root")
-    .map((nodeDefinition) => {
-      if (!nodeDefinition.position) {
-        throw new Error(`nodeDataFromDefinitions: Node ${nodeDefinition.data.id} is missing position`);
-      }
-      const position = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(
-        nodeDefinition.position,
-        nodeDefinition.data["diagramId"],
-      );
+): INodeData => {
+  const cyData = node.data();
+  const position = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(node.position(), cyData["diagramId"]);
 
-      const { id, label, ...properties } = nodeDefinition.data;
+  const { id, label, ...properties } = cyData;
 
-      // Not needed as there are already font and fontSize properties
-      delete properties["font-family"];
-      delete properties["font-size"];
+  // Not needed as there are already font and fontSize properties
+  delete properties["font-family"];
+  delete properties["font-size"];
 
-      const data = { id, position, properties } as INodeData;
+  const data = { id, position, properties } as INodeData;
 
-      if (label) {
-        data.label = label;
-      }
+  if (label) {
+    data.label = label;
+  }
 
-      return data;
-    });
+  return data;
 };
 
 export const edgeDefinitionsFromData = (data: IEdgeData[]): cytoscape.EdgeDefinition[] => {
@@ -99,17 +90,15 @@ export const edgeDefinitionsFromData = (data: IEdgeData[]): cytoscape.EdgeDefini
   });
 };
 
-export const edgeDataFromDefinitions = (edgeDefinitions: cytoscape.EdgeDefinition[]): IEdgeData[] => {
-  return edgeDefinitions.map((edgeDefinition: cytoscape.EdgeDefinition) => {
-    const { id, label, source, target, ...properties } = edgeDefinition.data;
-    return {
-      id: id,
-      label: label,
-      sourceNodeId: source,
-      destNodeId: target,
-      properties: properties,
-    } as IEdgeData;
-  });
+export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
+  const { id, label, source, target, ...properties } = edge.data();
+  return {
+    id,
+    label,
+    sourceNodeId: source,
+    destNodeId: target,
+    ...properties,
+  } as IEdgeData;
 };
 
 export const nodePositionsFromData = (

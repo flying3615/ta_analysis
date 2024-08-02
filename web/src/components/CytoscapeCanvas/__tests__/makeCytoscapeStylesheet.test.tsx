@@ -4,6 +4,7 @@ import cytoscape from "cytoscape";
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("makeCytoscapeStylesheet", () => {
   const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
@@ -22,7 +23,7 @@ describe("makeCytoscapeStylesheet", () => {
   test("Generates bound functions to make the SVG data", () => {
     const symbolEntry = stylesheet.find((s) => s.selector === "node[symbolId]") as cytoscape.Stylesheet;
 
-    const ele = { data: (_name: string) => "181" } as cytoscape.NodeSingular;
+    const ele = nodeSingular({ symbolId: "181" });
     const styleEntry = getStyleEntryFromStylesheet(symbolEntry);
     const makeSvg = styleEntry["background-image"];
     const makeWidth = styleEntry["width"];
@@ -44,13 +45,12 @@ describe("makeCytoscapeStylesheet", () => {
       (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
     ) as cytoscape.Stylesheet;
 
-    const nodeData = {
+    const ele = nodeSingular({
       fontSize: 14,
       font: "Tahoma",
       label: "QQ",
       textAlignment: "centerCenter",
-    };
-    const ele = { data: (name: string) => nodeData[name as keyof typeof nodeData] } as cytoscape.NodeSingular;
+    });
     const styleEntry = getStyleEntryFromStylesheet(nodeWithLabelCircledEntry);
 
     const svg = styleEntry["background-image"]?.(ele);

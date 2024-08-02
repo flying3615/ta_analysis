@@ -8,15 +8,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
-  edgeDataFromDefinitions,
   edgeDefinitionsFromData,
+  getEdgeData,
+  getNodeData,
   IEdgeData,
   INodeData,
-  nodeDataFromDefinitions,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
 import { isPlaywrightTest, saveCytoscapeStateToStorage } from "@/test-utils/playwright-utils";
 
 export interface IInitZoom {
@@ -29,7 +30,8 @@ export interface ICytoscapeCanvasProps {
   edgeData: IEdgeData[];
   diagrams: IDiagram[];
   initZoom?: IInitZoom;
-  onChange: (data: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => void;
+  onNodeChange: (node: INodeData) => void;
+  onEdgeChange: (node: IEdgeData) => void;
   onCyInit?: (cy: cytoscape.Core) => void;
   "data-testid"?: string;
 }
@@ -39,10 +41,12 @@ const CytoscapeCanvas = ({
   edgeData,
   diagrams,
   initZoom,
-  onChange,
+  onNodeChange,
+  onEdgeChange,
   onCyInit,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
+  const throwAsyncError = useThrowAsyncError();
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
@@ -139,19 +143,22 @@ const CytoscapeCanvas = ({
   // Listen and handle cytoscape events
   useEffect(() => {
     const emitChange = (event: cytoscape.EventObject) => {
-      if (!canvasRef.current) {
-        throw Error("CytoscapeCanvas::event listener - no viewport");
+      try {
+        if (event.target.isNode()) {
+          const node = event.target as cytoscape.NodeSingular;
+
+          if (!canvasRef.current) {
+            throw Error("CytoscapeCanvas::emitChange listener - no viewport");
+          }
+          const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
+          onNodeChange(getNodeData(node, cytoscapeCoordinateMapper));
+        } else {
+          const edge = event.target as cytoscape.EdgeSingular;
+          onEdgeChange(getEdgeData(edge));
+        }
+      } catch (error) {
+        throwAsyncError(error as Error);
       }
-
-      const json = event.cy.json() as {
-        elements: { nodes: cytoscape.NodeDefinition[]; edges: cytoscape.EdgeDefinition[] };
-      };
-
-      const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
-      const nodeData = nodeDataFromDefinitions(json.elements.nodes, cytoscapeCoordinateMapper);
-      const edgeData = edgeDataFromDefinitions(json.elements.edges);
-
-      onChange({ nodeData, edgeData });
     };
 
     cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
@@ -167,7 +174,7 @@ const CytoscapeCanvas = ({
       cy?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, onChange, canvasRef.current]);
+  }, [cy, onNodeChange, onEdgeChange, canvasRef.current]);
 
   return (
     <>

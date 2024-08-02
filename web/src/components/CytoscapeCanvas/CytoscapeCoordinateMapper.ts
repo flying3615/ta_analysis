@@ -1,7 +1,7 @@
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
 import { keyBy } from "lodash-es";
 
-import { GroundMetresPosition } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
 export class CytoscapeCoordinateMapper {
   private readonly scalePixelsPerCm: number;

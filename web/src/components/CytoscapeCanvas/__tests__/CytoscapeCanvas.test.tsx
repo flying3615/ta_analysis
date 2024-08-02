@@ -6,7 +6,15 @@ import CytoscapeCanvas from "../CytoscapeCanvas";
 
 describe("CytoscapeCanvas", () => {
   it("renders", async () => {
-    render(<CytoscapeCanvas nodeData={markNodes} edgeData={lineEdges} diagrams={diagrams} onChange={() => {}} />);
+    render(
+      <CytoscapeCanvas
+        nodeData={markNodes}
+        edgeData={lineEdges}
+        diagrams={diagrams}
+        onNodeChange={jest.fn()}
+        onEdgeChange={jest.fn()}
+      />,
+    );
 
     expect(await screen.findByTestId("CytoscapeCanvas")).toBeInTheDocument();
   });

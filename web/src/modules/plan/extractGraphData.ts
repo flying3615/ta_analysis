@@ -1,7 +1,7 @@
 import { IDiagram, ILabel, IPageConfig } from "@linz/survey-plan-generation-api-client";
 import { negate } from "lodash-es";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity } from "./styling";
@@ -95,7 +95,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
   const notSymbol = negate(isSymbol);
 
   return diagrams.flatMap((diagram) => {
-    const labelToNode = (label: ILabel) => {
+    const labelToNode = (label: ILabel): INodeData => {
       return {
         id: label.id.toString(),
         position: label.position,
@@ -125,7 +125,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
     };
 
     const addDiagramKey =
-      (elementType: string) =>
+      (elementType: INodeData["properties"]["elementType"]) =>
       (node: INodeData): INodeData => {
         node.properties["elementType"] = elementType;
         return node;

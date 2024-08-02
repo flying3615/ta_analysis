@@ -2,11 +2,8 @@
 
 set -e
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/flyway"
 
-cd ../..
-docker-compose up -d informix-db
-source .env
+source ../../../.env
 
-cd test/e2e/flyway
 ./gradlew flywayMigrate -i -Pflyway.configFiles=flyway.conf -Pflyway.user=${DB_USERNAME} -Pflyway.password=${DB_PASSWORD}

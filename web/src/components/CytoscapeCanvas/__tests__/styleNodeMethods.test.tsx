@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import cytoscape from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
@@ -12,9 +11,10 @@ import {
   textRotationClockwiseFromH,
   textVAlign,
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
+import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("styleNodeMethods", () => {
-  const elementData = {
+  const testEle = nodeSingular({
     font: "Tahoma",
     fontSize: 12,
     label: "Hello, world",
@@ -22,10 +22,7 @@ describe("styleNodeMethods", () => {
     textAlignment: "topLeft,textCenter",
     anchorAngle: 30,
     pointOffset: 10,
-  } as Record<string, number | string>;
-  const testEle = {
-    data: (dataAttribute: string) => elementData[dataAttribute],
-  } as cytoscape.NodeSingular;
+  });
 
   test(`textDimensions should measure single line text`, () => {
     renderDummyCanvas();

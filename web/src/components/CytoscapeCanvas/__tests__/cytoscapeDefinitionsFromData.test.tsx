@@ -3,14 +3,15 @@ import cytoscape from "cytoscape";
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
-  edgeDataFromDefinitions,
   edgeDefinitionsFromData,
+  getEdgeData,
+  getNodeData,
   IEdgeData,
   INodeData,
-  nodeDataFromDefinitions,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { edgeSingular, nodeSingular } from "@/test-utils/cytoscape-utils";
 
 const inputNodes = [
   { id: "node1", label: "Node 1", properties: { a: 1, diagramId: 1 }, position: { x: 10, y: -50 } },
@@ -35,38 +36,28 @@ describe("nodeDefinitionsFromData", () => {
   });
 });
 
-describe("nodeDataFromDefinitions", () => {
-  test("creates node data from cytoscape node definitions", () => {
+describe("getNodeData", () => {
+  test("gets node data for a node", () => {
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
       { clientWidth: 300, clientHeight: 500 } as HTMLElement,
       diagrams,
     );
-    const cytoscapeNodes = [
-      { data: { id: "root", label: "" } },
-      {
-        group: "nodes",
-        data: { id: "1", label: "Node 1", "font-family": "Tahoma", "font-size": 16, diagramId: 1 },
-        position: { x: 100, y: -20 },
-      },
-      {
-        group: "nodes",
-        data: { id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 },
-        position: { x: 10, y: -50 },
-      },
-    ] as cytoscape.NodeDefinition[];
 
-    expect(cytoscapeNodes).toHaveLength(3);
-
-    const nodeData = nodeDataFromDefinitions(cytoscapeNodes, cytoscapeCoordinateMapper);
-
-    expect(nodeData).toHaveLength(2);
-    expect(nodeData[0]).toStrictEqual({
+    const node1 = nodeSingular(
+      { id: "1", label: "Node 1", "font-family": "Tahoma", "font-size": 16, diagramId: 1 },
+      { x: 100, y: -20 },
+    );
+    const node1Data = getNodeData(node1, cytoscapeCoordinateMapper);
+    expect(node1Data).toStrictEqual({
       id: "1",
       label: "Node 1",
       properties: { diagramId: 1 },
       position: { x: 526.316, y: 186.842 },
     });
-    expect(nodeData[1]).toStrictEqual({
+
+    const node2 = nodeSingular({ id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 }, { x: 10, y: -50 });
+    const node2Data = getNodeData(node2, cytoscapeCoordinateMapper);
+    expect(node2Data).toStrictEqual({
       id: "2",
       properties: { diagramId: 1 },
       position: { x: 52.632, y: 344.737 },
@@ -90,17 +81,22 @@ describe("edgeDefinitionsFromData", () => {
   });
 });
 
-describe("edgeDataFromDefinitions", () => {
-  test("creates edge data from cytoscape edge definitions", () => {
-    const cytoscapeEdges = edgeDefinitionsFromData(inputEdges);
-
-    const edgeData = edgeDataFromDefinitions(cytoscapeEdges);
-
-    expect(edgeData).toHaveLength(1);
-    expect(edgeData[0]?.id).toBe("edge1");
-    expect(edgeData[0]?.sourceNodeId).toBe("node1");
-    expect(edgeData[0]?.destNodeId).toBe("node2");
-    expect(edgeData[0]?.properties?.["a"]).toBe(1);
+describe("getEdgeData", () => {
+  test("gets edge data for a edge", () => {
+    const edge = edgeSingular({
+      id: "1",
+      source: "node1",
+      target: "node2",
+      properties: { a: 1, diagramId: 1 },
+    });
+    const edgeData = getEdgeData(edge);
+    expect(edgeData).toStrictEqual({
+      id: "1",
+      label: undefined,
+      properties: { a: 1, diagramId: 1 },
+      sourceNodeId: "node1",
+      destNodeId: "node2",
+    });
   });
 });
 

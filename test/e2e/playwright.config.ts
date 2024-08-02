@@ -24,6 +24,7 @@ const pwConfig: PlaywrightTestConfig = defineConfig({
   expect: {
     timeout: 30000, // Maximum time expect() should wait for the condition to be met.
   },
+  timeout: process.env.CI ? 30000 : 180000, // 30s timeout in CI, 3 minutes locally
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

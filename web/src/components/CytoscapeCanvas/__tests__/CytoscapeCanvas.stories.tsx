@@ -30,9 +30,8 @@ export const Default: Story = {
         nodeData={markNodes}
         edgeData={lineEdges}
         diagrams={diagrams}
-        onChange={(data) => {
-          console.info("Cytoscape canvas changed", data);
-        }}
+        onNodeChange={(data) => console.info("Cytoscape node data changed", data)}
+        onEdgeChange={(data) => console.info("Cytoscape edge data changed", data)}
       />
     </div>
   ),
@@ -57,9 +56,8 @@ const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom
         edgeData={edgeData}
         diagrams={props.data.diagrams}
         initZoom={props.initZoom}
-        onChange={(data) => {
-          console.info("Cytoscape canvas changed", data);
-        }}
+        onNodeChange={(data) => console.info("Cytoscape node data changed", data)}
+        onEdgeChange={(data) => console.info("Cytoscape edge data changed", data)}
       />
     </div>
   );
@@ -80,9 +78,8 @@ export const PageConfigBorder: Story = () => {
         onCyInit={(cy) => {
           cyRef = cy;
         }}
-        onChange={(data) => {
-          console.info("Cytoscape canvas changed", data);
-        }}
+        onNodeChange={(data) => console.info("Cytoscape node data changed", data)}
+        onEdgeChange={(data) => console.info("Cytoscape edge data changed", data)}
       />
     </div>
   );

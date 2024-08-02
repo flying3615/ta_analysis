@@ -21,7 +21,7 @@ import {
   extractPageEdges,
   extractPageNodes,
 } from "@/modules/plan/extractGraphData.ts";
-import { reconstructDiagrams } from "@/modules/plan/reconstructDiagrams.ts";
+import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { getActiveDiagrams, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
@@ -108,9 +108,13 @@ const PlanSheets = () => {
   const nodeData = [...pageConfigsNodeData, ...diagramNodeData];
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData];
 
-  const onCytoscapeChange = ({ nodeData, edgeData }: { nodeData: INodeData[]; edgeData: IEdgeData[] }) => {
-    const reconstructedDiagrams = reconstructDiagrams(activeDiagrams, nodeData, edgeData);
-    dispatch(replaceDiagrams(reconstructedDiagrams));
+  const onNodeChange = (node: INodeData) => {
+    const updatedDiagrams = updateDiagramsWithNode(activeDiagrams, node);
+    dispatch(replaceDiagrams(updatedDiagrams));
+  };
+  const onEdgeChange = (edge: IEdgeData) => {
+    const updatedDiagrams = updateDiagramsWithEdge(activeDiagrams, edge);
+    dispatch(replaceDiagrams(updatedDiagrams));
   };
 
   return (
@@ -126,7 +130,8 @@ const PlanSheets = () => {
           nodeData={nodeData}
           edgeData={edgeData}
           diagrams={activeDiagrams}
-          onChange={onCytoscapeChange}
+          onNodeChange={onNodeChange}
+          onEdgeChange={onEdgeChange}
           data-testid="MainCytoscapeCanvas"
         />
       </div>

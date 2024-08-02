@@ -1,26 +1,32 @@
-import { Page } from "playwright-core";
+import { Locator, Page } from "playwright-core";
 
 export class PlanSheetsPage {
   private readonly page: Page;
   private readonly baseURL: string;
+  private readonly canvasTestId: string;
 
   private cytoscapeData: CytoscapeData;
 
-  constructor(page: Page, baseURL: string) {
+  constructor(page: Page, baseURL: string, canvasTestId: string = "MainCytoscapeCanvas") {
     this.page = page;
     this.baseURL = baseURL;
+    this.canvasTestId = canvasTestId;
   }
 
-  public async fetchCytoscapeData(canvasTestId: string = "MainCytoscapeCanvas"): Promise<this> {
+  public async fetchCytoscapeData(): Promise<this> {
     const { localStorage } = (await this.page.context().storageState()).origins.find(
       ({ origin }) => origin === this.baseURL,
     );
-    const cytoscapeJson = localStorage.find(({ name }) => name === `${canvasTestId}-cytoscapeData`);
+    const cytoscapeJson = localStorage.find(({ name }) => name === `${this.canvasTestId}-cytoscapeData`);
     if (!cytoscapeJson) {
-      throw new Error(`${canvasTestId}-cytoscapeData not found in localStorage`);
+      throw new Error(`${this.canvasTestId}-cytoscapeData not found in localStorage`);
     }
     this.cytoscapeData = JSON.parse(cytoscapeJson.value) as CytoscapeData;
     return this;
+  }
+
+  public getCytoscapeData(): CytoscapeData {
+    return this.cytoscapeData;
   }
 
   public getCytoscapeNode(id: string | number): CytoscapeElement {
@@ -32,5 +38,9 @@ export class PlanSheetsPage {
       throw new Error(`Cytoscape node with id ${id} not found`);
     }
     return node;
+  }
+
+  public getCytoscapeCanvas(): Locator {
+    return this.page.locator(`[data-testid='${this.canvasTestId}'] canvas`).first();
   }
 }
