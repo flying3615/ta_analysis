@@ -158,8 +158,9 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         shape: "rectangle",
         width: "label",
-        height: "label",
+        height: "auto",
         label: "data(label)",
+        "font-size": "10px",
         "background-opacity": 0,
         "text-valign": "center",
         "text-halign": "center",

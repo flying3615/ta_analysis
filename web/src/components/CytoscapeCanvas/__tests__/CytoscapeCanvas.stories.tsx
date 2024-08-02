@@ -662,7 +662,7 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
       }
     });
 
-    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 4.0, pan: { x: -750, y: -500 } }} />;
+    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 4.0, pan: { x: -600, y: -550 } }} />;
   },
   parameters: {
     viewport: {

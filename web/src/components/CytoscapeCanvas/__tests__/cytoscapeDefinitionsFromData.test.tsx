@@ -64,12 +64,12 @@ describe("nodeDataFromDefinitions", () => {
       id: "1",
       label: "Node 1",
       properties: { diagramId: 1 },
-      position: { x: 526.316, y: 921.053 },
+      position: { x: 526.316, y: 186.842 },
     });
     expect(nodeData[1]).toStrictEqual({
       id: "2",
       properties: { diagramId: 1 },
-      position: { x: 52.632, y: 1078.947 },
+      position: { x: 52.632, y: 344.737 },
     });
   });
 });
@@ -123,10 +123,10 @@ describe("nodePositionsFromData", () => {
     );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
-    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(16.2, 1);
+    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(7.42, 1);
     expect(cytoscapePositions["node1"]?.y).toBeCloseTo(15.0, 1);
-    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(43.2, 1);
-    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(6.0, 1);
+    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(30.4, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(7.4, 1);
     validateShapeNotDistorted(cytoscapePositions);
   });
 
@@ -138,9 +138,9 @@ describe("nodePositionsFromData", () => {
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
     expect(cytoscapePositions["node1"]?.x).toBeCloseTo(1.9, 1);
-    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(164.5, 1);
+    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(25, 1);
     expect(cytoscapePositions["node2"]?.x).toBeCloseTo(19, 1);
-    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(158.8, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(19.3, 1);
     validateShapeNotDistorted(cytoscapePositions);
   });
 });

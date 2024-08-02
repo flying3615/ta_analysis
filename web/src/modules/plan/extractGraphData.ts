@@ -17,7 +17,6 @@ export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
         featureId: 1,
         featureType: "",
         font: "Arial",
-        fontSize: "10%",
         labelType: "",
       },
     }));
@@ -153,8 +152,6 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         };
       }) as INodeData[]),
       ...userDefnLabels,
-
-      ...diagram.labels.filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")),
       ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
       ...diagram.parcelLabels

@@ -22,7 +22,7 @@ export class PlanDataBuilder {
       | "sysGenTraverseDiag"
       | "userDefnPrimaryDiag"
       | "userDefnNonPrimaryDiag"
-      | "userDefnTraverseDiag" = "sysGenPrimaryDiag",
+      | "userDefnTraverseDiag" = "userDefnPrimaryDiag",
     id?: number,
     listOrder?: number,
     listParentRef?: number,
