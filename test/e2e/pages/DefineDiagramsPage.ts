@@ -29,6 +29,23 @@ export class DefineDiagramsPage {
     });
   }
 
+  public async getLabels(): Promise<Array<any>> {
+    return await this.page.evaluate(() => {
+      const map = (window as any)["map"];
+      const diagramsLayer = map
+        .getLayers()
+        .getArray()
+        .find((layer: any) => layer.getClassName() === "labels");
+      return diagramsLayer
+        .getSource()
+        .getFeatures()
+        .map((feature: any) => ({
+          id: feature.get("id"),
+          name: feature.get("name"),
+        }));
+    });
+  }
+
   public async waitForDiagramsCanvas(): Promise<void> {
     await this.page.locator(".diagrams > canvas").waitFor({ state: "attached" });
   }
