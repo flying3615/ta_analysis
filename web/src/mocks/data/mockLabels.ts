@@ -1,22 +1,37 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 
 import { labelsBuilderTestOrigin } from "@/mocks/builders/LabelsBuilder.ts";
-
+//the order of these labels are mixed up on purpose to test the sorting of the labels
 export const mockLabels = () =>
   labelsBuilderTestOrigin()
     .withLabel()
     .withId(1)
     .withLabelType(CpgDiagramType.UDFN)
-    .withApproxMetres([0, 150])
+    .withApproxMetres([5, 155])
     .withLabelName("Diag. A")
     .withLabel()
     .withId(2)
-    .withLabelType(CpgDiagramType.UDFP)
-    .withApproxMetres([100, 150])
-    .withLabelName("Diag. A")
+    .withLabelType(CpgDiagramType.SYSN)
+    .withApproxMetres([20, 170])
+    .withLabelName("System Generated Non Primary Diagram")
     .withLabel()
     .withId(3)
     .withLabelType(CpgDiagramType.UDFT)
-    .withApproxMetres([200, 150])
+    .withApproxMetres([10, 160])
     .withLabelName("Diag. A")
+    .withLabel()
+    .withId(4)
+    .withLabelType(CpgDiagramType.SYST)
+    .withApproxMetres([25, 175])
+    .withLabelName("System Generated Traverse Diagram")
+    .withLabel()
+    .withId(5)
+    .withLabelType(CpgDiagramType.UDFP)
+    .withApproxMetres([0, 150])
+    .withLabelName("Diag. A")
+    .withLabel()
+    .withId(6)
+    .withLabelType(CpgDiagramType.SYSP)
+    .withApproxMetres([15, 165])
+    .withLabelName("System Generated Primary Diagram")
     .build();

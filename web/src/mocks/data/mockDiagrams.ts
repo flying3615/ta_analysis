@@ -9,11 +9,11 @@ export const mockDiagrams = () =>
     .withDiagramType(CpgDiagramType.SYSN)
     .withApproxMetres([
       [
-        [-50, 150],
-        [-50, 250],
-        [50, 250],
-        [50, 150],
-        [-50, 150],
+        [-30, 70],
+        [-30, 170],
+        [70, 170],
+        [70, 70],
+        [-30, 70],
       ],
     ])
     .withDiagram()
@@ -21,11 +21,11 @@ export const mockDiagrams = () =>
     .withDiagramType(CpgDiagramType.SYSP)
     .withApproxMetres([
       [
-        [50, 150],
-        [50, 250],
-        [150, 250],
-        [150, 150],
-        [50, 150],
+        [-35, 65],
+        [-35, 165],
+        [65, 165],
+        [65, 65],
+        [-35, 65],
       ],
     ])
     .withDiagram()
@@ -33,16 +33,28 @@ export const mockDiagrams = () =>
     .withDiagramType(CpgDiagramType.SYST)
     .withApproxMetres([
       [
-        [150, 150],
-        [150, 250],
-        [250, 250],
-        [250, 150],
-        [150, 150],
+        [-25, 75],
+        [-25, 175],
+        [75, 175],
+        [75, 75],
+        [-25, 75],
       ],
     ])
     .withDiagram()
     .withId(4)
     .withDiagramType(CpgDiagramType.UDFN)
+    .withApproxMetres([
+      [
+        [-45, 55],
+        [-45, 155],
+        [55, 155],
+        [55, 55],
+        [-45, 55],
+      ],
+    ])
+    .withDiagram()
+    .withId(5)
+    .withDiagramType(CpgDiagramType.UDFP)
     .withApproxMetres([
       [
         [-50, 50],
@@ -53,27 +65,15 @@ export const mockDiagrams = () =>
       ],
     ])
     .withDiagram()
-    .withId(5)
-    .withDiagramType(CpgDiagramType.UDFP)
-    .withApproxMetres([
-      [
-        [50, 50],
-        [50, 150],
-        [150, 150],
-        [150, 50],
-        [50, 50],
-      ],
-    ])
-    .withDiagram()
     .withId(6)
     .withDiagramType(CpgDiagramType.UDFT)
     .withApproxMetres([
       [
-        [150, 50],
-        [150, 150],
-        [250, 150],
-        [250, 50],
-        [150, 50],
+        [-40, 60],
+        [-40, 160],
+        [60, 160],
+        [60, 60],
+        [-40, 60],
       ],
     ])
     .build();

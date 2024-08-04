@@ -4,12 +4,14 @@ import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-clie
 
 import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams";
+import { mockLabels } from "@/mocks/data/mockLabels.ts";
 import { mockMarks } from "@/mocks/data/mockMarks";
 import { centreLineParcel, nonPrimaryParcel, primaryParcel } from "@/mocks/data/mockParcels";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors";
 
 import {
   getDiagramsForOpenLayers,
+  getLabelsForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
@@ -94,22 +96,39 @@ describe("featureMapper", () => {
   test("getDiagramsForOpenLayers", async () => {
     const diagrams = getDiagramsForOpenLayers(mockDiagrams());
 
-    expect(diagrams[0]?.id).toBe(1);
-    expect(diagrams[0]?.["diagramType"]).toBe(CpgDiagramType.SYSN);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 250]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 250]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
-    expect(diagrams[0]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-50, 150]);
+    expect(diagrams[4]?.id).toBe(1);
+    expect(diagrams[4]?.["diagramType"]).toBe(CpgDiagramType.SYSN);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 170]);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 170]);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 70]);
+    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
 
-    expect(diagrams[1]?.id).toBe(2);
-    expect(diagrams[1]?.["diagramType"]).toBe(CpgDiagramType.SYSP);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 250]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 250]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [150, 150]);
-    expect(diagrams[1]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [50, 150]);
+    expect(diagrams[5]?.id).toBe(2);
+    expect(diagrams[5]?.["diagramType"]).toBe(CpgDiagramType.SYSP);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 165]);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 165]);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 65]);
+    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
+  });
+
+  test("diagram and label features are sorted correctly", async () => {
+    const diagrams = getDiagramsForOpenLayers(mockDiagrams());
+    const labels = getLabelsForOpenLayers(mockLabels());
+
+    const expectedOrder = [
+      CpgDiagramType.UDFT, //bottom layer
+      CpgDiagramType.UDFN,
+      CpgDiagramType.UDFP,
+      CpgDiagramType.SYST,
+      CpgDiagramType.SYSN,
+      CpgDiagramType.SYSP, //top layer
+    ];
+
+    expect(diagrams.map((d) => d.diagramType)).toStrictEqual(expectedOrder);
+    expect(labels.map((d) => d.type)).toStrictEqual(expectedOrder);
   });
 });

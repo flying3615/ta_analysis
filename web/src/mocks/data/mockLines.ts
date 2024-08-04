@@ -8,8 +8,8 @@ export const mockLines = () =>
     .withId(1)
     .withSymbolType(LinesSymbolType.ABB)
     .withApproxMetres([
-      [-25, 75],
-      [225, 75],
+      [-25, 250],
+      [225, 250],
     ])
     .withDiagram()
     .withId(2)

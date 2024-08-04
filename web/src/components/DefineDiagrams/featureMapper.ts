@@ -1,3 +1,4 @@
+import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import {
   DiagramsResponseDTO,
   LabelsResponseDTO,
@@ -5,7 +6,25 @@ import {
   SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner.ts";
+import type { LabelsResponseDTOLabelsInner } from "@linz/survey-plan-generation-api-client/src/models/LabelsResponseDTOLabelsInner.ts";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
+
+//Think of this like a zindex (1 bottom, 6 top)
+const diagramTypeSortOrder = {
+  [CpgDiagramType.UDFT]: 1,
+  [CpgDiagramType.UDFN]: 2,
+  [CpgDiagramType.UDFP]: 3,
+  [CpgDiagramType.SYST]: 4,
+  [CpgDiagramType.SYSN]: 5,
+  [CpgDiagramType.SYSP]: 6,
+};
+
+const sortDiagramsByType = (
+  a: DiagramsResponseDTODiagramsInner | LabelsResponseDTOLabelsInner,
+  b: DiagramsResponseDTODiagramsInner | LabelsResponseDTOLabelsInner,
+) => {
+  return diagramTypeSortOrder[a.diagramType as CpgDiagramType] - diagramTypeSortOrder[b.diagramType as CpgDiagramType];
+};
 
 export const getMarksForOpenLayers = (features: SurveyFeaturesResponseDTO): IFeatureSource[] =>
   features.marks.map(
@@ -46,7 +65,7 @@ export const getVectorsForOpenLayers = (features: SurveyFeaturesResponseDTO): IF
 export type IFeatureSourceDiagram = IFeatureSource & { diagramType: string };
 
 export const getDiagramsForOpenLayers = ({ diagrams }: DiagramsResponseDTO): IFeatureSourceDiagram[] =>
-  diagrams.map(MapDiagramToOpenLayers);
+  diagrams.sort(sortDiagramsByType).map(MapDiagramToOpenLayers);
 
 export const MapDiagramToOpenLayers = (diagramId: DiagramsResponseDTODiagramsInner): IFeatureSourceDiagram => ({
   id: diagramId.id,
@@ -65,8 +84,10 @@ export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSour
     },
   }));
 
-export const getLabelsForOpenLayers = ({ labels }: LabelsResponseDTO): IFeatureSource[] =>
-  labels.map((d) => ({
+export type IFeatureSourceLabel = IFeatureSource & { type: string };
+
+export const getLabelsForOpenLayers = ({ labels }: LabelsResponseDTO): IFeatureSourceLabel[] =>
+  labels.sort(sortDiagramsByType).map((d) => ({
     id: d.id,
     name: d.name,
     shape: {

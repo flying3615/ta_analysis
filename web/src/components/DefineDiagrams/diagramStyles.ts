@@ -6,11 +6,11 @@ import Stroke from "ol/style/Stroke";
 
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
 const lineColourMap = {
-  [CpgDiagramType.SYSN]: "#FF8000",
   [CpgDiagramType.SYSP]: "#009F00",
+  [CpgDiagramType.SYSN]: "#FF8000",
   [CpgDiagramType.SYST]: "#3F3FAA",
-  [CpgDiagramType.UDFN]: "#FF8000",
   [CpgDiagramType.UDFP]: "#009F00",
+  [CpgDiagramType.UDFN]: "#FF8000",
   [CpgDiagramType.UDFT]: "#3F3FAA",
 };
 
