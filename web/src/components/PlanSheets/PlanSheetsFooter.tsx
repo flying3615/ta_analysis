@@ -21,6 +21,8 @@ import {
   setActiveSheet,
 } from "@/redux/planSheets/planSheetsSlice";
 
+import { UnsavedChangesModal } from "./UnsavedChangesModal";
+
 export interface FooterProps {
   diagramsPanelOpen: boolean;
   setDiagramsPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -119,24 +121,20 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
       <div className="PlanSheetsFooter-right">
         <LuiButton className="PlanSheetsFooter-saveButton lui-button-tertiary" onClick={updatePlan}>
           {updatePlanIsPending ? (
-            <LuiMiniSpinner
-              size={18}
-              divProps={{
-                "data-testid": "update-plan-loading-spinner",
-                style: {
-                  display: "flex",
-                  width: "24px",
-                  height: "24px",
-                  justifyContent: "center",
-                  alignItems: "center",
-                },
-              }}
-            />
+            <LuiMiniSpinner size={20} divProps={{ "data-testid": "update-plan-loading-spinner" }} />
           ) : (
-            <LuiIcon alt="Save" color={luiColors.sea} name="ic_save" size="md" />
+            <>
+              <LuiIcon alt="Save" color={luiColors.sea} name="ic_save" size="md" />
+              Save layout
+            </>
           )}
-          Save layout
         </LuiButton>
+
+        <UnsavedChangesModal
+          updatePlan={updatePlan}
+          updatePlanIsPending={updatePlanIsPending}
+          updatePlanIsSuccess={updatePlanIsSuccess}
+        />
       </div>
     </footer>
   );

@@ -12,8 +12,9 @@ import { generatePath, Route } from "react-router-dom";
 
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { Paths } from "@/Paths";
+import { replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store.ts";
-import { sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 import PlanSheets from "../PlanSheets";
 
@@ -30,9 +31,12 @@ const PlanSheetsTemplate = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-          <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-        </StorybookRouter>
+        <ModalStoryWrapper>
+          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+            <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+            <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+          </StorybookRouter>
+        </ModalStoryWrapper>
       </Provider>
     </QueryClientProvider>
   );
@@ -118,6 +122,23 @@ export const SystemGeneratedNonPrimaryDiagram: Story = {
       ],
     },
   },
+};
+
+export const UnsavedChangesModal: Story = {
+  ...Default,
+};
+UnsavedChangesModal.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  expect(await canvas.findByText("Save layout")).toBeInTheDocument();
+
+  // Dispatch replace diagrams event to set hasChanges = true
+  store.dispatch(replaceDiagrams([]));
+  await sleep(500);
+
+  await userEvent.click(await canvas.findByText("Sheets"));
+  await userEvent.click(await canvas.findByText("Define Diagrams"));
+  await sleep(500);
 };
 
 const planData = (

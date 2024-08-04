@@ -8,6 +8,7 @@ export interface PlanSheetsState {
   pages: IPage[];
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
+  hasChanges: boolean;
 }
 
 const initialState: PlanSheetsState = {
@@ -18,6 +19,7 @@ const initialState: PlanSheetsState = {
     [PlanSheetType.TITLE]: 0,
     [PlanSheetType.SURVEY]: 0,
   },
+  hasChanges: false,
 };
 
 const planSheetsSlice = createSlice({
@@ -27,6 +29,7 @@ const planSheetsSlice = createSlice({
     setPlanData: (state, action: PayloadAction<{ diagrams: IDiagram[]; pages: IPage[] }>) => {
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
+      state.hasChanges = false;
 
       const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
       sheetTypes.forEach((type) => {
@@ -40,6 +43,7 @@ const planSheetsSlice = createSlice({
         const index = state.diagrams.findIndex((d) => d.id === diagram.id);
         state.diagrams[index] = diagram;
       });
+      state.hasChanges = true;
     },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;
@@ -71,6 +75,7 @@ const planSheetsSlice = createSlice({
         totalPages: filteredPages.length,
       };
     },
+    hasChanges: (state) => state.hasChanges,
   },
 });
 
@@ -84,6 +89,7 @@ export const {
   getActiveDiagrams,
   getActivePageNumber,
   getFilteredPages,
+  hasChanges,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

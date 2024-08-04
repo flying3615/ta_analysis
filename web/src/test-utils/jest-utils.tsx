@@ -1,6 +1,7 @@
+import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, RenderOptions, RenderResult } from "@testing-library/react";
+import { render, RenderOptions } from "@testing-library/react";
 import { chunk, flattenDeep } from "lodash-es";
 import React, { PropsWithChildren, ReactNode } from "react";
 import { Provider } from "react-redux";
@@ -39,9 +40,11 @@ export function renderWithReduxProvider(
   function Wrapper({ children }: PropsWithChildren): React.JSX.Element {
     return (
       <LuiModalAsyncContextProvider>
-        <QueryClientProvider client={queryClient}>
-          <Provider store={store}>{children}</Provider>
-        </QueryClientProvider>
+        <LuiMessagingContextProvider version="v2">
+          <QueryClientProvider client={queryClient}>
+            <Provider store={store}>{children}</Provider>
+          </QueryClientProvider>
+        </LuiMessagingContextProvider>
       </LuiModalAsyncContextProvider>
     );
   }
@@ -52,11 +55,7 @@ export function renderWithReduxProvider(
   };
 }
 
-export const renderCompWithReduxAndRoute = (
-  routes: ReactNode,
-  url = "/",
-  options?: ExtendedRenderOptions,
-): RenderResult => {
+export const renderCompWithReduxAndRoute = (routes: ReactNode, url = "/", options?: ExtendedRenderOptions) => {
   const router = createMemoryRouter(createRoutesFromElements(routes), {
     initialEntries: [url],
   });

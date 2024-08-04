@@ -33,7 +33,7 @@ export const handlers: HttpHandler[] = [
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
   http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
 
-  http.put(/\/plan\/123$/, async () => {
+  http.put(/\/123\/plan$/, async () => {
     await delay(2000);
     return HttpResponse.json({}, { status: 200 });
   }),

@@ -3,7 +3,7 @@ import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
-import { generatePath, Route } from "react-router-dom";
+import { generatePath, Link, Route } from "react-router-dom";
 
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
@@ -293,6 +293,124 @@ describe("PlanSheetsFooter", () => {
         }),
       }),
     );
+  });
+
+  it("shows confirmation dialog and can leave without saving when attempting to navigate away with unsaved changes", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    renderCompWithReduxAndRoute(
+      <>
+        <Route
+          element={
+            <>
+              <Link to="/dummy">Navigate</Link>
+              <PlanSheetsFooter diagramsPanelOpen={false} setDiagramsPanelOpen={jest.fn()} />
+            </>
+          }
+          path={Paths.layoutPlanSheets}
+        />
+        <Route element={<span>Dummy Page</span>} path="/dummy" />
+      </>,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            diagrams,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
+            hasChanges: true,
+          },
+        },
+      },
+    );
+
+    expect(await screen.findByText("Save layout")).toBeInTheDocument();
+    await userEvent.click(await screen.findByText("Navigate"));
+    expect(await screen.findByText("You have unsaved changes")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes",
+      ),
+    ).toBeInTheDocument();
+
+    await userEvent.click(await screen.findByText("Cancel"));
+    expect(screen.queryByText("Dummy Page")).not.toBeInTheDocument();
+
+    await userEvent.click(await screen.findByText("Navigate"));
+    await userEvent.click(await screen.findByText("Leave"));
+    expect(await screen.findByText("Dummy Page")).toBeInTheDocument();
+    expect(requestSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it("shows confirmation dialog and can save and leave when attempting to navigate away with unsaved changes", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    renderCompWithReduxAndRoute(
+      <>
+        <Route
+          element={
+            <>
+              <Link to="/dummy">Navigate</Link>
+              <PlanSheetsFooter diagramsPanelOpen={false} setDiagramsPanelOpen={jest.fn()} />
+            </>
+          }
+          path={Paths.layoutPlanSheets}
+        />
+        <Route element={<span>Dummy Page</span>} path="/dummy" />
+      </>,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            diagrams,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 0,
+              [PlanSheetType.SURVEY]: 0,
+            },
+            hasChanges: true,
+          },
+        },
+      },
+    );
+
+    expect(await screen.findByText("Save layout")).toBeInTheDocument();
+    await userEvent.click(await screen.findByText("Navigate"));
+    expect(await screen.findByText("You have unsaved changes")).toBeInTheDocument();
+
+    await userEvent.click(await screen.findByText("Save & leave"));
+
+    expect(await screen.findByText("Layout saved successfully")).toBeVisible();
+    expect(await screen.findByText("Dummy Page")).toBeInTheDocument();
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
+        }),
+      }),
+    );
+  });
+
+  test("beforeunload event listener is added for unsaved changes", async () => {
+    const addEventListenerSpy = jest.spyOn(window, "addEventListener");
+
+    renderCompWithReduxAndRoute(
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
+    expect(await screen.findByText("Save layout")).toBeInTheDocument();
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function), undefined);
   });
 
   it("displays the number of pages", async () => {
