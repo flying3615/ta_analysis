@@ -21,6 +21,7 @@
     "@linzjs/style": "^5.2.0",
     "@playwright/test": "^1.43.1",
     "@types/node": "^20.12.7",
+    "allure-playwright": "^3.0.0-beta.7",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "eslint-plugin-playwright": "^1.6.0"

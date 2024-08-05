@@ -38,14 +38,14 @@ const pwConfig: PlaywrightTestConfig = defineConfig({
     [process.env.CI ? "dot" : "list"],
     ["html", { open: "never", outputFolder: "output" }],
     ["junit", { open: "never", outputFile: "output/test-results.xml" }],
+    ["allure-playwright"],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "http://localhost:11065",
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     video: "retain-on-failure",
 
     /* Put playwright var in local storage */
