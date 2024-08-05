@@ -81,7 +81,7 @@ services:
       #- '5005:5005' # uncomment this to debug keycloak
     env_file: .env
     environment:
-      KC_HOSTNAME: "${HOSTNAME}"
+      KC_HOSTNAME: "localhost"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_PROXY: "edge"
       KC_HOSTNAME_PORT: 8083
@@ -106,7 +106,7 @@ services:
     ports:
       - "8082:8080"
     environment:
-      OIDC_ISSUER_URL: http://${HOSTNAME}:8083/realms/landonline
+      OIDC_ISSUER_URL: http://localhost:8083/realms/landonline
       OIDC_JWKS_URI: http://keycloak:8080/realms/landonline/protocol/openid-connect/certs
       DB_CONNECTION_STRING: jdbc:informix-sqli://informix-db:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5
       DB_USERNAME: ${DB_USERNAME}
@@ -127,7 +127,7 @@ services:
     container_name: backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "${HOSTNAME}:host-gateway"
+      - "localhost:host-gateway"
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/step-landonline-web-survey-plan-generation-api:${CI_BUILD_BACKEND_IMAGE_TAG:-latest}"
     environment:
       DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=5
@@ -137,8 +137,11 @@ services:
       USER_ID_SECRET_KEY: local
       SPRING_PROFILES_ACTIVE: local
       SPLIT_ENV_API_KEY_SDK: localhost
-      OIDC_ISSUER_URL: "http://$HOSTNAME:8083/realms/landonline"
+      OIDC_ISSUER_URL: "http://localhost:8083/realms/landonline"
       AUTHZ_BASEURL: "http://host.docker.internal:8082"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_LANDONLINE_TOKEN-URI: 'http://auth-keycloak:8080/realms/landonline/protocol/openid-connect/token'
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHZCLIENT_PROVIDER: 'landonline'
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: 'http://auth-keycloak:8080/realms/landonline/protocol/openid-connect/certs'
       CLIENT_ID: survey-plangen-service
       CLIENT_SECRET: localclientsecret
       GEOSERVER_URL: "http://host.docker.internal:14005/geoserver"

@@ -3,6 +3,9 @@ name: 'Chromatic no UI'
 
 # Event for the workflow
 on:
+  pull_request:
+    paths-ignore:
+       - 'web/**'
   push:
     paths-ignore:
        - 'web/**'
