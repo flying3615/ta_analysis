@@ -601,6 +601,46 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
   },
 };
 
+export const RendersLabelsAtCorrectSize: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+
+    builder.addCooordinate(1, { x: 23.24, y: -14.45 });
+    builder.addCooordinate(2, { x: 23.24, y: -14.12 });
+    builder.addCooordinate(3, { x: 25.01, y: -14.12 });
+    builder.addCooordinate(4, { x: 25.01, y: -14.45 });
+
+    builder.addLine(10, [1, 2]);
+    builder.addLine(11, [2, 3]);
+    builder.addLine(12, [3, 4]);
+    builder.addLine(13, [4, 1]);
+
+    builder.addLabel(
+      "labels",
+      100,
+      "User Text",
+      { x: 24.136, y: -14.268 },
+      undefined,
+      undefined,
+      undefined,
+      "Tahoma",
+      14,
+      undefined,
+      undefined,
+      undefined,
+      "centerCenter",
+    );
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
 export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();

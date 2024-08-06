@@ -33,7 +33,7 @@ describe("styleNodeMethods", () => {
   test("textDiameter should return calculated diameter", () => {
     renderDummyCanvas();
     const diam = textDiameter(testEle);
-    expect(diam).toBeCloseTo(17.0, 1);
+    expect(diam).toBeCloseTo(15.3, 1);
   });
 
   test("circleLabel should return an SVG circle scaled around label", () => {
@@ -43,8 +43,8 @@ describe("styleNodeMethods", () => {
     // We don't get the actual SVG because of jest
     // this is covered in SB
     expect(circle.svg).toBe("data:image/svg+xml;utf8,circle.svg");
-    expect(circle.height).toBeCloseTo(21.0, 1);
-    expect(circle.width).toBeCloseTo(37.0, 1);
+    expect(circle.height).toBeCloseTo(19.3, 1);
+    expect(circle.width).toBeCloseTo(33.3, 1);
   });
 
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
@@ -69,7 +69,7 @@ describe("styleNodeMethods", () => {
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
     const margin = rotatedMargin(testEle, cytoscapeCoordinateMapper);
 
-    expect(margin.x).toBeCloseTo(2, 1);
+    expect(margin.x).toBeCloseTo(1, 1);
     expect(margin.y).toBeCloseTo(0, 1);
   });
 

@@ -6,7 +6,8 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
 import { pointsPerCm } from "@/util/pixelConversions.ts";
 
-export const LABEL_PADDING_PX = 2;
+export const LABEL_PADDING_PX = 1;
+export const CIRCLE_FACTOR = 0.9;
 
 const radiusForSquare = Math.sqrt(2.0);
 
@@ -39,7 +40,7 @@ export const textDiameter = (ele: cytoscape.NodeSingular) => {
   const { height, width } = textDimensions(ele);
   const longestSide = max([height, width]) ?? 0;
 
-  return 2 * (longestSide / radiusForSquare);
+  return 2 * (longestSide / radiusForSquare) * CIRCLE_FACTOR;
 };
 
 export const textRotationClockwiseFromH = (ele: cytoscape.NodeSingular) => {

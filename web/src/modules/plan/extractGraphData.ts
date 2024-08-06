@@ -6,6 +6,10 @@ import { SYMBOLS_FONT } from "@/constants";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity } from "./styling";
 
+// The fonts were being displayed too large in relation to features\
+// reduce the font size to 85% of original to match legacy
+const FONT_SIZE_FACTOR = 0.85;
+
 export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const nodes: INodeData[] = pageConfig.coordinates.map((coordinate) => ({
@@ -59,13 +63,13 @@ export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
 export const extractPageEdges = (pageConfigs: IPageConfig[]): IEdgeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const pageLines = pageConfig.lines
-      .filter((line) => line.coordRefs[0] && line.coordRefs[1])
+      .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
       .map(
         (line) =>
           ({
             id: `border_${line.id.toString()}`,
-            sourceNodeId: `border_${line.coordRefs[0]?.toString()}`,
-            destNodeId: `border_${line.coordRefs[1]?.toString()}`,
+            sourceNodeId: `border_${line.coordRefs?.[0]?.toString()}`,
+            destNodeId: `border_${line.coordRefs?.[1]?.toString()}`,
             properties: {
               pointWidth: line.pointWidth ?? 1,
             },
@@ -103,7 +107,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         properties: {
           labelType: label.labelType,
           font: label.font,
-          fontSize: label.fontSize,
+          fontSize: (label.fontSize ?? 10) * FONT_SIZE_FACTOR,
           fontStyle: label.fontStyle,
           fontColor: getFontColor(label),
           circled: getIsCircled(label),
@@ -166,12 +170,12 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
 export const extractDiagramEdges = (diagrams: IDiagram[]): IEdgeData[] => {
   return diagrams.flatMap((diagram) => {
     return diagram.lines
-      .filter((line) => line.coordRefs[0] && line.coordRefs[1])
+      .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
       .map((line) => {
         return {
           id: line.id.toString(),
-          sourceNodeId: line.coordRefs[0]?.toString(),
-          destNodeId: line.coordRefs[1]?.toString(),
+          sourceNodeId: line.coordRefs?.[0]?.toString(),
+          destNodeId: line.coordRefs?.[1]?.toString(),
           properties: {
             ...getEdgeStyling(line),
             diagramId: diagram.id,
