@@ -3,7 +3,11 @@ import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-ap
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 
-import { getDiagramsForOpenLayers, IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper.ts";
+import {
+  getDiagramsForOpenLayers,
+  IFeatureSourceDiagram,
+  sortDiagramsByType,
+} from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { useDiagramLabelsHook } from "@/queries/labels.ts";
 import { PlanGenQuery } from "@/queries/types";
@@ -45,7 +49,9 @@ export const useInsertDiagramMutation = (transactionId: number) => {
         },
       };
 
-      queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) => [...(list ?? []), newData]);
+      queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) =>
+        [...(list ?? []), newData].sort(sortDiagramsByType),
+      );
 
       return newData;
     },
