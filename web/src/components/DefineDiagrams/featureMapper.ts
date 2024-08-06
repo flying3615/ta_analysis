@@ -45,7 +45,7 @@ export const getParcelsForOpenLayers = (features: SurveyFeaturesResponseDTO): IF
   [...features.primaryParcels, ...features.nonPrimaryParcels, ...features.centreLineParcels].map((p) => ({
     id: p.id,
     parcelIntent: p.properties.intentCode.code,
-    topoClass: p.properties.topologyClass,
+    topoClass: p.properties.topologyClass?.code,
     shape: {
       geometry: p.geometry,
     },

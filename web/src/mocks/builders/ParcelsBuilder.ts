@@ -1,4 +1,6 @@
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
+import { ParcelTopologyClassCode } from "@linz/luck-syscodes/build/js/ParcelTopologyClassCode";
+import { TypeOfAffectedParcelCode } from "@linz/luck-syscodes/build/js/TypeOfAffectedParcelCode";
 import {
   IInflightParcels,
   LineStringGeoJSON,
@@ -22,6 +24,10 @@ export class ParcelsBuilder extends CommonBuilder<ParcelsBuilder> {
           code: "",
           description: "",
         },
+        topologyClass: {
+          code: "",
+          description: "",
+        },
       },
     },
   ) {
@@ -37,9 +43,12 @@ export class ParcelsBuilder extends CommonBuilder<ParcelsBuilder> {
     return this;
   }
 
-  withActionCode(code: string, description: string): ParcelsBuilder {
-    // TODO: Add actionCode into luck-syscodes in SJ-1342
-    this.parcel.properties.actionCode = { code, description };
+  withActionCode(code: TypeOfAffectedParcelCode): ParcelsBuilder {
+    const actionCode = TypeOfAffectedParcelCode.lookup(code);
+    this.parcel.properties.actionCode = {
+      code: actionCode.code,
+      description: actionCode.description,
+    };
     return this;
   }
 
@@ -52,8 +61,12 @@ export class ParcelsBuilder extends CommonBuilder<ParcelsBuilder> {
     return this;
   }
 
-  withTopologyClass(topologyClass: string): ParcelsBuilder {
-    this.parcel.properties.topologyClass = topologyClass;
+  withTopologyClass(code: ParcelTopologyClassCode): ParcelsBuilder {
+    const tocCode = ParcelTopologyClassCode.lookup(code);
+    this.parcel.properties.topologyClass = {
+      code: tocCode.code,
+      description: tocCode.description,
+    };
     return this;
   }
 

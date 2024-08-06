@@ -1,4 +1,5 @@
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
+import { ParcelTopologyClassCode } from "@linz/luck-syscodes/build/js/ParcelTopologyClassCode";
 import { StyleContext } from "@linzjs/landonline-openlayers-map";
 import { FeatureLike } from "ol/Feature";
 import { Fill, Stroke, Style } from "ol/style";
@@ -44,7 +45,7 @@ export const parcelStyles = (feature: FeatureLike, _: number, _styleContext?: St
   const parcelTopologyClass = feature.get("topoClass");
 
   switch (parcelTopologyClass) {
-    case "PRIM": {
+    case ParcelTopologyClassCode.PRIM: {
       switch (parcelIntent) {
         case ParcelIntentCode.ROAD: {
           return roadParcelStyle;
@@ -59,19 +60,19 @@ export const parcelStyles = (feature: FeatureLike, _: number, _styleContext?: St
     }
 
     // non-primary new/captured parcels
-    case "SECO":
-    case "TERT": {
+    case ParcelTopologyClassCode.SECO:
+    case ParcelTopologyClassCode.TERT: {
       return nonPrimParcelStyle;
     }
 
     // non-primary centerline parcels
-    case "SECL":
-    case "TECL": {
+    case ParcelTopologyClassCode.SECL:
+    case ParcelTopologyClassCode.TECL: {
       return centerLineParcelStyle;
     }
 
     // strata parcel (height limited) - will likely have own styling in future
-    case "STRA": {
+    case ParcelTopologyClassCode.STRA: {
       return primParcelStyle;
     }
 

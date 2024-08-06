@@ -1,5 +1,6 @@
 import { ParcelIntentCode } from "@linz/luck-syscodes/build/js/ParcelIntentCode";
 import { ParcelStatusCode } from "@linz/luck-syscodes/build/js/ParcelStatusCode";
+import { ParcelTopologyClassCode } from "@linz/luck-syscodes/build/js/ParcelTopologyClassCode";
 import { FeatureLike } from "ol/Feature";
 import { Fill, Stroke, Style, Text } from "ol/style";
 
@@ -45,7 +46,7 @@ export const underlyingParcelStyles = (feature: FeatureLike): Style => {
   }
 
   switch (parcelTopologyClass) {
-    case "PRIM": {
+    case ParcelTopologyClassCode.PRIM: {
       switch (parcelIntent) {
         case ParcelIntentCode.ROAD: {
           return roadParcelStyle;
