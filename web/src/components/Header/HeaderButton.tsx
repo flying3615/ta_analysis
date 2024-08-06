@@ -9,14 +9,14 @@ interface HeaderButtonProps {
   headerMenuLabel: DefineDiagramMenuLabels | PlanSheetMenuLabels;
   iconName: string;
   headerButtonLabel?: string;
-  isDisabled?: boolean;
+  disabled?: boolean;
   isLoading?: boolean;
   selectedButtonLabel?: string;
   onClick?: LuiButtonProps["onClick"];
 }
 
 export const HeaderButton = ({
-  isDisabled,
+  disabled,
   headerButtonLabel,
   iconName,
   headerMenuLabel,
@@ -24,6 +24,17 @@ export const HeaderButton = ({
   selectedButtonLabel,
   onClick,
 }: HeaderButtonProps) => {
+  const button = (
+    <LuiButton
+      disabled={disabled}
+      level="tertiary"
+      onClick={onClick}
+      className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
+    >
+      <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
+    </LuiButton>
+  );
+
   return (
     <>
       {isLoading ? (
@@ -34,24 +45,10 @@ export const HeaderButton = ({
         <>
           {headerButtonLabel ? (
             <LuiTooltip message={headerButtonLabel} placement="bottom" appendTo="parent">
-              <LuiButton
-                disabled={isDisabled}
-                level="tertiary"
-                onClick={onClick}
-                className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
-              >
-                <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
-              </LuiButton>
+              {button}
             </LuiTooltip>
           ) : (
-            <LuiButton
-              disabled={isDisabled}
-              level="tertiary"
-              onClick={onClick}
-              className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
-            >
-              <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
-            </LuiButton>
+            button
           )}
         </>
       )}

@@ -1,0 +1,61 @@
+import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
+import clsx from "clsx";
+import { useCallback } from "react";
+
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+
+interface ActionHeaderButtonProps {
+  title: string;
+  icon: string;
+  action: DefineDiagramsActionType;
+  disabled?: boolean;
+  loading?: boolean;
+}
+
+export const ActionHeaderButton = ({ title, action, icon, disabled, loading }: ActionHeaderButtonProps) => {
+  const activeAction = useAppSelector(getActiveAction);
+  const dispatch = useAppDispatch();
+
+  const changeActiveAction = useCallback(
+    (action: DefineDiagramsActionType) => dispatch(setActiveAction(action)),
+    [dispatch],
+  );
+
+  const onClick = useCallback(
+    () => changeActiveAction(action === activeAction ? "idle" : action),
+    [action, activeAction, changeActiveAction],
+  );
+
+  const innerButton = (
+    <LuiButton
+      disabled={disabled}
+      level="tertiary"
+      onClick={onClick}
+      className={clsx("lui-button-icon-only", { selected: action === activeAction })}
+    >
+      <LuiIcon name={icon} alt={title} size="md" />
+    </LuiButton>
+  );
+
+  return (
+    <>
+      {loading ? (
+        <LuiButton level="tertiary" className="loading-spinner">
+          <LuiMiniSpinner size={20} />
+        </LuiButton>
+      ) : (
+        <>
+          {title ? (
+            <LuiTooltip message={title} placement="bottom" appendTo="parent">
+              {innerButton}
+            </LuiTooltip>
+          ) : (
+            { innerButton }
+          )}
+        </>
+      )}
+    </>
+  );
+};

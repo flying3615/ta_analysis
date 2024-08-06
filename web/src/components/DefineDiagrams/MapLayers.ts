@@ -14,9 +14,17 @@ import {
 import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
-import { lineStyles } from "@/components/DefineDiagrams/lineStyles.ts";
+import {
+  extinguishedLineHighlightStyles,
+  extinguishedLineStyles,
+  lineStyles,
+} from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
+import { apiConfig } from "@/queries/apiConfig.ts";
 import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
+import { getExtinguishedLinesQuery, getExtinguishedLinesQueryKey } from "@/queries/extinguished-lines.ts";
+import { getLabelsQueryKey } from "@/queries/labels.ts";
+import { getLinesQuery, getLinesQueryKey } from "@/queries/lines.ts";
 
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";
@@ -33,16 +41,15 @@ export const DIAGRAMS_LAYER_NAME = "diagrams";
 export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
 export const LINES_LAYER_NAME = "lines";
 export const LABELS_LAYER_NAME = "labels";
-
-import { apiConfig } from "@/queries/apiConfig.ts";
-import { getLabelsQueryKey } from "@/queries/labels.ts";
+export const EXTINGUISHED_LINES_LAYER_NAME = "extinguished-lines";
 
 const zIndexes: Record<string, number> = {
-  LABELS_LAYER_NAME: 52,
-  LINES_LAYER_NAME: 51,
-  DIAGRAMS_LAYER_NAME: 50,
-  MARKS_LAYER_NAME: 2,
-  PARCELS_LAYER_NAME: 1,
+  [EXTINGUISHED_LINES_LAYER_NAME]: 100,
+  [LABELS_LAYER_NAME]: 52,
+  [LINES_LAYER_NAME]: 51,
+  [DIAGRAMS_LAYER_NAME]: 50,
+  [MARKS_LAYER_NAME]: 2,
+  [PARCELS_LAYER_NAME]: 1,
 };
 
 export const linzMLBasemapLayer = (maxZoom: number) => {
@@ -157,7 +164,7 @@ export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolO
   } as LolOpenLayersVectorLayerDef;
 };
 
-export const linesLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
+export const linesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
     name: LINES_LAYER_NAME,
     type: LayerType.VECTOR,
@@ -169,7 +176,30 @@ export const linesLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLaye
     style: lineStyles,
     source: {
       type: SourceType.FEATURES,
-      data,
+      queryKey: getLinesQueryKey(transactionId),
+      queryFun: async () => getLinesQuery(transactionId),
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: EXTINGUISHED_LINES_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: false,
+    inInitialZoom: true,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[EXTINGUISHED_LINES_LAYER_NAME],
+    style: extinguishedLineStyles,
+    highlightStyle: extinguishedLineHighlightStyles,
+    selectableLabel: true,
+    highlightInLayer: true,
+    source: {
+      type: SourceType.FEATURES,
+      queryKey: getExtinguishedLinesQueryKey(transactionId),
+      queryFun: async () => getExtinguishedLinesQuery(transactionId),
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
   } as LolOpenLayersVectorLayerDef;

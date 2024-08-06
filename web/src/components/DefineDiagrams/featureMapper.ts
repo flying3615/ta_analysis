@@ -1,6 +1,7 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import {
   DiagramsResponseDTO,
+  ExtinguishedLinesResponseDTO,
   LabelsResponseDTO,
   LinesResponseDTO,
   SurveyFeaturesResponseDTO,
@@ -79,6 +80,15 @@ export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSour
   lines.map((d) => ({
     id: d.id,
     symbolType: d.symbolType,
+    shape: {
+      geometry: d.shape,
+    },
+  }));
+
+export const getExtinguishedLinesForOpenLayers = ({ lines }: ExtinguishedLinesResponseDTO): IFeatureSource[] =>
+  lines.map((d) => ({
+    id: d.id,
+    parcelId: d.parcelId,
     shape: {
       geometry: d.shape,
     },

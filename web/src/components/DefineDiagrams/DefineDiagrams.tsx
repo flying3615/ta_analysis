@@ -8,6 +8,7 @@ import {
 import { LuiLoadingSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
+import { sortBy } from "lodash-es";
 import { register } from "ol/proj/proj4";
 import proj4 from "proj4";
 import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
@@ -15,13 +16,13 @@ import { generatePath, useNavigate } from "react-router-dom";
 
 import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram";
 import {
-  getLinesForOpenLayers,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
 } from "@/components/DefineDiagrams/featureMapper";
 import {
   diagramsQueryLayer,
+  extinguishedLinesLayer,
   labelsLayer,
   linesLayer,
   marksLayer,
@@ -30,7 +31,7 @@ import {
   underlyingRoadCentreLine,
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
-import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook.ts";
+import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -78,7 +79,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     mutate: prepareDataset,
     isSuccess: prepareDatasetIsSuccess,
     error: prepareDatasetError,
-  } = usePrepareDatasetMutation({ transactionId });
+  } = usePrepareDatasetMutation({transactionId});
 
   const {
     data: features,
@@ -115,7 +116,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     newrelic.noticeError(serializedError);
     showPrefabModal(
       error instanceof PrepareDatasetError ? prepareDatasetErrorModal(error) : unhandledErrorModal(serializedError),
-    ).then(() => navigate(generatePath(Paths.root, { transactionId })));
+    ).then(() => navigate(generatePath(Paths.root, {transactionId})));
   }, [error, navigate, showPrefabModal, transactionId]);
 
   const layers = useMemo(
@@ -129,8 +130,9 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         marksLayer(getMarksForOpenLayers(features), maxZoom),
         vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
         diagramsQueryLayer(transactionId, maxZoom),
-        linesLayer(getLinesForOpenLayers(diagramLines), maxZoom),
+        linesLayer(transactionId, maxZoom),
         labelsLayer(transactionId, maxZoom),
+        extinguishedLinesLayer(transactionId, maxZoom),
       ],
     [diagramLines, features, prepareDatasetIsSuccess, transactionId],
   );
@@ -141,7 +143,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         <DefineDiagramMenuButtons />
       </Header>
       <div className="DefineDiagrams" ref={modalOwnerRef}>
-        {isLoading && <LuiLoadingSpinner />}
+        {isLoading && <LuiLoadingSpinner/>}
         {layers && (
           <LolOpenLayersMap
             queryClient={queryClient}
@@ -151,6 +153,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
               zoom: 16,
               maxZoom,
             }}
+            sortFeaturesBySelectionPriority={(features) => sortBy(features, (f) => -f.layer.getZIndex())}
             bufferFactor={1.2}
             mock={mock}
             layers={layers}
@@ -158,7 +161,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         )}
         {children}
       </div>
-      <EnlargeDiagram />
+      <EnlargeDiagram/>
     </>
   );
 };

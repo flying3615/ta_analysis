@@ -3,9 +3,9 @@ import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { ActionMenuButton } from "@/components/Header/ActionMenuButton.tsx";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { ActionMenuButton } from "@/components/Header/ActionMenuButton";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 
 interface ActionHeaderMenuItemProps {
   action: DefineDiagramsActionType;

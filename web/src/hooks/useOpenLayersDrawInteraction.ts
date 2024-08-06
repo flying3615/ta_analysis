@@ -110,7 +110,7 @@ export const useOpenLayersDrawInteraction = ({
    */
   const onDrawStart = useCallback(
     (event: DrawEvent) => {
-      if (!map || !maxPoints) return;
+      if (!map) return;
 
       const feature = event.feature;
       drawListenerRef.current = feature.getGeometry()!.on("change", (evt: BaseEvent) => {
@@ -126,10 +126,12 @@ export const useOpenLayersDrawInteraction = ({
         allowDrawAddPoint.current =
           flatCoords.length <= 3 || isEmpty(kinks(lineStringFromFlatCoords(flatCoords.slice(0, -2))).features);
 
-        const pointCount = flatCoords.length / 2 - 1;
-        if (pointCount > maxPoints.count) {
-          maxPoints.errorCallback();
-          drawInteractionRef.current?.abortDrawing();
+        if (maxPoints) {
+          const pointCount = flatCoords.length / 2 - 1;
+          if (pointCount > maxPoints.count) {
+            maxPoints.errorCallback();
+            drawInteractionRef.current?.abortDrawing();
+          }
         }
       });
     },
@@ -172,12 +174,12 @@ export const useOpenLayersDrawInteraction = ({
       allowDrawAddPoint,
     ));
 
-    maxPoints && drawInteraction.on("drawstart", onDrawStart);
+    drawInteraction.on("drawstart", onDrawStart);
     drawInteraction.on("drawend", drawEndEventRef.current);
     drawInteraction.on("drawabort", drawAbortEventRef.current);
 
     map.addInteraction(drawInteraction);
-  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, map, maxPoints, onDrawStart, options]);
+  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, map, onDrawStart, options]);
 
   /**
    * Remove draw interaction if present.

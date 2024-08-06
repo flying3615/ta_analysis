@@ -11,4 +11,5 @@ export const MapColors = {
   transparent: "rgba(0, 0, 0, 0)",
   white: "rgb(255, 255, 255)",
   yellowOpacity50: "rgba(255, 202, 44, 0.5)",
+  pink: "rgb(248, 27, 239)",
 };

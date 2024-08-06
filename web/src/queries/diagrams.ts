@@ -1,5 +1,6 @@
 import { DiagramsControllerApi, DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client/src/apis/DiagramsControllerApi.ts";
+import { useShowLUIMessage } from "@linzjs/lui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 
@@ -21,11 +22,6 @@ export const useGetDiagramsQuery: PlanGenQuery<DiagramsResponseDTO> = ({ transac
       getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig() as never).diagrams({ transactionId })),
   });
 
-export const insertDiagram = async (props: InsertUserDefinedDiagramRequest): Promise<number> => {
-  const response = await new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
-  return response.diagramId;
-};
-
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
  */
@@ -33,8 +29,15 @@ export const useInsertDiagramMutation = (transactionId: number) => {
   const queryClient = useQueryClient();
   const diagramLabels = useDiagramLabelsHook(transactionId);
   const queryKey = getDiagramsQueryKey(transactionId);
+  const showMessage = useShowLUIMessage();
 
   const tempDiagramIdRef = useRef(-1);
+  const removeTempItem = (tempDiagram: IFeatureSourceDiagram | undefined) => {
+    queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) =>
+      list ? list.filter((item) => item !== tempDiagram) : [],
+    );
+  };
+
   return useMutation({
     onMutate: (props: InsertUserDefinedDiagramRequest) => {
       const tempDiagramId = tempDiagramIdRef.current--;
@@ -55,18 +58,22 @@ export const useInsertDiagramMutation = (transactionId: number) => {
 
       return newData;
     },
-    mutationFn: async (props: InsertUserDefinedDiagramRequest) => {
-      return await insertDiagram(props);
-    },
-    onError: (error, variables, tempDiagram: IFeatureSourceDiagram | undefined) => {
-      if (!tempDiagram) return;
+    mutationFn: (props: InsertUserDefinedDiagramRequest) =>
+      new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props),
+    onError: (_error, _variables, tempDiagram: IFeatureSourceDiagram | undefined) => removeTempItem(tempDiagram),
+    onSuccess: (response, _variables, tempDiagram: IFeatureSourceDiagram) => {
+      if (!response.ok) {
+        showMessage({ messageLevel: "error", messageType: "toast", message: response.message ?? "Unknown error" });
+        removeTempItem(tempDiagram);
+        return;
+      }
+      if (response.diagramId == null) {
+        // Theoretically cannot happen
+        showMessage({ messageLevel: "error", messageType: "toast", message: "Unexpected null response for diagramId" });
+        removeTempItem(tempDiagram);
+        return;
+      }
 
-      // Remove temp diagram on failure
-      queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) =>
-        list ? list.filter((item) => item !== tempDiagram) : [],
-      );
-    },
-    onSuccess: (newDiagramId, variables, tempDiagram: IFeatureSourceDiagram) => {
       // Update temp diagrams Id
       queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) => {
         if (!list) return [];
@@ -74,7 +81,7 @@ export const useInsertDiagramMutation = (transactionId: number) => {
           item === tempDiagram
             ? {
                 ...tempDiagram,
-                id: newDiagramId,
+                id: response.diagramId,
               }
             : item,
         );

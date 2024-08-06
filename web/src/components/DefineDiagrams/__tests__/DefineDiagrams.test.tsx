@@ -20,7 +20,7 @@ import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const buttonLabels = [
-  DefineDiagramMenuLabels.SelectRTLines,
+  DefineDiagramMenuLabels.SelectLine,
   DefineDiagramMenuLabels.AddRTLines,
   DefineDiagramMenuLabels.DrawRTBoundary,
   DefineDiagramMenuLabels.DrawAbuttal,
