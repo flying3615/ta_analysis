@@ -13,6 +13,9 @@ const CYTOSCAPE_ARROW_TRIANGLE = "triangle";
 
 const LABEL_SYMBOL_CIRCLE = "circle";
 
+const GREYED_FOREGROUND_COLOUR = "#B0B0F0";
+export const FOREGROUND_COLOUR = "#2121F5";
+
 enum LabelEffect {
   NONE = "none",
   HALO = "halo",
@@ -95,9 +98,9 @@ export const getEffect = (node: INodeData) => {
 
 export const getFontColor = (label: ILabel): string => {
   if (["hide", "systemHide"].includes(label.displayState)) {
-    return "#C0C0C0";
+    return GREYED_FOREGROUND_COLOUR;
   }
-  return "black";
+  return FOREGROUND_COLOUR;
 };
 
 export const getIsCircled = (label: ILabel): number | undefined =>

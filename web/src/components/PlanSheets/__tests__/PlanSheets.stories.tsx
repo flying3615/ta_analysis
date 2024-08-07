@@ -1,6 +1,7 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
+import { IPagePageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/IPage.ts";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
@@ -159,6 +160,7 @@ const planData = (
       undefined,
       diagramType,
     )
+    .addPage({ pageType: diagramType == "sysGenTraverseDiag" ? IPagePageTypeEnum.title : IPagePageTypeEnum.survey })
     .addCooordinate(10001, {
       x: 20,
       y: -10,

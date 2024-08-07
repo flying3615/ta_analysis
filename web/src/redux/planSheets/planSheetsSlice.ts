@@ -58,12 +58,10 @@ const planSheetsSlice = createSlice({
     getPages: (state) => state.pages,
     getActiveSheet: (state) => state.activeSheet,
     getActiveDiagrams: (state) => {
-      const SheetToDiagramMap: Record<PlanSheetType, string> = {
-        [PlanSheetType.SURVEY]: "sysGenTraverseDiag",
-        [PlanSheetType.TITLE]: "sysGenPrimaryDiag",
-      };
-      const activeDiagramType = SheetToDiagramMap[state.activeSheet];
-      return state.diagrams.filter((diagram) => diagram.diagramType === activeDiagramType);
+      // Return diagrams on active page
+      const activePage = state.activePageNumbers[state.activeSheet];
+
+      return state.diagrams.filter((diagram) => diagram.pageRef === activePage);
     },
     getActivePageNumber: (state) => {
       const pageType = state.activeSheet;

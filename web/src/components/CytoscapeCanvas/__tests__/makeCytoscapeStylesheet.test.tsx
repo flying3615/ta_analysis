@@ -34,8 +34,8 @@ describe("makeCytoscapeStylesheet", () => {
     expect(svg).toBe("data:image/svg+xml;utf8,OtherNew181.svg");
 
     // Height and width get scaled into viewport pixels
-    expect(makeWidth?.(ele)).toBeCloseTo(2.19, 2);
-    expect(makeHeight?.(ele)).toBeCloseTo(2.19, 2);
+    expect(makeWidth?.(ele)).toBeCloseTo(2.21, 2);
+    expect(makeHeight?.(ele)).toBeCloseTo(2.21, 2);
   });
 
   test("Generates functions to style circle around label", () => {
@@ -72,7 +72,7 @@ describe("makeCytoscapeStylesheet", () => {
 
     const svg = styleEntry["background-image"];
     expect(svg).toBe("url(compass.svg)");
-    expect(styleEntry["width"]).toBeCloseTo(13.65, 1);
-    expect(styleEntry["height"]).toBeCloseTo(13.65, 1);
+    expect(styleEntry["width"]).toBeCloseTo(13.8, 1);
+    expect(styleEntry["height"]).toBeCloseTo(13.8, 1);
   });
 });

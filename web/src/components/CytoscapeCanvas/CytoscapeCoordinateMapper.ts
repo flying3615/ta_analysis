@@ -5,10 +5,7 @@ import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
 export class CytoscapeCoordinateMapper {
   private readonly scalePixelsPerCm: number;
-  private readonly offsetXPixels: number;
-  private readonly offsetYPixels: number;
   private readonly diagrams: Record<number, IDiagram>;
-  private readonly diagramScalesMetresPerCm: Record<number, number>;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL
   // they define the page size in cm
@@ -16,19 +13,21 @@ export class CytoscapeCoordinateMapper {
   public static readonly diagramLimitOriginX = 1.5;
   public static readonly diagramLimitOriginY = -1.5;
   public static readonly diagramLimitBottomRightX = 40.5;
-  public static readonly diagramLimitBottomRightY = -26.2;
+  public static readonly borderBottomRightY = -28.2;
+  public static readonly pixelMargin = 40 - 50; // this is negative as our frame has its own border of 1.5cm => 50px
 
   constructor(canvas: HTMLElement, diagrams: IDiagram[]) {
     this.diagrams = keyBy(diagrams, "id");
 
     // The diagram limit is actually the page size in cm.
+    // The origin should be shifted on the page so
+    // that the page border lines fit on
     const diagramWidth =
-      CytoscapeCoordinateMapper.diagramLimitBottomRightX - CytoscapeCoordinateMapper.diagramLimitOriginX;
-    const diagramHeight =
-      CytoscapeCoordinateMapper.diagramLimitBottomRightY - CytoscapeCoordinateMapper.diagramLimitOriginY;
+      CytoscapeCoordinateMapper.diagramLimitBottomRightX + CytoscapeCoordinateMapper.diagramLimitOriginX;
+    const diagramHeight = CytoscapeCoordinateMapper.borderBottomRightY + CytoscapeCoordinateMapper.diagramLimitOriginY;
     // Scales are in pixels per centimetre
-    const scaleX = canvas.clientWidth / diagramWidth;
-    const scaleY = Math.abs((canvas.clientHeight / diagramHeight) * 0.85);
+    const scaleX = (canvas.clientWidth - CytoscapeCoordinateMapper.pixelMargin) / diagramWidth;
+    const scaleY = Math.abs((canvas.clientHeight - CytoscapeCoordinateMapper.pixelMargin) / diagramHeight);
 
     // We want to scale the page to fit within the viewport whilst maintaining the
     // shape of the plan - so we have the same scale for X and Y.
@@ -36,23 +35,8 @@ export class CytoscapeCoordinateMapper {
     // (which might be the shorter of the two where e.g the diagram is 'wide' and
     // the window is 'tall')
     // We find this axis from the scale with the smallest magnitude => less pixels per cm
-    // and we apply an offset to centre the page in the other axis.
-    this.offsetXPixels = 0;
-    this.offsetYPixels = 0;
+    // This lets us place the plan in a tall or wide window with a margin
     this.scalePixelsPerCm = Math.min(scaleX, scaleY);
-    this.offsetXPixels = (canvas.clientWidth - diagramWidth * this.scalePixelsPerCm) * 0.05;
-    this.offsetYPixels = (canvas.clientHeight - Math.abs(diagramHeight) * this.scalePixelsPerCm) * 0.05;
-
-    // We now want to scale each diagrams points into page coordinates
-    // To do this we find the limits of out diagram and compute the scale
-    // (again based on the longest side) in diagram coordinates (map cm) per page coordinate
-    this.diagramScalesMetresPerCm = {};
-    diagrams.forEach((diagram) => {
-      const diagramScaleX = (diagram.bottomRightPoint.x - diagram.originPageOffset.x) / diagramWidth;
-      const diagramScaleY = (diagram.bottomRightPoint.y - diagram.originPageOffset.y) / diagramHeight;
-      const diagramScale = Math.max(diagramScaleX, diagramScaleY);
-      this.diagramScalesMetresPerCm[diagram.id] = diagramScale;
-    });
   }
 
   /**
@@ -64,8 +48,7 @@ export class CytoscapeCoordinateMapper {
   groundCoordToCytoscape(position: GroundMetresPosition, diagramId: number): cytoscape.Position {
     const diagram = this.diagrams[diagramId];
 
-    const diagramScale = this.diagramScalesMetresPerCm[diagramId];
-    if (!diagram || !diagramScale) {
+    if (!diagram || !diagram.zoomScale) {
       throw new Error(`Diagram with id ${diagramId} not found`);
     }
 
@@ -80,11 +63,17 @@ export class CytoscapeCoordinateMapper {
       );
     }
 
-    const xPosCm = (position?.x - diagram.originPageOffset.x) / diagramScale;
-    const yPosCm = (position?.y - diagram.originPageOffset.y) / diagramScale;
+    const xPosCm =
+      (position?.x * 100) / diagram.zoomScale +
+      diagram.originPageOffset.x +
+      CytoscapeCoordinateMapper.diagramLimitOriginX;
+    const yPosCm =
+      (position?.y * 100) / diagram.zoomScale +
+      diagram.originPageOffset.y +
+      CytoscapeCoordinateMapper.diagramLimitOriginY;
     return {
-      x: this.planCmToCytoscape(xPosCm) + this.offsetXPixels,
-      y: -this.planCmToCytoscape(yPosCm) + this.offsetYPixels,
+      x: this.planCmToCytoscape(xPosCm) + CytoscapeCoordinateMapper.pixelMargin,
+      y: -this.planCmToCytoscape(yPosCm) + CytoscapeCoordinateMapper.pixelMargin,
     };
   }
 
@@ -96,16 +85,15 @@ export class CytoscapeCoordinateMapper {
    */
   cytoscapeToGroundCoord(position: cytoscape.Position, diagramId: number): GroundMetresPosition {
     const diagram = this.diagrams[diagramId];
-    const diagramScale = this.diagramScalesMetresPerCm[diagramId];
-    if (!diagram || !diagramScale) {
+    if (!diagram || !diagram.zoomScale) {
       throw new Error(`Diagram with id ${diagramId} not found`);
     }
 
-    const xPosCm = this.cytoscapeToPlanCm(position.x - this.offsetXPixels);
-    const yPosCm = this.cytoscapeToPlanCm(-position.y + this.offsetYPixels);
+    const xPosCm = this.cytoscapeToPlanCm(position.x - CytoscapeCoordinateMapper.pixelMargin);
+    const yPosCm = this.cytoscapeToPlanCm(-position.y + CytoscapeCoordinateMapper.pixelMargin);
     return {
-      x: this.round(xPosCm * diagramScale + diagram.originPageOffset.x),
-      y: this.round(yPosCm * diagramScale + diagram.originPageOffset.y),
+      x: this.round(((xPosCm - diagram.originPageOffset.x) * diagram.zoomScale) / 100),
+      y: this.round(((yPosCm - diagram.originPageOffset.y) * diagram.zoomScale) / 100),
     };
   }
 
@@ -115,11 +103,11 @@ export class CytoscapeCoordinateMapper {
    * @returns Cytoscape pixel coordinates.
    */
   planCoordToCytoscape(position: GroundMetresPosition): cytoscape.Position {
-    const xPosCm = position.x - 1;
+    const xPosCm = position.x;
     const yPosCm = position.y;
     return {
-      x: this.planCmToCytoscape(xPosCm) + this.offsetXPixels,
-      y: -this.planCmToCytoscape(yPosCm) + this.offsetYPixels,
+      x: this.planCmToCytoscape(xPosCm) + CytoscapeCoordinateMapper.pixelMargin,
+      y: -this.planCmToCytoscape(yPosCm) + CytoscapeCoordinateMapper.pixelMargin,
     };
   }
 
@@ -130,6 +118,14 @@ export class CytoscapeCoordinateMapper {
    */
   planCmToCytoscape(cm: number): number {
     return cm * this.scalePixelsPerCm;
+  }
+
+  /**
+   * Returns a factor to scale fonts by so they agree with coordinate dimensions
+   * This has been determined empirically
+   */
+  fontScaleFactor() {
+    return this.scalePixelsPerCm / 38.3;
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   fontWeight,
   LABEL_PADDING_PX,
   rotatedMargin,
+  scaledFontSize,
   textHAlign,
   textJustification,
   textRotationClockwiseFromH,
@@ -15,6 +16,7 @@ import {
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
+import { FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/pixelConversions.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
@@ -61,7 +63,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-wrap": "wrap",
     "text-max-width": "8000px",
     "font-family": "data(font)",
-    "font-size": "data(fontSize)",
+    "font-size": (ele: cytoscape.NodeSingular) => scaledFontSize(ele, cytoscapeCoordinateMapper),
     "font-style": fontStyle,
     "font-weight": fontWeight,
     "text-halign": textHAlign,
@@ -138,7 +140,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node style for the page border
       selector: "node[id^='border_']",
       style: {
-        "background-color": "black",
+        "background-color": FOREGROUND_COLOUR,
       },
     },
     {
@@ -169,7 +171,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "edge",
       style: {
-        "line-color": "#000000",
+        "line-color": FOREGROUND_COLOUR,
         "line-cap": "round",
         width: "data(pointWidth)",
       },
@@ -192,21 +194,21 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         "curve-style": "straight", // needed to render arrows
         "target-arrow-shape": "data(targetArrowShape)",
-        "target-arrow-color": "#000",
+        "target-arrow-color": FOREGROUND_COLOUR,
       },
     },
     {
       selector: "edge[sourceArrowShape]",
       style: {
         "source-arrow-shape": "data(sourceArrowShape)",
-        "source-arrow-color": "#000",
+        "source-arrow-color": FOREGROUND_COLOUR,
       },
     },
     {
       selector: "#root",
       style: {
         "background-color": "white",
-        "border-color": "black",
+        "border-color": FOREGROUND_COLOUR,
       },
     },
   ] as Stylesheet[];

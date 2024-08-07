@@ -22,6 +22,16 @@ export const useGetDiagramsQuery: PlanGenQuery<DiagramsResponseDTO> = ({ transac
       getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig() as never).diagrams({ transactionId })),
   });
 
+export const insertDiagram = async (props: InsertUserDefinedDiagramRequest): Promise<number> => {
+  const response = await new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
+  return (
+    response.diagramId ??
+    (() => {
+      throw new Error(`insertDiagram response has no id: ${JSON.stringify(response)}`);
+    })()
+  );
+};
+
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
  */

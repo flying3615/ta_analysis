@@ -38,10 +38,18 @@ export const Default: Story = {
 };
 
 const fromBuilder = () =>
-  new PlanDataBuilder().addDiagram({
-    x: 39,
-    y: -24,
-  });
+  new PlanDataBuilder().addDiagram(
+    {
+      x: 39,
+      y: -24,
+    },
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    100, // So 39m on ground = 39cm = plan width
+  );
 
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
 
@@ -438,7 +446,6 @@ const addOffsetLabel = (
   builder.addCooordinate(idBase * 100 + 2, { x, y });
   const anchorAngleRads = (anchorAngle * Math.PI) / 180;
   const cmOffset = pointOffset / pointsPerCm;
-  console.log(`cmOffset=${cmOffset} (line length)`);
   builder.addCooordinate(idBase * 100 + 3, {
     x: x + cmOffset * Math.cos(anchorAngleRads),
     y: y + cmOffset * Math.sin(anchorAngleRads),
@@ -470,7 +477,7 @@ export const RendersOffsetCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
 export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const startX = 5;
-    const startY = 0;
+    const startY = -5; // room for label
     const xStep = 5;
     const yStep = 2.2;
     const numColumns = 3;
@@ -601,42 +608,54 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
   },
 };
 
-export const RendersLabelsAtCorrectSize: StoryObj<typeof CytoscapeCanvas> = {
-  render: () => {
-    const builder = fromBuilder();
+const renderBoxedUserText = () => {
+  const builder = fromBuilder();
 
-    builder.addCooordinate(1, { x: 23.24, y: -14.45 });
-    builder.addCooordinate(2, { x: 23.24, y: -14.12 });
-    builder.addCooordinate(3, { x: 25.01, y: -14.12 });
-    builder.addCooordinate(4, { x: 25.01, y: -14.45 });
+  builder.addCooordinate(1, { x: 23.24, y: -14.45 });
+  builder.addCooordinate(2, { x: 23.24, y: -14.12 });
+  builder.addCooordinate(3, { x: 25.01, y: -14.12 });
+  builder.addCooordinate(4, { x: 25.01, y: -14.45 });
 
-    builder.addLine(10, [1, 2]);
-    builder.addLine(11, [2, 3]);
-    builder.addLine(12, [3, 4]);
-    builder.addLine(13, [4, 1]);
+  builder.addLine(10, [1, 2]);
+  builder.addLine(11, [2, 3]);
+  builder.addLine(12, [3, 4]);
+  builder.addLine(13, [4, 1]);
 
-    builder.addLabel(
-      "labels",
-      100,
-      "User Text",
-      { x: 24.136, y: -14.268 },
-      undefined,
-      undefined,
-      undefined,
-      "Tahoma",
-      14,
-      undefined,
-      undefined,
-      undefined,
-      "centerCenter",
-    );
+  builder.addLabel(
+    "labels",
+    100,
+    "User Text",
+    { x: 24.136, y: -14.268 },
+    undefined,
+    undefined,
+    undefined,
+    "Tahoma",
+    14,
+    undefined,
+    undefined,
+    undefined,
+    "centerCenter",
+  );
 
-    return <CanvasFromMockData data={builder.build()} />;
+  return <CanvasFromMockData data={builder.build()} />;
+};
+
+export const RendersLabelsAtCorrectSizeInLandscaoe: StoryObj<typeof CytoscapeCanvas> = {
+  render: renderBoxedUserText,
+  parameters: {
+    viewport: {
+      type: "tablet",
+      defaultOrientation: "landscape",
+    },
   },
+};
+
+export const RendersLabelsAtCorrectSizeInPortrait: StoryObj<typeof CytoscapeCanvas> = {
+  render: renderBoxedUserText,
   parameters: {
     viewport: {
       defaultViewport: "tablet",
-      defaultOrientation: "landscape",
+      defaultOrientation: "portrait",
     },
   },
 };
@@ -646,7 +665,7 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
     const builder = fromBuilder();
 
     allSymbolCodes.forEach((code, idx) => {
-      const ypos = -2 * idx;
+      const ypos = -2 - 2 * idx;
 
       builder.addSymbolLabel(idx * 10, code.toString(), {
         x: 5,
@@ -686,12 +705,12 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
     allSymbolCodes.forEach((code, idx) => {
       // Codes can be ascii codes or characters
       builder.addSymbolLabel((idx + 1) * 10, String.fromCharCode(code), {
-        x: 15 + idx * 5 * spacingPixels,
-        y: -12.5,
+        x: 18 + idx * 5 * spacingPixels,
+        y: -15.5,
       });
       builder.addSymbolLabel((idx + 1) * 10 + 1, code.toString(), {
-        x: 15 + idx * 5 * spacingPixels,
-        y: -12.5 - 5 * spacingPixels,
+        x: 18 + idx * 5 * spacingPixels,
+        y: -15.5 - 5 * spacingPixels,
       });
       builder.addLine((idx + 1) * 10 + 2, [(idx + 1) * 10, (idx + 1) * 10 + 1], 0.7);
       if (idx > 0) {

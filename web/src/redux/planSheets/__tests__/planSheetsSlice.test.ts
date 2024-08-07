@@ -24,8 +24,8 @@ describe("planSheetsSlice", () => {
     pages: [],
     activeSheet: PlanSheetType.TITLE,
     activePageNumbers: {
-      [PlanSheetType.TITLE]: 0,
-      [PlanSheetType.SURVEY]: 0,
+      [PlanSheetType.TITLE]: 1,
+      [PlanSheetType.SURVEY]: 2,
     },
     hasChanges: false,
   };
@@ -49,6 +49,8 @@ describe("planSheetsSlice", () => {
       undefined,
       "sysGenTraverseDiag",
     )
+    .addPage(1)
+    .addPage(2)
     .build().diagrams;
 
   beforeEach(() => {
@@ -63,7 +65,7 @@ describe("planSheetsSlice", () => {
   });
 
   test("getActivePageNumber should return active page number", () => {
-    expect(getActivePageNumber(store.getState())).toBe(0);
+    expect(getActivePageNumber(store.getState())).toBe(1);
 
     store.dispatch(
       setActivePageNumber({

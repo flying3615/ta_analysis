@@ -43,8 +43,8 @@ describe("styleNodeMethods", () => {
     // We don't get the actual SVG because of jest
     // this is covered in SB
     expect(circle.svg).toBe("data:image/svg+xml;utf8,circle.svg");
-    expect(circle.height).toBeCloseTo(19.3, 1);
-    expect(circle.width).toBeCloseTo(33.3, 1);
+    expect(circle.height).toBeCloseTo(19.4, 1);
+    expect(circle.width).toBeCloseTo(33.4, 1);
   });
 
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
@@ -69,7 +69,7 @@ describe("styleNodeMethods", () => {
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
     const margin = rotatedMargin(testEle, cytoscapeCoordinateMapper);
 
-    expect(margin.x).toBeCloseTo(1, 1);
+    expect(margin.x).toBeCloseTo(1.1, 1);
     expect(margin.y).toBeCloseTo(0, 1);
   });
 

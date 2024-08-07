@@ -1,14 +1,16 @@
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 
 export const mockPlanData = new PlanDataBuilder()
-  .addDiagram(
-    {
+  .addDiagram({
+    bottomRightPoint: {
       x: 80,
       y: -90,
     },
-    undefined,
-    "sysGenPrimaryDiag",
-  )
+    zoomScale: (100 * 90) / 20,
+    pageRef: 1,
+    box: true,
+  })
+  .addPage(1)
   .addCooordinate(10001, {
     x: 20,
     y: -10,
@@ -74,14 +76,20 @@ export const mockPlanData = new PlanDataBuilder()
     14.0,
   )
 
-  .addDiagram(
-    {
-      x: 80,
-      y: -105,
+  .addDiagram({
+    bottomRightPoint: {
+      x: 150,
+      y: -115,
     },
-    undefined,
-    "sysGenTraverseDiag",
-  )
+    originPageOffset: {
+      x: 20,
+      y: -10,
+    },
+    zoomScale: (100 * 150) / 20,
+    pageRef: 1,
+    diagramType: "sysGenTraverseDiag",
+    box: true,
+  })
   .addCooordinate(40001, {
     x: 20,
     y: -10,

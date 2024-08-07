@@ -52,7 +52,7 @@ describe("getNodeData", () => {
       id: "1",
       label: "Node 1",
       properties: { diagramId: 1 },
-      position: { x: 526.316, y: 186.842 },
+      position: { x: 14.903, y: 1.355 },
     });
 
     const node2 = nodeSingular({ id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 }, { x: 10, y: -50 });
@@ -60,7 +60,7 @@ describe("getNodeData", () => {
     expect(node2Data).toStrictEqual({
       id: "2",
       properties: { diagramId: 1 },
-      position: { x: 52.632, y: 344.737 },
+      position: { x: 2.71, y: 5.419 },
     });
   });
 });
@@ -119,10 +119,10 @@ describe("nodePositionsFromData", () => {
     );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
-    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(7.42, 1);
-    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(15.0, 1);
-    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(30.4, 1);
-    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(7.4, 1);
+    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(110.0, 1);
+    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(527.5, 1);
+    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(1049.4, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(214.4, 1);
     validateShapeNotDistorted(cytoscapePositions);
   });
 
@@ -133,10 +133,10 @@ describe("nodePositionsFromData", () => {
     );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
 
-    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(1.9, 1);
-    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(25, 1);
-    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(19, 1);
-    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(19.3, 1);
+    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(74.9, 1);
+    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(370.1, 1);
+    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(739.2, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(148.7, 1);
     validateShapeNotDistorted(cytoscapePositions);
   });
 });

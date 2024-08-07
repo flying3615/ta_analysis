@@ -127,13 +127,16 @@ export const diagrams: IDiagram[] = [
     originPageOffset: { x: 0, y: -0 },
     parcelLabels: [],
     listOrder: 1,
+    zoomScale: 100,
+    displayState: "display",
+    pageRef: 1,
   },
 ];
 
 export const pageBorderNodes: INodeData[] = [
   {
     id: "border_1001",
-    position: { x: 0, y: 0 },
+    position: { x: 1.5, y: -1.5 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -146,7 +149,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1002",
-    position: { x: 45, y: 0 },
+    position: { x: 40.5, y: -1.5 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -159,7 +162,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1003",
-    position: { x: 0, y: -28 },
+    position: { x: 1.5, y: -26.2 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -172,7 +175,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1004",
-    position: { x: 10, y: -28 },
+    position: { x: 8.5, y: -26.2 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -185,7 +188,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1005",
-    position: { x: 25, y: -28 },
+    position: { x: 26.5, y: -26.2 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -198,7 +201,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1006",
-    position: { x: 35, y: -28 },
+    position: { x: 33.5, y: -26.2 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -211,7 +214,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1007",
-    position: { x: 45, y: -28 },
+    position: { x: 40.5, y: -26.2 },
     label: "",
     properties: {
       coordType: "userDefined",
@@ -224,7 +227,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1008",
-    position: { x: 0, y: -30 },
+    position: { x: 1.5, y: -28.2 },
     label: "8",
     properties: {
       coordType: "userDefined",
@@ -237,7 +240,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1009",
-    position: { x: 10, y: -30 },
+    position: { x: 8.5, y: -28.2 },
     label: "9",
     properties: {
       coordType: "userDefined",
@@ -250,7 +253,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1010",
-    position: { x: 25, y: -30 },
+    position: { x: 26.5, y: -28.2 },
     label: "10",
     properties: {
       coordType: "userDefined",
@@ -263,7 +266,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1011",
-    position: { x: 35, y: -30 },
+    position: { x: 33.5, y: -28.2 },
     label: "11",
     properties: {
       coordType: "userDefined",
@@ -276,7 +279,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_1012",
-    position: { x: 45, y: -30 },
+    position: { x: 40.5, y: -28.2 },
     label: "12",
     properties: {
       coordType: "userDefined",
@@ -290,7 +293,7 @@ export const pageBorderNodes: INodeData[] = [
 
   {
     id: "border_1013",
-    position: { x: 44.3, y: -0.75 },
+    position: { x: 39.55, y: -2.55 },
     label: "13",
     properties: {
       coordType: "userDefined",
@@ -303,7 +306,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_page_no0",
-    position: { x: 42, y: -28 },
+    position: { x: 37.5, y: -26.2 },
     label: "14",
     properties: {
       coordType: "userDefined",
@@ -316,7 +319,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_page_no1",
-    position: { x: 42, y: -27 },
+    position: { x: 37.5, y: -25.2 },
     label: "15",
     properties: {
       coordType: "userDefined",
@@ -329,7 +332,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_page_no2",
-    position: { x: 45, y: -27 },
+    position: { x: 40.5, y: -25.2 },
     label: "16",
     properties: {
       coordType: "userDefined",
@@ -342,7 +345,7 @@ export const pageBorderNodes: INodeData[] = [
   },
   {
     id: "border_page_no",
-    position: { x: 43.5, y: -27.5 },
+    position: { x: 39.0, y: -25.7 },
     label: "T/1",
     properties: {
       coordType: "userDefined",

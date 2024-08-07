@@ -1,7 +1,35 @@
-import { ICartesianCoords, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  ICartesianCoords,
+  IDiagram,
+  IDiagramDisplayStateEnum,
+  IPage,
+  IPagePageTypeEnum,
+  PlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
 
 import { SYMBOLS_FONT } from "@/constants";
+
+interface DiagramOptions {
+  id?: number;
+  originPageOffset?: ICartesianCoords;
+  bottomRightPoint?: ICartesianCoords;
+  diagramType?: string;
+  zoomScale?: number;
+  pageRef?: number;
+  displayState?: string;
+  listOrder?: number;
+  listParentRef?: number;
+  userEdited?: boolean;
+  box?: boolean; // draw a box around
+}
+
+interface PageOptions {
+  id?: number;
+  pageType?: IPagePageTypeEnum;
+  pageNumber?: number;
+  userEdited?: boolean;
+}
 
 export class PlanDataBuilder {
   planData: PlanResponseDTO = {
@@ -11,7 +39,7 @@ export class PlanDataBuilder {
   };
 
   addDiagram(
-    bottomRightPoint: ICartesianCoords,
+    optionsOrBottomRightPoint: ICartesianCoords | DiagramOptions,
     originPageOffset: ICartesianCoords = {
       x: 0,
       y: 0,
@@ -26,22 +54,111 @@ export class PlanDataBuilder {
     id?: number,
     listOrder?: number,
     listParentRef?: number,
+    zoomScale?: number,
   ): PlanDataBuilder {
-    this.planData.diagrams.push({
-      id: id ?? this.planData.diagrams.length + 1,
-      bottomRightPoint,
-      originPageOffset,
-      coordinates: [],
-      labels: [],
-      lines: [],
-      parcelLabels: [],
-      coordinateLabels: [],
-      lineLabels: [],
-      diagramType,
-      childDiagrams: [],
-      listOrder: listOrder ?? this.planData.diagrams.length + 1,
-      listParentRef,
-    });
+    let newDiagram;
+    if (Object.prototype.hasOwnProperty.call(optionsOrBottomRightPoint, "x")) {
+      const newId = id ?? this.planData.diagrams.length + 1;
+      newDiagram = {
+        id: newId,
+        pageRef: newId,
+        bottomRightPoint: optionsOrBottomRightPoint as ICartesianCoords,
+        originPageOffset,
+        coordinates: [],
+        labels: [],
+        lines: [],
+        parcelLabels: [],
+        coordinateLabels: [],
+        lineLabels: [],
+        diagramType,
+        childDiagrams: [],
+        listOrder: listOrder ?? newId,
+        listParentRef,
+        zoomScale: zoomScale ?? 300,
+        displayState: IDiagramDisplayStateEnum.display,
+      };
+    } else {
+      const defaultId = this.planData.diagrams.length + 1;
+      const defaults = {
+        id: defaultId,
+        pageRef: defaultId,
+        originPageOffset: { x: 0, y: 0 },
+        coordinates: [],
+        labels: [],
+        lines: [],
+        parcelLabels: [],
+        coordinateLabels: [],
+        lineLabels: [],
+        diagramType: "sysGenPrimaryDiag",
+        childDiagrams: [],
+        listOrder: defaultId,
+        zoomScale: 300,
+        displayState: IDiagramDisplayStateEnum.display,
+      };
+
+      newDiagram = {
+        ...defaults,
+        ...(optionsOrBottomRightPoint as IDiagram),
+      };
+    }
+    this.planData.diagrams.push(newDiagram);
+
+    if ((newDiagram as { box?: boolean })?.box) {
+      this.addCooordinate(80000 * newDiagram.id, { x: 0, y: 0 });
+      this.addCooordinate(80000 * newDiagram.id + 1, { x: 0, y: newDiagram.bottomRightPoint.y });
+      this.addCooordinate(80000 * newDiagram.id + 2, newDiagram.bottomRightPoint);
+      this.addCooordinate(80000 * newDiagram.id + 3, { x: newDiagram.bottomRightPoint.x, y: 0 });
+      this.addLine(
+        80000 * newDiagram.id + 10,
+        [80000 * newDiagram.id, 80000 * newDiagram.id + 1],
+        0.7,
+        undefined,
+        "dot1",
+      );
+      this.addLine(
+        80000 * newDiagram.id + 11,
+        [80000 * newDiagram.id + 1, 80000 * newDiagram.id + 2],
+        0.7,
+        undefined,
+        "dot1",
+      );
+      this.addLine(
+        80000 * newDiagram.id + 12,
+        [80000 * newDiagram.id + 2, 80000 * newDiagram.id + 3],
+        0.7,
+        undefined,
+        "dot1",
+      );
+      this.addLine(
+        80000 * newDiagram.id + 13,
+        [80000 * newDiagram.id + 3, 80000 * newDiagram.id],
+        0.7,
+        undefined,
+        "dot1",
+      );
+    }
+
+    return this;
+  }
+
+  addPage(optionsOrPageNumber: number | PageOptions): PlanDataBuilder {
+    const defaults = {
+      id: this.planData.pages.length + 1,
+      pageNumber: this.planData.pages.length + 1,
+      pageType: IPagePageTypeEnum.title,
+    };
+    if (typeof optionsOrPageNumber === "number") {
+      this.planData.pages.push({
+        ...defaults,
+        pageNumber: optionsOrPageNumber,
+      });
+    } else {
+      this.planData.pages.push({
+        ...defaults,
+        ...(optionsOrPageNumber as IPage),
+      });
+    }
+
     return this;
   }
 

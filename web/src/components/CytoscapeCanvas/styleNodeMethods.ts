@@ -157,3 +157,7 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
     circleSize / 2,
   );
 };
+
+export const scaledFontSize = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
+  return ele.data("fontSize") * cytoscapeCoordinateMapper.fontScaleFactor();
+};

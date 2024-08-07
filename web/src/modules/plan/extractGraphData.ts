@@ -6,10 +6,6 @@ import { SYMBOLS_FONT } from "@/constants";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity } from "./styling";
 
-// The fonts were being displayed too large in relation to features\
-// reduce the font size to 85% of original to match legacy
-const FONT_SIZE_FACTOR = 0.85;
-
 export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const nodes: INodeData[] = pageConfig.coordinates.map((coordinate) => ({
@@ -107,7 +103,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         properties: {
           labelType: label.labelType,
           font: label.font,
-          fontSize: (label.fontSize ?? 10) * FONT_SIZE_FACTOR,
+          fontSize: label.fontSize ?? 10,
           fontStyle: label.fontStyle,
           fontColor: getFontColor(label),
           circled: getIsCircled(label),
