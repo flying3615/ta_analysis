@@ -1,11 +1,10 @@
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
-import { DefineDiagramMenuLabels } from "@/components/DefineDiagrams/defineDiagramsType";
 import {
   DIAGRAMS_LAYER_NAME,
   MARKS_LAYER_NAME,
@@ -18,16 +17,6 @@ import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-
-const buttonLabels = [
-  DefineDiagramMenuLabels.SelectLine,
-  DefineDiagramMenuLabels.AddRTLines,
-  DefineDiagramMenuLabels.DrawRTBoundary,
-  DefineDiagramMenuLabels.DrawAbuttal,
-  DefineDiagramMenuLabels.SelectLine,
-  DefineDiagramMenuLabels.SelectDiagram,
-  DefineDiagramMenuLabels.LabelDiagrams,
-];
 
 describe("DefineDiagrams", () => {
   const mockMap = getMockMap();
@@ -43,23 +32,6 @@ describe("DefineDiagrams", () => {
     );
     // header toggle label is visible
     expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
-  });
-
-  it("should have all navigation buttons", async () => {
-    renderCompWithReduxAndRoute(
-      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
-      generatePath(Paths.defineDiagrams, { transactionId: "123" }),
-    );
-    window.alert = jest.fn();
-
-    buttonLabels.forEach((label) => {
-      expect(screen.getByLabelText(label)).toBeInTheDocument();
-    });
-
-    buttonLabels.forEach((label) => {
-      fireEvent.click(screen.getByLabelText(label));
-      expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented");
-    });
   });
 
   it("call prepares dataset and subsequent queries on initial render", async () => {

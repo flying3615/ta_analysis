@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
+import { useConstFunction } from "@/hooks/useConstFunction.ts";
 
 export interface useEscapeKeyProps {
   enabled?: boolean;
@@ -14,7 +14,7 @@ export interface useEscapeKeyProps {
  * @param enabled Handler for escape key.
  */
 export const useEscapeKey = ({ callback, enabled }: useEscapeKeyProps): void => {
-  const escapeHandlerRef = useConstFunctionRef(callback);
+  const escapeHandler = useConstFunction(callback);
 
   /** Register keyboard event handlers */
   useEffect(() => {
@@ -36,7 +36,7 @@ export const useEscapeKey = ({ callback, enabled }: useEscapeKeyProps): void => 
         if (event.key === "Escape") {
           event.preventDefault();
           event.stopPropagation();
-          escapeHandlerRef.current();
+          escapeHandler();
         }
       };
 
@@ -48,5 +48,5 @@ export const useEscapeKey = ({ callback, enabled }: useEscapeKeyProps): void => 
       };
     }
     return;
-  }, [enabled, escapeHandlerRef]);
+  }, [enabled, escapeHandler]);
 };

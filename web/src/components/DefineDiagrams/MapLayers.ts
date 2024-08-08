@@ -17,6 +17,8 @@ import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
 import {
   extinguishedLineHighlightStyles,
   extinguishedLineStyles,
+  lineHighlightableStyles,
+  lineHighlightStyles,
   lineStyles,
 } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
@@ -42,8 +44,10 @@ export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
 export const LINES_LAYER_NAME = "lines";
 export const LABELS_LAYER_NAME = "labels";
 export const EXTINGUISHED_LINES_LAYER_NAME = "extinguished-lines";
+export const SELECT_LINES_LAYER_NAME = "select-lines";
 
 const zIndexes: Record<string, number> = {
+  [SELECT_LINES_LAYER_NAME]: 100,
   [EXTINGUISHED_LINES_LAYER_NAME]: 100,
   [LABELS_LAYER_NAME]: 52,
   [LINES_LAYER_NAME]: 51,
@@ -177,9 +181,30 @@ export const linesLayer = (transactionId: number, maxZoom: number): LolOpenLayer
     source: {
       type: SourceType.FEATURES,
       queryKey: getLinesQueryKey(transactionId),
-      queryFun: async () => getLinesQuery(transactionId),
+      queryFun: () => getLinesQuery(transactionId),
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
+export const selectLinesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: SELECT_LINES_LAYER_NAME,
+    type: LayerType.VECTOR,
+    visible: false,
+    inInitialZoom: true,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[LINES_LAYER_NAME],
+    style: lineHighlightableStyles,
+    highlightStyle: lineHighlightStyles,
+    source: {
+      type: SourceType.FEATURES,
+      queryKey: getLinesQueryKey(transactionId),
+      queryFun: () => getLinesQuery(transactionId),
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+    geometrySizeForClickDetection: 20,
   } as LolOpenLayersVectorLayerDef;
 };
 
@@ -194,14 +219,13 @@ export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): 
     zIndex: zIndexes[EXTINGUISHED_LINES_LAYER_NAME],
     style: extinguishedLineStyles,
     highlightStyle: extinguishedLineHighlightStyles,
-    selectableLabel: true,
-    highlightInLayer: true,
     source: {
       type: SourceType.FEATURES,
       queryKey: getExtinguishedLinesQueryKey(transactionId),
-      queryFun: async () => getExtinguishedLinesQuery(transactionId),
+      queryFun: () => getExtinguishedLinesQuery(transactionId),
       maxZoom,
     } as LolOpenLayersFeatureSourceDef,
+    geometrySizeForClickDetection: 20,
   } as LolOpenLayersVectorLayerDef;
 };
 

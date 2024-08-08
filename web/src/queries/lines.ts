@@ -1,6 +1,7 @@
 import { LinesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { getLinesForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig";
@@ -17,3 +18,21 @@ export const useGetLinesQuery: PlanGenQuery<IFeatureSource[]> = ({ transactionId
     queryFn: () => getLinesQuery(transactionId),
     enabled,
   });
+
+export const useUpdateLinesQueryData = (transactionId: number) => {
+  const queryClient = useQueryClient();
+
+  const removeLines = useCallback(
+    (lineIds: number[]) => {
+      queryClient.setQueryData<IFeatureSource[]>(
+        getLinesQueryKey(transactionId),
+        (list) => list?.filter((line) => !lineIds.includes(line.id ?? -1)) ?? [],
+      );
+    },
+    [queryClient, transactionId],
+  );
+
+  return {
+    removeLines,
+  };
+};

@@ -3,7 +3,7 @@ import "ol/ol.css";
 
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { Meta, StoryObj } from "@storybook/react";
-import { screen, userEvent } from "@storybook/testing-library";
+import { screen, userEvent, waitFor, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Coordinate } from "ol/coordinate";
@@ -137,6 +137,9 @@ export const PrepareDatasetError: Story = {
   args: {
     transactionId: "666",
   },
+};
+PrepareDatasetError.play = async () => {
+  await waitFor(() => within(document.body).findByText(/prepare dataset application error/), { timeout: 20000 });
 };
 
 export const DrawPrimaryDiagramByRectangle: Story = {

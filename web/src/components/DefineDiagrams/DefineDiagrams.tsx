@@ -27,6 +27,7 @@ import {
   linesLayer,
   marksLayer,
   parcelsLayer,
+  selectLinesLayer,
   underlyingParcelsLayer,
   underlyingRoadCentreLine,
   vectorsLayer,
@@ -37,7 +38,7 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
-import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
+import { PrepareDatasetError, usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
@@ -76,10 +77,9 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   useInsertDiagramHook();
 
   const {
-    mutate: prepareDataset,
     isSuccess: prepareDatasetIsSuccess,
     error: prepareDatasetError,
-  } = usePrepareDatasetMutation({transactionId});
+  } = usePrepareDatasetQuery({transactionId});
 
   const {
     data: features,
@@ -99,14 +99,8 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     enabled: prepareDatasetIsSuccess, // Don't fetch lines until the dataset is prepared
   });
 
-  const error = prepareDatasetError ?? featuresError ??  diagramLinesError;
+  const error = prepareDatasetError ?? featuresError ?? diagramLinesError;
   const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading;
-
-  useEffect(() => {
-    // Call prepareDataset only once, when initially mounting
-    prepareDataset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (!error) {
@@ -133,6 +127,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         linesLayer(transactionId, maxZoom),
         labelsLayer(transactionId, maxZoom),
         extinguishedLinesLayer(transactionId, maxZoom),
+        selectLinesLayer(transactionId, maxZoom),
       ],
     [diagramLines, features, prepareDatasetIsSuccess, transactionId],
   );
@@ -140,13 +135,14 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   return (
     <>
       <Header view="Diagrams">
-        <DefineDiagramMenuButtons />
+        <DefineDiagramMenuButtons/>
       </Header>
       <div className="DefineDiagrams" ref={modalOwnerRef}>
         {isLoading && <LuiLoadingSpinner/>}
         {layers && (
           <LolOpenLayersMap
             queryClient={queryClient}
+
             view={{
               projection: "EPSG:3857",
               center: [19457143.791, -5057154.019],

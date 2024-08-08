@@ -15,6 +15,22 @@ export const lineStyles = (feature: FeatureLike): Style => {
   });
 };
 
+export const lineHighlightableStyles = (feature: FeatureLike): Style => {
+  const symbolType = feature.get("symbolType");
+
+  return symbolType === LinesSymbolType.CT
+    ? new Style({
+        stroke: new Stroke({ width: 4, color: MapColors.blue }),
+      })
+    : lineStyles(feature);
+};
+
+export const lineHighlightStyles = (): Style => {
+  return new Style({
+    stroke: new Stroke({ width: 4, color: MapColors.pink }),
+  });
+};
+
 export const extinguishedLineStyles = (): Style => {
   return new Style({
     stroke: new Stroke({ width: 4, lineDash: [0], color: MapColors.blue }),

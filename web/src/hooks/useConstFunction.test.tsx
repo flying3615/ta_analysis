@@ -1,21 +1,36 @@
-import { render } from "@testing-library/react";
-import { MutableRefObject, ReactElement } from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { ReactElement, useState } from "react";
 
-import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
+import { useConstFunction } from "@/hooks/useConstFunction.ts";
 
-let t: MutableRefObject<() => void>;
+const funcRefs = new Set<() => void>();
 
 const TestComponent = (): ReactElement => {
-  t = useConstFunctionRef(() => {});
-  return <div />;
+  const func = useConstFunction(() => {});
+  funcRefs.add(func);
+
+  const [x, setX] = useState(1);
+
+  return (
+    <div>
+      value:{x}
+      <button onClick={() => setX(x + 1)}>button</button>
+    </div>
+  );
 };
 
 describe("useConstFunctionRef", () => {
   test("useConstFunctionRef", async () => {
-    expect(t).toBeUndefined();
+    expect(funcRefs.size).toBe(0);
 
     render(<TestComponent />);
 
-    expect(t.current).toBeDefined();
+    expect(funcRefs.size).toBe(1);
+
+    // Check that a state update does not create a new function ref
+    await userEvent.click(await screen.findByRole("button"));
+    await screen.findByText("value:2");
+    expect(funcRefs.size).toBe(1);
   });
 });

@@ -17,8 +17,8 @@ import {
   drawInteractionBoundaryFillError,
 } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
-import { useConstFunctionRef } from "@/hooks/useConstFunctionRef.ts";
-import { usePrevious } from "@/hooks/usePrevious.ts";
+import { useConstFunction } from "@/hooks/useConstFunction.ts";
+import { useHasChanged } from "@/hooks/usePrevious.ts";
 import { flatCoordsToGeogCoords, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
@@ -76,7 +76,7 @@ export const useOpenLayersDrawInteraction = ({
   /**
    * Call back for draw end.  Garnishes the normal DrawEvent with some more useful values.
    */
-  const drawEndEventRef = useConstFunctionRef((event: DrawEvent) => {
+  const onDrawEndEvent = useConstFunction((event: DrawEvent) => {
     event.stopPropagation();
     const polygon = currentFeatureRef.current;
     if (!polygon) return;
@@ -99,7 +99,7 @@ export const useOpenLayersDrawInteraction = ({
   /**
    * Callback for draw abort.
    */
-  const drawAbortEventRef = useConstFunctionRef((event: DrawEvent) => {
+  const onDrawAbortEvent = useConstFunction((event: DrawEvent) => {
     event.stopPropagation();
     drawAbort(event);
   });
@@ -175,11 +175,11 @@ export const useOpenLayersDrawInteraction = ({
     ));
 
     drawInteraction.on("drawstart", onDrawStart);
-    drawInteraction.on("drawend", drawEndEventRef.current);
-    drawInteraction.on("drawabort", drawAbortEventRef.current);
+    drawInteraction.on("drawend", onDrawEndEvent);
+    drawInteraction.on("drawabort", onDrawAbortEvent);
 
     map.addInteraction(drawInteraction);
-  }, [currentType, drawAbortEventRef, drawEndEventRef, enabled, map, onDrawStart, options]);
+  }, [map, enabled, currentType, options, onDrawStart, onDrawEndEvent, onDrawAbortEvent]);
 
   /**
    * Remove draw interaction if present.
@@ -196,22 +196,21 @@ export const useOpenLayersDrawInteraction = ({
    * If the interaction type changes, then re-add interactions.
    * This allows changing whilst the interaction is active from draw e.g. polygon to box
    */
-  const lastType = usePrevious(currentType);
+  const typeChanged = useHasChanged(currentType);
   useEffect(() => {
-    if (currentType !== lastType) {
-      removeInteractions();
-      addInteractions();
-    }
-  }, [addInteractions, lastType, currentType, removeInteractions]);
+    if (!typeChanged) return;
+    removeInteractions();
+    addInteractions();
+  }, [addInteractions, typeChanged, currentType, removeInteractions]);
 
   /**
    * Dis/enable the drawInteraction if enabled state changes
    */
-  const lastEnabled = usePrevious(enabled);
+  const enabledChanged = useHasChanged(enabled);
   useEffect(() => {
-    if (!!lastEnabled == enabled) return;
+    if (!enabledChanged) return;
     enabled ? addInteractions() : removeInteractions();
-  }, [addInteractions, enabled, lastEnabled, removeInteractions]);
+  }, [addInteractions, enabled, enabledChanged, removeInteractions]);
 
   /**
    * When unmounting remove the map interactions

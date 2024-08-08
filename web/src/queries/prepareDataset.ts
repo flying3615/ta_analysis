@@ -1,8 +1,9 @@
 import { PostPrepareResponseDTO, PrepareControllerApi } from "@linz/survey-plan-generation-api-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";
-import { PlanGenMutation } from "@/queries/types";
+import { getPlanQueryKey } from "@/queries/plan.ts";
+import { PlanGenMutation, PlanGenQuery } from "@/queries/types";
 
 import { getDiagramsQueryKey } from "./diagrams";
 import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
@@ -21,6 +22,20 @@ export class PrepareDatasetError extends Error {
 }
 
 export const getPrepareDatasetQueryKey = (transactionId: number) => ["prepareDataset", transactionId];
+
+export const usePrepareDatasetQuery: PlanGenQuery<PostPrepareResponseDTO> = ({ transactionId, enabled }) => {
+  return useQuery({
+    queryKey: getPlanQueryKey(transactionId),
+    queryFn: async () => {
+      const response = await new PrepareControllerApi(apiConfig()).postPrepare({ transactionId });
+      if (!response.ok) {
+        throw new PrepareDatasetError(response.message ?? "Failed to prepare dataset", response.statusCode);
+      }
+      return response;
+    },
+    enabled,
+  });
+};
 
 export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> = ({ transactionId, ...params }) => {
   const queryClient = useQueryClient();

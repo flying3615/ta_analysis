@@ -1,4 +1,3 @@
-import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,16 +8,13 @@ import { error32026_NonPrimaryCannotBeCreated } from "@/components/DefineDiagram
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton.tsx";
 import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
-import { HeaderButton } from "@/components/Header/HeaderButton";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useEscapeKey } from "@/hooks/useEscape";
-import { useSelectExtinguishedLines } from "@/hooks/useSelectExtinguishedLines.ts";
+import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { getSurveyFeaturesQueryKey } from "@/queries/surveyFeatures";
+import { getSurveyFeaturesQueryData } from "@/queries/surveyFeatures";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-
-import { DefineDiagramMenuLabels } from "./defineDiagramsType";
 
 export const DefineDiagramMenuButtons = () => {
   const queryClient = useQueryClient();
@@ -28,19 +24,24 @@ export const DefineDiagramMenuButtons = () => {
   const { zoomByDelta, zoomToFit } = useContext(LolOpenLayersMapContext);
 
   const dispatch = useAppDispatch();
-  const action = useAppSelector(getActiveAction);
+  const activeAction = useAppSelector(getActiveAction);
 
-  const { selectedExtinguishedLineIds } = useSelectExtinguishedLines({ action });
-  const { convertRtLines, loading: convertRtLinesLoading } = useConvertToRTLine({
-    transactionId,
-    selectedExtinguishedLineIds,
-  });
-  // MATT const { deleteRtLines, deleteRtLinesLoading } = useDeleteRtLine({transactionId, selectedExtinguishedLines});
+  const {
+    loading: convertRtLinesLoading,
+    canCovertRtLine,
+    convertRtLines,
+  } = useConvertToRTLine({ transactionId, enabled: activeAction === "select_rt_line" });
+
+  const {
+    loading: loadingRemoveLines,
+    canRemoveRtLine,
+    removeRtLines,
+  } = useRemoveRtLine({ transactionId, enabled: activeAction === "select_line" });
 
   useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
 
-  const precheckAddNonPrimaryDiagram = useCallback(() => {
-    const data = queryClient.getQueryData<SurveyFeaturesResponseDTO>(getSurveyFeaturesQueryKey(transactionId));
+  const checkAddNonPrimaryDiagram = useCallback(() => {
+    const data = getSurveyFeaturesQueryData(queryClient, transactionId);
     if (!data) return false;
 
     const hasNonPrimaryParcel = !isEmpty(data.nonPrimaryParcels);
@@ -53,62 +54,29 @@ export const DefineDiagramMenuButtons = () => {
 
   return (
     <>
-      <HeaderButton
-        disabled={!selectedExtinguishedLineIds}
-        headerMenuLabel={DefineDiagramMenuLabels.Delete}
-        headerButtonLabel="Delete selected"
-        iconName="ic_delete_forever"
-        onClick={() => alert("Not Yet Implemented")}
+      <ActionHeaderButton
+        disabled={!canRemoveRtLine}
+        title="Delete selected"
+        icon="ic_delete_forever"
+        onClick={removeRtLines}
+        loading={loadingRemoveLines}
       />
       <VerticalSpacer />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.ZoomIn}
-        headerButtonLabel="Zoom in"
-        iconName="ic_add"
-        onClick={() => zoomByDelta(1)}
-      />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.ZoomOut}
-        headerButtonLabel="Zoom out"
-        iconName="ic_zoom_out"
-        onClick={() => zoomByDelta(-1)}
-      />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.ZoomCentre}
-        headerButtonLabel="Zoom to fit"
-        iconName="ic_zoom_centre"
-        onClick={() => zoomToFit()}
-      />
+      <ActionHeaderButton title="Zoom in" icon="ic_add" onClick={() => zoomByDelta(1)} />
+      <ActionHeaderButton title="Zoom out" icon="ic_zoom_out" onClick={() => zoomByDelta(-1)} />
+      <ActionHeaderButton title="Zoom to fit" icon="ic_zoom_centre" onClick={zoomToFit} />
       <VerticalSpacer />
       <ActionHeaderButton title="Select RT lines" action="select_rt_line" icon="ic_select_rt_lines" />
-      <HeaderButton
-        disabled={!selectedExtinguishedLineIds}
-        isLoading={convertRtLinesLoading}
-        headerMenuLabel={DefineDiagramMenuLabels.AddRTLines}
-        headerButtonLabel="Add RT lines"
-        iconName="ic_add_rt_lines"
+      <ActionHeaderButton
+        disabled={!canCovertRtLine}
+        loading={convertRtLinesLoading}
+        title="Add RT lines"
+        icon="ic_add_rt_lines"
         onClick={convertRtLines}
       />
-      <HeaderButton
-        disabled={true}
-        headerMenuLabel={DefineDiagramMenuLabels.DrawRTBoundary}
-        headerButtonLabel={DefineDiagramMenuLabels.DrawRTBoundary}
-        iconName="ic_draw_rt_bdry"
-        onClick={() => alert("Not Yet Implemented")}
-      />
-      <HeaderButton
-        disabled={true}
-        headerMenuLabel={DefineDiagramMenuLabels.DrawAbuttal}
-        headerButtonLabel={DefineDiagramMenuLabels.DrawAbuttal}
-        iconName="ic_draw_abuttal"
-        onClick={() => alert("Not Yet Implemented")}
-      />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.SelectLine}
-        headerButtonLabel={DefineDiagramMenuLabels.SelectLine}
-        iconName="ic_select_line"
-        onClick={() => alert("Not Yet Implemented")}
-      />
+      <ActionHeaderButton title="Draw RT boundary" icon="ic_draw_rt_bdry" disabled={true} />
+      <ActionHeaderButton title="Draw abuttal" icon="ic_draw_abuttal" disabled={true} />
+      <ActionHeaderButton title="Select line" icon="ic_select_line" action="select_line" />
       <VerticalSpacer />
       <ActionHeaderMenu
         title="Define primary diagram"
@@ -127,7 +95,7 @@ export const DefineDiagramMenuButtons = () => {
       />
       <ActionHeaderMenu
         title="Define non-primary diagram"
-        allowOpen={precheckAddNonPrimaryDiagram}
+        allowOpen={checkAddNonPrimaryDiagram}
         options={[
           {
             label: "Rectangle",
@@ -143,7 +111,7 @@ export const DefineDiagramMenuButtons = () => {
       />
       <ActionHeaderMenu
         title="Define survey diagram"
-        allowOpen={precheckAddNonPrimaryDiagram}
+        allowOpen={checkAddNonPrimaryDiagram}
         options={[
           {
             label: "Rectangle",
@@ -157,18 +125,8 @@ export const DefineDiagramMenuButtons = () => {
           },
         ]}
       />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.SelectDiagram}
-        headerButtonLabel={DefineDiagramMenuLabels.SelectDiagram}
-        iconName="ic_select_diagram"
-        onClick={() => alert("Not Yet Implemented")}
-      />
-      <HeaderButton
-        headerMenuLabel={DefineDiagramMenuLabels.LabelDiagrams}
-        headerButtonLabel={DefineDiagramMenuLabels.LabelDiagrams}
-        iconName="ic_label_diagrams"
-        onClick={() => alert("Not Yet Implemented")}
-      />
+      <ActionHeaderButton title="Select diagram" icon="ic_select_diagram" />
+      <ActionHeaderButton title="Label diagrams" icon="ic_label_diagrams" />
       <VerticalSpacer />
       <ActionHeaderMenu
         title="Enlarge diagram"

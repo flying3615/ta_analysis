@@ -2,15 +2,14 @@ import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
 import { LuiButtonProps } from "@linzjs/lui/dist/components/LuiButton/LuiButton";
 import clsx from "clsx";
 
-import { DefineDiagramMenuLabels } from "@/components/DefineDiagrams/defineDiagramsType";
 import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType";
 
 interface HeaderButtonProps {
-  headerMenuLabel: DefineDiagramMenuLabels | PlanSheetMenuLabels;
+  headerMenuLabel: PlanSheetMenuLabels;
   iconName: string;
   headerButtonLabel?: string;
   disabled?: boolean;
-  isLoading?: boolean;
+  loading?: boolean;
   selectedButtonLabel?: string;
   onClick?: LuiButtonProps["onClick"];
 }
@@ -20,7 +19,7 @@ export const HeaderButton = ({
   headerButtonLabel,
   iconName,
   headerMenuLabel,
-  isLoading,
+  loading,
   selectedButtonLabel,
   onClick,
 }: HeaderButtonProps) => {
@@ -28,7 +27,7 @@ export const HeaderButton = ({
     <LuiButton
       disabled={disabled}
       level="tertiary"
-      onClick={onClick}
+      onClick={loading ? () => {} : onClick}
       className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
     >
       <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
@@ -37,7 +36,7 @@ export const HeaderButton = ({
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <LuiButton level="tertiary" className="loading-spinner">
           <LuiMiniSpinner size={20} />
         </LuiButton>

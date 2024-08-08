@@ -9,12 +9,13 @@ import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineD
 interface ActionHeaderButtonProps {
   title: string;
   icon: string;
-  action: DefineDiagramsActionType;
+  action?: DefineDiagramsActionType;
   disabled?: boolean;
   loading?: boolean;
+  onClick?: (ev: React.MouseEvent) => void;
 }
 
-export const ActionHeaderButton = ({ title, action, icon, disabled, loading }: ActionHeaderButtonProps) => {
+export const ActionHeaderButton = ({ title, action, onClick, icon, disabled, loading }: ActionHeaderButtonProps) => {
   const activeAction = useAppSelector(getActiveAction);
   const dispatch = useAppDispatch();
 
@@ -23,16 +24,19 @@ export const ActionHeaderButton = ({ title, action, icon, disabled, loading }: A
     [dispatch],
   );
 
-  const onClick = useCallback(
-    () => changeActiveAction(action === activeAction ? "idle" : action),
-    [action, activeAction, changeActiveAction],
+  const onClickHandler = useCallback(
+    (ev: React.MouseEvent) => {
+      action && changeActiveAction(action === activeAction ? "idle" : action);
+      onClick?.(ev);
+    },
+    [action, activeAction, changeActiveAction, onClick],
   );
 
   const innerButton = (
     <LuiButton
       disabled={disabled}
       level="tertiary"
-      onClick={onClick}
+      onClick={onClickHandler}
       className={clsx("lui-button-icon-only", { selected: action === activeAction })}
     >
       <LuiIcon name={icon} alt={title} size="md" />

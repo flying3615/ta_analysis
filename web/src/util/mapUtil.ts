@@ -1,6 +1,9 @@
 import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
+import { ClickedFeature } from "@linzjs/landonline-openlayers-map";
 import { Feature, LineString } from "geojson";
-import { chunk } from "lodash-es";
+import { castArray, chunk } from "lodash-es";
+import FeatureLike from "ol/Feature";
+import RenderFeature from "ol/render/Feature";
 import proj4 from "proj4";
 
 export const metersToGeogs = (point: number[]): number[] => {
@@ -32,3 +35,11 @@ export const lineStringFromFlatCoords = (coords: number[]): Feature<LineString> 
     properties: {},
   };
 };
+
+export const getFeatureId = (f: number | FeatureLike | RenderFeature): number =>
+  typeof f === "number" ? f : (f.get("id") as number);
+
+export const getClickedFeatureId = (cf: ClickedFeature): number => getFeatureId(cf.feature);
+
+export const clickedFeatureFilter = (field: string, values: unknown | unknown[]) => (clicked: ClickedFeature) =>
+  castArray(values).includes(clicked.feature.get(field));
