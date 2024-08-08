@@ -1,10 +1,12 @@
 import { ExtinguishedLinesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { useShowLUIMessage } from "@linzjs/lui";
+import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { apiConfig } from "@/queries/apiConfig";
+import { getLinesQueryKey } from "@/queries/lines";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
 export interface useConvertToRTLineProps {
@@ -16,6 +18,7 @@ export const useConvertToRTLine = ({ transactionId, selectedExtinguishedLineIds 
   const [loading, setLoading] = useState(false);
   const showMessage = useShowLUIMessage();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   const convertRtLines = useCallback(async () => {
     if (!selectedExtinguishedLineIds || isEmpty(selectedExtinguishedLineIds)) return;
@@ -27,8 +30,11 @@ export const useConvertToRTLine = ({ transactionId, selectedExtinguishedLineIds 
         extinguishedLinesConvertRequestDTO: { lineIds: selectedExtinguishedLineIds },
       });
       if (result.ok) {
+        await queryClient.invalidateQueries({ queryKey: getLinesQueryKey(transactionId) });
+        const lineCount = selectedExtinguishedLineIds.length;
+        const message = lineCount === 1 ? "RT Line successfully added" : "RT Lines successfully added";
         showMessage({
-          message: "RT Line successfully added",
+          message: message,
           messageType: "toast",
           messageLevel: "success",
           requireDismiss: false,
@@ -45,7 +51,7 @@ export const useConvertToRTLine = ({ transactionId, selectedExtinguishedLineIds 
       setLoading(false);
       dispatch(setActiveAction("idle"));
     }
-  }, [dispatch, selectedExtinguishedLineIds, showMessage, transactionId]);
+  }, [dispatch, selectedExtinguishedLineIds, queryClient, showMessage, transactionId]);
 
   return {
     convertRtLines,
