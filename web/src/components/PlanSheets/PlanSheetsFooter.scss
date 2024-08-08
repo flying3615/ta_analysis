@@ -42,6 +42,10 @@ $footerHeight: 56px;
     margin: 0 lui.$unit-xs;
   }
 
+  .lui-button-tertiary .LuiIcon--error svg * {
+    fill: #c00;
+  }
+
   &-right {
     margin-left: auto;
   }

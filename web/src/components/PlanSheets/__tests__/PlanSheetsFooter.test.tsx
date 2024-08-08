@@ -13,13 +13,45 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
-
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {
     diagrams: [],
     pages: [],
     activeSheet: PlanSheetType.TITLE,
+    activePageNumbers: {
+      [PlanSheetType.TITLE]: 0,
+      [PlanSheetType.SURVEY]: 0,
+    },
     hasChanges: false,
+  };
+
+  const initStateForTwoPages = {
+    ...planSheetsState,
+    activeSheet: PlanSheetType.TITLE,
+    pages: [
+      {
+        pageType: PlanSheetType.TITLE,
+        id: 0,
+        pageNumber: 1,
+      },
+      {
+        pageType: PlanSheetType.TITLE,
+        id: 1,
+        pageNumber: 2,
+      },
+    ],
+    activePageNumbers: {
+      [PlanSheetType.TITLE]: 1,
+      [PlanSheetType.SURVEY]: 0,
+    },
+  };
+
+  const setupAddPageTest = async (menuItemName: string | RegExp) => {
+    renderWithState(initStateForTwoPages);
+    await userEvent.click(screen.getByRole("button", { description: /Add page/ }));
+    expect(screen.getByText("Add page")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") }));
   };
 
   const renderWithState = (state: PlanSheetsState) => {
@@ -49,6 +81,9 @@ describe("PlanSheetsFooter", () => {
     expect(screen.getByRole("button", { name: /previous/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /last/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { description: /add page/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { description: /renumber page/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { description: /delete page/i })).toBeInTheDocument();
   });
 
   it("displays menu with Title sheet selected", async () => {
@@ -298,6 +333,24 @@ describe("PlanSheetsFooter", () => {
     );
   });
 
+  it("add page menu presents options (Add first page, last page, and page after current)", async () => {
+    renderCompWithReduxAndRoute(
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
+
+    fireEvent.click(await screen.findByTitle("Add page"));
+    const addNewPageMenuItem = await screen.findByRole("menuitem", { name: "Add new last page" });
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(addNewPageMenuItem.previousSibling?.textContent).toBe("Add page"); //assertion for Add page header in menu
+    expect(await screen.findByRole("menuitem", { name: "Add new last page" })).toBeInTheDocument();
+    expect(await screen.findByRole("menuitem", { name: "Add new page after this one" })).toBeInTheDocument();
+    expect(await screen.findByRole("menuitem", { name: "Add new first page" })).toBeInTheDocument();
+  });
+
   it("shows confirmation dialog and can leave without saving when attempting to navigate away with unsaved changes", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
@@ -320,16 +373,48 @@ describe("PlanSheetsFooter", () => {
         preloadedState: {
           planSheets: {
             ...planSheetsState,
-            diagrams,
+            pages: [
+              {
+                id: 1,
+                pageType: "survey",
+                pageNumber: 1,
+              },
+              {
+                id: 2,
+                pageType: "survey",
+                pageNumber: 2,
+              },
+              {
+                id: 3,
+                pageType: "title",
+                pageNumber: 1,
+              },
+              {
+                id: 4,
+                pageType: "title",
+                pageNumber: 2,
+              },
+            ],
+            activeSheet: PlanSheetType.TITLE,
             activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
+              [PlanSheetType.TITLE]: 2,
+              [PlanSheetType.SURVEY]: 2,
             },
+            diagrams,
             hasChanges: true,
           },
         },
       },
     );
+
+    expect(await screen.findByTitle("Add page")).toBeInTheDocument();
+    const initialPages = await screen.findAllByTestId("lui-counter-number-rect");
+    expect(initialPages).toHaveLength(2);
+
+    fireEvent.click(await screen.findByTitle("Add page"));
+    fireEvent.click(await screen.findByText("Add new page after this one"));
+    const updatedPages = await screen.findAllByTestId("lui-counter-number-rect");
+    expect(updatedPages[updatedPages.length - 1]).toHaveTextContent("3");
 
     expect(await screen.findByText("Save layout")).toBeInTheDocument();
     await userEvent.click(await screen.findByText("Navigate"));
@@ -568,5 +653,113 @@ describe("PlanSheetsFooter", () => {
     expect(screen.getByRole("button", { name: /Previous/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /Next/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /Last/i })).toBeEnabled();
+  });
+
+  const addPagesPayload = [
+    [
+      "Add new last page",
+      [
+        { id: 0, pageType: "title", pageNumber: 1 },
+        { id: 1, pageType: "title", pageNumber: 2 },
+        { id: 2, pageType: "title", pageNumber: 3 },
+      ],
+    ],
+    [
+      "Add new page after this one",
+      [
+        { id: 0, pageType: "title", pageNumber: 1 },
+        { id: 2, pageType: "title", pageNumber: 2 },
+        { id: 1, pageType: "title", pageNumber: 3 },
+      ],
+    ],
+    [
+      "Add new first page",
+      [
+        { id: 2, pageType: "title", pageNumber: 1 },
+        { id: 0, pageType: "title", pageNumber: 2 },
+        { id: 1, pageType: "title", pageNumber: 3 },
+      ],
+    ],
+  ];
+
+  test.each(addPagesPayload)("validate correct page number order after->  %s", async (addPage, expected) => {
+    const menuItemName = addPage as string;
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
+
+    renderCompWithReduxAndRoute(
+      <Route
+        element={
+          <LuiMessagingContextProvider version="v2">
+            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+          </LuiMessagingContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            pages: [
+              {
+                pageType: PlanSheetType.TITLE,
+                id: 0,
+                pageNumber: 1,
+              },
+              {
+                pageType: PlanSheetType.TITLE,
+                id: 1,
+                pageNumber: 2,
+              },
+            ],
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 1,
+              [PlanSheetType.SURVEY]: 0,
+            },
+          },
+        },
+      },
+    );
+    expect(await screen.findByText("Save layout")).toBeVisible();
+
+    const paginationElement = screen.getByText((content, element) => {
+      return element?.textContent === "Page 1 of 2";
+    });
+    expect(paginationElement).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { description: /Add page/ }));
+    expect(screen.getByText("Add page")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") }));
+
+    await userEvent.click(await screen.findByText("Save layout"));
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
+          _bodyText: JSON.stringify({
+            diagrams: [],
+            pages: expected,
+          }),
+        }),
+      }),
+    );
+    expect(await screen.findByText("Layout saved successfully")).toBeInTheDocument();
+  });
+
+  const addPagesCount = [
+    ["Add new last page", "Page 1 of 3"],
+    ["Add new page after this one", "Page 1 of 3"],
+    ["Add new first page", "Page 1 of 3"],
+  ];
+  test.each(addPagesCount)("validate page count after-> %s", async (pageString, expected) => {
+    await setupAddPageTest(pageString);
+    const paginationElement = screen.getByText((content, element) => {
+      return element?.textContent === expected;
+    });
+    expect(paginationElement).toBeInTheDocument();
   });
 });

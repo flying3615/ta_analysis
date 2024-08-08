@@ -6,6 +6,7 @@ import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import React, { useEffect } from "react";
 
 import FooterPagination from "@/components/Footer/FooterPagination";
+import PageManager from "@/components/Footer/PageManager";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
@@ -117,6 +118,7 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
       <div className="vertical-spacer" />
 
       <FooterPagination totalPages={totalPages} currentPage={currentPage} onPageChange={handlePageChange} />
+      <PageManager />
 
       <div className="PlanSheetsFooter-right">
         <LuiButton className="PlanSheetsFooter-saveButton lui-button-tertiary" onClick={updatePlan}>

@@ -11,6 +11,7 @@ export const mockPlanData = new PlanDataBuilder()
     box: true,
   })
   .addPage(1)
+  .addPage(2)
   .addCooordinate(10001, {
     x: 20,
     y: -10,

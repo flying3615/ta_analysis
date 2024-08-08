@@ -33,7 +33,7 @@ const planSheetsSlice = createSlice({
 
       const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
       sheetTypes.forEach((type) => {
-        if (state.pages.some((page) => page.pageType === type)) {
+        if (state.pages.some((page) => page.pageType === type) && !state.activePageNumbers[type]) {
           state.activePageNumbers[type] = 1;
         }
       });
@@ -51,6 +51,9 @@ const planSheetsSlice = createSlice({
     setActivePageNumber: (state, action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>) => {
       state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
     },
+    updatePages: (state, action: PayloadAction<IPage[]>) => {
+      state.pages = action.payload;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -62,6 +65,9 @@ const planSheetsSlice = createSlice({
       const activePage = state.activePageNumbers[state.activeSheet];
 
       return state.diagrams.filter((diagram) => diagram.pageRef === activePage);
+    },
+    getActivePages: (state) => {
+      return state.pages.filter((page) => state.activeSheet === page.pageType);
     },
     getActivePageNumber: (state) => {
       const pageType = state.activeSheet;
@@ -77,12 +83,14 @@ const planSheetsSlice = createSlice({
   },
 });
 
-export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber } = planSheetsSlice.actions;
+export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber, updatePages } =
+  planSheetsSlice.actions;
 
 export const {
   getPlanData,
   getDiagrams,
   getPages,
+  getActivePages,
   getActiveSheet,
   getActiveDiagrams,
   getActivePageNumber,

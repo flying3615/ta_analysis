@@ -2,9 +2,10 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { setupStore } from "@/redux/store";
 
-import {
+import planSheetsSlice, {
   getActiveDiagrams,
   getActivePageNumber,
+  getActivePages,
   getActiveSheet,
   getDiagrams,
   getFilteredPages,
@@ -62,6 +63,26 @@ describe("planSheetsSlice", () => {
 
     store.dispatch(setActiveSheet(PlanSheetType.SURVEY));
     expect(getActiveSheet(store.getState())).toBe(PlanSheetType.SURVEY);
+  });
+
+  test("getActivePages should return active pages", () => {
+    const pages = [
+      {
+        pageType: PlanSheetType.TITLE,
+        id: 0,
+        pageNumber: 1,
+      },
+      {
+        pageType: PlanSheetType.SURVEY,
+        id: 1,
+        pageNumber: 2,
+      },
+    ];
+
+    expect(getActivePages(store.getState())).toEqual([]);
+
+    store.dispatch(planSheetsSlice.actions.updatePages(pages));
+    expect(getActivePages(store.getState())).toEqual([{ id: 0, pageNumber: 1, pageType: "title" }]);
   });
 
   test("getActivePageNumber should return active page number", () => {
