@@ -1,7 +1,9 @@
 // Need the below for OL element styles
 import "ol/ol.css";
 
+import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
+import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent, waitFor, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -39,15 +41,17 @@ const queryClient = new QueryClient();
 
 const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => (
   <LuiModalAsyncContextProvider>
-    <QueryClientProvider client={queryClient}>
-      <Provider store={setupStore({ defineDiagrams: initialState })}>
-        <FeatureFlagProvider>
-          <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
-            <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
-          </StorybookRouter>
-        </FeatureFlagProvider>
-      </Provider>
-    </QueryClientProvider>
+    <LuiMessagingContextProvider version="v2">
+      <QueryClientProvider client={queryClient}>
+        <Provider store={setupStore({ defineDiagrams: initialState })}>
+          <FeatureFlagProvider>
+            <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
+              <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+            </StorybookRouter>
+          </FeatureFlagProvider>
+        </Provider>
+      </QueryClientProvider>
+    </LuiMessagingContextProvider>
   </LuiModalAsyncContextProvider>
 );
 
@@ -154,9 +158,9 @@ export const DrawPrimaryDiagramByRectangle: Story = {
 };
 
 DrawPrimaryDiagramByRectangle.play = async () => {
+  await sleep(500); // This sleep is needed, otherwise draw doesn't start
   const primaryDiagramButton = await screen.findByLabelText("Define primary diagram");
   await userEvent.click(primaryDiagramButton);
-  await sleep(500); // This sleep is needed, otherwise draw doesn't start
   const primaryDiagramByRectangleButton = await screen.findByRole("menuitem", {
     name: /Rectangle/,
   });
@@ -168,6 +172,7 @@ DrawPrimaryDiagramByRectangle.play = async () => {
   ];
   //   draw polygon around features to select them
   await drawOnMap(drawRectangle);
+  await sleep(500); //This sleep is needed for diagram to show
 };
 
 export const DrawNonPrimaryDiagramByPolygonBoundaryError: Story = {
@@ -217,6 +222,7 @@ DrawNonPrimaryDiagramByPolygon.play = async () => {
   ];
   //   draw polygon around features to select them
   await drawOnMap(drawPolygon);
+  await sleep(500); //This sleep is needed for diagram to show
 };
 
 export const DrawSurveyDiagramByPolygon: Story = {
@@ -249,4 +255,70 @@ DrawSurveyDiagramByPolygon.play = async () => {
   ];
   //   draw polygon around features to select them
   await drawOnMap(drawPolygon);
+  await sleep(500); //This sleep is needed for diagram to show
+};
+
+export const AddRTLines: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+AddRTLines.play = async () => {
+  await sleep(500); // This sleep is needed for map to load
+  const selectRTLinesButton = await screen.findByLabelText("Select RT lines");
+  await userEvent.click(selectRTLinesButton);
+  await sleep(100); // This sleep is needed for line selection
+  const lineCoordinates: Coordinate[] = [[19461498.200913828, -5057986.54062496]];
+  await drawOnMap(lineCoordinates);
+  const addRTLinesButton = await screen.findByLabelText("Add RT lines");
+  await userEvent.click(addRTLinesButton);
+  await expect(await screen.findByText("RT Line added successfully")).toBeInTheDocument();
+};
+
+export const RTLineAlreadyPresentError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+    msw: {
+      handlers: [
+        http.post(/\/124\/convert-extinguished-lines/, async () => {
+          return HttpResponse.json(
+            {
+              ok: false,
+              statusCode: -26019,
+              message: "Error 126019: This line has already been added to the database as a Record of Title line.",
+            },
+            { status: 200, statusText: "OK" },
+          );
+        }),
+        ...handlers,
+      ],
+    },
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+RTLineAlreadyPresentError.play = async () => {
+  await sleep(500); // This sleep is needed for map to load
+  const selectRTLinesButton = await screen.findByLabelText("Select RT lines");
+  await userEvent.click(selectRTLinesButton);
+  await sleep(100); // This sleep is needed for line selection
+  const lineCoordinates: Coordinate[] = [[19461498.200913828, -5057986.54062496]];
+  await drawOnMap(lineCoordinates);
+  const addRTLinesButton = await screen.findByLabelText("Add RT lines");
+  await userEvent.click(addRTLinesButton);
+  await expect(
+    await screen.findByText(
+      "Error 126019: This line has already been added to the database as a Record of Title line.",
+    ),
+  ).toBeInTheDocument();
 };

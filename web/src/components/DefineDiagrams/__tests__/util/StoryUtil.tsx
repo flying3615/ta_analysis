@@ -23,7 +23,7 @@ export const drawOnMap = async (coordinatesToClick: Coordinate[]) => {
       target: viewport,
       coords: {
         clientX: pixel[0],
-        clientY: pixel[1],
+        clientY: pixel[1]!+56, //get pixel is currently broken hence we need to add 56 px to click at correct place
       },
     });
     // set a delay between each click on map so we can see the clicks happening

@@ -76,6 +76,10 @@ export const handlers: HttpHandler[] = [
   }),
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.get(/\/124\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.post(/\/124\/convert-extinguished-lines/, async () => {
+    return HttpResponse.json({ ok: true, statusCode: null, message: null }, { status: 200, statusText: "OK" });
+  }),
   http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/125\/survey-features$/, () =>
@@ -119,8 +123,10 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
 
-  http.post(/\/125\/diagrams$/, () => HttpResponse.json({ diagramId: 22 }, { status: 201 })),
-  http.post(/\/123\/diagrams$/, () => HttpResponse.json({ diagramId: 22 }, { status: 201 })),
+  http.post(/\/125\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
+  http.post(/\/123\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
+  http.get(/\/125\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.get(/\/123\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
 
   http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
