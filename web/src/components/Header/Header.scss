@@ -1,15 +1,13 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
-$headerHeight: 56px;
-
 .Header {
+  width: 100%;
   align-items: center;
   border-bottom: 1px solid lui.$dew;
   background-color: lui.$hint;
   display: flex;
   flex-direction: row;
-  height: $headerHeight;
-  width: 100vw;
+  height: 56px;
   padding-left: lui.$unit-xs;
 
   color: lui.$charcoal;

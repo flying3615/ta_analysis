@@ -15,10 +15,9 @@ import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
 import {
-  extinguishedLineHighlightStyles,
-  extinguishedLineStyles,
-  lineHighlightableStyles,
-  lineHighlightStyles,
+  ctlineSelectableStyles,
+  lineStyle_selectable,
+  lineStyle_selected,
   lineStyles,
 } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
@@ -196,8 +195,8 @@ export const selectLinesLayer = (transactionId: number, maxZoom: number): LolOpe
     declutterLabels: true,
     togglable: false,
     zIndex: zIndexes[LINES_LAYER_NAME],
-    style: lineHighlightableStyles,
-    highlightStyle: lineHighlightStyles,
+    style: ctlineSelectableStyles,
+    highlightStyle: lineStyle_selected,
     source: {
       type: SourceType.FEATURES,
       queryKey: getLinesQueryKey(transactionId),
@@ -217,8 +216,8 @@ export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): 
     declutterLabels: true,
     togglable: false,
     zIndex: zIndexes[EXTINGUISHED_LINES_LAYER_NAME],
-    style: extinguishedLineStyles,
-    highlightStyle: extinguishedLineHighlightStyles,
+    style: lineStyle_selectable,
+    highlightStyle: lineStyle_selected,
     source: {
       type: SourceType.FEATURES,
       queryKey: getExtinguishedLinesQueryKey(transactionId),

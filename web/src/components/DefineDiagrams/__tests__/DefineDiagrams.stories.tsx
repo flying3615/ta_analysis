@@ -21,7 +21,7 @@ import { Paths } from "@/Paths";
 import { DefineDiagramsState } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { sleep, StorybookRouter, waitForInitialMapLoadsToComplete } from "@/test-utils/storybook-utils";
 
 export default {
   title: "DefineDiagrams",
@@ -95,6 +95,9 @@ export const Default: Story = {
     transactionId: "123",
   },
 };
+Default.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+};
 
 export const UnderlyingLayers: Story = {
   ...Default,
@@ -106,6 +109,9 @@ export const UnderlyingLayers: Story = {
     transactionId: "125",
   },
 };
+UnderlyingLayers.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+};
 
 export const RoadCentrelineLayers: Story = {
   ...Default,
@@ -116,6 +122,9 @@ export const RoadCentrelineLayers: Story = {
   args: {
     transactionId: "126",
   },
+};
+RoadCentrelineLayers.play = async () => {
+  await waitForInitialMapLoadsToComplete();
 };
 
 export const Diagrams: Story = {
@@ -131,6 +140,9 @@ export const Diagrams: Story = {
     transactionId: "124",
   },
 };
+Diagrams.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+};
 
 export const PrepareDatasetError: Story = {
   ...Default,
@@ -143,6 +155,7 @@ export const PrepareDatasetError: Story = {
   },
 };
 PrepareDatasetError.play = async () => {
+  await waitForInitialMapLoadsToComplete();
   await waitFor(() => within(document.body).findByText(/prepare dataset application error/), { timeout: 20000 });
 };
 
@@ -158,7 +171,7 @@ export const DrawPrimaryDiagramByRectangle: Story = {
 };
 
 DrawPrimaryDiagramByRectangle.play = async () => {
-  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  await waitForInitialMapLoadsToComplete();
   const primaryDiagramButton = await screen.findByLabelText("Define primary diagram");
   await userEvent.click(primaryDiagramButton);
   const primaryDiagramByRectangleButton = await screen.findByRole("menuitem", {
@@ -187,7 +200,7 @@ export const DrawNonPrimaryDiagramByPolygonBoundaryError: Story = {
 };
 
 DrawNonPrimaryDiagramByPolygonBoundaryError.play = async () => {
-  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  await waitForInitialMapLoadsToComplete();
   const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
   await userEvent.click(nonPrimaryDiagramButton);
 };
@@ -204,7 +217,7 @@ export const DrawNonPrimaryDiagramByPolygon: Story = {
 };
 
 DrawNonPrimaryDiagramByPolygon.play = async () => {
-  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  await waitForInitialMapLoadsToComplete();
   const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
   await userEvent.click(nonPrimaryDiagramButton);
   const nonPrimaryDiagramByPolygonButton = await screen.findByRole("menuitem", {
@@ -237,7 +250,7 @@ export const DrawSurveyDiagramByPolygon: Story = {
 };
 
 DrawSurveyDiagramByPolygon.play = async () => {
-  await sleep(500); // This sleep is needed, otherwise draw doesn't start
+  await waitForInitialMapLoadsToComplete();
   const surveyDiagramButton = await screen.findByLabelText("Define survey diagram");
   await userEvent.click(surveyDiagramButton);
   const surveyDiagramByPolygonButton = await screen.findByRole("menuitem", {
@@ -270,7 +283,7 @@ export const AddRTLines: Story = {
 };
 
 AddRTLines.play = async () => {
-  await sleep(500); // This sleep is needed for map to load
+  await waitForInitialMapLoadsToComplete();
   const selectRTLinesButton = await screen.findByLabelText("Select RT lines");
   await userEvent.click(selectRTLinesButton);
   await sleep(100); // This sleep is needed for line selection
@@ -308,7 +321,7 @@ export const RTLineAlreadyPresentError: Story = {
 };
 
 RTLineAlreadyPresentError.play = async () => {
-  await sleep(500); // This sleep is needed for map to load
+  await waitForInitialMapLoadsToComplete();
   const selectRTLinesButton = await screen.findByLabelText("Select RT lines");
   await userEvent.click(selectRTLinesButton);
   await sleep(100); // This sleep is needed for line selection

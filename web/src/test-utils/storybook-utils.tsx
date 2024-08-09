@@ -1,3 +1,5 @@
+import { expect } from "@storybook/jest";
+import { waitFor } from "@storybook/testing-library";
 import { useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
@@ -34,5 +36,24 @@ export const ModalStoryWrapper = ({ children }: { children: React.ReactNode }) =
     <div id="root">
       <InnerModalWrapper>{children}</InnerModalWrapper>
     </div>
+  );
+};
+
+/**
+ * It's hard to tell map layers have completed loading as sometimes one completed load triggers another.
+ * This checks no loads have started in the past 1000ms and assumes all loads have completed.
+ */
+export const waitForInitialMapLoadsToComplete = async () => {
+  /* eslint-disable-next-line */
+  (window as any).lastLoadingTimestamp = undefined;
+  await waitFor(
+    async () => {
+      /* eslint-disable-next-line */
+      const t = (window as any).lastLoadingTimestamp;
+      await expect(t).toBeDefined();
+      await expect(Date.now() - t).toBeGreaterThan(1000);
+    },
+    // Need to wait long enough for prepare dataset error
+    { timeout: 25000 },
   );
 };

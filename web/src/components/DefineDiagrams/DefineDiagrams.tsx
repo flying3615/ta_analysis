@@ -1,4 +1,5 @@
 import "./DefineDiagrams.scss";
+import "@/components/MainWindow.scss";
 
 import {
   LolOpenLayersMap,
@@ -35,6 +36,7 @@ import {
 import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
+import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
@@ -69,17 +71,11 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const transactionId = useTransactionId();
   const navigate = useNavigate();
   const mapContext = useContext(LolOpenLayersMapContext);
-  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-
-  /* eslint-disable */
-  (window as any)["map"] = mapContext.map;
+  const { showPrefabModal } = useLuiModalPrefab();
 
   useInsertDiagramHook();
 
-  const {
-    isSuccess: prepareDatasetIsSuccess,
-    error: prepareDatasetError,
-  } = usePrepareDatasetQuery({transactionId});
+  const { isSuccess: prepareDatasetIsSuccess, error: prepareDatasetError } = usePrepareDatasetQuery({ transactionId });
 
   const {
     data: features,
@@ -102,6 +98,16 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const error = prepareDatasetError ?? featuresError ?? diagramLinesError;
   const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading;
 
+  /* eslint-disable-next-line */
+  (window as any).map = mapContext.map;
+  const anyLoading = !error && (isLoading || mapContext.loading);
+  const loadingHasChanged = useHasChanged(anyLoading);
+  if (loadingHasChanged) {
+    // Set a global value last time loading changed to false
+    /* eslint-disable-next-line */
+    (window as any).lastLoadingTimestamp = anyLoading ? undefined : Date.now();
+  }
+
   useEffect(() => {
     if (!error) {
       return;
@@ -110,7 +116,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     newrelic.noticeError(serializedError);
     showPrefabModal(
       error instanceof PrepareDatasetError ? prepareDatasetErrorModal(error) : unhandledErrorModal(serializedError),
-    ).then(() => navigate(generatePath(Paths.root, {transactionId})));
+    ).then(() => navigate(generatePath(Paths.root, { transactionId })));
   }, [error, navigate, showPrefabModal, transactionId]);
 
   const layers = useMemo(
@@ -133,16 +139,15 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   );
 
   return (
-    <>
+    <div className="MainWindow">
       <Header view="Diagrams">
-        <DefineDiagramMenuButtons/>
+        <DefineDiagramMenuButtons />
       </Header>
-      <div className="DefineDiagrams" ref={modalOwnerRef}>
-        {isLoading && <LuiLoadingSpinner/>}
+      <div className="DefineDiagrams">
+        {isLoading && <LuiLoadingSpinner />}
         {layers && (
           <LolOpenLayersMap
             queryClient={queryClient}
-
             view={{
               projection: "EPSG:3857",
               center: [19457143.791, -5057154.019],
@@ -157,7 +162,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         )}
         {children}
       </div>
-      <EnlargeDiagram/>
-    </>
+      <EnlargeDiagram />
+    </div>
   );
 };

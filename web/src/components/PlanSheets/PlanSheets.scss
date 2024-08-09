@@ -5,7 +5,7 @@
 
 .PlanSheets {
   width: 100vw;
-  height: calc(100vh - (header.$headerHeight + footer.$footerHeight));
+  flex: 1;
   display: flex;
 }
 

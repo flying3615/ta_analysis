@@ -18,7 +18,7 @@ import {
 } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
-import { useHasChanged } from "@/hooks/usePrevious.ts";
+import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { flatCoordsToGeogCoords, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
@@ -68,6 +68,7 @@ export const useOpenLayersDrawInteraction = ({
   const drawListenerRef = useRef<EventsKey>();
   // If the polygon is self intersecting this is set to false
   const allowDrawAddPoint = useRef(false);
+  const preventDrawAbortDuringTypeChange = useRef(false);
   // The current feature needs to be retained as it's needed for finishEvent which has no access to the feature
   const currentFeatureRef = useRef<Polygon>();
 
@@ -100,6 +101,7 @@ export const useOpenLayersDrawInteraction = ({
    * Callback for draw abort.
    */
   const onDrawAbortEvent = useConstFunction((event: DrawEvent) => {
+    if (preventDrawAbortDuringTypeChange.current) return;
     event.stopPropagation();
     drawAbort(event);
   });
@@ -199,8 +201,11 @@ export const useOpenLayersDrawInteraction = ({
   const typeChanged = useHasChanged(currentType);
   useEffect(() => {
     if (!typeChanged) return;
+
+    preventDrawAbortDuringTypeChange.current = true;
     removeInteractions();
-    addInteractions();
+    currentType && addInteractions();
+    preventDrawAbortDuringTypeChange.current = false;
   }, [addInteractions, typeChanged, currentType, removeInteractions]);
 
   /**

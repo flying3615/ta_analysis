@@ -1,4 +1,5 @@
 import { LinesControllerApi } from "@linz/survey-plan-generation-api-client";
+import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
@@ -6,9 +7,10 @@ import { SELECT_LINES_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.t
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
 import { apiConfig } from "@/queries/apiConfig";
-import { useUpdateLinesQueryData } from "@/queries/lines.ts";
+import { getLinesQueryKey } from "@/queries/lines.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { clickedFeatureFilter } from "@/util/mapUtil.ts";
+import { useQueryDataUpdate } from "@/util/queryUtil.ts";
 import { useShowToast } from "@/util/showToast.tsx";
 import { s } from "@/util/stringUtil.ts";
 
@@ -22,7 +24,7 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
   const { showSuccessToast, showErrorToast } = useShowToast();
   const dispatch = useAppDispatch();
 
-  const { removeLines } = useUpdateLinesQueryData(transactionId);
+  const { removeQueryData } = useQueryDataUpdate<IFeatureSource>({ queryKey: getLinesQueryKey(transactionId) });
 
   const { selectedFeatureIds: lineIds } = useSelectFeatures({
     enabled,
@@ -42,12 +44,12 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
       });
       if (!ok) return showErrorToast(message ?? "Unexpected exception removing RT lines");
       showSuccessToast(`RT line${s(lineIds)} removed successfully`);
-      removeLines(lineIds);
+      removeQueryData({ remove: lineIds });
     } finally {
       setLoading(false);
       dispatch(setActiveAction("idle"));
     }
-  }, [dispatch, removeLines, lineIds, showErrorToast, showSuccessToast, transactionId]);
+  }, [dispatch, removeQueryData, lineIds, showErrorToast, showSuccessToast, transactionId]);
 
   return {
     removeRtLines,

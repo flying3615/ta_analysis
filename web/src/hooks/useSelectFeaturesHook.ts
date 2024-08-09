@@ -4,7 +4,7 @@ import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect } from "react";
 
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
-import { useHasChanged } from "@/hooks/usePrevious.ts";
+import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { getClickedFeatureId, getFeatureId } from "@/util/mapUtil.ts";
 
 export interface useSelectFeaturesProps {

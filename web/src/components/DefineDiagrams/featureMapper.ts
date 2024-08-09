@@ -8,6 +8,7 @@ import {
 } from "@linz/survey-plan-generation-api-client";
 import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner.ts";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
+import { sortBy } from "lodash-es";
 
 //Think of this like a zindex (1 bottom, 6 top)
 const diagramTypeSortOrder = {
@@ -19,9 +20,7 @@ const diagramTypeSortOrder = {
   [CpgDiagramType.SYSP]: 6,
 };
 
-export const sortDiagramsByType = (a: IFeatureSourceDiagram, b: IFeatureSourceDiagram) => {
-  return diagramTypeSortOrder[a.diagramType as CpgDiagramType] - diagramTypeSortOrder[b.diagramType as CpgDiagramType];
-};
+export const sortByDiagramsByType = (a: IFeatureSourceDiagram) => diagramTypeSortOrder[a.diagramType as CpgDiagramType];
 
 export const sortLabelsByType = (a: IFeatureSourceLabel, b: IFeatureSourceLabel) => {
   return diagramTypeSortOrder[a.type as CpgDiagramType] - diagramTypeSortOrder[b.type as CpgDiagramType];
@@ -66,7 +65,7 @@ export const getVectorsForOpenLayers = (features: SurveyFeaturesResponseDTO): IF
 export type IFeatureSourceDiagram = IFeatureSource & { diagramType: string };
 
 export const getDiagramsForOpenLayers = ({ diagrams }: DiagramsResponseDTO): IFeatureSourceDiagram[] =>
-  diagrams.map(MapDiagramToOpenLayers).sort(sortDiagramsByType);
+  sortBy(diagrams.map(MapDiagramToOpenLayers), sortByDiagramsByType);
 
 export const MapDiagramToOpenLayers = (diagramId: DiagramsResponseDTODiagramsInner): IFeatureSourceDiagram => ({
   id: diagramId.id,

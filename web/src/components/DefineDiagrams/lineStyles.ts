@@ -5,40 +5,28 @@ import Stroke from "ol/style/Stroke";
 
 import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
 
-export const lineStyles = (feature: FeatureLike): Style => {
-  const symbolType = feature.get("symbolType");
-  // line dash array pattern [dash, gap, dash, gap]
-  const lineDash = symbolType === LinesSymbolType.CT ? [8, 6, 2, 6] : [2, 7];
+// Constant styles
 
-  return new Style({
-    stroke: new Stroke({ width: 3, lineDash, color: MapColors.black }),
-  });
-};
+export const lineStyles_ct = new Style({
+  stroke: new Stroke({ width: 3, lineDash: [8, 6, 2, 6], color: MapColors.black }),
+});
 
-export const lineHighlightableStyles = (feature: FeatureLike): Style => {
-  const symbolType = feature.get("symbolType");
+export const lineStyle_selectable = new Style({
+  stroke: new Stroke({ width: 4, color: MapColors.blue }),
+});
 
-  return symbolType === LinesSymbolType.CT
-    ? new Style({
-        stroke: new Stroke({ width: 4, color: MapColors.blue }),
-      })
-    : lineStyles(feature);
-};
+export const lineStyles_abb = new Style({
+  stroke: new Stroke({ width: 3, lineDash: [2, 7], color: MapColors.black }),
+});
 
-export const lineHighlightStyles = (): Style => {
-  return new Style({
-    stroke: new Stroke({ width: 4, color: MapColors.pink }),
-  });
-};
+export const lineStyle_selected = new Style({
+  stroke: new Stroke({ width: 4, color: MapColors.pink }),
+});
 
-export const extinguishedLineStyles = (): Style => {
-  return new Style({
-    stroke: new Stroke({ width: 4, lineDash: [0], color: MapColors.blue }),
-  });
-};
+// Functional styles
 
-export const extinguishedLineHighlightStyles = (): Style => {
-  return new Style({
-    stroke: new Stroke({ width: 4, color: MapColors.pink }),
-  });
-};
+export const lineStyles = (feature: FeatureLike): Style =>
+  feature.get("symbolType") === LinesSymbolType.CT ? lineStyles_ct : lineStyles_abb;
+
+export const ctlineSelectableStyles = (feature: FeatureLike): Style =>
+  feature.get("symbolType") === LinesSymbolType.CT ? lineStyle_selectable : lineStyles_abb;

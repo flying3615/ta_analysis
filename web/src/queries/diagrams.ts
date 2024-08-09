@@ -1,17 +1,18 @@
 import { DiagramsControllerApi, DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client/src/apis/DiagramsControllerApi.ts";
 import { useShowLUIMessage } from "@linzjs/lui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 
 import {
   getDiagramsForOpenLayers,
   IFeatureSourceDiagram,
-  sortDiagramsByType,
+  sortByDiagramsByType,
 } from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { useDiagramLabelsHook } from "@/queries/labels.ts";
 import { PlanGenQuery } from "@/queries/types";
+import { useQueryDataUpdate } from "@/util/queryUtil.ts";
 
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
 
@@ -22,37 +23,23 @@ export const useGetDiagramsQuery: PlanGenQuery<DiagramsResponseDTO> = ({ transac
       getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig() as never).diagrams({ transactionId })),
   });
 
-export const insertDiagram = async (props: InsertUserDefinedDiagramRequest): Promise<number> => {
-  const response = await new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
-  return (
-    response.diagramId ??
-    (() => {
-      throw new Error(`insertDiagram response has no id: ${JSON.stringify(response)}`);
-    })()
-  );
-};
-
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
  */
 export const useInsertDiagramMutation = (transactionId: number) => {
-  const queryClient = useQueryClient();
   const diagramLabels = useDiagramLabelsHook(transactionId);
-  const queryKey = getDiagramsQueryKey(transactionId);
+  const { appendQueryData, removeQueryData, updateQueryData } = useQueryDataUpdate<IFeatureSourceDiagram>({
+    queryKey: getDiagramsQueryKey(transactionId),
+    sortBy: sortByDiagramsByType,
+  });
   const showMessage = useShowLUIMessage();
 
   const tempDiagramIdRef = useRef(-1);
-  const removeTempItem = (tempDiagram: IFeatureSourceDiagram | undefined) => {
-    queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) =>
-      list ? list.filter((item) => item !== tempDiagram) : [],
-    );
-  };
 
   return useMutation({
     onMutate: (props: InsertUserDefinedDiagramRequest) => {
-      const tempDiagramId = tempDiagramIdRef.current--;
       const newData: IFeatureSourceDiagram = {
-        id: tempDiagramId,
+        id: tempDiagramIdRef.current--,
         diagramType: props.postDiagramsRequestDTO.diagramType,
         shape: {
           geometry: {
@@ -62,41 +49,27 @@ export const useInsertDiagramMutation = (transactionId: number) => {
         },
       };
 
-      queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) =>
-        [...(list ?? []), newData].sort(sortDiagramsByType),
-      );
-
+      appendQueryData({ newItem: newData });
       return newData;
     },
-    mutationFn: (props: InsertUserDefinedDiagramRequest) =>
-      new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props),
-    onError: (_error, _variables, tempDiagram: IFeatureSourceDiagram | undefined) => removeTempItem(tempDiagram),
+    mutationFn: (props: InsertUserDefinedDiagramRequest) => {
+      return new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
+    },
+    onError: (_error, _variables, tempDiagram: IFeatureSourceDiagram | undefined) => {
+      tempDiagram && removeQueryData({ remove: tempDiagram });
+    },
     onSuccess: (response, _variables, tempDiagram: IFeatureSourceDiagram) => {
       if (!response.ok) {
         showMessage({ messageLevel: "error", messageType: "toast", message: response.message ?? "Unknown error" });
-        removeTempItem(tempDiagram);
-        return;
-      }
-      if (response.diagramId == null) {
-        // Theoretically cannot happen
+        removeQueryData({ remove: tempDiagram });
+      } else if (response.diagramId == null) {
         showMessage({ messageLevel: "error", messageType: "toast", message: "Unexpected null response for diagramId" });
-        removeTempItem(tempDiagram);
-        return;
+        removeQueryData({ remove: tempDiagram });
+      } else {
+        // Success
+        updateQueryData({ updateItem: tempDiagram, withProps: { id: response.diagramId } });
+        diagramLabels.updateLabels();
       }
-
-      // Update temp diagrams Id
-      queryClient.setQueryData<IFeatureSourceDiagram[]>(queryKey, (list) => {
-        if (!list) return [];
-        return list.map((item) =>
-          item === tempDiagram
-            ? {
-                ...tempDiagram,
-                id: response.diagramId,
-              }
-            : item,
-        );
-      });
-      diagramLabels.updateLabels();
     },
   });
 };

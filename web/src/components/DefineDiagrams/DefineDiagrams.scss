@@ -1,11 +1,6 @@
 @use "@/components/Header/Header.scss" as header;
 
 .DefineDiagrams {
-  display: grid;
-  grid: "container" 1fr;
-  height: calc(100% - header.$headerHeight);
-  overflow-x: hidden;
-  position: absolute;
-  width: 100%;
-  top: header.$headerHeight;
+  overflow: hidden;
+  flex: 1;
 }

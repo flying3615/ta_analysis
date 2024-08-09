@@ -2,6 +2,7 @@ import { Preview } from "@storybook/react";
 import "@linzjs/lui/dist/scss/base.scss";
 import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
+import "@szhsin/react-menu/dist/index.css";
 
 import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from "@storybook/addon-viewport";
 import { initialize, mswLoader } from "msw-storybook-addon";

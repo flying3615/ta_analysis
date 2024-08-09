@@ -7,3 +7,4 @@ output/
 .env
 .eslintcache
 auth/*.json
+allure-results/

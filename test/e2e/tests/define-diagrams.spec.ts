@@ -22,7 +22,7 @@ test.describe("Define diagrams", () => {
     await page.locator(".diagrams > canvas").click({
       position: {
         x: 823,
-        y: 10,
+        y: 20,
       },
     });
     await page.locator(".ol-layer > canvas").click({
@@ -56,14 +56,14 @@ test.describe("Define diagrams", () => {
       //"subtree intercepts pointer events - retrying click action"
       force: true,
       position: {
-        x: 623,
+        x: 723,
         y: 10,
       },
     });
     await page.locator(".ol-layer > canvas").click({
       position: {
-        x: 916,
-        y: 161,
+        x: 816,
+        y: 151,
       },
     });
     //Retry the following block of assertions until it passes, or timeout is reached

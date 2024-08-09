@@ -1,4 +1,5 @@
 import "./PlanSheets.scss";
+import "@/components/MainWindow.scss";
 
 import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
@@ -118,7 +119,7 @@ const PlanSheets = () => {
   };
 
   return (
-    <>
+    <div className="MainWindow">
       <Header view="Sheets">
         <PlanSheetsHeaderButtons />
       </Header>
@@ -136,7 +137,7 @@ const PlanSheets = () => {
         />
       </div>
       <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
-    </>
+    </div>
   );
 };
 
