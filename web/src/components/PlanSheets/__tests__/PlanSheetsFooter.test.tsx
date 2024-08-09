@@ -1,3 +1,4 @@
+import { DisplayState } from "@linz/survey-plan-generation-api-client";
 import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { fireEvent, screen } from "@testing-library/react";
@@ -193,7 +194,7 @@ describe("PlanSheetsFooter", () => {
                 diagramType: "sysGenPrimaryDiag",
                 zoomScale: 100,
                 pageRef: 1,
-                displayState: "display",
+                displayState: DisplayState.display,
                 coordinates: [],
                 lines: [],
                 labels: [],

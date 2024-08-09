@@ -1,4 +1,4 @@
-import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DisplayState, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { Meta, StoryObj } from "@storybook/react";
 import { Core } from "cytoscape";
 
@@ -247,7 +247,7 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
 export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const effects = ["none", "halo"];
-    const displayStates = ["display", "hide", "systemDisplay", "systemHide"];
+    const displayStates = Object.values(DisplayState);
 
     const gap = 2;
     const xStart = 5;

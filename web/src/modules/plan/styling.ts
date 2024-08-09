@@ -1,4 +1,4 @@
-import { ILabel, ILine } from "@linz/survey-plan-generation-api-client";
+import { DisplayState, ILabel, ILine } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 
@@ -97,7 +97,7 @@ export const getEffect = (node: INodeData) => {
 };
 
 export const getFontColor = (label: ILabel): string => {
-  if (["hide", "systemHide"].includes(label.displayState)) {
+  if ([DisplayState.hide.valueOf(), DisplayState.systemHide.valueOf()].includes(label.displayState)) {
     return GREYED_FOREGROUND_COLOUR;
   }
   return FOREGROUND_COLOUR;

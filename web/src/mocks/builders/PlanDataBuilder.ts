@@ -1,7 +1,7 @@
 import {
+  DisplayState,
   ICartesianCoords,
   IDiagram,
-  IDiagramDisplayStateEnum,
   IPage,
   IPagePageTypeEnum,
   PlanResponseDTO,
@@ -17,7 +17,7 @@ interface DiagramOptions {
   diagramType?: string;
   zoomScale?: number;
   pageRef?: number;
-  displayState?: string;
+  displayState?: DisplayState;
   listOrder?: number;
   listParentRef?: number;
   userEdited?: boolean;
@@ -75,7 +75,7 @@ export class PlanDataBuilder {
         listOrder: listOrder ?? newId,
         listParentRef,
         zoomScale: zoomScale ?? 300,
-        displayState: IDiagramDisplayStateEnum.display,
+        displayState: DisplayState.display,
       };
     } else {
       const defaultId = this.planData.diagrams.length + 1;
@@ -93,7 +93,7 @@ export class PlanDataBuilder {
         childDiagrams: [],
         listOrder: defaultId,
         zoomScale: 300,
-        displayState: IDiagramDisplayStateEnum.display,
+        displayState: DisplayState.display,
       };
 
       newDiagram = {
@@ -208,7 +208,7 @@ export class PlanDataBuilder {
       position,
       undefined,
       undefined,
-      "display",
+      DisplayState.display,
       SYMBOLS_FONT,
       fontSize,
     );
@@ -225,7 +225,7 @@ export class PlanDataBuilder {
     font: string = "Tahoma",
     fontSize: number = 10,
     effect: string = "none",
-    displayState: string = "display",
+    displayState: DisplayState = DisplayState.display,
     symbolType: string | undefined = undefined,
     textAlignment: string | undefined = undefined,
     borderWidth: number | undefined = undefined,
@@ -243,7 +243,7 @@ export class PlanDataBuilder {
 
     into.push({
       anchorAngle: 0,
-      displayState,
+      displayState: displayState,
       effect,
       symbolType,
       pointOffset: 0,
@@ -288,7 +288,7 @@ export class PlanDataBuilder {
 
     into.push({
       anchorAngle,
-      displayState: "display",
+      displayState: DisplayState.display,
       effect: "none",
       pointOffset,
       rotationAngle,

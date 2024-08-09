@@ -1,4 +1,4 @@
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DisplayState, IDiagram } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -128,7 +128,7 @@ export const diagrams: IDiagram[] = [
     parcelLabels: [],
     listOrder: 1,
     zoomScale: 100,
-    displayState: "display",
+    displayState: DisplayState.display,
     pageRef: 1,
   },
 ];
