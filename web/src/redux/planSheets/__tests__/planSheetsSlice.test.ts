@@ -26,33 +26,42 @@ describe("planSheetsSlice", () => {
     activeSheet: PlanSheetType.TITLE,
     activePageNumbers: {
       [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 2,
+      [PlanSheetType.SURVEY]: 1,
     },
     hasChanges: false,
   };
 
   let store = setupStore();
 
-  const diagrams = new PlanDataBuilder()
-    .addDiagram(
-      {
+  const { diagrams, pages } = new PlanDataBuilder()
+    .addDiagram({
+      bottomRightPoint: {
         x: 80,
         y: -90,
       },
-      undefined,
-      "sysGenPrimaryDiag",
-    )
-    .addDiagram(
-      {
+      diagramType: "sysGenPrimaryDiag",
+      pageRef: 1,
+    })
+    .addDiagram({
+      bottomRightPoint: {
         x: 80,
         y: -90,
       },
-      undefined,
-      "sysGenTraverseDiag",
-    )
-    .addPage(1)
-    .addPage(2)
-    .build().diagrams;
+      diagramType: "sysGenTraverseDiag",
+      pageRef: 2,
+    })
+    .addDiagram({
+      bottomRightPoint: {
+        x: 80,
+        y: -90,
+      },
+      diagramType: "userDefnPrimaryDiag",
+      pageRef: 3,
+    })
+    .addPage({ id: 1, pageNumber: 1, pageType: PlanSheetType.TITLE })
+    .addPage({ id: 2, pageNumber: 1, pageType: PlanSheetType.SURVEY })
+    .addPage({ id: 3, pageNumber: 2, pageType: PlanSheetType.SURVEY })
+    .build();
 
   beforeEach(() => {
     store = setupStore({ planSheets: initialState });
@@ -104,12 +113,17 @@ describe("planSheetsSlice", () => {
         pages: [
           {
             pageType: PlanSheetType.TITLE,
-            id: 0,
+            id: 1,
             pageNumber: 1,
           },
           {
             pageType: PlanSheetType.SURVEY,
-            id: 1,
+            id: 2,
+            pageNumber: 1,
+          },
+          {
+            pageType: PlanSheetType.SURVEY,
+            id: 3,
             pageNumber: 2,
           },
         ],
@@ -118,11 +132,12 @@ describe("planSheetsSlice", () => {
     expect(getFilteredPages(store.getState())).toEqual({ totalPages: 1 });
   });
 
-  test("getActiveDiagrams should return active diagrams", () => {
+  test("getActiveDiagrams should return active diagrams on current page", () => {
     store = setupStore({
       planSheets: {
         ...initialState,
         diagrams,
+        pages,
       },
     });
 
@@ -138,6 +153,23 @@ describe("planSheetsSlice", () => {
     expect(activeDiagrams[0]?.diagramType).toBe("sysGenTraverseDiag");
   });
 
+  test("getActiveDiagrams should return active diagrams when page changed", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+        pages,
+      },
+    });
+
+    store.dispatch(setActiveSheet(PlanSheetType.SURVEY));
+    store.dispatch(setActivePageNumber({ pageType: PlanSheetType.SURVEY, pageNumber: 2 }));
+    const activeDiagrams = getActiveDiagrams(store.getState());
+    expect(activeDiagrams).toHaveLength(1);
+    expect(activeDiagrams[0]?.id).toBe(3);
+    expect(activeDiagrams[0]?.diagramType).toBe("userDefnPrimaryDiag");
+  });
+
   test("setPlanData should set diagram and page data", () => {
     store = setupStore({
       planSheets: {
@@ -148,10 +180,10 @@ describe("planSheetsSlice", () => {
     expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], pages: [] });
     expect(hasChanges(store.getState())).toBe(true);
 
-    store.dispatch(setPlanData({ diagrams, pages: [] }));
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, pages: [] });
+    store.dispatch(setPlanData({ diagrams, pages }));
+    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, pages });
     expect(getDiagrams(store.getState())).toStrictEqual(diagrams);
-    expect(getPages(store.getState())).toStrictEqual([]);
+    expect(getPages(store.getState())).toStrictEqual(pages);
     expect(hasChanges(store.getState())).toBe(false);
   });
 

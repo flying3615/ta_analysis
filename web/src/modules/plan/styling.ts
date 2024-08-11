@@ -96,12 +96,12 @@ export const getEffect = (node: INodeData) => {
   return LabelEffect.NONE;
 };
 
-export const getFontColor = (label: ILabel): string => {
-  if ([DisplayState.hide.valueOf(), DisplayState.systemHide.valueOf()].includes(label.displayState)) {
-    return GREYED_FOREGROUND_COLOUR;
-  }
-  return FOREGROUND_COLOUR;
-};
+const isHidden = (label: ILabel) =>
+  [DisplayState.hide.valueOf(), DisplayState.systemHide.valueOf()].includes(label.displayState);
+
+export const getFontColor = (label: ILabel): string => (isHidden(label) ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR);
+
+export const getZIndex = (label: ILabel): number => (isHidden(label) ? 100 : 200);
 
 export const getIsCircled = (label: ILabel): number | undefined =>
   label.symbolType === LABEL_SYMBOL_CIRCLE ? 1 : undefined;

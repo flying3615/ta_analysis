@@ -22,12 +22,12 @@ export class CytoscapeCoordinateMapper {
     // The diagram limit is actually the page size in cm.
     // The origin should be shifted on the page so
     // that the page border lines fit on
-    const diagramWidth =
+    const pageWidth =
       CytoscapeCoordinateMapper.diagramLimitBottomRightX + CytoscapeCoordinateMapper.diagramLimitOriginX;
-    const diagramHeight = CytoscapeCoordinateMapper.borderBottomRightY + CytoscapeCoordinateMapper.diagramLimitOriginY;
+    const pageHeight = CytoscapeCoordinateMapper.borderBottomRightY + CytoscapeCoordinateMapper.diagramLimitOriginY;
     // Scales are in pixels per centimetre
-    const scaleX = (canvas.clientWidth - CytoscapeCoordinateMapper.pixelMargin) / diagramWidth;
-    const scaleY = Math.abs((canvas.clientHeight - CytoscapeCoordinateMapper.pixelMargin) / diagramHeight);
+    const scaleX = (canvas.clientWidth - CytoscapeCoordinateMapper.pixelMargin) / pageWidth;
+    const scaleY = Math.abs((canvas.clientHeight - CytoscapeCoordinateMapper.pixelMargin) / pageHeight);
 
     // We want to scale the page to fit within the viewport whilst maintaining the
     // shape of the plan - so we have the same scale for X and Y.
@@ -63,14 +63,8 @@ export class CytoscapeCoordinateMapper {
       );
     }
 
-    const xPosCm =
-      (position?.x * 100) / diagram.zoomScale +
-      diagram.originPageOffset.x +
-      CytoscapeCoordinateMapper.diagramLimitOriginX;
-    const yPosCm =
-      (position?.y * 100) / diagram.zoomScale +
-      diagram.originPageOffset.y +
-      CytoscapeCoordinateMapper.diagramLimitOriginY;
+    const xPosCm = (position?.x * 100) / diagram.zoomScale + diagram.originPageOffset.x * 100;
+    const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
     return {
       x: this.planCmToCytoscape(xPosCm) + CytoscapeCoordinateMapper.pixelMargin,
       y: -this.planCmToCytoscape(yPosCm) + CytoscapeCoordinateMapper.pixelMargin,

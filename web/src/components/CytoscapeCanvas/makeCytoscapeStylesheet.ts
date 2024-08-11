@@ -70,6 +70,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-valign": textVAlign,
     "text-justification": textJustification,
     color: "data(fontColor)",
+    "z-index": "data(zIndex)",
     "text-background-color": "#FFFFFF",
     "text-background-opacity": "data(textBackgroundOpacity)",
     "text-border-opacity": "data(textBorderOpacity)",
@@ -80,6 +81,14 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "bounds-expansion": 12, // ensure circles are visible
     "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).x,
     "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).y,
+    "z-index-compare": "manual",
+  };
+
+  const lineBaseStyle = {
+    "line-color": FOREGROUND_COLOUR,
+    "z-index": 150,
+    "z-index-compare": "manual",
+    width: "data(pointWidth)",
   };
 
   const noNodeMarker = {
@@ -171,20 +180,21 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "edge",
       style: {
-        "line-color": FOREGROUND_COLOUR,
+        ...lineBaseStyle,
         "line-cap": "round",
-        width: "data(pointWidth)",
       },
     },
     {
       selector: "edge[dashStyle]",
       style: {
+        ...lineBaseStyle,
         "line-style": "data(dashStyle)",
       },
     },
     {
       selector: "edge[dashPattern]",
       style: {
+        ...lineBaseStyle,
         "line-dash-pattern": "data(dashPattern)",
         "line-cap": "butt",
       },
@@ -192,6 +202,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "edge[targetArrowShape]",
       style: {
+        ...lineBaseStyle,
         "curve-style": "straight", // needed to render arrows
         "target-arrow-shape": "data(targetArrowShape)",
         "target-arrow-color": FOREGROUND_COLOUR,
@@ -200,6 +211,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "edge[sourceArrowShape]",
       style: {
+        ...lineBaseStyle,
         "source-arrow-shape": "data(sourceArrowShape)",
         "source-arrow-color": FOREGROUND_COLOUR,
       },

@@ -4,7 +4,7 @@ import { negate } from "lodash-es";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
 
-import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity } from "./styling";
+import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex } from "./styling";
 
 export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
@@ -106,6 +106,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
           fontSize: label.fontSize ?? 10,
           fontStyle: label.fontStyle,
           fontColor: getFontColor(label),
+          zIndex: getZIndex(label),
           circled: getIsCircled(label),
           textBackgroundOpacity: getTextBackgroundOpacity(label),
           textBorderOpacity: label.borderWidth ? 1 : 0,
@@ -152,6 +153,9 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         };
       }) as INodeData[]),
       ...userDefnLabels,
+      ...(diagram.childDiagrams?.flatMap((childDiagram) =>
+        childDiagram?.labels?.map(labelToNode)?.map(addDiagramKey("childDiagramLabels")),
+      ) ?? []),
       ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
       ...diagram.parcelLabels

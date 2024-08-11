@@ -29,7 +29,7 @@ export class PlanSheetsPage {
     return this.cytoscapeData;
   }
 
-  public getCytoscapeNode(id: string | number): CytoscapeElement {
+  public getCytoscapeNodeById(id: string | number): CytoscapeElement {
     if (!this.cytoscapeData) {
       throw new Error(`Must call fetchCytoscapeData() before getCytoscapeNode()`);
     }
@@ -37,6 +37,18 @@ export class PlanSheetsPage {
     if (!node) {
       throw new Error(`Cytoscape node with id ${id} not found`);
     }
+    return node;
+  }
+
+  public getCytoscapeNodeByLabel(label: string): CytoscapeElement {
+    if (!this.cytoscapeData) {
+      throw new Error(`Must call fetchCytoscapeData() before getCytoscapeNode()`);
+    }
+    const node = this.cytoscapeData.elements.nodes.find((element) => element.data.label === label);
+    if (!node) {
+      throw new Error(`Cytoscape node with label ${label} not found`);
+    }
+    console.log(`Found label node ${JSON.stringify(label)}`);
     return node;
   }
 

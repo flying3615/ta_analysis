@@ -12,15 +12,18 @@ describe("CytoscapeCoordinateMapper", () => {
   );
 
   test("groundCoordToCytoscape maps ground coordinates onto cytoscape pixels", () => {
-    expect(cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 0, y: 0 }, 1).x).toBeCloseTo(3.5, 1);
-    expect(cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 0, y: 0 }, 1).y).toBeCloseTo(3.5, 1);
+    const origin = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 0, y: 0 }, 1);
+    const bottomRight = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 150, y: -100 }, 1);
+    const topLeft = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 30, y: -20 }, 1);
 
-    const corner = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 30, y: -20 }, 1);
-    expect(corner.x).toBeCloseTo(274.2, 1);
-    expect(corner.y).toBeCloseTo(184.0, 1);
+    expect(origin.x).toBeCloseTo(-10, 1);
+    expect(origin.y).toBeCloseTo(-10, 1);
 
-    expect(cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 150, y: -100 }, 1).x).toBeCloseTo(1357.1, 1);
-    expect(cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 150, y: -100 }, 1).y).toBeCloseTo(905.9, 1);
+    expect(topLeft.x).toBeCloseTo(260.7, 1);
+    expect(topLeft.y).toBeCloseTo(170.5, 1);
+
+    expect(bottomRight.x).toBeCloseTo(1343.5, 1);
+    expect(bottomRight.y).toBeCloseTo(892.4, 1);
   });
 
   test("cytoscapeToGroundCoord maps cytoscape pixels onto ground coordinates", () => {
@@ -42,6 +45,18 @@ describe("CytoscapeCoordinateMapper", () => {
         1,
       ),
     ).toStrictEqual({ x: 206.404, y: -138.582 });
+  });
+
+  test("groundCoordToCytoscape and cytoscapeToGroundCoord are consistent", () => {
+    const origin = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 0, y: 0 }, 1);
+    const bottomRight = cytoscapeCoordinateMapper.groundCoordToCytoscape({ x: 150, y: -100 }, 1);
+
+    const originGround = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(origin, 1);
+    const bottomRightGround = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(bottomRight, 1);
+
+    expect(originGround.x).toBeCloseTo(0, 4);
+    expect(bottomRightGround.x).toBeCloseTo(150, 4);
+    expect(bottomRightGround.y).toBeCloseTo(-100, 4);
   });
 
   test("planCoordToCytoscape maps plan cm to cytoscape pixels", () => {
