@@ -13,6 +13,7 @@ export const DiagramSelector = () => {
   const view = useAppSelector(getActiveSheet);
   const diagrams = useAppSelector(getDiagrams).filter(filterBySheetType(view));
   const header = headerForSheet(view);
+
   return (
     <div className="PlanSheetsDiagramOptions">
       <div className="PlanSheetsDiagramOptions-heading">{header}</div>
@@ -22,24 +23,22 @@ export const DiagramSelector = () => {
 };
 
 const headerForSheet = (view: PlanSheetType) => {
-  switch (view) {
-    case PlanSheetType.SURVEY:
-      return (
-        <>
-          <LuiIcon alt="Survey sheet icon" color={luiColors.fuscous} name="ic_survey_sheet" size="md" />
-          <h2>Survey sheet diagrams</h2>
-        </>
-      );
-    case PlanSheetType.TITLE:
-      return (
-        <>
-          <LuiIcon alt="Title sheet icon" color={luiColors.fuscous} name="ic_title_sheet" size="md" />
-          <h2>Title sheet diagrams</h2>
-        </>
-      );
-    default:
-      return <></>;
-  }
+  const icons = {
+    [PlanSheetType.SURVEY]: "ic_survey_sheet",
+    [PlanSheetType.TITLE]: "ic_title_sheet",
+  };
+
+  const titles = {
+    [PlanSheetType.SURVEY]: "Survey sheet diagrams",
+    [PlanSheetType.TITLE]: "Title sheet diagrams",
+  };
+
+  return (
+    <>
+      <LuiIcon alt={`${titles[view]} icon`} color={luiColors.fuscous} name={icons[view]} size="md" />
+      <h2>{titles[view]}</h2>
+    </>
+  );
 };
 
 const filterBySheetType = (view: PlanSheetType) => (d: IDiagram) => {

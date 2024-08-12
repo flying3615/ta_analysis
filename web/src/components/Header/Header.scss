@@ -1,5 +1,7 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
+$headerHeight: 56px;
+
 .Header {
   width: 100%;
   align-items: center;
@@ -7,7 +9,7 @@
   background-color: lui.$hint;
   display: flex;
   flex-direction: row;
-  height: 56px;
+  height: $headerHeight;
   padding-left: lui.$unit-xs;
 
   color: lui.$charcoal;
@@ -86,35 +88,36 @@
       padding: 10px 20px;
     }
   }
+}
 
-  .szh-menu {
-    width: 274px;
-    padding: 0;
+// This should be outside the header, since the footer component also uses it.
+.szh-menu {
+  width: 274px;
+  padding: 0;
 
-    &__header {
-      color: lui.$fuscous;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 32px;
-      padding: 0 lui.$unit-xs;
-      text-transform: none;
+  &__header {
+    color: lui.$fuscous;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 32px;
+    padding: 0 lui.$unit-xs;
+    text-transform: none;
+  }
+
+  &__item {
+    color: lui.$charcoal;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 40px;
+    padding: 0 lui.$unit-xs;
+
+    &--active {
+      background-color: lui.$polar;
     }
+  }
 
-    &__item {
-      color: lui.$charcoal;
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 40px;
-      padding: 0 lui.$unit-xs;
-
-      &--active {
-        background-color: lui.$polar;
-      }
-    }
-
-    .LuiIcon {
-      fill: lui.$fuscous;
-      margin-right: lui.$unit-xs;
-    }
+  .LuiIcon {
+    fill: lui.$fuscous;
+    margin-right: lui.$unit-xs;
   }
 }

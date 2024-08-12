@@ -217,6 +217,14 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
+      selector: ":parent",
+      css: {
+        "background-opacity": 0,
+        "border-width": 0,
+        label: "",
+      },
+    },
+    {
       selector: "#root",
       style: {
         "background-color": "white",

@@ -55,13 +55,13 @@ export class PlanDataBuilder {
     listOrder?: number,
     listParentRef?: number,
     zoomScale?: number,
+    pageRef?: number,
   ): PlanDataBuilder {
     let newDiagram;
     if (Object.prototype.hasOwnProperty.call(optionsOrBottomRightPoint, "x")) {
       const newId = id ?? this.planData.diagrams.length + 1;
       newDiagram = {
         id: newId,
-        pageRef: newId,
         bottomRightPoint: optionsOrBottomRightPoint as ICartesianCoords,
         originPageOffset,
         coordinates: [],
@@ -75,13 +75,13 @@ export class PlanDataBuilder {
         listOrder: listOrder ?? newId,
         listParentRef,
         zoomScale: zoomScale ?? 300,
+        pageRef: pageRef,
         displayState: DisplayState.display,
       };
     } else {
       const defaultId = this.planData.diagrams.length + 1;
       const defaults = {
         id: defaultId,
-        pageRef: defaultId,
         originPageOffset: { x: 0, y: 0 },
         coordinates: [],
         labels: [],
@@ -93,6 +93,7 @@ export class PlanDataBuilder {
         childDiagrams: [],
         listOrder: defaultId,
         zoomScale: 300,
+        pageRef: pageRef,
         displayState: DisplayState.display,
       };
 
@@ -158,7 +159,6 @@ export class PlanDataBuilder {
         ...(optionsOrPageNumber as IPage),
       });
     }
-
     return this;
   }
 

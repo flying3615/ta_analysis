@@ -1,10 +1,13 @@
 import "./DiagramList.scss";
 
 import { IDiagram, ILabel } from "@linz/survey-plan-generation-api-client";
-import { LuiIcon, LuiTooltip } from "@linzjs/lui";
-import { right } from "@popperjs/core";
+import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { isArray, isEmpty, isNil } from "lodash-es";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
+import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent.tsx";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getActivePageNumber, getPageRefFromPageNumber, setDiagramPageRef } from "@/redux/planSheets/planSheetsSlice";
 
 export interface DiagramListProps {
   diagrams: IDiagram[];
@@ -16,6 +19,7 @@ export interface DiagramDisplay {
   diagramChildren: DiagramDisplay[];
   level: number;
   listOrder: number;
+  pageRef?: number;
 }
 
 type DiagramMap = Record<number, IDiagram>;
@@ -23,38 +27,37 @@ type ChildDiagramMap = Record<number, number[]>;
 
 export const DiagramList = ({ diagrams }: DiagramListProps) => {
   const diagramHierarchy = useMemo(() => buildDiagramHierarchy(diagrams), [diagrams]);
-  return (
-    <div className="DiagramListWrapper">
-      {diagramHierarchy.map((d, index) => (
-        <DiagramTileComponent key={index} diagramDisplay={d} />
-      ))}
-    </div>
-  );
-};
+  const [selectedDiagramId, setSelectedDiagramId] = useState<number | null>(null);
 
-const DiagramTileComponent = ({ diagramDisplay }: { diagramDisplay: DiagramDisplay }) => {
-  const paddingMultiple = diagramDisplay.level <= 1 ? 0 : diagramDisplay.level - 1;
+  const dispatch = useAppDispatch();
+  const activePageNumber = useAppSelector(getActivePageNumber);
+  const getPageRef = useAppSelector((state) => getPageRefFromPageNumber(state)(activePageNumber));
+
+  const insertDiagram = () => {
+    if (getPageRef && selectedDiagramId) {
+      dispatch(setDiagramPageRef({ id: selectedDiagramId, pageRef: getPageRef }));
+      setSelectedDiagramId(null);
+    }
+  };
+
   return (
-    <div>
-      <div
-        style={{
-          paddingLeft: 12 * paddingMultiple + 8,
-        }}
-        className="DiagramListLabel"
-      >
-        <LuiTooltip mode="default-withDelay" message={diagramDisplay.diagramLabel} placement={right}>
-          <span>
-            {diagramDisplay.level != 0 && (
-              <LuiIcon size="sm" name="ic_subdirectory_arrow_right" alt="subdirectory" className="DiagramListIcon" />
-            )}
-            {diagramDisplay.diagramLabel}
-          </span>
-        </LuiTooltip>
+    <>
+      <div className="DiagramListWrapper">
+        {diagramHierarchy.map((diagramDisplay, index) => (
+          <DiagramTileComponent
+            key={index}
+            diagramDisplay={diagramDisplay}
+            selectedDiagramId={selectedDiagramId}
+            setSelectedDiagramId={setSelectedDiagramId}
+          />
+        ))}
       </div>
-      {diagramDisplay.diagramChildren.map((d, index) => (
-        <DiagramTileComponent key={index} diagramDisplay={d} />
-      ))}
-    </div>
+      <div className="horizontal-spacer" />
+      <LuiButton level="tertiary" className="lui-full-width lui-button-icon" onClick={insertDiagram}>
+        <LuiIcon size="md" name="ic_insert_into_sheet" alt="Insert diagram" />
+        Insert diagram
+      </LuiButton>
+    </>
   );
 };
 
@@ -103,6 +106,7 @@ const diagramToDiagramDisplay = (
   // Recursively create more child diagrams
   diagramChildren: createChildDiagrams(diagramMap, childDiagramMap, level, childDiagramMap[diagram.id]),
   listOrder: diagram.listOrder,
+  pageRef: diagram.pageRef,
 });
 /**
  * Recursive function for building the diagram hierarchy

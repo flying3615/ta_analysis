@@ -22,7 +22,6 @@ interface IPopupModal {
 }
 
 const PageManager = () => {
-  const cls = "change-sheet-button lui-button-tertiary lui-button-icon";
   const [renumberModal, setRenumberModal] = useState(false);
   const [deletePageModal, setDeletePageModal] = useState(false);
   const getAllPages = useAppSelector(getPages);
@@ -129,6 +128,7 @@ const PageManager = () => {
   const closeRenumberModal = () => setRenumberModal(false);
   const closeDeletePageModal = () => setDeletePageModal(false);
   const pageInfo = { activeSheet, activePageNumber };
+  const cls = "change-sheet-button lui-button-tertiary lui-button-icon";
 
   return (
     <>

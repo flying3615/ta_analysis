@@ -7,7 +7,6 @@ export const mockPlanData = new PlanDataBuilder()
       y: -90,
     },
     zoomScale: (100 * 90) / 20,
-    pageRef: 1,
     box: true,
   })
   .addPage(1)
@@ -87,7 +86,6 @@ export const mockPlanData = new PlanDataBuilder()
       y: -10,
     },
     zoomScale: (100 * 150) / 20,
-    pageRef: 1,
     diagramType: "sysGenTraverseDiag",
     box: true,
   })

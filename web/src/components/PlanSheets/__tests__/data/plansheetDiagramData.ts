@@ -33,6 +33,7 @@ export const nestedTitlePlan = new PlanDataBuilder()
     3,
     11,
     13,
+    1,
   )
   .addLabel(
     "labels",
@@ -378,4 +379,45 @@ export const nestedSurveyPlan = new PlanDataBuilder()
     "diagram",
     "diagram",
   )
+  .build();
+
+export const nestedMiniTitlePlan = new PlanDataBuilder()
+  .addDiagram({
+    bottomRightPoint: {
+      x: 78,
+      y: -53,
+    },
+    originPageOffset: {
+      x: 0,
+      y: 0,
+    },
+    diagramType: "sysGenPrimaryDiag",
+    zoomScale: 200, // meter per cm
+  })
+  .addLabel(
+    "coordinateLabels",
+    100,
+    "System Generated Primary Diagram",
+    { x: 40, y: -5 },
+    undefined,
+    undefined,
+    "diagram",
+    "Tahoma",
+    14.0,
+  )
+  .addDiagram({
+    bottomRightPoint: {
+      x: 78,
+      y: -53,
+    },
+    originPageOffset: {
+      x: 0,
+      y: 0,
+    },
+    diagramType: "sysGenPrimaryDiag",
+    pageRef: 2,
+    zoomScale: 200,
+  })
+  .addPage({ id: 2, pageType: "title", pageNumber: 1 })
+  .addPage({ id: 3, pageType: "title", pageNumber: 2 })
   .build();

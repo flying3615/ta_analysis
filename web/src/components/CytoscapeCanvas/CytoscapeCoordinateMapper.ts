@@ -62,7 +62,6 @@ export class CytoscapeCoordinateMapper {
         `groundCoordToCytoscape has position ${JSON.stringify(position)} outside range (0,0)->(${JSON.stringify(diagram.bottomRightPoint)}`,
       );
     }
-
     const xPosCm = (position?.x * 100) / diagram.zoomScale + diagram.originPageOffset.x * 100;
     const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
     return {

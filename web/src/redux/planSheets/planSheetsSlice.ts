@@ -51,6 +51,16 @@ const planSheetsSlice = createSlice({
     setActivePageNumber: (state, action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>) => {
       state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
     },
+    setDiagramPageRef: (state, action: PayloadAction<{ id: number; pageRef: number | undefined }>) => {
+      const { id, pageRef } = action.payload;
+      state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
+    },
+    addDiagram: (state, action: PayloadAction<IDiagram>) => {
+      state.diagrams.push(action.payload);
+    },
+    removeDiagram: (state, action: PayloadAction<string>) => {
+      state.diagrams = state.diagrams.filter((d) => d.id.toString() !== action.payload);
+    },
     updatePages: (state, action: PayloadAction<IPage[]>) => {
       state.pages = action.payload;
     },
@@ -60,11 +70,26 @@ const planSheetsSlice = createSlice({
     getDiagrams: (state) => state.diagrams,
     getPages: (state) => state.pages,
     getActiveSheet: (state) => state.activeSheet,
+    getPageNumberFromPageRef: (state) => (pageID: number) => {
+      const page = state.pages.find((page) => page.pageType === state.activeSheet && page.id === pageID);
+      return page?.pageNumber ?? null;
+    },
+    getActivePageRefFromPageNumber: (state) => {
+      const page = state.pages.find(
+        (page) => page.pageType === state.activeSheet && page.pageNumber === state.activePageNumbers[state.activeSheet],
+      );
+      return page?.id ?? null;
+    },
+    getPageRefFromPageNumber: (state) => (pageNumber: number) => {
+      const page = state.pages.find((page) => page.pageType === state.activeSheet && page.pageNumber === pageNumber);
+      return page?.id ?? null;
+    },
     getActiveDiagrams: (state) => {
       // Return diagrams on active page
       const activePageNumber = state.activePageNumbers[state.activeSheet];
-      const activePage = state.pages.find((p) => p.pageType === state.activeSheet && p.pageNumber === activePageNumber);
-
+      const activePage = state.pages.find(
+        (page) => page.pageType === state.activeSheet && page.pageNumber === activePageNumber,
+      );
       return state.diagrams.filter((diagram) => diagram.pageRef === activePage?.id);
     },
     getActivePages: (state) => {
@@ -84,8 +109,16 @@ const planSheetsSlice = createSlice({
   },
 });
 
-export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber, updatePages } =
-  planSheetsSlice.actions;
+export const {
+  setPlanData,
+  replaceDiagrams,
+  setActiveSheet,
+  setActivePageNumber,
+  addDiagram,
+  removeDiagram,
+  setDiagramPageRef,
+  updatePages,
+} = planSheetsSlice.actions;
 
 export const {
   getPlanData,
@@ -93,6 +126,9 @@ export const {
   getPages,
   getActivePages,
   getActiveSheet,
+  getPageNumberFromPageRef,
+  getPageRefFromPageNumber,
+  getActivePageRefFromPageNumber,
   getActiveDiagrams,
   getActivePageNumber,
   getFilteredPages,

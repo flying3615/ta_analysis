@@ -121,6 +121,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
           featureType: label.featureType,
           diagramId: diagram.id,
           ...(isSymbol(label) && { symbolId: label.displayText }),
+          parent: `D${diagram.id}`,
         },
       };
     };
@@ -140,18 +141,21 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
       ? diagram.labels.filter(notSymbol).map(labelToNode).map(addDiagramKey("labels"))
       : [];
 
-    return [
-      ...(diagram.coordinates.map((coordinate) => {
-        return {
-          id: coordinate.id.toString(),
-          position: coordinate.position,
-          properties: {
-            coordType: coordinate.coordType,
-            diagramId: diagram.id,
-            elementType: "coordinates",
-          },
-        };
-      }) as INodeData[]),
+    const coordinates = diagram.coordinates.map((coordinate) => {
+      return {
+        id: coordinate.id.toString(),
+        position: coordinate.position,
+        properties: {
+          coordType: coordinate.coordType,
+          diagramId: diagram.id,
+          elementType: "coordinates",
+          parent: `D${diagram.id}`,
+        },
+      };
+    });
+
+    const diagramNodes = [
+      ...coordinates,
       ...userDefnLabels,
       ...(diagram.childDiagrams?.flatMap((childDiagram) =>
         childDiagram?.labels?.map(labelToNode)?.map(addDiagramKey("childDiagramLabels")),
@@ -164,6 +168,18 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         .map(labelToNode)
         .map(addDiagramKey("parcelLabels")),
     ];
+
+    diagramNodes.push({
+      id: `D${diagram.id}`,
+      position: { x: 1, y: 1 },
+      properties: {
+        coordType: "",
+        diagramId: diagram.id,
+        elementType: "coordinates",
+      },
+    });
+
+    return diagramNodes;
   });
 };
 

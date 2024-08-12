@@ -1,7 +1,9 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
+import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
@@ -85,5 +87,67 @@ describe("Diagram Selector panel", () => {
     );
 
     expect(await screen.findByText("Title sheet diagrams")).toBeInTheDocument();
+  });
+
+  it("selects a diagram from diagram list and add that to a page", async () => {
+    const titleDiagramList = nestedMiniTitlePlan.diagrams;
+    const titlePageList = nestedMiniTitlePlan.pages;
+    renderCompWithReduxAndRoute(
+      <Route element={<DiagramSelector />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            diagrams: titleDiagramList,
+            pages: titlePageList,
+            activeSheet: PlanSheetType.TITLE,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 2,
+              [PlanSheetType.SURVEY]: 0,
+            },
+          },
+        },
+      },
+    );
+    // We'll try to add diagram_id = 1 to page_number = 2 (which is empty)
+    const diagramLabels = screen.getAllByRole("presentation", { name: "" });
+    const firstDiagramLabel = diagramLabels[0];
+    if (firstDiagramLabel) {
+      await userEvent.click(firstDiagramLabel);
+    } else {
+      console.error("Second diagram label is undefined");
+    }
+    expect(firstDiagramLabel).toHaveClass("selected");
+    expect(screen.getByRole("button", { name: /Insert diagram/i })).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: /Insert diagram/i }));
+    // Check if the T2 label has appeared
+    expect(screen.getByText(/T2/i)).toBeInTheDocument();
+  });
+
+  it("removes a diagram from the page and the remove button disappears", async () => {
+    const titleDiagramList = nestedMiniTitlePlan.diagrams;
+    const titlePageList = nestedMiniTitlePlan.pages;
+    renderCompWithReduxAndRoute(
+      <Route element={<DiagramSelector />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            diagrams: titleDiagramList,
+            pages: titlePageList,
+            activeSheet: PlanSheetType.TITLE,
+            activePageNumbers: {
+              [PlanSheetType.TITLE]: 1,
+              [PlanSheetType.SURVEY]: 0,
+            },
+          },
+        },
+      },
+    );
+    expect(screen.getByRole("button", { name: /Remove from sheet/i })).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: /Remove from sheet/i }));
+    expect(screen.queryByRole("button", { name: /Remove from sheet/i })).not.toBeInTheDocument();
   });
 });

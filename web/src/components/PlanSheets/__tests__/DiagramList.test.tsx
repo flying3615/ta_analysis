@@ -1,17 +1,23 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { generatePath, Route } from "react-router-dom";
 
 import { nestedSurveyPlan, nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
 import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
+import { Paths } from "@/Paths.ts";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 describe("The Diagram list tree", () => {
   it("displays all title diagram labels correctly", () => {
     const titleDiagramList = nestedTitlePlan.diagrams;
+    renderCompWithReduxAndRoute(
+      <Route element={<DiagramList diagrams={titleDiagramList} />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
     const allLabelsForDiagrams: string[] = titleDiagramList
       .flatMap((m) => m.labels.filter((l) => l.labelType == "diagram"))
       .map((l) => l.displayText);
     // check that a label has been found for all diagrams
     expect(allLabelsForDiagrams).toHaveLength(titleDiagramList.length);
-    render(<DiagramList diagrams={titleDiagramList} />);
     for (const diagramLabel of allLabelsForDiagrams) {
       expect(screen.getByText(diagramLabel)).toBeInTheDocument();
     }
@@ -36,12 +42,15 @@ describe("The Diagram list tree", () => {
 
   it("displays all survey diagram labels correctly", () => {
     const surveyDiagramList = nestedSurveyPlan.diagrams;
+    renderCompWithReduxAndRoute(
+      <Route element={<DiagramList diagrams={surveyDiagramList} />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
     const allLabelsForDiagrams: string[] = surveyDiagramList
       .flatMap((m) => m.labels.filter((l) => l.labelType == "diagram"))
       .map((l) => l.displayText);
     // check that a label has been found for all diagrams
     expect(allLabelsForDiagrams).toHaveLength(surveyDiagramList.length);
-    render(<DiagramList diagrams={surveyDiagramList} />);
     for (const diagramLabel of allLabelsForDiagrams) {
       expect(screen.getByText(diagramLabel)).toBeInTheDocument();
     }
