@@ -19,29 +19,27 @@ export const ActionMenuButton = forwardRef<HTMLButtonElement, HeaderButtonProps>
   ref,
 ) {
   return (
-    <>
-      <LuiTooltip message={headerButtonLabel} placement="bottom" appendTo="parent">
-        <LuiButton
-          disabled={disabled}
-          className={clsx("lui-button-menu", { selected })}
-          level="tertiary"
-          style={{ whiteSpace: "nowrap" }}
-          onClick={(e) => {
-            if (allowOpen?.() === false) return;
-            onClick?.(e);
-          }}
-          ref={ref}
-        >
-          <LuiIcon name={iconName} alt={headerButtonLabel} size="md" />
-          <LuiIcon
-            alt="Dropdown icon"
-            className="HeaderToggle__dropdownIcon"
-            color={luiColors.sea}
-            name="ic_arrow_drop_down"
-            size="md"
-          />
-        </LuiButton>
-      </LuiTooltip>
-    </>
+    <LuiTooltip message={headerButtonLabel} placement="bottom" appendTo="parent">
+      <LuiButton
+        disabled={disabled}
+        className={clsx("lui-button-menu", { selected })}
+        level="tertiary"
+        style={{ whiteSpace: "nowrap" }}
+        onClick={(e) => {
+          if (allowOpen?.() === false) return;
+          onClick?.(e);
+        }}
+        ref={ref}
+      >
+        <LuiIcon name={iconName} alt={headerButtonLabel} size="md" />
+        <LuiIcon
+          alt="Dropdown icon"
+          className="HeaderToggle__dropdownIcon"
+          color={luiColors.sea}
+          name="ic_arrow_drop_down"
+          size="md"
+        />
+      </LuiButton>
+    </LuiTooltip>
   );
 });

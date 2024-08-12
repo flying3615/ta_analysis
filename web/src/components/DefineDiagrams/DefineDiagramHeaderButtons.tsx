@@ -80,6 +80,7 @@ export const DefineDiagramMenuButtons = () => {
       <VerticalSpacer />
       <ActionHeaderMenu
         title="Define primary diagram"
+        defaultAction="define_primary_diagram_rectangle"
         options={[
           {
             label: "Rectangle",
@@ -96,6 +97,7 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderMenu
         title="Define non-primary diagram"
         allowOpen={checkAddNonPrimaryDiagram}
+        defaultAction="define_nonprimary_diagram_rectangle"
         options={[
           {
             label: "Rectangle",
@@ -112,6 +114,7 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderMenu
         title="Define survey diagram"
         allowOpen={checkAddNonPrimaryDiagram}
+        defaultAction="define_survey_diagram_rectangle"
         options={[
           {
             label: "Rectangle",

@@ -1,5 +1,5 @@
 import { ClickedFeature, LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
-import { intersection, isEmpty, isEqual, minBy, sortBy, xor } from "lodash-es";
+import { intersection, isEmpty, isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect } from "react";
 
@@ -35,9 +35,11 @@ export const useSelectFeatures = ({
     );
     const minDistance = (minBy(layerClickedFeatures, (cf) => cf.distance)?.distance ?? 0) + 1;
     const layerClickedFeaturesNearest = layerClickedFeatures.filter((cf) => cf.distance <= minDistance);
-    const clickedFeatureIds = (
-      filterSelect ? layerClickedFeaturesNearest.filter(filterSelect) : layerClickedFeaturesNearest
-    ).map(getClickedFeatureId);
+    const clickedFeatureIds = uniq(
+      (filterSelect ? layerClickedFeaturesNearest.filter(filterSelect) : layerClickedFeaturesNearest).map(
+        getClickedFeatureId,
+      ),
+    );
     const currentFeatureIds = featureSelect(layer).map(getFeatureId);
 
     setFeatureSelect(
