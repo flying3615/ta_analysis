@@ -4,17 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
-import {
-  DIAGRAMS_LAYER_NAME,
-  MARKS_LAYER_NAME,
-  PARCELS_LAYER_NAME,
-  UNDERLYING_PARCELS_LAYER_NAME,
-  UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME,
-  VECTORS_LAYER_NAME,
-} from "@/components/DefineDiagrams/MapLayers.ts";
-import LandingPage from "@/components/LandingPage/LandingPage.tsx";
-import { server } from "@/mocks/mockServer.ts";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
+import { Layer } from "@/components/DefineDiagrams/MapLayers";
+import LandingPage from "@/components/LandingPage/LandingPage";
+import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
@@ -30,8 +23,10 @@ describe("DefineDiagrams", () => {
       <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
-    // header toggle label is visible
-    expect(screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" })).toBeTruthy();
+    await waitFor(() => {
+      const button = screen.getByRole("button", { name: "Diagrams icon Diagrams Dropdown icon" });
+      expect(button).toBeTruthy();
+    });
   });
 
   it("call prepares dataset and subsequent queries on initial render", async () => {
@@ -48,12 +43,9 @@ describe("DefineDiagrams", () => {
 
     // async callback from the prepareDataset success
     // Note: Prepare dataset should only be called once!
-    await waitFor(
-      () => {
-        expect(requestSpy).toHaveBeenCalled();
-      },
-      { timeout: 5000 },
-    );
+    await waitFor(() => {
+      expect(requestSpy).toHaveBeenCalled();
+    });
 
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
@@ -105,13 +97,18 @@ describe("DefineDiagrams", () => {
     );
 
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(MARKS_LAYER_NAME, LayerType.VECTOR);
+      expect(mockMap).toHaveLayer(Layer.MARKS, LayerType.VECTOR);
     });
 
-    // validate marks visible
-    const marksLayerState = mockMap.layerState[MARKS_LAYER_NAME];
-    await waitFor(() => expect(marksLayerState?.visible).toBeTruthy());
-    await waitFor(() => expect(marksLayerState).toHaveFeatureCount(13));
+    const marksLayerState = mockMap.layerState[Layer.MARKS];
+    await waitFor(() => {
+      expect(marksLayerState?.visible).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      expect(marksLayerState).toHaveFeatureCount(13);
+    });
+
     expect(marksLayerState).toHaveFeature(1);
   });
 
@@ -121,15 +118,20 @@ describe("DefineDiagrams", () => {
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
-    // openlayers map and it's layers should render
+    // openlayers map and its layers should render
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(PARCELS_LAYER_NAME, LayerType.VECTOR);
+      expect(mockMap).toHaveLayer(Layer.PARCELS, LayerType.VECTOR);
     });
 
-    // validate parcels visible
-    const parcelsLayerState = mockMap.layerState[PARCELS_LAYER_NAME];
-    await waitFor(() => expect(parcelsLayerState?.visible).toBeTruthy());
-    await waitFor(() => expect(parcelsLayerState).toHaveFeatureCount(5));
+    const parcelsLayerState = mockMap.layerState[Layer.PARCELS];
+    await waitFor(() => {
+      expect(parcelsLayerState?.visible).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      expect(parcelsLayerState).toHaveFeatureCount(5);
+    });
+
     expect(parcelsLayerState).toHaveFeature(1);
   });
 
@@ -139,18 +141,25 @@ describe("DefineDiagrams", () => {
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
-    // openlayers map and it's layers should render
+    // openlayers map and its layers should render
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(UNDERLYING_PARCELS_LAYER_NAME, LayerType.VECTOR_TILE);
+      expect(mockMap).toHaveLayer(Layer.UNDERLYING_PARCELS, LayerType.VECTOR_TILE);
     });
+
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME, LayerType.VECTOR_TILE);
+      expect(mockMap).toHaveLayer(Layer.UNDERLYING_ROAD_CENTER_LINE, LayerType.VECTOR_TILE);
     });
 
     // validate underlying parcels visible
-    const underlyingParcelsLayerState = mockMap.layerState[UNDERLYING_PARCELS_LAYER_NAME];
-    await waitFor(() => expect(underlyingParcelsLayerState?.visible).toBeTruthy());
-    await waitFor(() => expect(underlyingParcelsLayerState).toHaveFeatureCount(2));
+    const underlyingParcelsLayerState = mockMap.layerState[Layer.UNDERLYING_PARCELS];
+    await waitFor(() => {
+      expect(underlyingParcelsLayerState?.visible).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      expect(underlyingParcelsLayerState).toHaveFeatureCount(2);
+    });
+
     expect(underlyingParcelsLayerState).toHaveFeature(1);
   });
 
@@ -160,24 +169,22 @@ describe("DefineDiagrams", () => {
       generatePath(Paths.defineDiagrams, { transactionId: "124" }),
     );
 
-    // openlayers map and it's layers should render
-    const mockMap = getMockMap();
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(DIAGRAMS_LAYER_NAME, LayerType.VECTOR);
+      expect(mockMap).toHaveLayer(Layer.DIAGRAMS, LayerType.VECTOR);
     });
 
-    // validate diagrams visible
-    const diagramsLayerState = mockMap.layerState[DIAGRAMS_LAYER_NAME];
-    await waitFor(() => expect(diagramsLayerState?.visible).toBeTruthy());
+    const diagramsLayerState = mockMap.layerState[Layer.DIAGRAMS];
+    await waitFor(() => {
+      expect(diagramsLayerState?.visible).toBeTruthy();
+    });
+
     await waitFor(() => {
       expect(diagramsLayerState).toHaveFeatureCount(6);
     });
-    expect(diagramsLayerState).toHaveFeature(1);
-    expect(diagramsLayerState).toHaveFeature(2);
-    expect(diagramsLayerState).toHaveFeature(3);
-    expect(diagramsLayerState).toHaveFeature(4);
-    expect(diagramsLayerState).toHaveFeature(5);
-    expect(diagramsLayerState).toHaveFeature(6);
+
+    for (let i = 1; i <= 6; i++) {
+      expect(diagramsLayerState).toHaveFeature(i);
+    }
   });
 
   it("displays error when survey not found", async () => {
@@ -188,7 +195,7 @@ describe("DefineDiagrams", () => {
 
     expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
     expect(screen.queryByTestId("openlayers-map")).not.toBeInTheDocument();
-  }, 120000);
+  });
 
   it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {
     renderCompWithReduxAndRoute(
@@ -223,15 +230,20 @@ describe("DefineDiagrams", () => {
       <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
-    // openlayers map and it's layers should render
+
     await waitFor(() => {
-      expect(mockMap).toHaveLayer(VECTORS_LAYER_NAME, LayerType.VECTOR);
+      expect(mockMap).toHaveLayer(Layer.VECTORS, LayerType.VECTOR);
     });
 
-    // validate vectors visible
-    const vectorLayerState = mockMap.layerState[VECTORS_LAYER_NAME];
-    await waitFor(() => expect(vectorLayerState?.visible).toBeTruthy());
-    await waitFor(() => expect(vectorLayerState).toHaveFeatureCount(8));
+    const vectorLayerState = mockMap.layerState[Layer.VECTORS];
+    await waitFor(() => {
+      expect(vectorLayerState?.visible).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      expect(vectorLayerState).toHaveFeatureCount(8);
+    });
+
     expect(vectorLayerState).toHaveFeature(1);
   });
 });

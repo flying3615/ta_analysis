@@ -94,6 +94,7 @@ $headerHeight: 56px;
 .szh-menu {
   width: 274px;
   padding: 0;
+  z-index: 1000; // Always on top and relative to zIndexes: Record<string, number>
 
   &__header {
     color: lui.$fuscous;

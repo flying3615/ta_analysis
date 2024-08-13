@@ -3,12 +3,11 @@ import "./Header.scss";
 import { PropsWithChildren } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
+import { Layer, zIndexes } from "@/components/DefineDiagrams/MapLayers";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 
-import HeaderToggle from "./HeaderToggle";
-
-export type ViewMode = "Diagrams" | "Sheets";
+import HeaderToggle, { ViewMode } from "./HeaderToggle";
 
 export interface HeaderProps {
   view: ViewMode;
@@ -36,7 +35,7 @@ const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
   };
 
   return (
-    <header className="Header">
+    <header className="Header" style={{ zIndex: zIndexes[Layer.HEADER] }}>
       <HeaderToggle onNavigate={handleNavigate} view={view} />
       <VerticalSpacer />
       {children}

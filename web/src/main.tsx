@@ -13,7 +13,7 @@ import { createRoot } from "react-dom/client";
 import App from "@/App.tsx";
 
 export async function renderInit() {
-  const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey } = await fetch(
+  const { apiGatewayBaseUrl, authzBaseUrl, basemapApiKey, oidcIssuerUri, splitKey, surveyBaseUrl } = await fetch(
     "/plan-generation/config/env.json",
   ).then((r) => r.json());
 
@@ -23,6 +23,7 @@ export async function renderInit() {
     basemapApiKey,
     oidcIssuerUri,
     splitKey,
+    surveyBaseUrl,
   };
 
   // patch fetch requests to add authorization header to api gateway requests

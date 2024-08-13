@@ -1,6 +1,7 @@
 @use "@/components/Header/Header.scss" as header;
 
 .DefineDiagrams {
+  position: relative;
   overflow: hidden;
   flex: 1;
 }

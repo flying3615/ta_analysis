@@ -1,0 +1,28 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+#PlanKey {
+  position: absolute;
+  .LuiBadge {
+    max-width: 180px;
+    box-shadow: 0 2px 3px rgb(0 0 0 / 25%);
+    margin: lui.$unit-xs;
+    font-size: 20px;
+    font-weight: 400;
+    white-space: nowrap;
+    padding: lui.$unit-sm;
+    color: lui.$charcoal;
+    border: 1px solid lui.$lily;
+    border-radius: 4px;
+    display: block;
+    line-height: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    .reference {
+      white-space: wrap;
+      font-size: 14px;
+      margin-top: lui.$unit-xs;
+      line-height: 20px;
+    }
+  }
+}

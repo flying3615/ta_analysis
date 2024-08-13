@@ -36,6 +36,7 @@ import {
 import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
+import PlanKey from "@/components/PlanKey/PlanKey";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
@@ -146,19 +147,22 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
       <div className="DefineDiagrams">
         {isLoading && <LuiLoadingSpinner />}
         {layers && (
-          <LolOpenLayersMap
-            queryClient={queryClient}
-            view={{
-              projection: "EPSG:3857",
-              center: [19457143.791, -5057154.019],
-              zoom: 16,
-              maxZoom,
-            }}
-            sortFeaturesBySelectionPriority={(features) => sortBy(features, (f) => -f.layer.getZIndex())}
-            bufferFactor={1.2}
-            mock={mock}
-            layers={layers}
-          />
+          <>
+            <PlanKey transactionId={transactionId} />
+            <LolOpenLayersMap
+              queryClient={queryClient}
+              view={{
+                projection: "EPSG:3857",
+                center: [19457143.791, -5057154.019],
+                zoom: 16,
+                maxZoom,
+              }}
+              sortFeaturesBySelectionPriority={(features) => sortBy(features, (f) => -f.layer.getZIndex())}
+              bufferFactor={1.2}
+              mock={mock}
+              layers={layers}
+            />
+          </>
         )}
         {children}
       </div>

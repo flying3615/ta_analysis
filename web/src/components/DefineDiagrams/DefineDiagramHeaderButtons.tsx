@@ -172,12 +172,14 @@ export const DefineDiagramMenuButtons = () => {
           {
             label: "View labels",
             title: "View labels",
+            icon: "ic_deceased",
             action: "manage_labels_view_labels",
           },
           {
             label: "Polygon",
             // see https://www.figma.com/design/1BgaquDso4nMqlGAJ2bLdj/Plan-Generation-(Survey-Q)?node-id=0-1&t=w9XoSPwjxgkeJioP-0
             title: "Dynamically gen list",
+            icon: "ic_deceased",
             action: "manage_labels_dynamically_generate_list",
           },
         ]}

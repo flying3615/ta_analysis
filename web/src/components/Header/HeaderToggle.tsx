@@ -5,7 +5,7 @@ import { Menu, MenuItem } from "@szhsin/react-menu";
 
 import { luiColors } from "@/constants";
 
-import { ViewMode } from "./Header";
+export type ViewMode = "Diagrams" | "Sheets";
 
 interface HeaderToggleProps {
   onNavigate: (mode: ViewMode) => void;

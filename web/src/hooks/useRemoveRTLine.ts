@@ -3,7 +3,7 @@ import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
-import { SELECT_LINES_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
+import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
 import { apiConfig } from "@/queries/apiConfig";
@@ -29,7 +29,7 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
   const { selectedFeatureIds: lineIds } = useSelectFeatures({
     enabled,
     locked: loading,
-    layer: SELECT_LINES_LAYER_NAME,
+    layer: Layer.SELECT_LINES,
     filterSelect: clickedFeatureFilter("symbolType", "CPG_LINE_CT"),
   });
 

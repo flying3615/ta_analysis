@@ -33,33 +33,39 @@ import { underlyingParcelStyles, vtRoadsCentrelineStyleFunction } from "./underl
 
 const linzCC4Attrib = "© Toitū Te Whenua - CC BY 4.0";
 
-export const BASEMAP_LAYER_NAME = "linz_basemap";
-export const UNDERLYING_PARCELS_LAYER_NAME = "viw_parcel_all";
-export const MARKS_LAYER_NAME = "marks";
-export const PARCELS_LAYER_NAME = "parcels";
-export const VECTORS_LAYER_NAME = "vectors";
-export const DIAGRAMS_LAYER_NAME = "diagrams";
-export const UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME = "viw_rap_road_ctr_line";
-export const LINES_LAYER_NAME = "lines";
-export const LABELS_LAYER_NAME = "labels";
-export const EXTINGUISHED_LINES_LAYER_NAME = "extinguished-lines";
-export const SELECT_LINES_LAYER_NAME = "select-lines";
+export enum Layer {
+  BASEMAP = "linz_basemap",
+  DIAGRAMS = "diagrams",
+  EXTINGUISHED_LINES = "extinguished-lines",
+  HEADER = "header",
+  LABELS = "labels",
+  LINES = "lines",
+  MARKS = "marks",
+  PARCELS = "parcels",
+  PLAN_KEY = "plan-key",
+  SELECT_LINES = "select-lines",
+  UNDERLYING_PARCELS = "viw_parcel_all",
+  UNDERLYING_ROAD_CENTER_LINE = "viw_rap_road_ctr_line",
+  VECTORS = "vectors",
+}
 
-const zIndexes: Record<string, number> = {
-  [SELECT_LINES_LAYER_NAME]: 100,
-  [EXTINGUISHED_LINES_LAYER_NAME]: 100,
-  [LABELS_LAYER_NAME]: 52,
-  [LINES_LAYER_NAME]: 51,
-  [DIAGRAMS_LAYER_NAME]: 50,
-  [MARKS_LAYER_NAME]: 2,
-  [PARCELS_LAYER_NAME]: 1,
+export const zIndexes: Record<string, number> = {
+  [Layer.HEADER]: 201,
+  [Layer.PLAN_KEY]: 200,
+  [Layer.SELECT_LINES]: 100,
+  [Layer.EXTINGUISHED_LINES]: 100,
+  [Layer.LABELS]: 52,
+  [Layer.LINES]: 51,
+  [Layer.DIAGRAMS]: 50,
+  [Layer.MARKS]: 2,
+  [Layer.PARCELS]: 1,
 };
 
 export const linzMLBasemapLayer = (maxZoom: number) => {
   const basemapApiKey = window._env_.basemapApiKey;
 
   return {
-    name: BASEMAP_LAYER_NAME,
+    name: Layer.BASEMAP,
     type: LayerType.TILE,
     visible: true,
     source: {
@@ -76,13 +82,13 @@ export const linzMLBasemapLayer = (maxZoom: number) => {
 
 export const marksLayer = (marksData: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: MARKS_LAYER_NAME,
+    name: Layer.MARKS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[MARKS_LAYER_NAME],
+    zIndex: zIndexes[Layer.MARKS],
     style: markStyleFunction,
     source: {
       type: SourceType.FEATURES,
@@ -94,13 +100,13 @@ export const marksLayer = (marksData: IFeatureSource[], maxZoom: number): LolOpe
 
 export const parcelsLayer = (parcelsData: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: PARCELS_LAYER_NAME,
+    name: Layer.PARCELS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: false,
     togglable: false,
-    zIndex: zIndexes[PARCELS_LAYER_NAME],
+    zIndex: zIndexes[Layer.PARCELS],
     style: parcelStyles,
     source: {
       type: SourceType.FEATURES,
@@ -112,13 +118,13 @@ export const parcelsLayer = (parcelsData: IFeatureSource[], maxZoom: number): Lo
 
 export const vectorsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: VECTORS_LAYER_NAME,
+    name: Layer.VECTORS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[VECTORS_LAYER_NAME],
+    zIndex: zIndexes[Layer.VECTORS],
     style: vectorStyles,
     source: {
       type: SourceType.FEATURES,
@@ -131,13 +137,13 @@ export const vectorsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLa
 // Old diagrams code
 export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: DIAGRAMS_LAYER_NAME,
+    name: Layer.DIAGRAMS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[DIAGRAMS_LAYER_NAME],
+    zIndex: zIndexes[Layer.DIAGRAMS],
     style: diagramStyles,
     source: {
       type: SourceType.FEATURES,
@@ -149,13 +155,13 @@ export const diagramsLayer = (data: IFeatureSource[], maxZoom: number): LolOpenL
 
 export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: DIAGRAMS_LAYER_NAME,
+    name: Layer.DIAGRAMS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[DIAGRAMS_LAYER_NAME],
+    zIndex: zIndexes[Layer.DIAGRAMS],
     style: diagramStyles,
     source: {
       type: SourceType.FEATURES,
@@ -169,13 +175,13 @@ export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolO
 
 export const linesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: LINES_LAYER_NAME,
+    name: Layer.LINES,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[LINES_LAYER_NAME],
+    zIndex: zIndexes[Layer.LINES],
     style: lineStyles,
     source: {
       type: SourceType.FEATURES,
@@ -188,13 +194,13 @@ export const linesLayer = (transactionId: number, maxZoom: number): LolOpenLayer
 
 export const selectLinesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: SELECT_LINES_LAYER_NAME,
+    name: Layer.SELECT_LINES,
     type: LayerType.VECTOR,
     visible: false,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[LINES_LAYER_NAME],
+    zIndex: zIndexes[Layer.LINES],
     style: ctlineSelectableStyles,
     highlightStyle: lineStyle_selected,
     source: {
@@ -209,13 +215,13 @@ export const selectLinesLayer = (transactionId: number, maxZoom: number): LolOpe
 
 export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: EXTINGUISHED_LINES_LAYER_NAME,
+    name: Layer.EXTINGUISHED_LINES,
     type: LayerType.VECTOR,
     visible: false,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[EXTINGUISHED_LINES_LAYER_NAME],
+    zIndex: zIndexes[Layer.EXTINGUISHED_LINES],
     style: lineStyle_selectable,
     highlightStyle: lineStyle_selected,
     source: {
@@ -230,13 +236,13 @@ export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): 
 
 export const labelsLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
-    name: LABELS_LAYER_NAME,
+    name: Layer.LABELS,
     type: LayerType.VECTOR,
     visible: true,
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[LABELS_LAYER_NAME],
+    zIndex: zIndexes[Layer.LABELS],
     style: labelStyles,
     source: {
       type: SourceType.FEATURES,
@@ -251,14 +257,14 @@ export const labelsLayer = (transactionId: number, maxZoom: number): LolOpenLaye
 export const underlyingParcelsLayer = (maxZoom: number): LolOpenLayersVectorLayerDef => {
   const { apiGatewayBaseUrl } = window._env_;
   return {
-    name: UNDERLYING_PARCELS_LAYER_NAME,
+    name: Layer.UNDERLYING_PARCELS,
     type: LayerType.VECTOR_TILE,
     visible: true,
     maxResolution: 10,
     style: underlyingParcelStyles,
     source: {
       type: SourceType.MVT,
-      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${UNDERLYING_PARCELS_LAYER_NAME}/{z}/{x}/{-y}`,
+      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${Layer.UNDERLYING_PARCELS}/{z}/{x}/{-y}`,
       maxZoom: maxZoom > 30 ? 30 : maxZoom, // maximum Level for Tile Matrix Set of EPSG:900913
     } as LolOpenLayersMVTSourceDef,
   } as LolOpenLayersVectorTileLayerDef;
@@ -267,14 +273,14 @@ export const underlyingParcelsLayer = (maxZoom: number): LolOpenLayersVectorLaye
 export const underlyingRoadCentreLine = (maxZoom: number): LolOpenLayersVectorLayerDef => {
   const { apiGatewayBaseUrl } = window._env_;
   return {
-    name: UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME,
+    name: Layer.UNDERLYING_ROAD_CENTER_LINE,
     type: LayerType.VECTOR_TILE,
     visible: true,
     maxResolution: 10,
     style: vtRoadsCentrelineStyleFunction,
     source: {
       type: SourceType.MVT,
-      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${UNDERLYING_ROAD_CENTER_LINE_LAYER_NAME}/{z}/{x}/{-y}`,
+      url: `${apiGatewayBaseUrl}/v1/generate-plans/tiles/${Layer.UNDERLYING_ROAD_CENTER_LINE}/{z}/{x}/{-y}`,
       maxZoom: maxZoom > 30 ? 30 : maxZoom, // maximum Level for Tile Matrix Set of EPSG:900913
     } as LolOpenLayersMVTSourceDef,
   } as LolOpenLayersVectorTileLayerDef;

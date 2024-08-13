@@ -7,6 +7,7 @@ declare interface Window {
     basemapApiKey: string;
     oidcIssuerUri: string;
     splitKey: string;
+    surveyBaseUrl: string;
   };
   isStorybook?: true | undefined;
 }

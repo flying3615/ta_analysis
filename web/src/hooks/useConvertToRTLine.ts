@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
-import { EXTINGUISHED_LINES_LAYER_NAME } from "@/components/DefineDiagrams/MapLayers.ts";
+import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
 import { apiConfig } from "@/queries/apiConfig";
@@ -26,7 +26,7 @@ export const useConvertToRTLine = ({ transactionId, enabled }: useConvertToRTLin
   const { selectedFeatureIds: lineIds } = useSelectFeatures({
     enabled,
     locked: loading,
-    layer: EXTINGUISHED_LINES_LAYER_NAME,
+    layer: Layer.EXTINGUISHED_LINES,
   });
 
   const convertRtLines = useCallback(async () => {
