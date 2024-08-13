@@ -40,6 +40,16 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
+  http.get(/\/api\/survey\/124\/survey-title/, async () =>
+    HttpResponse.json(
+      {
+        surveyNo: "LT 999999",
+        surveyReference: "Test Reference",
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
   http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
 

@@ -19,6 +19,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     .reference {
+      display: block;
       white-space: wrap;
       font-size: 14px;
       margin-top: lui.$unit-xs;

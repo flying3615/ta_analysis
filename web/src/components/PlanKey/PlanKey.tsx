@@ -24,7 +24,7 @@ const PlanKey = ({ transactionId }: PlanKeyProps) => {
     <div id="PlanKey" style={{ zIndex: zIndexes[Layer.PLAN_KEY] }}>
       <LuiBadge ariaRoleDescription="CSD Number Reference" variation="default" backgroundFill fillVariation="fill">
         {planData?.surveyNo}
-        {planData?.surveyReference && <div className="reference">{planData?.surveyReference}</div>}
+        {planData?.surveyReference && <span className="reference">{planData?.surveyReference}</span>}
       </LuiBadge>
     </div>
   );
