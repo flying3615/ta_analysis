@@ -96,7 +96,7 @@ services:
         condition: service_healthy
     healthcheck:
       test: ">/dev/tcp/127.0.0.1/8080"
-      interval: 10s
+      interval: 20s
       timeout: 5s
       retries: 5
 

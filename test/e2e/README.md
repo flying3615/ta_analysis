@@ -35,7 +35,9 @@ In landonline-survey-plan-generation root directory launch the following docker 
 We use flyway for importing test survey data, the same as in the backend.
 To import the data, run the `./setupTestData` script located in this directory.
 
-To add test data, add a file with the name **Vxx__some_description.sql** in the `data` directory.
+To add test data, add a file with the name **Vxx__some_description.sql** in the `data` directory and update [README.md](data/README.md) file
+
+For test data details refer [README.md](data/README.md)
 
 ### Run the e2e tests
 
