@@ -14,13 +14,10 @@ export const markStyleFunction = (feature: FeatureLike): Style[] => [
   }),
 ];
 
-// we only want to generate one blob url for this icon
-const warningIcon = warningTriangle();
-
 /**
  * Generate the associated SVG based on mark type (determined by mark symbol code)
  */
-function svgForSymbol(markSymbol: number): string {
+const svgForSymbol = (markSymbol: number): string => {
   switch (markSymbol) {
     // Origin mark
     case 1:
@@ -30,10 +27,10 @@ function svgForSymbol(markSymbol: number): string {
       return warningIcon;
     // Permanent reference mark (new)
     case 3:
-      return newPRM();
+      return newPRM;
     // Permanent reference mark (old)
     case 4:
-      return oldPRM();
+      return oldPRM;
     // Witness mark (adopted or new)
     case 5:
       return warningIcon;
@@ -42,71 +39,72 @@ function svgForSymbol(markSymbol: number): string {
       return warningIcon;
     // Post (adopted or new)
     case 7:
-      return postAdoptedNewMark();
+      return postAdoptedNewMark;
     // Post (other)
     case 8:
-      return postOtherMark();
+      return postOtherMark;
     // Unmarked (x symbol)
     case 9:
-      return unmarkedPoint();
+      return unmarkedPoint;
     case 10:
       // PEG (new)
-      return circleSVG(MapColors.white);
+      return circleSVGWhite;
     case 11:
       // PEG (other)
-      return circleSVG(MapColors.black);
+      return circleSVGBlack;
     case 12:
       // Adopted CSNM
-      return adoptedCadastralSurveyNetworkMarkOrVCM();
+      return adoptedCadastralSurveyNetworkMarkOrVCM;
     case 13:
       // Old or (invalid) New CSNM
-      return oldCadastralSurveyNetworkMarkOrVCM();
+      return oldCadastralSurveyNetworkMarkOrVCM;
     default:
-      return circleSVG(MapColors.red);
+      return circleSVGRed;
   }
-}
+};
+
+const createSVG = (elements: string, width = 25, height = 25): string =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${elements}
+  </svg>`,
+  )}`;
 
 // PRM - New (PRMA or PRBD)
-export const newPRM = (): string =>
-  createSVG(
-    `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
-      `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
-      `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
-  );
+const newPRM = createSVG(
+  `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
+    `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
+    `<circle fill="${MapColors.white}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
+);
 
 // PRM - Old (PRMA or PRBD)
-export const oldPRM = (): string =>
-  createSVG(
-    `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
-      `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
-      `<circle fill="${MapColors.black}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
-  );
+const oldPRM = createSVG(
+  `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="9"/>` +
+    `<circle fill="none" stroke="${MapColors.black}" cx="12" cy="12" r="6"/>` +
+    `<circle fill="${MapColors.black}" stroke="${MapColors.black}" cx="12" cy="12" r="3"/>`,
+);
 
 // POST - adopted or new
-export const postAdoptedNewMark = (): string => createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.white));
+const postAdoptedNewMark = createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.white));
 
 // POST - other
-export const postOtherMark = (): string => createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.black));
+const postOtherMark = createSVG(svgSquare(iconSize, 8, MapColors.black, MapColors.black));
 
 // UNMARKED - draw a cross
-export const unmarkedPoint = (): string => createSVG(svgCross(iconSize, 6));
+const unmarkedPoint = createSVG(svgCross(iconSize, 6));
 
 // Circles for PEG & unknown symbol
-export const circleSVG = (fill = MapColors.black): string => createSVG(svgCircle(iconSize, 3, MapColors.black, fill));
+const circleSVG = (fill = MapColors.black): string => createSVG(svgCircle(iconSize, 3, MapColors.black, fill));
+const circleSVGBlack = circleSVG(MapColors.black);
+const circleSVGWhite = circleSVG(MapColors.white);
+const circleSVGRed = circleSVG(MapColors.red);
 
-export const adoptedCadastralSurveyNetworkMarkOrVCM = (): string =>
-  createSVG(svgTriangle(iconSize, 12, MapColors.black, MapColors.white));
+export const adoptedCadastralSurveyNetworkMarkOrVCM = createSVG(
+  svgTriangle(iconSize, 12, MapColors.black, MapColors.white),
+);
 
-export const oldCadastralSurveyNetworkMarkOrVCM = (): string =>
-  createSVG(svgTriangle(iconSize, 12, MapColors.black, MapColors.black));
+export const oldCadastralSurveyNetworkMarkOrVCM = createSVG(
+  svgTriangle(iconSize, 12, MapColors.black, MapColors.black),
+);
 
-// this svg has an issue when using as inline data uri so we reference as a blob url
-function warningTriangle(): string {
-  return URL.createObjectURL(new Blob([warningSvg], { type: "image/svg+xml" }));
-}
-
-export const createSVG = (elements: string, width = 25, height = 25): string =>
-  `data:image/svg+xml;utf8,
-  <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
-    ${elements}
-  </svg>`;
+const warningIcon = "data:image/svg+xml;utf8," + encodeURIComponent(warningSvg);
