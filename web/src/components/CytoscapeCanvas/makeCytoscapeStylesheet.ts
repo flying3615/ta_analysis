@@ -168,9 +168,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "node[id='border_page_no']",
       style: {
         shape: "rectangle",
-        width: "label",
-        height: "auto",
         label: "data(label)",
+        color: "#ffffff",
         "font-size": "10px",
         "background-opacity": 0,
         "text-valign": "center",
