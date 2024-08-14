@@ -4,7 +4,6 @@ import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
 import "@szhsin/react-menu/dist/index.css";
 
-import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from "@storybook/addon-viewport";
 import { initialize, mswLoader } from "msw-storybook-addon";
 import { handlers } from "../src/mocks/mockHandlers";
 
@@ -22,10 +21,15 @@ const preview: Preview = {
     layout: "fullscreen",
     viewport: {
       viewports: {
-        ...INITIAL_VIEWPORTS,
-        ...MINIMAL_VIEWPORTS,
+        standard: {
+          name: "1280x1024",
+          styles: {
+            width: '1280px',
+            height: '800px',
+          },
+        }
       },
-      defaultViewport: "responsive",
+      defaultViewport: "standard",
     },
     msw: {
       handlers: [...handlers],

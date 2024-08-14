@@ -18,9 +18,7 @@ const config = {
       to: "/data/geotiles",
     },
   ],
-  docs: {
-    autodocs: false,
-  },
+  docs: {},
   features: {},
 };
 

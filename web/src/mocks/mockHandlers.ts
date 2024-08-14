@@ -147,6 +147,7 @@ export const handlers: HttpHandler[] = [
   http.post(/\/123\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
   http.get(/\/125\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
   http.get(/\/123\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.get(/\/126\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
 
   http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),

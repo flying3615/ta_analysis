@@ -218,7 +218,7 @@ export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): 
     name: Layer.EXTINGUISHED_LINES,
     type: LayerType.VECTOR,
     visible: false,
-    inInitialZoom: true,
+    inInitialZoom: false,
     declutterLabels: true,
     togglable: false,
     zIndex: zIndexes[Layer.EXTINGUISHED_LINES],
