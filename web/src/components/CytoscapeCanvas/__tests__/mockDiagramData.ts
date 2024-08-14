@@ -1,4 +1,4 @@
-import { DisplayState, IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DisplayState, IDiagram, IPage, IPagePageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -502,5 +502,23 @@ export const pageBorderEdges: IEdgeData[] = [
     properties: {
       pointWidth: 1,
     },
+  },
+];
+
+export const pages: IPage[] = [
+  {
+    id: 1,
+    pageType: IPagePageTypeEnum.title,
+    pageNumber: 1,
+  },
+  {
+    id: 1,
+    pageType: IPagePageTypeEnum.survey,
+    pageNumber: 1,
+  },
+  {
+    id: 2,
+    pageType: IPagePageTypeEnum.title,
+    pageNumber: 1,
   },
 ];

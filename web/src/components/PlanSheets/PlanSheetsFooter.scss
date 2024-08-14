@@ -48,6 +48,8 @@ $footerHeight: 56px;
 
   &-right {
     margin-left: auto;
+    display: flex;
+    flex-direction: row;
   }
 
   &-saveButton {
@@ -56,5 +58,13 @@ $footerHeight: 56px;
     justify-content: center;
     width: 150px;
     gap: 8px;
+  }
+
+  &-previewButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 170px;
+    gap: 5px;
   }
 }

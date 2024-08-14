@@ -31,16 +31,16 @@ const queryClient = new QueryClient();
 const PlanSheetsTemplate = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ModalStoryWrapper>
-          <FeatureFlagProvider>
+      <FeatureFlagProvider>
+        <Provider store={store}>
+          <ModalStoryWrapper>
             <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
               <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
               <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
             </StorybookRouter>
-          </FeatureFlagProvider>
-        </ModalStoryWrapper>
-      </Provider>
+          </ModalStoryWrapper>
+        </Provider>
+      </FeatureFlagProvider>
     </QueryClientProvider>
   );
 };

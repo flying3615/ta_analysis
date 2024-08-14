@@ -15,7 +15,11 @@ console.error = (...args) => {
   !SUPPRESSED_ERRORS.find((s) => args.toString().match(s)) && originalError(...args);
 };
 
-const SUPPRESSED_WARNINGS = [/has unsupported style brokenSolid1 - will use solid/];
+const SUPPRESSED_WARNINGS = [
+  /has unsupported style brokenSolid1 - will use solid/,
+  /The style property `height: auto` is invalid/,
+  /The style value of `label` is deprecated for `width`/,
+];
 
 const originalWarning = console.warn;
 console.warn = (...args) => {

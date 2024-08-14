@@ -32,8 +32,8 @@ const TemplatePlanSheetsFooter = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <FeatureFlagProvider>
+      <FeatureFlagProvider>
+        <Provider store={store}>
           <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
             <Route
               path={Paths.layoutPlanSheets}
@@ -42,8 +42,8 @@ const TemplatePlanSheetsFooter = () => {
               }
             />
           </StorybookRouter>
-        </FeatureFlagProvider>
-      </Provider>
+        </Provider>
+      </FeatureFlagProvider>
     </QueryClientProvider>
   );
 };

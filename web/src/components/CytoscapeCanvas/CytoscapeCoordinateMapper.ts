@@ -16,7 +16,12 @@ export class CytoscapeCoordinateMapper {
   public static readonly borderBottomRightY = -28.2;
   public static readonly pixelMargin = 40 - 50; // this is negative as our frame has its own border of 1.5cm => 50px
 
-  constructor(canvas: HTMLElement, diagrams: IDiagram[]) {
+  constructor(
+    canvas: HTMLElement,
+    diagrams: IDiagram[],
+    maxWidth = canvas.clientWidth,
+    maxHeight = canvas.clientHeight,
+  ) {
     this.diagrams = keyBy(diagrams, "id");
 
     // The diagram limit is actually the page size in cm.
@@ -26,8 +31,8 @@ export class CytoscapeCoordinateMapper {
       CytoscapeCoordinateMapper.diagramLimitBottomRightX + CytoscapeCoordinateMapper.diagramLimitOriginX;
     const pageHeight = CytoscapeCoordinateMapper.borderBottomRightY + CytoscapeCoordinateMapper.diagramLimitOriginY;
     // Scales are in pixels per centimetre
-    const scaleX = (canvas.clientWidth - CytoscapeCoordinateMapper.pixelMargin) / pageWidth;
-    const scaleY = Math.abs((canvas.clientHeight - CytoscapeCoordinateMapper.pixelMargin) / pageHeight);
+    const scaleX = (maxWidth - CytoscapeCoordinateMapper.pixelMargin) / pageWidth;
+    const scaleY = Math.abs((maxHeight - CytoscapeCoordinateMapper.pixelMargin) / pageHeight);
 
     // We want to scale the page to fit within the viewport whilst maintaining the
     // shape of the plan - so we have the same scale for X and Y.

@@ -18,6 +18,13 @@ export default defineConfig(async ({ mode }) => ({
     assetsDir: "public",
     sourcemap: true,
     target: "esnext",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "web-workers": ["src/workers/previewWorker.ts"],
+        },
+      },
+    },
   },
   assetsInclude: ["/config/nr-config.js"],
   define: {

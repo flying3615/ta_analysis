@@ -11,6 +11,7 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeCanvasExport } from "@/hooks/useCytoscapeCanvasExport.tsx";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useUpdatePlanMutation } from "@/queries/plan";
@@ -42,6 +43,9 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
 
   const currentPage = useAppSelector(getActivePageNumber);
   const { totalPages } = useAppSelector(getFilteredPages);
+
+  const { result: isPreviewCompilationOn } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION);
+  const { startProcessing, ExportingCanvas, processing } = useCytoscapeCanvasExport();
 
   const {
     mutate: updatePlanMutate,
@@ -79,6 +83,7 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
 
   return (
     <footer className="PlanSheetsFooter" ref={modalOwnerRef}>
+      {isPreviewCompilationOn && <ExportingCanvas />}
       <Menu
         menuButton={
           <LuiButton title="Change sheet view" className="change-sheet-button lui-button-tertiary lui-button-icon">
@@ -140,6 +145,22 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
             </>
           )}
         </LuiButton>
+        {isPreviewCompilationOn && (
+          <LuiButton
+            className="PlanSheetsFooter-previewButton lui-button-tertiary"
+            onClick={() => startProcessing()}
+            disabled={processing}
+          >
+            {processing ? (
+              <LuiMiniSpinner size={20} divProps={{ "data-testid": "preview-loading-spinner" }} />
+            ) : (
+              <>
+                <LuiIcon alt="Save" color={luiColors.sea} name="ic_layout_plan_sheets" size="md" />
+                Preview layout
+              </>
+            )}
+          </LuiButton>
+        )}
 
         <UnsavedChangesModal
           updatePlan={updatePlan}
