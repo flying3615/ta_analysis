@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 
-interface IFeatureToggleResult {
+export interface IFeatureToggleResult {
   loading: boolean;
   error: boolean;
   result: boolean;

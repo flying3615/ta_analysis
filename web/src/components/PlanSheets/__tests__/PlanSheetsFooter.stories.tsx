@@ -8,6 +8,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
@@ -32,14 +33,16 @@ const TemplatePlanSheetsFooter = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-          <Route
-            path={Paths.layoutPlanSheets}
-            element={
-              <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
-            }
-          />
-        </StorybookRouter>
+        <FeatureFlagProvider>
+          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+            <Route
+              path={Paths.layoutPlanSheets}
+              element={
+                <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
+              }
+            />
+          </StorybookRouter>
+        </FeatureFlagProvider>
       </Provider>
     </QueryClientProvider>
   );

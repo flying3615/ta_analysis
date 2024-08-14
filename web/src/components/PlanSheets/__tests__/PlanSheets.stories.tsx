@@ -14,6 +14,7 @@ import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { Paths } from "@/Paths";
 import { replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store.ts";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 import PlanSheets from "../PlanSheets";
@@ -32,10 +33,12 @@ const PlanSheetsTemplate = () => {
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
         <ModalStoryWrapper>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-            <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
-          </StorybookRouter>
+          <FeatureFlagProvider>
+            <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+              <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+              <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+            </StorybookRouter>
+          </FeatureFlagProvider>
         </ModalStoryWrapper>
       </Provider>
     </QueryClientProvider>

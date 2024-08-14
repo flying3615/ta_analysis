@@ -11,6 +11,8 @@ import { configure } from "@testing-library/react";
 import { setupJestCanvasMock } from "jest-canvas-mock";
 
 import { server } from "@/mocks/mockServer";
+import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
+import { IFeatureToggleResult } from "@/split-functionality/UseFeatureFlags.ts";
 import { coordinateMatchers } from "@/test-utils/jest-utils.tsx";
 
 // It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all
@@ -34,6 +36,26 @@ global.newrelic = {
   noticeError: jest.fn(),
 };
 
+export const mockDefaultFeatures: { [id: string]: TREATMENTS } = {
+  [FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT]: TREATMENTS.ON,
+  [FEATUREFLAGS.SURVEY_PLAN_GENERATION]: TREATMENTS.ON,
+  [FEATUREFLAGS.SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS]: TREATMENTS.ON,
+};
+
+const mockFeatures = { ...mockDefaultFeatures };
+jest.mock("./split-functionality/UseFeatureFlags", () => ({
+  default: function (feature: FEATUREFLAGS): IFeatureToggleResult {
+    return { result: mockFeatures[feature] == "on", error: false, loading: false };
+  },
+  __esModule: true,
+}));
+
+export const setMockedSplitFeatures = (features: Record<string, string>): void => {
+  Object.entries(features).forEach(([featureKey, featureValue]) => {
+    mockFeatures[featureKey] = featureValue as TREATMENTS;
+  });
+};
+
 // setup mocked responses from API requests
 beforeAll(() =>
   server.listen({
@@ -47,6 +69,7 @@ beforeAll(() =>
 
 beforeEach(() => {
   setupJestCanvasMock();
+  setMockedSplitFeatures(mockDefaultFeatures);
 });
 
 expect.extend(mapAssertions.default);

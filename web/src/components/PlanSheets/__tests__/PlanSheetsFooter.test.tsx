@@ -11,9 +11,12 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths.ts";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
+import { setMockedSplitFeatures } from "@/setupTests.ts";
+import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 
 import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
+
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {
     diagrams: [],
@@ -762,5 +765,19 @@ describe("PlanSheetsFooter", () => {
       return element?.textContent === expected;
     });
     expect(paginationElement).toBeInTheDocument();
+  });
+
+  it("Show the save layout button as disabled when SURVEY_PLAN_GENERATION_SAVE_LAYOUT is off", () => {
+    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT]: TREATMENTS.OFF });
+    renderCompWithReduxAndRoute(
+      <Route
+        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
+    const saveButton = screen.getByRole("button", { name: /save layout/i });
+    expect(saveButton).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
   });
 });

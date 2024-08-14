@@ -21,6 +21,8 @@ import {
   setActivePageNumber,
   setActiveSheet,
 } from "@/redux/planSheets/planSheetsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 
 import { UnsavedChangesModal } from "./UnsavedChangesModal";
 
@@ -47,6 +49,9 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
     isPending: updatePlanIsPending,
     error: updatePlanError,
   } = useUpdatePlanMutation({ transactionId });
+  const { result: saveEnabled, loading: saveEnabledLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT,
+  );
 
   const updatePlan = () => !updatePlanIsPending && updatePlanMutate();
 
@@ -121,7 +126,11 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
       <PageManager />
 
       <div className="PlanSheetsFooter-right">
-        <LuiButton className="PlanSheetsFooter-saveButton lui-button-tertiary" onClick={updatePlan}>
+        <LuiButton
+          className="PlanSheetsFooter-saveButton lui-button-tertiary"
+          onClick={updatePlan}
+          disabled={!saveEnabled || saveEnabledLoading}
+        >
           {updatePlanIsPending ? (
             <LuiMiniSpinner size={20} divProps={{ "data-testid": "update-plan-loading-spinner" }} />
           ) : (
