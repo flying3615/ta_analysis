@@ -1,5 +1,7 @@
 import { UseMutationOptions, UseMutationResult, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 
+export const LINZ_CORRELATION_ID = "x-linz-correlation-id";
+
 export interface PlanGenQueryOptions<TQueryFnData> extends Partial<UseQueryOptions<TQueryFnData>> {
   transactionId: number;
 }
