@@ -4,6 +4,9 @@ import RenderFeature from "ol/render/Feature";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 
+import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
+import { userDefinedDiagramTypes } from "@/queries/diagrams.ts";
+
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
 const lineColourMap = {
   [CpgDiagramType.SYSP]: "#009F00",
@@ -24,6 +27,20 @@ export const diagramStyles = (feature: FeatureLike | RenderFeature): Style => {
     stroke: new Stroke({ width: 2, lineDash, color }),
   });
 };
+
+export const userDiagramStylesSelectable = (feature: FeatureLike | RenderFeature): Style => {
+  const diagramType = feature.get("diagramType") as CpgDiagramType;
+
+  return userDefinedDiagramTypes.includes(diagramType) ? diagramStyleSelectable : diagramStyles(feature);
+};
+
+export const diagramStylesSelected = new Style({
+  stroke: new Stroke({ width: 4, color: MapColors.pink }),
+});
+
+const diagramStyleSelectable = new Style({
+  stroke: new Stroke({ width: 4, color: MapColors.blue }),
+});
 
 export const drawInteractionBoundaryBorder = new Style({
   stroke: new Stroke({

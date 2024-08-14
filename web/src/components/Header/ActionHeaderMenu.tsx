@@ -18,7 +18,7 @@ interface ActionHeaderMenuItemProps {
 
 interface ActionHeaderMenuProps {
   disabled?: boolean;
-  isLoading?: boolean;
+  loading?: boolean;
   icon?: IconName;
   title: string;
   options: ActionHeaderMenuItemProps[];
@@ -32,7 +32,7 @@ export const ActionHeaderMenu = ({
   defaultAction,
   icon,
   title,
-  isLoading,
+  loading,
   allowOpen,
 }: ActionHeaderMenuProps) => {
   const activeAction = useAppSelector(getActiveAction);
@@ -67,7 +67,7 @@ export const ActionHeaderMenu = ({
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <LuiButton level="tertiary" className="loading-spinner__nested">
           <LuiMiniSpinner size={20} />
         </LuiButton>

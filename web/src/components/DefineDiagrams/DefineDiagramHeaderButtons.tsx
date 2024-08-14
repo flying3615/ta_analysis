@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
+import { useSelectDiagram } from "@/hooks/useSelectDiagram.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getSurveyFeaturesQueryData } from "@/queries/surveyFeatures";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
@@ -37,6 +38,12 @@ export const DefineDiagramMenuButtons = () => {
     canRemoveRtLine,
     removeRtLines,
   } = useRemoveRtLine({ transactionId, enabled: activeAction === "select_line" });
+
+  const { selectedDiagramIds } = useSelectDiagram({
+    transactionId,
+    enabled: ["select_diagram", "enlarge_diagram_rectangle", "enlarge_diagram_polygon"].includes(activeAction),
+    locked: ["enlarge_diagram_rectangle", "enlarge_diagram_polygon"].includes(activeAction),
+  });
 
   useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
 
@@ -128,11 +135,13 @@ export const DefineDiagramMenuButtons = () => {
           },
         ]}
       />
-      <ActionHeaderButton title="Select diagram" icon="ic_select_diagram" />
+      <ActionHeaderButton title="Select diagram" icon="ic_select_diagram" action="select_diagram" />
       <ActionHeaderButton title="Label diagrams" icon="ic_label_diagrams" />
       <VerticalSpacer />
       <ActionHeaderMenu
         title="Enlarge diagram"
+        disabled={selectedDiagramIds?.length !== 1}
+        defaultAction="enlarge_diagram_rectangle"
         options={[
           {
             label: "Rectangle",
@@ -150,6 +159,7 @@ export const DefineDiagramMenuButtons = () => {
       />
       <ActionHeaderMenu
         title="Reduce diagram"
+        disabled={true}
         options={[
           {
             label: "Rectangle",

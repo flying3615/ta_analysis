@@ -1,5 +1,5 @@
 import { ClickedFeature, LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
-import { intersection, isEmpty, isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
+import { isEmpty, isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect } from "react";
 
@@ -48,8 +48,9 @@ export const useSelectFeatures = ({
         ? xor(currentFeatureIds, clickedFeatureIds)
         : isEqual(clickedFeatureIds, currentFeatureIds)
           ? []
-          : currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
-            ? intersection(clickedFeatureIds, currentFeatureIds)
+          : //
+            currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
+            ? xor(clickedFeatureIds, currentFeatureIds)
             : clickedFeatureIds,
     );
   });

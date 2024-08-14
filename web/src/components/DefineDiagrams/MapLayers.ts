@@ -11,7 +11,11 @@ import {
   SourceType,
 } from "@linzjs/landonline-openlayers-map";
 
-import { diagramStyles } from "@/components/DefineDiagrams/diagramStyles.ts";
+import {
+  diagramStyles,
+  diagramStylesSelected,
+  userDiagramStylesSelectable,
+} from "@/components/DefineDiagrams/diagramStyles.ts";
 import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
 import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
 import {
@@ -43,6 +47,7 @@ export enum Layer {
   MARKS = "marks",
   PARCELS = "parcels",
   PLAN_KEY = "plan-key",
+  SELECT_DIAGRAMS = "select-diagrams",
   SELECT_LINES = "select-lines",
   UNDERLYING_PARCELS = "viw_parcel_all",
   UNDERLYING_ROAD_CENTER_LINE = "viw_rap_road_ctr_line",
@@ -52,6 +57,7 @@ export enum Layer {
 export const zIndexes: Record<string, number> = {
   [Layer.HEADER]: 201,
   [Layer.PLAN_KEY]: 200,
+  [Layer.SELECT_DIAGRAMS]: 100,
   [Layer.SELECT_LINES]: 100,
   [Layer.EXTINGUISHED_LINES]: 100,
   [Layer.LABELS]: 52,
@@ -173,6 +179,28 @@ export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolO
   } as LolOpenLayersVectorLayerDef;
 };
 
+export const selectDiagramsLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
+  return {
+    name: Layer.SELECT_DIAGRAMS,
+    type: LayerType.VECTOR,
+    visible: false,
+    inInitialZoom: false,
+    declutterLabels: true,
+    togglable: false,
+    zIndex: zIndexes[Layer.SELECT_DIAGRAMS],
+    style: userDiagramStylesSelectable,
+    highlightStyle: diagramStylesSelected,
+    geometrySizeForClickDetection: 12,
+    source: {
+      type: SourceType.FEATURES,
+      queryKey: getDiagramsQueryKey(transactionId),
+      queryFun: async () =>
+        getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig()).diagrams({ transactionId })),
+      maxZoom,
+    } as LolOpenLayersFeatureSourceDef,
+  } as LolOpenLayersVectorLayerDef;
+};
+
 export const linesLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
     name: Layer.LINES,
@@ -200,7 +228,7 @@ export const selectLinesLayer = (transactionId: number, maxZoom: number): LolOpe
     inInitialZoom: true,
     declutterLabels: true,
     togglable: false,
-    zIndex: zIndexes[Layer.LINES],
+    zIndex: zIndexes[Layer.SELECT_LINES],
     style: ctlineSelectableStyles,
     highlightStyle: lineStyle_selected,
     source: {

@@ -14,6 +14,8 @@ import { useDiagramLabelsHook } from "@/queries/labels.ts";
 import { PlanGenQuery } from "@/queries/types";
 import { useQueryDataUpdate } from "@/util/queryUtil.ts";
 
+export const userDefinedDiagramTypes = ["UDFP", "UDFT", "UDFN"];
+
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
 
 export const useGetDiagramsQuery: PlanGenQuery<DiagramsResponseDTO> = ({ transactionId }) =>

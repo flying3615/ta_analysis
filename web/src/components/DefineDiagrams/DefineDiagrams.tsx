@@ -15,7 +15,6 @@ import proj4 from "proj4";
 import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
-import { EnlargeDiagram } from "@/components/DefineDiagrams/EnlargeDiagram";
 import {
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
@@ -28,6 +27,7 @@ import {
   linesLayer,
   marksLayer,
   parcelsLayer,
+  selectDiagramsLayer,
   selectLinesLayer,
   underlyingParcelsLayer,
   underlyingRoadCentreLine,
@@ -135,6 +135,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         labelsLayer(transactionId, maxZoom),
         extinguishedLinesLayer(transactionId, maxZoom),
         selectLinesLayer(transactionId, maxZoom),
+        selectDiagramsLayer(transactionId, maxZoom),
       ],
     [diagramLines, features, prepareDatasetIsSuccess, transactionId],
   );
@@ -166,7 +167,6 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         )}
         {children}
       </div>
-      <EnlargeDiagram />
     </div>
   );
 };

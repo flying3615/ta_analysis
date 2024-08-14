@@ -6,6 +6,7 @@ export type DefineDiagramsActionType =
   | "reduce_diagram_polygon"
   | "select_line"
   | "select_rt_line"
+  | "select_diagram"
   | "define_primary_diagram_rectangle"
   | "define_primary_diagram_polygon"
   | "define_nonprimary_diagram_rectangle"
