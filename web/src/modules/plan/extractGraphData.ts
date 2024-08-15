@@ -156,6 +156,12 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
     const brokenLineNodes = diagram.lines
       .filter(isBrokenLine)
       .flatMap((line) => breakLineNodes(line, diagram.coordinates, diagram.id));
+
+    const parcelLabelNodes =
+      diagram.parcelLabelGroups?.flatMap((parcelLabelGroup) =>
+        (parcelLabelGroup.labels ?? []).filter(notSymbol).map(labelToNode).map(addDiagramKey("parcelLabels")),
+      ) ?? [];
+
     const diagramNodes = [
       ...coordinates,
       ...userDefnLabels,
@@ -164,12 +170,8 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
       ) ?? []),
       ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
-      ...diagram.parcelLabels
-        .filter(notSymbol)
-
-        .map(labelToNode)
-        .map(addDiagramKey("parcelLabels")),
       ...brokenLineNodes,
+      ...parcelLabelNodes,
     ];
 
     diagramNodes.push({

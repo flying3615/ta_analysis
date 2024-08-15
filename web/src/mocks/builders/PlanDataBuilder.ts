@@ -2,6 +2,7 @@ import {
   DisplayState,
   ICartesianCoords,
   IDiagram,
+  ILabelLabelTypeEnum,
   IPage,
   IPagePageTypeEnum,
   PlanResponseDTO,
@@ -68,6 +69,7 @@ export class PlanDataBuilder {
         labels: [],
         lines: [],
         parcelLabels: [],
+        parcelLabelGroups: [],
         coordinateLabels: [],
         lineLabels: [],
         diagramType,
@@ -87,6 +89,7 @@ export class PlanDataBuilder {
         labels: [],
         lines: [],
         parcelLabels: [],
+        parcelLabelGroups: [],
         coordinateLabels: [],
         lineLabels: [],
         diagramType: "sysGenPrimaryDiag",
@@ -236,12 +239,7 @@ export class PlanDataBuilder {
       );
     }
 
-    const into = last(this.planData.diagrams)?.[intoWhere];
-    if (!into) {
-      throw new Error(`${intoWhere} is not a label array`);
-    }
-
-    into.push({
+    const label = {
       anchorAngle: 0,
       displayState: displayState,
       effect,
@@ -252,14 +250,29 @@ export class PlanDataBuilder {
       id,
       displayText,
       position,
-      labelType,
+      labelType: labelType as ILabelLabelTypeEnum,
       font,
       fontSize,
       featureId,
       featureType,
       textAlignment: textAlignment || "centerCenter",
       borderWidth,
-    });
+    };
+
+    if (intoWhere === "parcelLabels") {
+      last(this.planData.diagrams)?.parcelLabelGroups?.push({
+        id,
+        labels: [label],
+      });
+      return this;
+    }
+
+    const into = last(this.planData.diagrams)?.[intoWhere];
+    if (!into) {
+      throw new Error(`${intoWhere} is not a label array`);
+    }
+
+    into.push(label);
     return this;
   }
 
@@ -281,12 +294,7 @@ export class PlanDataBuilder {
       );
     }
 
-    const into = last(this.planData.diagrams)?.[intoWhere];
-    if (!into) {
-      throw new Error(`${intoWhere} is not a label array`);
-    }
-
-    into.push({
+    const label = {
       anchorAngle,
       displayState: DisplayState.display,
       effect: "none",
@@ -297,11 +305,26 @@ export class PlanDataBuilder {
       id,
       displayText,
       position,
-      labelType: "markName",
+      labelType: ILabelLabelTypeEnum.markName,
       font,
       fontSize,
       symbolType,
-    });
+    };
+
+    if (intoWhere === "parcelLabels") {
+      last(this.planData.diagrams)?.parcelLabelGroups?.push({
+        id,
+        labels: [label],
+      });
+      return this;
+    }
+
+    const into = last(this.planData.diagrams)?.[intoWhere];
+    if (!into) {
+      throw new Error(`${intoWhere} is not a label array`);
+    }
+
+    into.push(label);
     return this;
   }
 

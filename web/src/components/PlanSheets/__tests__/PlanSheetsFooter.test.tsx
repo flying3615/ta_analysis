@@ -202,6 +202,7 @@ describe("PlanSheetsFooter", () => {
                 lines: [],
                 labels: [],
                 parcelLabels: [],
+                parcelLabelGroups: [],
                 coordinateLabels: [],
                 lineLabels: [],
                 listOrder: 1,

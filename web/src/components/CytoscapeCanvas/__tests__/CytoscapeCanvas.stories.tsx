@@ -718,12 +718,12 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
     allSymbolCodes.forEach((code, idx) => {
       // Codes can be ascii codes or characters
       builder.addSymbolLabel((idx + 1) * 10, String.fromCharCode(code), {
-        x: 18 + idx * 5 * spacingPixels,
-        y: -15.5,
+        x: 8 + idx * 5 * spacingPixels,
+        y: -7.5,
       });
       builder.addSymbolLabel((idx + 1) * 10 + 1, code.toString(), {
-        x: 18 + idx * 5 * spacingPixels,
-        y: -15.5 - 5 * spacingPixels,
+        x: 8 + idx * 5 * spacingPixels,
+        y: -7.5 - 5 * spacingPixels,
       });
       builder.addLine((idx + 1) * 10 + 2, [(idx + 1) * 10, (idx + 1) * 10 + 1], 0.7);
       if (idx > 0) {

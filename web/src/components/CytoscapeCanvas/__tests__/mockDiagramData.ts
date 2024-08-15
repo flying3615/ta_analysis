@@ -126,6 +126,7 @@ export const diagrams: IDiagram[] = [
     lines: [],
     originPageOffset: { x: 0, y: -0 },
     parcelLabels: [],
+    parcelLabelGroups: [],
     listOrder: 1,
     zoomScale: 100,
     displayState: DisplayState.display,
