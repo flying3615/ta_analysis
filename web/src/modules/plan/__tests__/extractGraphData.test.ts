@@ -5,7 +5,9 @@ import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extract
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
-    expect(extractedNodes).toHaveLength(32); // 15 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
+    // 15 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
+    // + two synthetic nodes the broken line
+    expect(extractedNodes).toHaveLength(34);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
     const node10001 = extractedNodeMap["10001"];
     expect(node10001?.id).toBe("10001");
@@ -24,12 +26,24 @@ describe("extractGraphData", () => {
     expect(node10003?.position).toStrictEqual({ x: 80, y: -10 });
     expect(node10003?.properties?.["diagramId"]).toBe(1);
     expect(node10003?.properties?.["elementType"]).toBe("coordinates");
+    // broken nodes for broken line 1007
+    const node1007_M1 = extractedNodeMap["1007_M1"];
+    expect(node1007_M1?.id).toBe("1007_M1");
+    expect(node1007_M1?.position).toStrictEqual({ x: 50, y: -30 });
+    expect(node1007_M1?.properties?.["diagramId"]).toBe(1);
+    expect(node1007_M1?.properties?.["elementType"]).toBe("coordinates");
+
+    const node1007_M2 = extractedNodeMap["1007_M2"];
+    expect(node1007_M2?.id).toBe("1007_M2");
+    expect(node1007_M2?.position).toStrictEqual({ x: 50, y: -50 });
+    expect(node1007_M2?.properties?.["diagramId"]).toBe(1);
+    expect(node1007_M2?.properties?.["elementType"]).toBe("coordinates");
   });
 
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(32); // 5 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(34); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["11"];
@@ -103,7 +117,7 @@ describe("extractGraphData", () => {
 
   test("extractEdges extracts edge data", () => {
     const extractedEdges = extractDiagramEdges(mockPlanData.diagrams);
-    expect(extractedEdges).toHaveLength(23);
+    expect(extractedEdges).toHaveLength(24);
     const extractedEdgeMap = Object.fromEntries(extractedEdges.map((n) => [n.id, n]));
 
     expect(extractedEdgeMap["1001"]?.id).toBe("1001");
@@ -126,6 +140,15 @@ describe("extractGraphData", () => {
     expect(extractedEdgeMap["1003"]?.properties?.["diagramId"]).toBe(2);
     expect(extractedEdgeMap["1003"]?.properties?.["elementType"]).toBe("lines");
     expect(extractedEdgeMap["1003"]?.properties?.["pointWidth"]).toBe(1.0);
+
+    //  Line 1007 is a broken line, check that it is split into two edges
+    expect(extractedEdgeMap["1007_S"]?.id).toBe("1007_S");
+    expect(extractedEdgeMap["1007_S"]?.sourceNodeId).toBe("10002");
+    expect(extractedEdgeMap["1007_S"]?.destNodeId).toBe("1007_M1");
+
+    expect(extractedEdgeMap["1007_E"]?.id).toBe("1007_E");
+    expect(extractedEdgeMap["1007_E"]?.sourceNodeId).toBe("1007_M2");
+    expect(extractedEdgeMap["1007_E"]?.destNodeId).toBe("10005");
   });
 
   describe("For styled lines", () => {
@@ -152,8 +175,6 @@ describe("extractGraphData", () => {
       expect(edge?.destNodeId).toBe("2");
       expect(edge?.properties?.["pointWidth"]).toBe(2.0);
       expect(edge?.properties?.["dashStyle"]).toBe("dashed");
-      // 3px on, 3px off, not scaled to line width
-      expect(edge?.properties?.["dashPattern"]).toStrictEqual([3, 6]);
     });
 
     test("Styles with `dot1`", () => {
@@ -168,7 +189,6 @@ describe("extractGraphData", () => {
       expect(edge?.properties?.["pointWidth"]).toBe(2.0);
       expect(edge?.properties?.["dashStyle"]).toBe("dashed");
       // Scaled to line width
-      expect(edge?.properties?.["dashPattern"]).toStrictEqual([2, 4]);
     });
 
     test("Styles with `dot2` as `dot1`", () => {
@@ -181,7 +201,6 @@ describe("extractGraphData", () => {
       expect(edge?.destNodeId).toBe("2");
       expect(edge?.properties?.["pointWidth"]).toBe(1.0);
       expect(edge?.properties?.["dashStyle"]).toBe("dashed");
-      expect(edge?.properties?.["dashPattern"]).toStrictEqual([1, 2]);
     });
 
     test("Styles with `arrow1`", () => {

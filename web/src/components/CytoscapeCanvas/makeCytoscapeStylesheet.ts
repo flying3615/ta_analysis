@@ -2,6 +2,7 @@ import cytoscape, { Stylesheet } from "cytoscape";
 
 import compassSvg from "@/assets/compass.svg";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods.ts";
 import {
   circleLabel,
   fontStyle,
@@ -89,6 +90,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "z-index": 150,
     "z-index-compare": "manual",
     width: "data(pointWidth)",
+    "line-dash-pattern": (ele: cytoscape.EdgeSingular) => getEdgeDashPattern(ele, cytoscapeCoordinateMapper),
   };
 
   const noNodeMarker = {
@@ -194,7 +196,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "edge[dashPattern]",
       style: {
         ...lineBaseStyle,
-        "line-dash-pattern": "data(dashPattern)",
         "line-cap": "butt",
       },
     },

@@ -112,9 +112,11 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
       "peck1",
       "dot1",
       "dot2",
-      "brokenSolid1", // Will render as solid
       "arrow1",
       "doubleArrow1",
+      "peckDot1",
+      "brokenSolid1",
+      "brokenPeck1",
     ];
 
     const gap = 2;
@@ -132,6 +134,17 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
       builder.addCooordinate(idTo, { x: xEnd, y: yPos });
 
       builder.addLine((index + 1) * 1000, [idFrom, idTo], 1, "observation", lineStyle);
+      builder.addLabel(
+        "lineLabels",
+        (index + 1) * 1000 + 1,
+        lineStyle,
+        { x: xEnd + 2, y: yPos },
+        undefined,
+        undefined,
+        "display",
+        "Tahoma",
+        14,
+      );
     });
     const mockLineTypes = builder.build();
     return <CanvasFromMockData data={mockLineTypes} />;

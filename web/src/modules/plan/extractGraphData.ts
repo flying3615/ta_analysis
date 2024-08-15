@@ -1,10 +1,10 @@
-import { IDiagram, ILabel, IPageConfig } from "@linz/survey-plan-generation-api-client";
+import { ICoordinate, IDiagram, ILabel, ILine, IPageConfig } from "@linz/survey-plan-generation-api-client";
 import { negate } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
 
-import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex } from "./styling";
+import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 
 export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
@@ -153,7 +153,9 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
         },
       };
     });
-
+    const brokenLineNodes = diagram.lines
+      .filter(isBrokenLine)
+      .flatMap((line) => breakLineNodes(line, diagram.coordinates, diagram.id));
     const diagramNodes = [
       ...coordinates,
       ...userDefnLabels,
@@ -167,6 +169,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
 
         .map(labelToNode)
         .map(addDiagramKey("parcelLabels")),
+      ...brokenLineNodes,
     ];
 
     diagramNodes.push({
@@ -187,19 +190,122 @@ export const extractDiagramEdges = (diagrams: IDiagram[]): IEdgeData[] => {
   return diagrams.flatMap((diagram) => {
     return diagram.lines
       .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
-      .map((line) => {
-        return {
-          id: line.id.toString(),
-          sourceNodeId: line.coordRefs?.[0]?.toString(),
-          destNodeId: line.coordRefs?.[1]?.toString(),
-          properties: {
-            ...getEdgeStyling(line),
-            diagramId: diagram.id,
-            elementType: "lines",
-            lineType: line.lineType,
-            coordRefs: JSON.stringify(line.coordRefs),
-          },
-        } as IEdgeData;
+      .flatMap((line) => {
+        if (isBrokenLine(line)) {
+          return breakLine(line, diagram);
+        } else {
+          return {
+            id: line.id.toString(),
+            sourceNodeId: line.coordRefs?.[0]?.toString(),
+            destNodeId: line.coordRefs?.[1]?.toString(),
+            properties: {
+              ...getEdgeStyling(line),
+              diagramId: diagram.id,
+              elementType: "lines",
+              lineType: line.lineType,
+              coordRefs: JSON.stringify(line.coordRefs),
+            },
+          } as IEdgeData;
+        }
       });
   });
 };
+
+/**
+ * Break a line into two parts with a gap in the middle, requires synthetic coordinates
+ * ${line.id}_M1 and ${line.id}_M2 provided by breakLineNodes when building nodes to point to
+ * the start and end of the gap.
+ * @param line the line to break
+ * @param diagram the diagram the line belongs to
+ */
+const breakLine = (line: ILine, diagram: IDiagram): IEdgeData[] => {
+  const brokenLine = {
+    id: `${line.id}_S`,
+    sourceNodeId: line.coordRefs?.[0]?.toString(),
+    destNodeId: `${line.id}_M1`,
+    properties: {
+      ...getEdgeStyling(line),
+      diagramId: diagram.id,
+      elementType: "lines",
+      lineType: line.lineType,
+      coordRefs: JSON.stringify(line.coordRefs),
+    },
+  } as IEdgeData;
+
+  const brokenLine2 = {
+    id: `${line.id}_E`,
+    sourceNodeId: `${line.id}_M2`,
+    destNodeId: line.coordRefs?.[1]?.toString(),
+    properties: {
+      ...getEdgeStyling(line),
+      diagramId: diagram.id,
+      elementType: "lines",
+      lineType: line.lineType,
+      coordRefs: JSON.stringify(line.coordRefs),
+    },
+  } as IEdgeData;
+
+  return [brokenLine, brokenLine2];
+};
+
+/**
+ * Create two new nodes to break a line into two parts
+ * @param line the line to break
+ * @param coordinates the coordinates of the diagram
+ * @param diagramId the id of the diagram
+ */
+const breakLineNodes = (line: ILine, coordinates: ICoordinate[], diagramId: number): INodeData[] => {
+  const startPoint = coordinates.find((coordinate) => coordinate.id === line.coordRefs?.[0]);
+  const endPoint = coordinates.find((coordinate) => coordinate.id === line.coordRefs?.[1]);
+
+  if (!startPoint || !endPoint) {
+    return [];
+  }
+
+  const startX = startPoint.position.x;
+  const dx = endPoint.position.x - startX;
+  const startY = startPoint.position.y;
+  const dy = endPoint.position.y - startY;
+  const segmentLength = Math.sqrt(dx * dx + dy * dy);
+  const breakStart = segmentLength / 3.0;
+  const breakEnd = (segmentLength * 2.0) / 3.0;
+
+  const theta = Math.atan2(dy, dx);
+  const cosTheta = Math.cos(theta);
+  const sinTheta = Math.sin(theta);
+  const breakStartPosition = {
+    x: startX + breakStart * cosTheta,
+    y: startY + breakStart * sinTheta,
+  };
+  const breakEndPosition = {
+    x: startX + breakEnd * cosTheta,
+    y: startY + breakEnd * sinTheta,
+  };
+  return [
+    {
+      id: `${line.id}_M1`,
+      position: breakStartPosition,
+      label: "",
+      properties: {
+        coordType: "",
+        diagramId: diagramId,
+        elementType: "coordinates",
+        parent: `D${diagramId}`,
+      },
+    },
+    {
+      id: `${line.id}_M2`,
+      position: breakEndPosition,
+      label: "",
+      properties: {
+        coordType: "",
+        diagramId: diagramId,
+        elementType: "coordinates",
+        parent: `D${diagramId}`,
+      },
+    },
+  ];
+};
+
+const isBrokenLine = (line: ILine): boolean =>
+  line.style === LineStyle.BROKEN_SOLID1 || line.style === LineStyle.BROKEN_PECK1;
