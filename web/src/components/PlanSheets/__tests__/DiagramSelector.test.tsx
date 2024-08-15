@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
@@ -119,10 +119,17 @@ describe("Diagram Selector panel", () => {
       console.error("Second diagram label is undefined");
     }
     expect(firstDiagramLabel).toHaveClass("selected");
-    expect(screen.getByRole("button", { name: /Insert diagram/i })).toBeInTheDocument();
-    await userEvent.click(await screen.findByRole("button", { name: /Insert diagram/i }));
+    expect(within(firstDiagramLabel!).getByText("Diagram 1")).not.toHaveClass("disabled");
+    expect(within(firstDiagramLabel!).queryByText(/T2/i)).not.toBeInTheDocument();
+    expect(within(firstDiagramLabel!).queryByRole("button", { name: "Remove from sheet" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Insert diagram/ })).toBeInTheDocument();
+
+    await userEvent.click(await screen.findByRole("button", { name: /Insert diagram/ }));
+
     // Check if the T2 label has appeared
-    expect(screen.getByText(/T2/i)).toBeInTheDocument();
+    expect(within(firstDiagramLabel!).getByText("T2")).toBeInTheDocument();
+    expect(within(firstDiagramLabel!).getByText("Diagram 1")).toHaveClass("disabled");
+    expect(within(firstDiagramLabel!).getByRole("button", { name: "Remove from sheet" })).toBeInTheDocument();
   });
 
   it("removes a diagram from the page and the remove button disappears", async () => {
@@ -147,7 +154,11 @@ describe("Diagram Selector panel", () => {
       },
     );
     expect(screen.getByRole("button", { name: /Remove from sheet/i })).toBeInTheDocument();
+    expect(screen.getByText("T1")).toBeInTheDocument();
+
     await userEvent.click(await screen.findByRole("button", { name: /Remove from sheet/i }));
+
     expect(screen.queryByRole("button", { name: /Remove from sheet/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("T1")).not.toBeInTheDocument();
   });
 });
