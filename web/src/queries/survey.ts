@@ -12,7 +12,14 @@ type TransactionTitleDTO = {
 export const useGetPlanKeyQuery: PlanGenQuery<TransactionTitleDTO> = ({ transactionId }) => {
   return useQuery({
     queryKey: getPlanQueryKey(transactionId),
-    queryFn: () => getSurveyTitle(transactionId),
+    queryFn: async () => {
+      const response = await getSurveyTitle(transactionId);
+      const { surveyNo, surveyReference } = response;
+      document.title = surveyNo.length
+        ? `Landonline - Plan Generation${surveyNo ? ` - ${surveyNo}` : ""}${surveyReference?.length ? ` - ${surveyReference}` : ""}`
+        : "Landonline Survey Plan Generation";
+      return response;
+    },
   });
 };
 
