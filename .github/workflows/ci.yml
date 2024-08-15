@@ -1,6 +1,7 @@
 name: CI - Survey Plangen Front End
 
 on:
+  merge_group:
   pull_request:
     branches: [master]
   push:

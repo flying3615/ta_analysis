@@ -3,6 +3,9 @@ name: 'Chromatic no UI'
 
 # Event for the workflow
 on:
+  merge_group:
+    paths-ignore:
+      - 'web/**'
   pull_request:
     paths-ignore:
        - 'web/**'

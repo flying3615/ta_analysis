@@ -1,6 +1,7 @@
 name: Conventional Commit Checker
 
 on:
+  merge_group:
   pull_request:
     branches: [master]
     types: [opened, edited, synchronize]

@@ -3,6 +3,7 @@ name: 'Chromatic'
 
 # Event for the workflow
 on:
+  merge_group:
   pull_request:
     branches:
       - 'master'
