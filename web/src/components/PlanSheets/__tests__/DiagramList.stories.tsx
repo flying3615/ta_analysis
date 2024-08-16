@@ -1,5 +1,6 @@
 import { IDiagram } from "@linz/survey-plan-generation-api-client";
 import { Meta, StoryObj } from "@storybook/react";
+import { userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
@@ -15,7 +16,7 @@ import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel.tsx";
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
-import { ModalStoryWrapper, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
+import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
 
 export default {
   title: "PlanSheets/DiagramList",
@@ -87,5 +88,40 @@ export const DiagramListDisabledRemoveButtonEnabled: Story = {
         }),
       ],
     },
+  },
+};
+
+export const RemoveDiagramFromSameAndDifferentPage: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan-check$/, () =>
+          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
+        ),
+        http.get(/\/123\/plan$/, () => {
+          return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
+        }),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await sleep(500);
+    const canvas = within(canvasElement);
+    const nextButton = canvas.getByLabelText("Next");
+    const prevButton = canvas.getByLabelText("Previous");
+
+    // remove button should be there, and its parent will be disabled.
+    await sleep(2000);
+    await userEvent.click(nextButton);
+
+    const removeButton = canvas.getByLabelText("Remove from sheet");
+    await sleep(2000);
+    await userEvent.click(removeButton);
+
+    await sleep(2000);
+    await userEvent.click(prevButton);
+    await sleep(2000);
+    await userEvent.click(removeButton);
   },
 };

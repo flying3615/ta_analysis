@@ -6,6 +6,7 @@ import { DiagramDisplay } from "@/components/PlanSheets/DiagramList.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import {
+  getActivePageNumber,
   getActivePageRefFromPageNumber,
   getActiveSheet,
   getPageNumberFromPageRef,
@@ -27,6 +28,7 @@ export const DiagramTileComponent = ({
   const { diagramId, level, pageRef, diagramLabel, diagramChildren } = diagramDisplay;
   const dispatch = useAppDispatch();
   const activeSheet = useAppSelector(getActiveSheet);
+  const activePageNumber = useAppSelector(getActivePageNumber);
   const activePageRef = useAppSelector(getActivePageRefFromPageNumber);
   const pageNumber = useAppSelector((state) => (pageRef ? getPageNumberFromPageRef(state)(pageRef) : null));
   const [currentPageRef, setCurrentPageRef] = useState<number | null>(null);
@@ -54,9 +56,8 @@ export const DiagramTileComponent = ({
   const gotoPage = () => {
     pageRef && setCurrentPageRef(pageRef);
   };
-  const removeFromPage = () => {
-    dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
-  };
+  const removeFromPage = () =>
+    pageNumber === activePageNumber && dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
 
   return (
     <div className="DiagramListLabel">
@@ -75,7 +76,12 @@ export const DiagramTileComponent = ({
 
           {pageRef && (
             <div className="DiagramLabel-right-nav">
-              <LuiButton level="tertiary" className="lui-button-icon" onClick={removeFromPage}>
+              <LuiButton
+                level="tertiary"
+                className="lui-button-icon"
+                disabled={pageNumber !== activePageNumber}
+                onClick={removeFromPage}
+              >
                 <LuiIcon size="md" name="ic_remove_from_sheet" alt="Remove from sheet" />
               </LuiButton>
               <span className="LuiCounter-non-zero" onClick={gotoPage} role="presentation">
