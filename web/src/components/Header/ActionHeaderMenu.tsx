@@ -67,7 +67,7 @@ export const ActionHeaderMenu = ({
 
   return (
     <>
-      {loading ? (
+      {loading && subActionIsSelected ? (
         <LuiButton level="tertiary" className="loading-spinner__nested">
           <LuiMiniSpinner size={20} />
         </LuiButton>

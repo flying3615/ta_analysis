@@ -4,7 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useContext } from "react";
 
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { error32026_NonPrimaryCannotBeCreated } from "@/components/DefineDiagrams/prefabErrors";
+import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram.ts";
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton.tsx";
 import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
@@ -12,10 +14,18 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
+import { useResizeDiagram } from "@/hooks/useResizeDiagram.ts";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getSurveyFeaturesQueryData } from "@/queries/surveyFeatures";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+
+const enlargeReduceDiagramActions: DefineDiagramsActionType[] = [
+  "enlarge_diagram_rectangle",
+  "enlarge_diagram_polygon",
+  "reduce_diagram_rectangle",
+  "reduce_diagram_polygon",
+];
 
 export const DefineDiagramMenuButtons = () => {
   const queryClient = useQueryClient();
@@ -26,6 +36,8 @@ export const DefineDiagramMenuButtons = () => {
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
+
+  const { loading: insertDiagramLoading } = useInsertDiagram();
 
   const {
     loading: convertRtLinesLoading,
@@ -41,8 +53,14 @@ export const DefineDiagramMenuButtons = () => {
 
   const { selectedDiagramIds } = useSelectDiagram({
     transactionId,
-    enabled: ["select_diagram", "enlarge_diagram_rectangle", "enlarge_diagram_polygon"].includes(activeAction),
-    locked: ["enlarge_diagram_rectangle", "enlarge_diagram_polygon"].includes(activeAction),
+    enabled: enlargeReduceDiagramActions.includes(activeAction) || activeAction === "select_diagram",
+    locked: enlargeReduceDiagramActions.includes(activeAction),
+  });
+
+  const { loading: resizeDiagramLoading } = useResizeDiagram({
+    transactionId,
+    selectedDiagramIds,
+    enabled: enlargeReduceDiagramActions.includes(activeAction),
   });
 
   useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
@@ -88,6 +106,8 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderMenu
         title="Define primary diagram"
         defaultAction="define_primary_diagram_rectangle"
+        loading={insertDiagramLoading}
+        disabled={insertDiagramLoading}
         options={[
           {
             label: "Rectangle",
@@ -105,6 +125,8 @@ export const DefineDiagramMenuButtons = () => {
         title="Define non-primary diagram"
         allowOpen={checkAddNonPrimaryDiagram}
         defaultAction="define_nonprimary_diagram_rectangle"
+        loading={insertDiagramLoading}
+        disabled={insertDiagramLoading}
         options={[
           {
             label: "Rectangle",
@@ -122,6 +144,8 @@ export const DefineDiagramMenuButtons = () => {
         title="Define survey diagram"
         allowOpen={checkAddNonPrimaryDiagram}
         defaultAction="define_survey_diagram_rectangle"
+        loading={insertDiagramLoading}
+        disabled={insertDiagramLoading}
         options={[
           {
             label: "Rectangle",
@@ -135,13 +159,19 @@ export const DefineDiagramMenuButtons = () => {
           },
         ]}
       />
-      <ActionHeaderButton title="Select diagram" icon="ic_select_diagram" action="select_diagram" />
+      <ActionHeaderButton
+        title="Select diagram"
+        icon="ic_select_diagram"
+        action="select_diagram"
+        disabled={insertDiagramLoading || resizeDiagramLoading}
+      />
       <ActionHeaderButton title="Label diagrams" icon="ic_label_diagrams" />
       <VerticalSpacer />
       <ActionHeaderMenu
-        title="Enlarge diagram"
-        disabled={selectedDiagramIds?.length !== 1}
+        title={selectedDiagramIds.length <= 1 ? "Enlarge diagram" : "To enlarge a diagram, select only one diagram"}
+        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
         defaultAction="enlarge_diagram_rectangle"
+        loading={resizeDiagramLoading}
         options={[
           {
             label: "Rectangle",
@@ -158,8 +188,10 @@ export const DefineDiagramMenuButtons = () => {
         ]}
       />
       <ActionHeaderMenu
-        title="Reduce diagram"
-        disabled={true}
+        title={selectedDiagramIds.length <= 1 ? "Reduce diagram" : "To reduce a diagram, select only one diagram"}
+        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
+        defaultAction="reduce_diagram_rectangle"
+        loading={resizeDiagramLoading}
         options={[
           {
             label: "Rectangle",

@@ -30,13 +30,13 @@ export const useConvertToRTLine = ({ transactionId, enabled }: useConvertToRTLin
   });
 
   const convertRtLines = useCallback(async () => {
-    if (!lineIds || isEmpty(lineIds)) return;
+    if (isEmpty(lineIds)) return;
 
     try {
       setLoading(true);
       const { ok, message } = await new ExtinguishedLinesControllerApi(apiConfig()).convert({
         transactionId: transactionId,
-        extinguishedLinesConvertRequestDTO: { lineIds: lineIds },
+        extinguishedLinesConvertRequestDTO: { lineIds },
       });
 
       if (!ok) return showErrorToast(message ?? "Unexpected exception adding RT lines");
@@ -51,6 +51,6 @@ export const useConvertToRTLine = ({ transactionId, enabled }: useConvertToRTLin
   return {
     convertRtLines,
     loading,
-    canCovertRtLine: !!lineIds,
+    canCovertRtLine: !isEmpty(lineIds),
   };
 };

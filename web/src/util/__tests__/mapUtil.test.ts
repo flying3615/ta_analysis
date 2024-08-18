@@ -5,22 +5,47 @@ import RenderFeature from "ol/render/Feature";
 import { Source } from "ol/source";
 
 import {
-  calculateLongitude,
+  cartesianToNumeric,
   clickedFeatureFilter,
   getClickedFeatureId,
   getFeatureId,
   lineStringFromFlatCoords,
+  mapPointToCartesian,
+  mapPointToCoordinate,
+  normalizeLongitude,
+  numericToCartesian,
 } from "@/util/mapUtil.ts";
 
-describe("Longitude shift calculation", () => {
+describe("Longitude normalization calculation", () => {
   test("returns longitude which should be in the range of -180 to 180 when it crosses the dateline", () => {
-    expect(calculateLongitude(10)).toBe(10);
-    expect(calculateLongitude(-336)).toBe(24);
-    expect(calculateLongitude(190)).toBe(-170);
+    expect(normalizeLongitude(10)).toBe(10);
+    expect(normalizeLongitude(-336)).toBe(24);
+    expect(normalizeLongitude(190)).toBe(-170);
   });
 });
 
 describe("mapUtil", () => {
+  test("cartesianToNumeric", () => {
+    expect(cartesianToNumeric({ x: 10, y: 2 })).toEqual([10, 2]);
+  });
+
+  test("numericToCartesian", () => {
+    expect(numericToCartesian([10, 2])).toEqual({ x: 10, y: 2 });
+  });
+
+  test("mapPointToCoordinates", () => {
+    expect(mapPointToCoordinate([19034608.7753906, -5632300.24483069])).toEqual([
+      10.990799901689423, -45.068426287007306,
+    ]);
+  });
+
+  test("mapPointToCartesian", () => {
+    expect(mapPointToCartesian([19034608.7753906, -5632300.24483069])).toEqual({
+      x: 10.990799901689423,
+      y: -45.068426287007306,
+    });
+  });
+
   test("lineStringFromFlatCoords", () => {
     expect(lineStringFromFlatCoords([1, 2, 3, 4, 5, 6])).toEqual({
       type: "Feature",

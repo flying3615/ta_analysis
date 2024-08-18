@@ -10,8 +10,7 @@ import { LuiLoadingSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
 import { sortBy } from "lodash-es";
-import { register } from "ol/proj/proj4";
-import proj4 from "proj4";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
@@ -33,7 +32,6 @@ import {
   underlyingRoadCentreLine,
   vectorsLayer,
 } from "@/components/DefineDiagrams/MapLayers.ts";
-import { useInsertDiagramHook } from "@/components/DefineDiagrams/useInsertDiagramHook";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import PlanKey from "@/components/PlanKey/PlanKey";
@@ -43,6 +41,7 @@ import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
 import { PrepareDatasetError, usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
+import { mapPointToCoordinate } from "@/util/mapUtil.ts";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
@@ -50,12 +49,6 @@ import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
 export interface DefineDiagramsProps {
   mock?: boolean;
 }
-
-// adding projection definitions to allow conversions between them
-// EPSG:1 is what the data from the DB comes in as
-// EPSG:3857 is used as the openlayers map projection
-proj4.defs("EPSG:1", "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs +pm=160");
-register(proj4);
 
 const maxZoom = 24;
 
@@ -71,10 +64,8 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const queryClient = useQueryClient();
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const mapContext = useContext(LolOpenLayersMapContext);
+  const { map, loading: mapLoading } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
-
-  useInsertDiagramHook();
 
   const { isSuccess: prepareDatasetIsSuccess, error: prepareDatasetError } = usePrepareDatasetQuery({ transactionId });
 
@@ -100,8 +91,8 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const isLoading = !prepareDatasetIsSuccess || featuresIsLoading || diagramLinesIsLoading;
 
   /* eslint-disable-next-line */
-  (window as any).map = mapContext.map;
-  const anyLoading = !error && (isLoading || mapContext.loading);
+  (window as any).map = map;
+  const anyLoading = !error && (isLoading || mapLoading);
   const loadingHasChanged = useHasChanged(anyLoading);
   if (loadingHasChanged) {
     // Set a global value last time loading changed to false
@@ -139,6 +130,28 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
       ],
     [diagramLines, features, prepareDatasetIsSuccess, transactionId],
   );
+
+  // Leave this to help testers
+  useEffect(() => {
+    const logClick = (e: MapBrowserEvent<MouseEvent>) => {
+      console.log(
+        `Map click: ${JSON.stringify(
+          {
+            pixel: JSON.stringify(e.pixel),
+            meters: JSON.stringify(e.coordinate),
+            coordinate: JSON.stringify(mapPointToCoordinate(e.coordinate)),
+          },
+          null,
+          "\t",
+        )}`,
+      );
+    };
+
+    map?.on("click", logClick);
+    return () => {
+      map?.un("click", logClick);
+    };
+  }, [map]);
 
   return (
     <div className="MainWindow">

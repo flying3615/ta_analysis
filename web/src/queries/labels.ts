@@ -5,7 +5,7 @@ import { apiConfig } from "@/queries/apiConfig.ts";
 
 export const getLabelsQueryKey = (transactionId: number) => ["labels", transactionId];
 export interface DiagramLabelsHook {
-  updateLabels: () => void;
+  updateLabels: () => Promise<void>;
 }
 export const useDiagramLabelsHook = (transactionId: number): DiagramLabelsHook => {
   const queryClient = useQueryClient();

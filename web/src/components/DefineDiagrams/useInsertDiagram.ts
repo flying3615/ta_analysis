@@ -1,14 +1,14 @@
 import { PostDiagramsRequestDTODiagramTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { useInsertDiagramMutation } from "@/queries/diagrams.ts";
+import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 
 const actionToDiagramTypeAndShape: Partial<
@@ -24,8 +24,9 @@ const actionToDiagramTypeAndShape: Partial<
 
 const maxSides = 47;
 
-export const useInsertDiagramHook = () => {
+export const useInsertDiagram = () => {
   const transactionId = useTransactionId();
+  const [loading, setLoading] = useState(false);
 
   const { map } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
@@ -33,7 +34,7 @@ export const useInsertDiagramHook = () => {
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
 
-  const { mutate: insertDiagram } = useInsertDiagramMutation(transactionId);
+  const { mutateAsync: insertDiagram } = useInsertDiagramMutation(transactionId);
 
   const enabled = activeAction in actionToDiagramTypeAndShape;
   const [diagramType, type] = actionToDiagramTypeAndShape[activeAction] ?? [];
@@ -52,13 +53,21 @@ export const useInsertDiagramHook = () => {
       if (!map || !diagramType) return;
       const zoom = map.getView().getZoom() ?? 200;
 
-      insertDiagram({
-        transactionId,
-        postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: cartesianCoordinates },
-      });
-
-      drawAbort();
+      try {
+        setLoading(true);
+        await insertDiagram({
+          transactionId,
+          postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: cartesianCoordinates },
+        });
+      } finally {
+        setLoading(false);
+        drawAbort();
+      }
     },
     drawAbort,
   });
+
+  return {
+    loading,
+  };
 };

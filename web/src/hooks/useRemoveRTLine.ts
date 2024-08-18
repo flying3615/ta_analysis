@@ -10,7 +10,7 @@ import { apiConfig } from "@/queries/apiConfig";
 import { getLinesQueryKey } from "@/queries/lines.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { clickedFeatureFilter } from "@/util/mapUtil.ts";
-import { useQueryDataUpdate } from "@/util/queryUtil.ts";
+import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
 import { useShowToast } from "@/util/showToast.tsx";
 import { s } from "@/util/stringUtil.ts";
 
@@ -34,17 +34,17 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
   });
 
   const removeRtLines = useCallback(async () => {
-    if (!lineIds || isEmpty(lineIds)) return;
+    if (isEmpty(lineIds)) return;
 
     try {
       setLoading(true);
       const { ok, message } = await new LinesControllerApi(apiConfig()).deleteLines({
         transactionId: transactionId,
-        deleteLinesRequestDTO: { lineIds: lineIds },
+        deleteLinesRequestDTO: { lineIds },
       });
       if (!ok) return showErrorToast(message ?? "Unexpected exception removing RT lines");
       showSuccessToast(`RT line${s(lineIds)} removed successfully`);
-      removeQueryData({ remove: lineIds });
+      removeQueryData({ match: byId(lineIds) });
     } finally {
       setLoading(false);
       dispatch(setActiveAction("idle"));
@@ -54,6 +54,6 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
   return {
     removeRtLines,
     loading,
-    canRemoveRtLine: !!lineIds,
+    canRemoveRtLine: !isEmpty(lineIds),
   };
 };

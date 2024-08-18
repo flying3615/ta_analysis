@@ -20,12 +20,12 @@ import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
-import { useGetDiagramsQuery } from "@/queries/diagrams";
+import { useGetDiagramsQueryOLD } from "@/queries/diagrams";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
 import {
-  getDiagramsForOpenLayers,
+  getDiagramsForOpenLayers_OLD,
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
   getVectorsForOpenLayers,
@@ -68,7 +68,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     data: diagrams,
     isLoading: diagramsIsLoading,
     error: diagramsError,
-  } = useGetDiagramsQuery({
+  } = useGetDiagramsQueryOLD({
     transactionId,
     enabled: prepareDatasetIsSuccess, // Don't fetch diagrams until the dataset is prepared
   });
@@ -114,7 +114,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
               parcelsLayer(getParcelsForOpenLayers(features), maxZoom),
               marksLayer(getMarksForOpenLayers(features), maxZoom),
               vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
-              diagramsLayer(getDiagramsForOpenLayers(diagrams), maxZoom),
+              diagramsLayer(getDiagramsForOpenLayers_OLD(diagrams), maxZoom),
             ]}
           />
         )}

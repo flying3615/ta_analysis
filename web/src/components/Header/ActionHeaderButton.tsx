@@ -33,14 +33,16 @@ export const ActionHeaderButton = ({ title, action, onClick, icon, disabled, loa
   );
 
   const innerButton = (
-    <LuiButton
-      disabled={disabled}
-      level="tertiary"
-      onClick={onClickHandler}
-      className={clsx("lui-button-icon-only", { selected: action === activeAction })}
-    >
-      <LuiIcon name={icon} alt={title} size="md" />
-    </LuiButton>
+    <div>
+      <LuiButton
+        disabled={disabled}
+        level="tertiary"
+        onClick={onClickHandler}
+        className={clsx("lui-button-icon-only", { selected: action === activeAction })}
+      >
+        <LuiIcon name={icon} alt={title} size="md" />
+      </LuiButton>
+    </div>
   );
 
   return (

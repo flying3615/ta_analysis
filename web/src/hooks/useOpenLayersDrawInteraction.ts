@@ -2,10 +2,11 @@ import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { kinks } from "@turf/kinks";
 import { isEmpty, isEqual } from "lodash-es";
+import { Coordinate } from "ol/coordinate";
 import { EventsKey } from "ol/events";
 import BaseEvent from "ol/events/Event";
 import { Polygon } from "ol/geom";
-import Geometry, { Type } from "ol/geom/Geometry";
+import { Type } from "ol/geom/Geometry";
 import { Draw } from "ol/interaction";
 import { createBox, DrawEvent, GeometryFunction, Options } from "ol/interaction/Draw";
 import { useCallback, useContext, useEffect, useRef } from "react";
@@ -19,7 +20,7 @@ import {
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { flatCoordsToGeogCoords, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
+import { geometryToCartesian, geometryToCoordinates, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
 
@@ -35,9 +36,18 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
   }),
 };
 
+export interface DrawEndProps {
+  event: DrawEvent;
+  geometry: Polygon;
+  // lat/lon shifted as number[][]
+  coordinates: Coordinate[];
+  // lat/lon shifted as {x, y}
+  cartesianCoordinates: ICartesianCoords[];
+}
+
 export interface useOpenLayersDrawInteractionProps {
   drawAbort: (event: DrawEvent) => unknown;
-  drawEnd: (props: { event: DrawEvent; geometry: Geometry; cartesianCoordinates: ICartesianCoords[] }) => unknown;
+  drawEnd: (props: DrawEndProps) => unknown;
   enabled: boolean;
   options: Omit<Options, "type"> & { type: DrawInteractionType | undefined };
   maxPoints?: {
@@ -82,16 +92,22 @@ export const useOpenLayersDrawInteraction = ({
     const polygon = currentFeatureRef.current;
     if (!polygon) return;
 
-    const cartesianCoordinates = flatCoordsToGeogCoords(polygon.getFlatCoordinates());
-    // check the points aren't all the same
+    const cartesianCoordinates = geometryToCartesian(polygon);
+    // Check that the points aren't all the same.  This can happen from double-clicking.
     const first = cartesianCoordinates[0];
     if (!first || !cartesianCoordinates.some((coord) => !isEqual(coord, first))) {
       drawAbort(event);
       return;
     }
 
+    const coordinates = geometryToCoordinates(polygon);
+
+    // Prevent further drawing during save
+    allowDrawAddPoint.current = false;
+
     drawEnd({
       event,
+      coordinates,
       geometry: polygon,
       cartesianCoordinates,
     });

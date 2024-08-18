@@ -1,5 +1,5 @@
 import { ClickedFeature, LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
-import { isEmpty, isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
+import { isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect } from "react";
 
@@ -15,7 +15,7 @@ export interface useSelectFeaturesProps {
 }
 
 export interface useSelectExtinguishedResult {
-  selectedFeatureIds: number[] | null;
+  selectedFeatureIds: number[];
 }
 
 export const useSelectFeatures = ({
@@ -72,7 +72,7 @@ export const useSelectFeatures = ({
   }, [funcRef, map]);
 
   const selectedFeatures = featureSelect(layer);
-  const selectedFeatureIds = isEmpty(selectedFeatures) ? null : selectedFeatures.map(getFeatureId);
+  const selectedFeatureIds = selectedFeatures.map(getFeatureId);
 
   return {
     selectedFeatureIds,

@@ -67,6 +67,15 @@ export type IFeatureSourceDiagram = IFeatureSource & { diagramType: string };
 export const getDiagramsForOpenLayers = ({ diagrams }: DiagramsResponseDTO): IFeatureSourceDiagram[] =>
   sortBy(diagrams.map(MapDiagramToOpenLayers), sortByDiagramsByType);
 
+export const getDiagramsForOpenLayers_OLD = ({ diagrams }: DiagramsResponseDTO): IFeatureSource[] =>
+  diagrams.map((d) => ({
+    id: d.id,
+    diagramType: d.diagramType,
+    shape: {
+      geometry: d.shape,
+    },
+  }));
+
 export const MapDiagramToOpenLayers = (diagramId: DiagramsResponseDTODiagramsInner): IFeatureSourceDiagram => ({
   id: diagramId.id,
   diagramType: diagramId.diagramType,

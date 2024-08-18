@@ -1,16 +1,16 @@
 import { QueryKey } from "@tanstack/query-core";
 import { useQueryClient } from "@tanstack/react-query";
-import { sortBy } from "lodash-es";
+import { negate, sortBy } from "lodash-es";
 import { useCallback } from "react";
 
 export interface useQueryDataUpdateUpdatePropsWithItem<T> {
-  updateItem: T | ((item: T) => boolean);
+  match: (item: T) => boolean;
   withItem: T;
   withProps?: never;
 }
 
 export interface useQueryDataUpdateUpdatePropsWithProps<T> {
-  updateItem: T | ((item: T) => boolean);
+  match: (item: T) => boolean;
   withItem?: never;
   withProps: Partial<T>;
 }
@@ -24,7 +24,7 @@ export interface useQueryDataAppendProps<T> {
 }
 
 export interface useQueryDataRemoveProps<T> {
-  remove: number[] | T | T[] | ((item: T) => boolean);
+  match: (item: T) => boolean;
 }
 
 export const useQueryDataUpdate = <T>({
@@ -36,24 +36,21 @@ export const useQueryDataUpdate = <T>({
 }) => {
   const queryClient = useQueryClient();
 
+  const getItem = useCallback(
+    (match: (item: T) => boolean) => queryClient.getQueryData<T[]>(queryKey)?.find(match),
+    [queryClient, queryKey],
+  );
+
   const updateQueryData = useCallback(
-    ({ updateItem, withItem, withProps }: useQueryDataUpdateUpdateProps<T>) => {
+    ({ match, withItem, withProps }: useQueryDataUpdateUpdateProps<T>) => {
       // Update temp diagrams Id
-      queryClient.setQueryData<T[]>(queryKey, (list: T[] | undefined) => {
+      queryClient.setQueryData<T[]>(queryKey, (list) => {
         if (!list) return undefined;
 
-        const matcher =
-          typeof updateItem === "function" //
-            ? (updateItem as (item: T) => boolean)
-            : (item: T) => item === updateItem;
-
         const r = list.map((item) => {
-          if (!matcher(item)) return item;
+          if (!match(item)) return item;
           if (withItem) return withItem;
-          return {
-            ...item,
-            ...withProps,
-          };
+          return { ...item, ...withProps };
         });
         return _sortBy ? sortBy(r, _sortBy) : r;
       });
@@ -62,30 +59,25 @@ export const useQueryDataUpdate = <T>({
   );
 
   const appendQueryData = ({ newItem }: useQueryDataAppendProps<T>) => {
-    queryClient.setQueryData<T[]>(queryKey, (list: T[] | undefined) => {
+    queryClient.setQueryData<T[]>(queryKey, (list) => {
       const r = [...(list ?? []), newItem];
       return _sortBy ? sortBy(r, _sortBy) : r;
     });
   };
 
-  const removeQueryData = ({ remove }: useQueryDataRemoveProps<T>) => {
-    const matcher =
-      typeof remove === "function" //
-        ? (remove as (item: T) => boolean)
-        : (item: T) =>
-            Array.isArray(remove)
-              ? remove.some((i) => item === i || (item as { id: number }).id === i)
-              : item === remove;
-
-    queryClient.setQueryData<T[]>(queryKey, (list: T[] | undefined) => {
-      if (!list) return undefined;
-      return list.filter((item) => !matcher(item));
-    });
+  const removeQueryData = ({ match }: useQueryDataRemoveProps<T>) => {
+    queryClient.setQueryData<T[]>(queryKey, (list) => list?.filter(negate(match)));
   };
 
   return {
+    getItem,
     appendQueryData,
     removeQueryData,
     updateQueryData,
   };
 };
+
+export const byId =
+  (id: number[] | number) =>
+  (obj: Partial<{ id: number | undefined }>): boolean =>
+    id !== undefined && (obj.id === id || !!(Array.isArray(id) && obj.id && id.includes(obj.id)));
