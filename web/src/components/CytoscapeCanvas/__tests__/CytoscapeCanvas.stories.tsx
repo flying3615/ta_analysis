@@ -117,6 +117,8 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
       "peckDot1",
       "brokenSolid1",
       "brokenPeck1",
+      "brokenDot1",
+      "brokenDot2",
     ];
 
     const gap = 2;

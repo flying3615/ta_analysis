@@ -310,4 +310,7 @@ const breakLineNodes = (line: ILine, coordinates: ICoordinate[], diagramId: numb
 };
 
 const isBrokenLine = (line: ILine): boolean =>
-  line.style === LineStyle.BROKEN_SOLID1 || line.style === LineStyle.BROKEN_PECK1;
+  line.style === LineStyle.BROKEN_SOLID1 ||
+  line.style === LineStyle.BROKEN_PECK1 ||
+  line.style === LineStyle.BROKEN_DOT1 ||
+  line.style === LineStyle.BROKEN_DOT2;

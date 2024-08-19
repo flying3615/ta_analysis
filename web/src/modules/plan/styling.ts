@@ -1,7 +1,5 @@
 import { DisplayState, ILabel, ILine } from "@linz/survey-plan-generation-api-client";
 
-import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-
 export const LineStyle = {
   SOLID: "solid",
   PECK1: "peck1",
@@ -12,6 +10,8 @@ export const LineStyle = {
   PECK_DOT1: "peckDot1",
   BROKEN_SOLID1: "brokenSolid1",
   BROKEN_PECK1: "brokenPeck1",
+  BROKEN_DOT1: "brokenDot1",
+  BROKEN_DOT2: "brokenDot2",
 } as const;
 export type LineStyle = (typeof LineStyle)[keyof typeof LineStyle];
 
@@ -36,21 +36,18 @@ export const getLineDashPattern = (lineStyle: LineStyle, strokeWidth: number = 1
   const dotWidth = strokeWidth;
   switch (lineStyle) {
     case LineStyle.PECK1:
+    case LineStyle.BROKEN_PECK1:
       return [twoMmWidth, twoMmWidth];
-    case LineStyle.DOT1:
-      return [dotWidth, mmWidth];
     case LineStyle.DOT2:
+    case LineStyle.DOT1:
+    case LineStyle.BROKEN_DOT1:
+    case LineStyle.BROKEN_DOT2:
       return [dotWidth, mmWidth];
     case LineStyle.PECK_DOT1:
       return [twoMmWidth, twoMmWidth, dotWidth, twoMmWidth];
-    case LineStyle.BROKEN_PECK1:
-      return [twoMmWidth, twoMmWidth];
     case LineStyle.SOLID:
-      return [];
     case LineStyle.ARROW1:
-      return [];
     case LineStyle.DOUBLE_ARROW_1:
-      return [];
     case LineStyle.BROKEN_SOLID1:
       return [];
     default:
@@ -58,13 +55,15 @@ export const getLineDashPattern = (lineStyle: LineStyle, strokeWidth: number = 1
   }
 };
 
-const lineStyleDashing = {
+export const lineStyleValues = {
   [LineStyle.SOLID]: {},
   [LineStyle.PECK1]: { dashStyle: "dashed" },
   [LineStyle.DOT1]: { dashStyle: "dashed" },
   [LineStyle.DOT2]: { dashStyle: "dashed" },
   [LineStyle.PECK_DOT1]: { dashStyle: "dashed" },
   [LineStyle.BROKEN_PECK1]: { dashStyle: "dashed" },
+  [LineStyle.BROKEN_DOT1]: { dashStyle: "dashed" },
+  [LineStyle.BROKEN_DOT2]: { dashStyle: "dashed" },
   [LineStyle.BROKEN_SOLID1]: {},
   [LineStyle.ARROW1]: {},
   [LineStyle.DOUBLE_ARROW_1]: {},
@@ -85,7 +84,7 @@ const arrowStyles = (line: ILine) => {
 };
 
 export const getEdgeStyling = (line: ILine) => {
-  let applyStyle = lineStyleDashing[line.style as string];
+  let applyStyle = lineStyleValues[line.style as string];
   if (!applyStyle) {
     console.warn(`extractEdges: line ${line.id} has unsupported style ${line.style} - will use solid`);
     applyStyle = {};
@@ -103,13 +102,6 @@ export const getEdgeStyling = (line: ILine) => {
 
 export const getTextBackgroundOpacity = (label: ILabel): number => (label.effect === LabelEffect.HALO ? 1 : 0);
 
-export const getEffect = (node: INodeData) => {
-  if (node.properties["textBackgroundOpacity"] === 1) {
-    return LabelEffect.HALO;
-  }
-  return LabelEffect.NONE;
-};
-
 const isHidden = (label: ILabel) =>
   [DisplayState.hide.valueOf(), DisplayState.systemHide.valueOf()].includes(label.displayState);
 
@@ -119,13 +111,3 @@ export const getZIndex = (label: ILabel): number => (isHidden(label) ? 100 : 200
 
 export const getIsCircled = (label: ILabel): number | undefined =>
   label.symbolType === LABEL_SYMBOL_CIRCLE ? 1 : undefined;
-
-export const getSymbolType = (node: INodeData): string | undefined => {
-  if (node.properties["symbolId"]) {
-    return "lolSymbols";
-  }
-  if (node.properties["circled"]) {
-    return LABEL_SYMBOL_CIRCLE;
-  }
-  return undefined;
-};

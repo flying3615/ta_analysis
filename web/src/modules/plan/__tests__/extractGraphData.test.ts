@@ -1,13 +1,14 @@
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
     // 15 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
-    // + two synthetic nodes the broken line
-    expect(extractedNodes).toHaveLength(34);
+    // + six synthetic nodes the broken line
+    expect(extractedNodes).toHaveLength(42);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
     const node10001 = extractedNodeMap["10001"];
     expect(node10001?.id).toBe("10001");
@@ -43,7 +44,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(34); // 5 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(42); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["11"];
@@ -117,7 +118,7 @@ describe("extractGraphData", () => {
 
   test("extractEdges extracts edge data", () => {
     const extractedEdges = extractDiagramEdges(mockPlanData.diagrams);
-    expect(extractedEdges).toHaveLength(24);
+    expect(extractedEdges).toHaveLength(28);
     const extractedEdgeMap = Object.fromEntries(extractedEdges.map((n) => [n.id, n]));
 
     expect(extractedEdgeMap["1001"]?.id).toBe("1001");
@@ -224,5 +225,23 @@ describe("extractGraphData", () => {
       expect(edge?.properties?.["targetArrowShape"]).toBe("triangle");
       expect(edge?.properties?.["sourceArrowShape"]).toBe("triangle");
     });
+
+    // check all lines styles with a dash pattern have property dashStyle defined
+    it.each(Object.values(LineStyle).filter((s) => getLineDashPattern(s).length > 0))(
+      "Style %s has property dashStyle as it has a dash pattern",
+      (style) => {
+        const lineStyle = lineStyleValues[style];
+        expect(lineStyle).toHaveProperty("dashStyle");
+      },
+    );
+
+    // check all lines styles without a dash pattern do not have property dashStyle defined
+    it.each(Object.values(LineStyle).filter((s) => getLineDashPattern(s).length === 0))(
+      "Style %s does not have property dashStyle as it has no dash pattern",
+      (style) => {
+        const lineStyle = lineStyleValues[style];
+        expect(lineStyle).not.toHaveProperty("dashStyle");
+      },
+    );
   });
 });
