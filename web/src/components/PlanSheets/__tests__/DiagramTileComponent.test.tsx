@@ -78,4 +78,36 @@ describe("Diagram Tile component", () => {
     expect(screen.getByText("Diagram AB")).toBeInTheDocument();
     expect(screen.getAllByRole("presentation")).toHaveLength(2);
   });
+
+  it("displays enabled Remove diagram button when diagram is in active page", async () => {
+    renderWithReduxProvider(
+      <DiagramTileComponent
+        diagramDisplay={{ ...mockDiagramDisplay, pageRef: 1 }}
+        selectedDiagramId={null}
+        setSelectedDiagramId={jest.fn()}
+      />,
+      { store: mockStore },
+    );
+
+    expect(screen.getByText("Diagram A")).toBeInTheDocument();
+    const removeFromSheetButton = screen.getByRole("button", { name: /Remove from sheet/i });
+    expect(removeFromSheetButton).toBeInTheDocument();
+    expect(removeFromSheetButton).not.toBeDisabled();
+  });
+
+  it("displays disabled Remove diagram button when diagram is not in active page", async () => {
+    renderWithReduxProvider(
+      <DiagramTileComponent
+        diagramDisplay={{ ...mockDiagramDisplay, pageRef: 2 }}
+        selectedDiagramId={null}
+        setSelectedDiagramId={jest.fn()}
+      />,
+      { store: mockStore },
+    );
+
+    expect(screen.getByText("Diagram A")).toBeInTheDocument();
+    const removeFromSheetButton = screen.getByRole("button", { name: /Remove from sheet/i });
+    expect(removeFromSheetButton).toBeInTheDocument();
+    expect(removeFromSheetButton).toBeDisabled();
+  });
 });
