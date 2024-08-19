@@ -4,7 +4,7 @@ import RenderFeature from "ol/render/Feature";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 
-import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
+import { MapColors, MapFillColors } from "@/components/DefineDiagrams/mapColors.ts";
 import { userDefinedDiagramTypes } from "@/queries/diagrams.ts";
 
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
@@ -36,42 +36,47 @@ export const userDiagramStylesSelectable = (feature: FeatureLike | RenderFeature
 
 export const diagramStylesSelected = new Style({
   stroke: new Stroke({ width: 4, color: MapColors.pink }),
+  fill: new Fill({
+    color: MapFillColors.pink,
+  }),
 });
 
 const diagramStyleSelectable = new Style({
   stroke: new Stroke({ width: 4, color: MapColors.blue }),
+  fill: new Fill({
+    color: MapFillColors.blue,
+  }),
 });
 
 export const drawInteractionBoundaryBorder = new Style({
   stroke: new Stroke({
-    color: "rgba(0, 153, 255, 1)",
+    color: MapColors.blue,
     width: 3,
   }),
 });
 
 export const drawInteractionBoundaryBorderError = new Style({
   stroke: new Stroke({
-    color: "rgba(255, 0, 0, 1)",
+    color: MapColors.red,
     width: 3,
   }),
 });
 
 export const drawInteractionBoundaryFill = new Style({
   stroke: new Stroke({
-    color: "rgba(0, 0, 0, 0)",
+    color: MapColors.transparent,
     width: 3,
   }),
   fill: new Fill({
-    color: "rgba(0, 153, 255, 0.1)",
+    color: MapFillColors.blue,
   }),
 });
 
 export const drawInteractionBoundaryFillError = new Style({
   stroke: new Stroke({
-    color: "rgba(204, 102, 0, 0)",
-    width: 3,
+    color: MapColors.transparent,
   }),
   fill: new Fill({
-    color: "rgba(255, 0, 0, 0.1)",
+    color: MapFillColors.red,
   }),
 });

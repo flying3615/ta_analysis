@@ -4,9 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
-import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
-import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
 import { getLabelsQueryKey } from "@/queries/labels.ts";
@@ -17,22 +15,16 @@ import { s } from "@/util/stringUtil.ts";
 
 export interface useRemoveDiagramsProps {
   transactionId: number;
-  enabled: boolean;
+  selectedDiagramIds: number[];
 }
 
-export const useRemoveDiagram = ({ transactionId, enabled }: useRemoveDiagramsProps) => {
+export const useRemoveDiagram = ({ transactionId, selectedDiagramIds: diagramIds }: useRemoveDiagramsProps) => {
   const [loading, setLoading] = useState(false);
   const { showSuccessToast, showErrorToast } = useShowToast();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
 
   const { removeQueryData } = useQueryDataUpdate<IFeatureSource>({ queryKey: getDiagramsQueryKey(transactionId) });
-
-  const { selectedFeatureIds: diagramIds } = useSelectFeatures({
-    enabled,
-    locked: loading,
-    layer: Layer.SELECT_DIAGRAMS,
-  });
 
   const removeDiagrams = useCallback(async () => {
     if (isEmpty(diagramIds)) return;

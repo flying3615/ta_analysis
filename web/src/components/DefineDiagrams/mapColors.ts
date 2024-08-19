@@ -1,4 +1,6 @@
 // Colour codes should be consistent with web/src/map-styles/MarkColors.ts in Survey Capture
+import { fromPairs, toPairs } from "lodash-es";
+
 export const MapColors = {
   black: "rgb(0, 0, 0)",
   blue: "rgb(0, 144, 255)",
@@ -13,3 +15,10 @@ export const MapColors = {
   yellowOpacity50: "rgba(255, 202, 44, 0.5)",
   pink: "rgb(248, 27, 239)",
 };
+
+export const MapFillColors = {
+  ...fromPairs(
+    toPairs(MapColors).map(([key, color]) => [key, color.replace(")", ",0.1)")]),
+    // Your custom colors here
+  ),
+} as Record<keyof typeof MapColors, string>;

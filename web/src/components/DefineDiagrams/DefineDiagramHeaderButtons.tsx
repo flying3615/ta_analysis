@@ -52,17 +52,17 @@ export const DefineDiagramMenuButtons = () => {
     removeRtLines,
   } = useRemoveRtLine({ transactionId, enabled: activeAction === "select_line" });
 
-  const {
-    loading: loadingRemoveDiagrams,
-    canRemoveDiagram,
-    removeDiagrams,
-  } = useRemoveDiagram({ transactionId, enabled: activeAction === "select_diagram" });
-
   const { selectedDiagramIds } = useSelectDiagram({
     transactionId,
     enabled: enlargeReduceDiagramActions.includes(activeAction) || activeAction === "select_diagram",
     locked: enlargeReduceDiagramActions.includes(activeAction),
   });
+
+  const {
+    loading: loadingRemoveDiagrams,
+    canRemoveDiagram,
+    removeDiagrams,
+  } = useRemoveDiagram({ transactionId, selectedDiagramIds });
 
   const { loading: resizeDiagramLoading } = useResizeDiagram({
     transactionId,

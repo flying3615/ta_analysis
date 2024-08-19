@@ -2,8 +2,12 @@ import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
 import { ClickedFeature } from "@linzjs/landonline-openlayers-map";
 import { Feature, LineString, Polygon, Position } from "geojson";
 import { castArray, chunk } from "lodash-es";
+import { Feature as olFeature } from "ol";
 import { Coordinate } from "ol/coordinate";
-import FeatureLike from "ol/Feature";
+import { FeatureLike } from "ol/Feature";
+import { GeoJSON } from "ol/format";
+import { GeoJSONFeature } from "ol/format/GeoJSON";
+import { Geometry as olGeometry } from "ol/geom";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { register } from "ol/proj/proj4";
 import RenderFeature from "ol/render/Feature";
@@ -47,6 +51,19 @@ export const geometryToCartesian = (geometry: SimpleGeometry): ICartesianCoords[
   mapCoordinatesFromGeometry(geometry).map(mapPointToCartesian);
 
 /** =========================================================== */
+
+export const isGeoJsonPolygonal = (f: GeoJSONFeature): boolean => {
+  const type = f.geometry.type;
+  return type === "Polygon" || type === "MultiPolygon";
+};
+
+export const GeoJsonFromFeature = (feature: FeatureLike): GeoJSONFeature => {
+  const writer = new GeoJSON();
+  return writer.writeFeatureObject(feature as olFeature<olGeometry>);
+};
+
+export const GeoJsonFromGeometry = (geometry: olGeometry): GeoJSONFeature =>
+  GeoJsonFromFeature(new olFeature(geometry));
 
 export const lineStringFromFlatCoords = (coords: number[]): Feature<LineString> => {
   return {

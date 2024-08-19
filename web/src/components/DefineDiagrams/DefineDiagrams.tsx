@@ -134,17 +134,11 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   // Leave this to help testers
   useEffect(() => {
     const logClick = (e: MapBrowserEvent<MouseEvent>) => {
-      console.log(
-        `Map click: ${JSON.stringify(
-          {
-            pixel: JSON.stringify(e.pixel),
-            meters: JSON.stringify(e.coordinate),
-            coordinate: JSON.stringify(mapPointToCoordinate(e.coordinate)),
-          },
-          null,
-          "\t",
-        )}`,
-      );
+      console.log(`Map click`, {
+        pixel: e.pixel,
+        meters: e.coordinate,
+        coordinate: mapPointToCoordinate(e.coordinate),
+      });
     };
 
     map?.on("click", logClick);

@@ -190,7 +190,7 @@ export const selectDiagramsLayer = (transactionId: number, maxZoom: number): Lol
     zIndex: zIndexes[Layer.SELECT_DIAGRAMS],
     style: userDiagramStylesSelectable,
     highlightStyle: diagramStylesSelected,
-    geometrySizeForClickDetection: 12,
+    geometrySizeForClickDetection: 1,
     source: {
       type: SourceType.FEATURES,
       queryKey: getDiagramsQueryKey(transactionId),
