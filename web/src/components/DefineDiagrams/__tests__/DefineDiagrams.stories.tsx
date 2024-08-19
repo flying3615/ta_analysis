@@ -354,7 +354,7 @@ DeleteRTLines.play = async () => {
   await sleep(100); // This sleep is needed for line selection
   const lineCoordinates: Coordinate[] = [[19461540.31034258, -5058018.909898458]];
   await drawOnMap(lineCoordinates);
-  const deleteSelectedButton = await screen.findByLabelText("Delete selected");
+  const deleteSelectedButton = await screen.findByLabelText("Delete selected feature(s)");
   await userEvent.click(deleteSelectedButton);
   await expect(await screen.findByText("RT line removed successfully")).toBeInTheDocument();
 };

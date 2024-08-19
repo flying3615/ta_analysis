@@ -13,6 +13,7 @@ import { VerticalSpacer } from "@/components/Header/Header";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useEscapeKey } from "@/hooks/useEscape";
+import { useRemoveDiagram } from "@/hooks/useRemoveDiagram.ts";
 import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
 import { useResizeDiagram } from "@/hooks/useResizeDiagram.ts";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram.ts";
@@ -51,6 +52,12 @@ export const DefineDiagramMenuButtons = () => {
     removeRtLines,
   } = useRemoveRtLine({ transactionId, enabled: activeAction === "select_line" });
 
+  const {
+    loading: loadingRemoveDiagrams,
+    canRemoveDiagram,
+    removeDiagrams,
+  } = useRemoveDiagram({ transactionId, enabled: activeAction === "select_diagram" });
+
   const { selectedDiagramIds } = useSelectDiagram({
     transactionId,
     enabled: enlargeReduceDiagramActions.includes(activeAction) || activeAction === "select_diagram",
@@ -80,11 +87,21 @@ export const DefineDiagramMenuButtons = () => {
   return (
     <>
       <ActionHeaderButton
-        disabled={!canRemoveRtLine}
-        title="Delete selected"
+        disabled={!canRemoveRtLine && !canRemoveDiagram}
+        title="Delete selected feature(s)"
         icon="ic_delete_forever"
-        onClick={removeRtLines}
-        loading={loadingRemoveLines}
+        onClick={async () => {
+          try {
+            if (canRemoveDiagram) {
+              await removeDiagrams();
+            } else {
+              await removeRtLines();
+            }
+          } catch (error) {
+            console.error("An error occurred:", error);
+          }
+        }}
+        loading={canRemoveDiagram ? loadingRemoveDiagrams : loadingRemoveLines}
       />
       <VerticalSpacer />
       <ActionHeaderButton title="Zoom in" icon="ic_add" onClick={() => zoomByDelta(1)} />
