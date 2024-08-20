@@ -1,4 +1,4 @@
-import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
+import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { kinks } from "@turf/kinks";
 import { isEmpty, isEqual } from "lodash-es";
@@ -42,7 +42,7 @@ export interface DrawEndProps {
   // lat/lon shifted as number[][]
   coordinates: Coordinate[];
   // lat/lon shifted as {x, y}
-  cartesianCoordinates: ICartesianCoords[];
+  cartesianCoordinates: CartesianCoordsDTO[];
 }
 
 export interface useOpenLayersDrawInteractionProps {

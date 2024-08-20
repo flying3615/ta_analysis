@@ -1,4 +1,4 @@
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ export default {
 } as Meta<typeof DiagramList>;
 
 interface IDiagramListProps {
-  diagrams: IDiagram[];
+  diagrams: DiagramDTO[];
 }
 
 type Story = StoryObj<typeof DiagramList>;

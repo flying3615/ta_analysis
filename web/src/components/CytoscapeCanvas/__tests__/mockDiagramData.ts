@@ -1,4 +1,4 @@
-import { DisplayState, IDiagram, IPage, IPagePageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, DisplayStateEnum, PageDTO, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -114,7 +114,7 @@ export const lineEdges: IEdgeData[] = [
   },
 ];
 
-export const diagrams: IDiagram[] = [
+export const diagrams: DiagramDTO[] = [
   {
     id: diagramId,
     bottomRightPoint: { x: 1500, y: -1000 },
@@ -129,7 +129,7 @@ export const diagrams: IDiagram[] = [
     parcelLabelGroups: [],
     listOrder: 1,
     zoomScale: 100,
-    displayState: DisplayState.display,
+    displayState: DisplayStateEnum.display,
     pageRef: 1,
   },
 ];
@@ -506,20 +506,20 @@ export const pageBorderEdges: IEdgeData[] = [
   },
 ];
 
-export const pages: IPage[] = [
+export const pages: PageDTO[] = [
   {
     id: 1,
-    pageType: IPagePageTypeEnum.title,
+    pageType: PageDTOPageTypeEnum.title,
     pageNumber: 1,
   },
   {
     id: 1,
-    pageType: IPagePageTypeEnum.survey,
+    pageType: PageDTOPageTypeEnum.survey,
     pageNumber: 1,
   },
   {
     id: 2,
-    pageType: IPagePageTypeEnum.title,
+    pageType: PageDTOPageTypeEnum.title,
     pageNumber: 1,
   },
 ];

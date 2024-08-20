@@ -1,6 +1,6 @@
 import "./DiagramList.scss";
 
-import { IDiagram, ILabel } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, LabelDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { isArray, isEmpty, isNil } from "lodash-es";
 import { useMemo, useState } from "react";
@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { getActivePageNumber, getPageRefFromPageNumber, setDiagramPageRef } from "@/redux/planSheets/planSheetsSlice";
 
 export interface DiagramListProps {
-  diagrams: IDiagram[];
+  diagrams: DiagramDTO[];
 }
 
 export interface DiagramDisplay {
@@ -22,7 +22,7 @@ export interface DiagramDisplay {
   pageRef?: number;
 }
 
-type DiagramMap = Record<number, IDiagram>;
+type DiagramMap = Record<number, DiagramDTO>;
 type ChildDiagramMap = Record<number, number[]>;
 
 export const DiagramList = ({ diagrams }: DiagramListProps) => {
@@ -61,7 +61,7 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
   );
 };
 
-const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
+const buildDiagramHierarchy = (diagrams: DiagramDTO[]): DiagramDisplay[] => {
   // a list of all the child diagramIds, these will be excluded as root diagrams
   const childDiagrams: number[] = [];
   // map of diagramId to a listOf their children diagrams
@@ -95,7 +95,7 @@ const buildDiagramHierarchy = (diagrams: IDiagram[]): DiagramDisplay[] => {
 };
 
 const diagramToDiagramDisplay = (
-  diagram: IDiagram,
+  diagram: DiagramDTO,
   level: number,
   diagramMap: DiagramMap,
   childDiagramMap: ChildDiagramMap,
@@ -134,7 +134,7 @@ const createChildDiagrams = (
   return diagramDisplayItems.sort(diagramDisplaySortFn);
 };
 
-const getDiagramName = (labels: ILabel[], diagramNumber: number): string => {
+const getDiagramName = (labels: LabelDTO[], diagramNumber: number): string => {
   const diagramLabel = labels.find((l) => "diagram" === l.labelType);
   if (diagramLabel) {
     return diagramLabel.displayText;

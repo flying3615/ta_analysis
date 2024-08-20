@@ -1,4 +1,4 @@
-import { DisplayState, ILabel, ILine } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
 
 export const LineStyle = {
   SOLID: "solid",
@@ -69,7 +69,7 @@ export const lineStyleValues = {
   [LineStyle.DOUBLE_ARROW_1]: {},
 } as { [key: string]: StyledLineStyle };
 
-const arrowStyles = (line: ILine) => {
+const arrowStyles = (line: LineDTO) => {
   if ([LineStyle.ARROW1, LineStyle.DOUBLE_ARROW_1].map((s) => s.valueOf()).includes(line.style)) {
     switch (line.style) {
       case LineStyle.DOUBLE_ARROW_1:
@@ -83,7 +83,7 @@ const arrowStyles = (line: ILine) => {
   return {};
 };
 
-export const getEdgeStyling = (line: ILine) => {
+export const getEdgeStyling = (line: LineDTO) => {
   let applyStyle = lineStyleValues[line.style as string];
   if (!applyStyle) {
     console.warn(`extractEdges: line ${line.id} has unsupported style ${line.style} - will use solid`);
@@ -100,14 +100,15 @@ export const getEdgeStyling = (line: ILine) => {
   };
 };
 
-export const getTextBackgroundOpacity = (label: ILabel): number => (label.effect === LabelEffect.HALO ? 1 : 0);
+export const getTextBackgroundOpacity = (label: LabelDTO): number => (label.effect === LabelEffect.HALO ? 1 : 0);
 
-const isHidden = (label: ILabel) =>
-  [DisplayState.hide.valueOf(), DisplayState.systemHide.valueOf()].includes(label.displayState);
+const isHidden = (label: LabelDTO) =>
+  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(label.displayState);
 
-export const getFontColor = (label: ILabel): string => (isHidden(label) ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR);
+export const getFontColor = (label: LabelDTO): string =>
+  isHidden(label) ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR;
 
-export const getZIndex = (label: ILabel): number => (isHidden(label) ? 100 : 200);
+export const getZIndex = (label: LabelDTO): number => (isHidden(label) ? 100 : 200);
 
-export const getIsCircled = (label: ILabel): number | undefined =>
+export const getIsCircled = (label: LabelDTO): number | undefined =>
   label.symbolType === LABEL_SYMBOL_CIRCLE ? 1 : undefined;

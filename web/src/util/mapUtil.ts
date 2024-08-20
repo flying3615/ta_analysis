@@ -1,4 +1,4 @@
-import { ICartesianCoords } from "@linz/survey-plan-generation-api-client";
+import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { ClickedFeature } from "@linzjs/landonline-openlayers-map";
 import { Feature, LineString, Polygon, Position } from "geojson";
 import { castArray, chunk } from "lodash-es";
@@ -19,8 +19,8 @@ import proj4 from "proj4";
 proj4.defs("EPSG:1", "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs +pm=160");
 register(proj4);
 
-export const cartesianToNumeric = (cartesian: ICartesianCoords): number[] => [cartesian.x, cartesian.y];
-export const numericToCartesian = (num: number[]): ICartesianCoords => ({ x: num[0]!, y: num[1]! });
+export const cartesianToNumeric = (cartesian: CartesianCoordsDTO): number[] => [cartesian.x, cartesian.y];
+export const numericToCartesian = (num: number[]): CartesianCoordsDTO => ({ x: num[0]!, y: num[1]! });
 
 export const mapPointToLatLonShifted = (point: number[]): number[] => {
   return proj4("EPSG:3857", "EPSG:1", point);
@@ -47,7 +47,7 @@ const mapCoordinatesFromGeometry = (geometry: SimpleGeometry): Coordinate[] => g
 export const geometryToCoordinates = (geometry: SimpleGeometry): Coordinate[] =>
   mapCoordinatesFromGeometry(geometry).map(mapPointToCoordinate);
 
-export const geometryToCartesian = (geometry: SimpleGeometry): ICartesianCoords[] =>
+export const geometryToCartesian = (geometry: SimpleGeometry): CartesianCoordsDTO[] =>
   mapCoordinatesFromGeometry(geometry).map(mapPointToCartesian);
 
 /** =========================================================== */

@@ -1,4 +1,4 @@
-import { DisplayState } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -81,7 +81,7 @@ describe("updatePlanData", () => {
         coordinateLabels: [
           {
             anchorAngle: 0,
-            displayState: DisplayState.display,
+            displayState: DisplayStateEnum.display,
             effect: "none",
             pointOffset: 0,
             rotationAngle: 0,

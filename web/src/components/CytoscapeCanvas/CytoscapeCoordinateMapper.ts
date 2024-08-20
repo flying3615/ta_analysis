@@ -1,11 +1,11 @@
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { keyBy } from "lodash-es";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
 export class CytoscapeCoordinateMapper {
   private readonly scalePixelsPerCm: number;
-  private readonly diagrams: Record<number, IDiagram>;
+  private readonly diagrams: Record<number, DiagramDTO>;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL
   // they define the page size in cm
@@ -18,7 +18,7 @@ export class CytoscapeCoordinateMapper {
 
   constructor(
     canvas: HTMLElement,
-    diagrams: IDiagram[],
+    diagrams: DiagramDTO[],
     maxWidth = canvas.clientWidth,
     maxHeight = canvas.clientHeight,
   ) {

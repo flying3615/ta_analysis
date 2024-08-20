@@ -1,10 +1,10 @@
 import {
-  DisplayState,
-  ICartesianCoords,
-  IDiagram,
-  ILabelLabelTypeEnum,
-  IPage,
-  IPagePageTypeEnum,
+  CartesianCoordsDTO,
+  DiagramDTO,
+  DisplayStateEnum,
+  LabelDTOLabelTypeEnum,
+  PageDTO,
+  PageDTOPageTypeEnum,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
@@ -13,12 +13,12 @@ import { SYMBOLS_FONT } from "@/constants";
 
 interface DiagramOptions {
   id?: number;
-  originPageOffset?: ICartesianCoords;
-  bottomRightPoint?: ICartesianCoords;
+  originPageOffset?: CartesianCoordsDTO;
+  bottomRightPoint?: CartesianCoordsDTO;
   diagramType?: string;
   zoomScale?: number;
   pageRef?: number;
-  displayState?: DisplayState;
+  displayState?: DisplayStateEnum;
   listOrder?: number;
   listParentRef?: number;
   userEdited?: boolean;
@@ -27,7 +27,7 @@ interface DiagramOptions {
 
 interface PageOptions {
   id?: number;
-  pageType?: IPagePageTypeEnum;
+  pageType?: PageDTOPageTypeEnum;
   pageNumber?: number;
   userEdited?: boolean;
 }
@@ -40,8 +40,8 @@ export class PlanDataBuilder {
   };
 
   addDiagram(
-    optionsOrBottomRightPoint: ICartesianCoords | DiagramOptions,
-    originPageOffset: ICartesianCoords = {
+    optionsOrBottomRightPoint: CartesianCoordsDTO | DiagramOptions,
+    originPageOffset: CartesianCoordsDTO = {
       x: 0,
       y: 0,
     },
@@ -63,7 +63,7 @@ export class PlanDataBuilder {
       const newId = id ?? this.planData.diagrams.length + 1;
       newDiagram = {
         id: newId,
-        bottomRightPoint: optionsOrBottomRightPoint as ICartesianCoords,
+        bottomRightPoint: optionsOrBottomRightPoint as CartesianCoordsDTO,
         originPageOffset,
         coordinates: [],
         labels: [],
@@ -78,7 +78,7 @@ export class PlanDataBuilder {
         listParentRef,
         zoomScale: zoomScale ?? 300,
         pageRef: pageRef,
-        displayState: DisplayState.display,
+        displayState: DisplayStateEnum.display,
       };
     } else {
       const defaultId = this.planData.diagrams.length + 1;
@@ -97,12 +97,12 @@ export class PlanDataBuilder {
         listOrder: defaultId,
         zoomScale: 300,
         pageRef: pageRef,
-        displayState: DisplayState.display,
+        displayState: DisplayStateEnum.display,
       };
 
       newDiagram = {
         ...defaults,
-        ...(optionsOrBottomRightPoint as IDiagram),
+        ...(optionsOrBottomRightPoint as DiagramDTO),
       };
     }
     this.planData.diagrams.push(newDiagram);
@@ -149,7 +149,7 @@ export class PlanDataBuilder {
     const defaults = {
       id: this.planData.pages.length + 1,
       pageNumber: this.planData.pages.length + 1,
-      pageType: IPagePageTypeEnum.title,
+      pageType: PageDTOPageTypeEnum.title,
     };
     if (typeof optionsOrPageNumber === "number") {
       this.planData.pages.push({
@@ -159,13 +159,13 @@ export class PlanDataBuilder {
     } else {
       this.planData.pages.push({
         ...defaults,
-        ...(optionsOrPageNumber as IPage),
+        ...(optionsOrPageNumber as PageDTO),
       });
     }
     return this;
   }
 
-  addCooordinate(id: number, position: ICartesianCoords, coordType: string = "node"): PlanDataBuilder {
+  addCooordinate(id: number, position: CartesianCoordsDTO, coordType: string = "node"): PlanDataBuilder {
     if (this.planData.diagrams.length == 0) {
       throw new Error(
         "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addCoordinate()",
@@ -203,7 +203,7 @@ export class PlanDataBuilder {
     return this;
   }
 
-  addSymbolLabel(id: number, displayText: string, position: ICartesianCoords, fontSize: number = 8) {
+  addSymbolLabel(id: number, displayText: string, position: CartesianCoordsDTO, fontSize: number = 8) {
     return this.addLabel(
       "coordinateLabels",
       id,
@@ -211,7 +211,7 @@ export class PlanDataBuilder {
       position,
       undefined,
       undefined,
-      DisplayState.display,
+      DisplayStateEnum.display,
       SYMBOLS_FONT,
       fontSize,
     );
@@ -221,14 +221,14 @@ export class PlanDataBuilder {
     intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
     id: number,
     displayText: string,
-    position: ICartesianCoords,
+    position: CartesianCoordsDTO,
     featureId?: number,
     featureType?: string,
     labelType: string = "markName",
     font: string = "Tahoma",
     fontSize: number = 10,
     effect: string = "none",
-    displayState: DisplayState = DisplayState.display,
+    displayState: DisplayStateEnum = DisplayStateEnum.display,
     symbolType: string | undefined = undefined,
     textAlignment: string | undefined = undefined,
     borderWidth: number | undefined = undefined,
@@ -250,7 +250,7 @@ export class PlanDataBuilder {
       id,
       displayText,
       position,
-      labelType: labelType as ILabelLabelTypeEnum,
+      labelType: labelType as LabelDTOLabelTypeEnum,
       font,
       fontSize,
       featureId,
@@ -280,7 +280,7 @@ export class PlanDataBuilder {
     intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
     id: number,
     displayText: string,
-    position: ICartesianCoords,
+    position: CartesianCoordsDTO,
     font: string = "Tahoma",
     fontSize: number = 10,
     rotationAngle: number,
@@ -296,7 +296,7 @@ export class PlanDataBuilder {
 
     const label = {
       anchorAngle,
-      displayState: DisplayState.display,
+      displayState: DisplayStateEnum.display,
       effect: "none",
       pointOffset,
       rotationAngle,
@@ -305,7 +305,7 @@ export class PlanDataBuilder {
       id,
       displayText,
       position,
-      labelType: ILabelLabelTypeEnum.markName,
+      labelType: LabelDTOLabelTypeEnum.markName,
       font,
       fontSize,
       symbolType,

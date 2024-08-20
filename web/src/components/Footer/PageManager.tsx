@@ -1,4 +1,4 @@
-import { IPage } from "@linz/survey-plan-generation-api-client";
+import { PageDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiAlertModalV2, LuiButton, LuiIcon, LuiModalV2, LuiTextInput } from "@linzjs/lui";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { ChangeEvent, useState } from "react";
@@ -30,11 +30,11 @@ const PageManager = () => {
   const activeSheet = useAppSelector(getActiveSheet);
   const dispatch = useAppDispatch();
 
-  const getMaxId = (pages: IPage[]) => {
+  const getMaxId = (pages: PageDTO[]) => {
     return pages.reduce((maxId, page) => (page.id > maxId ? page.id : maxId), 0);
   };
 
-  const onPageUpdated = (pages: IPage[]) => dispatch(updatePages(pages));
+  const onPageUpdated = (pages: PageDTO[]) => dispatch(updatePages(pages));
   const onActivePageNumberUpdated = (pageNumber: number) =>
     dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber }));
 

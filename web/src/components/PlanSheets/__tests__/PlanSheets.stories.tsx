@@ -1,7 +1,7 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
-import { IPagePageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/IPage.ts";
+import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/PageDTO.ts";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/testing-library";
@@ -322,9 +322,9 @@ const planData = () => {
       "Tahoma",
       14.0,
     )
-    .addPage({ id: 1, pageType: IPagePageTypeEnum.title, pageNumber: 1 })
-    .addPage({ id: 2, pageType: IPagePageTypeEnum.survey, pageNumber: 1 })
-    .addPage({ id: 3, pageType: IPagePageTypeEnum.survey, pageNumber: 2 });
+    .addPage({ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 })
+    .addPage({ id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 })
+    .addPage({ id: 3, pageType: PageDTOPageTypeEnum.survey, pageNumber: 2 });
 
   return builder.build();
 };

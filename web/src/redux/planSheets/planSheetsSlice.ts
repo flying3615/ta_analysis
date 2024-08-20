@@ -1,11 +1,11 @@
-import { IDiagram, IPage } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 
 export interface PlanSheetsState {
-  diagrams: IDiagram[];
-  pages: IPage[];
+  diagrams: DiagramDTO[];
+  pages: PageDTO[];
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
@@ -26,7 +26,7 @@ const planSheetsSlice = createSlice({
   name: "planSheets",
   initialState,
   reducers: {
-    setPlanData: (state, action: PayloadAction<{ diagrams: IDiagram[]; pages: IPage[] }>) => {
+    setPlanData: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; pages: PageDTO[] }>) => {
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
       state.hasChanges = false;
@@ -38,7 +38,7 @@ const planSheetsSlice = createSlice({
         }
       });
     },
-    replaceDiagrams: (state, action: PayloadAction<IDiagram[]>) => {
+    replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       action.payload.forEach((diagram) => {
         const index = state.diagrams.findIndex((d) => d.id === diagram.id);
         state.diagrams[index] = diagram;
@@ -55,13 +55,13 @@ const planSheetsSlice = createSlice({
       const { id, pageRef } = action.payload;
       state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
     },
-    addDiagram: (state, action: PayloadAction<IDiagram>) => {
+    addDiagram: (state, action: PayloadAction<DiagramDTO>) => {
       state.diagrams.push(action.payload);
     },
     removeDiagram: (state, action: PayloadAction<string>) => {
       state.diagrams = state.diagrams.filter((d) => d.id.toString() !== action.payload);
     },
-    updatePages: (state, action: PayloadAction<IPage[]>) => {
+    updatePages: (state, action: PayloadAction<PageDTO[]>) => {
       state.pages = action.payload;
     },
   },

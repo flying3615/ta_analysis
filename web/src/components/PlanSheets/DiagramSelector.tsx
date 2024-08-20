@@ -1,6 +1,6 @@
 import "./DiagramSelector.scss";
 
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiIcon } from "@linzjs/lui";
 
 import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
@@ -41,7 +41,7 @@ const headerForSheet = (view: PlanSheetType) => {
   );
 };
 
-const filterBySheetType = (view: PlanSheetType) => (d: IDiagram) => {
+const filterBySheetType = (view: PlanSheetType) => (d: DiagramDTO) => {
   const includesTravers = d.diagramType.includes("Traverse");
   if (view === PlanSheetType.SURVEY) {
     return includesTravers;

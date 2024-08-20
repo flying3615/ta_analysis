@@ -1,6 +1,6 @@
 import "./CytoscapeCanvas.scss";
 
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiTooltip } from "@linzjs/lui";
 import cytoscape from "cytoscape";
 import { debounce } from "lodash-es";
@@ -28,7 +28,7 @@ export interface IInitZoom {
 export interface ICytoscapeCanvasProps {
   nodeData: INodeData[];
   edgeData: IEdgeData[];
-  diagrams: IDiagram[];
+  diagrams: DiagramDTO[];
   initZoom?: IInitZoom;
   onNodeChange: (node: INodeData) => void;
   onEdgeChange: (node: IEdgeData) => void;

@@ -1,4 +1,4 @@
-import { IDiagram } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 
@@ -6,8 +6,8 @@ describe("CytoscapeCoordinateMapper", () => {
   const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
     { clientWidth: 390, clientHeight: 258 } as HTMLElement,
     [
-      { id: 1, bottomRightPoint: { x: 30, y: -20 }, originPageOffset: { x: 0, y: 0 }, zoomScale: 100 } as IDiagram,
-      { id: 2, bottomRightPoint: { x: 25, y: -24 }, originPageOffset: { x: 23, y: -22 }, zoomScale: 100 } as IDiagram,
+      { id: 1, bottomRightPoint: { x: 30, y: -20 }, originPageOffset: { x: 0, y: 0 }, zoomScale: 100 } as DiagramDTO,
+      { id: 2, bottomRightPoint: { x: 25, y: -24 }, originPageOffset: { x: 23, y: -22 }, zoomScale: 100 } as DiagramDTO,
     ],
   );
 

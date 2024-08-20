@@ -1,4 +1,4 @@
-import { ICoordinate, IDiagram, ILabel, ILine, IPageConfig } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PageConfigDTO } from "@linz/survey-plan-generation-api-client";
 import { negate } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -6,7 +6,7 @@ import { SYMBOLS_FONT } from "@/constants";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 
-export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
+export const extractPageNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const nodes: INodeData[] = pageConfig.coordinates.map((coordinate) => ({
       id: `border_${coordinate.id.toString()}`,
@@ -56,7 +56,7 @@ export const extractPageNodes = (pageConfigs: IPageConfig[]): INodeData[] => {
   });
 };
 
-export const extractPageEdges = (pageConfigs: IPageConfig[]): IEdgeData[] => {
+export const extractPageEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const pageLines = pageConfig.lines
       .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
@@ -90,12 +90,12 @@ export const extractPageEdges = (pageConfigs: IPageConfig[]): IEdgeData[] => {
   });
 };
 
-export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
-  const isSymbol = (label: ILabel) => label.font === SYMBOLS_FONT;
+export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
+  const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
   const notSymbol = negate(isSymbol);
 
   return diagrams.flatMap((diagram) => {
-    const labelToNode = (label: ILabel): INodeData => {
+    const labelToNode = (label: LabelDTO): INodeData => {
       return {
         id: label.id.toString(),
         position: label.position,
@@ -188,7 +188,7 @@ export const extractDiagramNodes = (diagrams: IDiagram[]): INodeData[] => {
   });
 };
 
-export const extractDiagramEdges = (diagrams: IDiagram[]): IEdgeData[] => {
+export const extractDiagramEdges = (diagrams: DiagramDTO[]): IEdgeData[] => {
   return diagrams.flatMap((diagram) => {
     return diagram.lines
       .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
@@ -220,7 +220,7 @@ export const extractDiagramEdges = (diagrams: IDiagram[]): IEdgeData[] => {
  * @param line the line to break
  * @param diagram the diagram the line belongs to
  */
-const breakLine = (line: ILine, diagram: IDiagram): IEdgeData[] => {
+const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
   const brokenLine = {
     id: `${line.id}_S`,
     sourceNodeId: line.coordRefs?.[0]?.toString(),
@@ -256,7 +256,7 @@ const breakLine = (line: ILine, diagram: IDiagram): IEdgeData[] => {
  * @param coordinates the coordinates of the diagram
  * @param diagramId the id of the diagram
  */
-const breakLineNodes = (line: ILine, coordinates: ICoordinate[], diagramId: number): INodeData[] => {
+const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: number): INodeData[] => {
   const startPoint = coordinates.find((coordinate) => coordinate.id === line.coordRefs?.[0]);
   const endPoint = coordinates.find((coordinate) => coordinate.id === line.coordRefs?.[1]);
 
@@ -309,7 +309,7 @@ const breakLineNodes = (line: ILine, coordinates: ICoordinate[], diagramId: numb
   ];
 };
 
-const isBrokenLine = (line: ILine): boolean =>
+const isBrokenLine = (line: LineDTO): boolean =>
   line.style === LineStyle.BROKEN_SOLID1 ||
   line.style === LineStyle.BROKEN_PECK1 ||
   line.style === LineStyle.BROKEN_DOT1 ||

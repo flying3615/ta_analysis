@@ -30,7 +30,7 @@ export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ..
   return useMutation({
     ...params,
     mutationKey: updatePlanQueryKey(transactionId),
-    mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequest: planData }),
+    mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequestDTO: planData }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
     },

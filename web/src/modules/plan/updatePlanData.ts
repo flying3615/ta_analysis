@@ -1,8 +1,8 @@
-import { ICoordinate, IDiagram, ILabel, ILine } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
-export const updateDiagramsWithNode = (diagrams: IDiagram[], node: INodeData): IDiagram[] => {
+export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
     if (node.properties["elementType"] === "coordinates") {
       return {
@@ -23,7 +23,7 @@ export const updateDiagramsWithNode = (diagrams: IDiagram[], node: INodeData): I
   });
 };
 
-export const updateDiagramsWithEdge = (diagrams: IDiagram[], edge: IEdgeData): IDiagram[] => {
+export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
     return {
       ...diagram,
@@ -32,7 +32,7 @@ export const updateDiagramsWithEdge = (diagrams: IDiagram[], edge: IEdgeData): I
   });
 };
 
-const mergeLabelData = (label: ILabel, updatedNode: INodeData): ILabel => {
+const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
   return {
     ...label,
     position: updatedNode.position,
@@ -40,7 +40,7 @@ const mergeLabelData = (label: ILabel, updatedNode: INodeData): ILabel => {
   };
 };
 
-const mergeCoordinateData = (coordinate: ICoordinate, updatedNode: INodeData): ICoordinate => {
+const mergeCoordinateData = (coordinate: CoordinateDTO, updatedNode: INodeData): CoordinateDTO => {
   return {
     ...coordinate,
     position: updatedNode.position,
@@ -48,7 +48,7 @@ const mergeCoordinateData = (coordinate: ICoordinate, updatedNode: INodeData): I
   };
 };
 
-const mergeLineData = (line: ILine, _updatedEdge: IEdgeData): ILine => {
+const mergeLineData = (line: LineDTO, _updatedEdge: IEdgeData): LineDTO => {
   return {
     ...line,
     // TODO: Handle updating line edge data
