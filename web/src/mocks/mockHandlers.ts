@@ -95,6 +95,15 @@ export const handlers: HttpHandler[] = [
     return HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" });
   }),
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
+  http.delete(/\/124\/diagrams$/, () =>
+    HttpResponse.json(
+      { ok: true, statusCode: null, message: null },
+      {
+        status: 200,
+        statusText: "OK",
+      },
+    ),
+  ),
   http.get(/\/124\/lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
   http.delete(/\/124\/lines/, () =>
     HttpResponse.json(

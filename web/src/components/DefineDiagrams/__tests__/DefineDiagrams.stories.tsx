@@ -358,3 +358,32 @@ DeleteRTLines.play = async () => {
   await userEvent.click(deleteSelectedButton);
   await expect(await screen.findByText("RT line removed successfully")).toBeInTheDocument();
 };
+
+export const DeleteDiagram: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+DeleteDiagram.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram", async () => {
+    await waitForInitialMapLoadsToComplete();
+    const selectDiagramButton = await screen.findByLabelText("Select diagram");
+    await userEvent.click(selectDiagramButton);
+    await sleep(100); // This sleep is needed for diagram selection
+    const diagramCoordinates: Coordinate[] = [[19461406.541349366, -5058120.795760532]];
+    await drawOnMap(diagramCoordinates);
+  });
+  await step("WHEN I click on delete button", async () => {
+    const deleteSelectedButton = await screen.findByLabelText("Delete selected feature(s)");
+    await userEvent.click(deleteSelectedButton);
+  });
+  await step("THEN the diagram is deleted", async () => {
+    await expect(await screen.findByText("Diagram removed successfully")).toBeInTheDocument();
+  });
+};
