@@ -12,6 +12,7 @@ import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
+import { useDefineDiagram } from "@/hooks/useDefineDiagram";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useRemoveDiagram } from "@/hooks/useRemoveDiagram.ts";
 import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
@@ -70,6 +71,10 @@ export const DefineDiagramMenuButtons = () => {
     enabled: enlargeReduceDiagramActions.includes(activeAction),
   });
 
+  const { disabledDiagramIds } = useDefineDiagram({
+    transactionId,
+  });
+
   useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
 
   const checkAddNonPrimaryDiagram = useCallback(() => {
@@ -124,7 +129,10 @@ export const DefineDiagramMenuButtons = () => {
         title="Define primary diagram"
         defaultAction="define_primary_diagram_rectangle"
         loading={insertDiagramLoading}
-        disabled={insertDiagramLoading}
+        disabled={
+          insertDiagramLoading ||
+          disabledDiagramIds.includes("define_primary_diagram_rectangle" || "define_primary_diagram_polygon")
+        }
         options={[
           {
             label: "Rectangle",
@@ -143,7 +151,10 @@ export const DefineDiagramMenuButtons = () => {
         allowOpen={checkAddNonPrimaryDiagram}
         defaultAction="define_nonprimary_diagram_rectangle"
         loading={insertDiagramLoading}
-        disabled={insertDiagramLoading}
+        disabled={
+          insertDiagramLoading ||
+          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygone")
+        }
         options={[
           {
             label: "Rectangle",
@@ -162,7 +173,10 @@ export const DefineDiagramMenuButtons = () => {
         allowOpen={checkAddNonPrimaryDiagram}
         defaultAction="define_survey_diagram_rectangle"
         loading={insertDiagramLoading}
-        disabled={insertDiagramLoading}
+        disabled={
+          insertDiagramLoading ||
+          disabledDiagramIds.includes("define_survey_diagram_rectangle" || "define_survey_diagram_polygon")
+        }
         options={[
           {
             label: "Rectangle",

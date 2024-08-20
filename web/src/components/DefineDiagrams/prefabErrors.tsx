@@ -17,6 +17,13 @@ export const error32027_diagramTooManySides = (maxSides: number): PropsWithChild
     `Define an area of interest with no more than ${maxSides} sides.`,
 });
 
+export const error32021_diagramNoArea: PropsWithChildren<useLuiModalPrefabProps> = {
+  level: "error",
+  title: "Message: 32021",
+  children:
+    "Unable to create diagram, as the diagram you have defined has no area. Diagram width and height must be greater than zero.",
+};
+
 export const error32103_newShapeMustOverlapDiagram: PropsWithChildren<useLuiModalPrefabProps> = {
   level: "error",
   title: "Message: 32103",

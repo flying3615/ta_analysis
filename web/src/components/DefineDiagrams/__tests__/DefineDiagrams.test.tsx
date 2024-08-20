@@ -88,6 +88,14 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/123/diagrams-check",
+        }),
+      }),
+    );
   });
 
   it("should show marks on the map", async () => {

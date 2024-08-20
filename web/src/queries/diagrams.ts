@@ -1,13 +1,29 @@
-import { DiagramsControllerApi, DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  DiagramsCheckControllerApi,
+  DiagramsControllerApi,
+  DiagramsResponseDTO,
+  DiagramValidationResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 
 import { IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenQuery } from "@/queries/types";
 
+import { usePrepareDatasetQuery } from "./prepareDataset";
+
 export const userDefinedDiagramTypes = ["UDFP", "UDFT", "UDFN"];
 
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
+export const getDiagramCheckQueryKey = (transactionId: number) => ["diagramCheck", transactionId];
+
+export const useCheckDiagramsQuery: PlanGenQuery<DiagramValidationResponseDTO> = ({ transactionId }) => {
+  return useQuery({
+    queryKey: getDiagramCheckQueryKey(transactionId),
+    queryFn: () => new DiagramsCheckControllerApi(apiConfig()).getDiagramValidationResults({ transactionId }),
+    enabled: usePrepareDatasetQuery({ transactionId }).isSuccess,
+  });
+};
 
 export const useGetDiagramsQueryOLD: PlanGenQuery<DiagramsResponseDTO> = ({ transactionId, ...params }) =>
   useQuery({

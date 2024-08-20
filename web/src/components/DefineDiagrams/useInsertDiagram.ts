@@ -4,12 +4,13 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { useContext, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors.tsx";
+import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { validatePolygonArea } from "@/util/mapUtil";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -40,6 +41,7 @@ export const useInsertDiagram = () => {
   const [diagramType, type] = actionToDiagramTypeAndShape[activeAction] ?? [];
 
   const setAction = (action: DefineDiagramsActionType) => dispatch(setActiveAction(action));
+
   const drawAbort = () => setAction("idle");
 
   useOpenLayersDrawInteraction({
@@ -55,6 +57,13 @@ export const useInsertDiagram = () => {
 
       try {
         setLoading(true);
+
+        const polyValidation = validatePolygonArea(cartesianCoordinates);
+        if (!polyValidation.hasArea) {
+          showPrefabModal(error32021_diagramNoArea);
+          return;
+        }
+
         await insertDiagram({
           transactionId,
           postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: cartesianCoordinates },

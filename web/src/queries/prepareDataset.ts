@@ -5,7 +5,7 @@ import { apiConfig } from "@/queries/apiConfig";
 import { getPlanQueryKey } from "@/queries/plan.ts";
 import { PlanGenMutation, PlanGenQuery } from "@/queries/types";
 
-import { getDiagramsQueryKey } from "./diagrams";
+import { getDiagramCheckQueryKey, getDiagramsQueryKey } from "./diagrams";
 import { getSurveyFeaturesQueryKey } from "./surveyFeatures";
 
 /**
@@ -52,6 +52,7 @@ export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getSurveyFeaturesQueryKey(transactionId) });
       queryClient.invalidateQueries({ queryKey: getDiagramsQueryKey(transactionId) });
+      queryClient.invalidateQueries({ queryKey: getDiagramCheckQueryKey(transactionId) });
     },
   });
 };

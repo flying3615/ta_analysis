@@ -71,3 +71,31 @@ export const getClickedFeatureId = (cf: ClickedFeature): number => getFeatureId(
 
 export const clickedFeatureFilter = (field: string, values: unknown | unknown[]) => (clicked: ClickedFeature) =>
   castArray(values).includes(clicked.feature.get(field));
+
+export const validatePolygonArea = (coordinates: CartesianCoordsDTO[], minimumArea = 0) => {
+  if (!Array.isArray(coordinates) || coordinates.length < 4) {
+    return {
+      hasArea: false,
+      areaValue: 0,
+    };
+  }
+
+  const geoJsonCoords = coordinates.map((coord) => cartesianToNumeric(coord));
+  let areaValue = 0;
+  const n = geoJsonCoords.length;
+
+  // Simple gauss formula calculation for CartesianCoordsDTO without requiring projection conversion
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    areaValue += (geoJsonCoords[i]?.[0] ?? 0) * (geoJsonCoords[j]?.[1] ?? 0);
+    areaValue -= (geoJsonCoords[j]?.[0] ?? 0) * (geoJsonCoords[i]?.[1] ?? 0);
+  }
+
+  areaValue = Math.abs(areaValue) / 2;
+  const hasArea = areaValue > minimumArea;
+
+  return {
+    hasArea,
+    areaValue,
+  };
+};
