@@ -119,6 +119,7 @@ export const handlers: HttpHandler[] = [
     return HttpResponse.json({ ok: true, statusCode: null, message: null }, { status: 200, statusText: "OK" });
   }),
   http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
+  http.patch(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/125\/survey-features$/, () =>
     HttpResponse.json(

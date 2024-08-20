@@ -17,7 +17,7 @@ import {
   userDiagramStylesSelectable,
 } from "@/components/DefineDiagrams/diagramStyles.ts";
 import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
-import { labelStyles } from "@/components/DefineDiagrams/labelStyles.ts";
+import { labelStyles, labelStylesSelected } from "@/components/DefineDiagrams/labelStyles.ts";
 import {
   ctlineSelectableStyles,
   lineStyle_selectable,
@@ -28,7 +28,7 @@ import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
 import { apiConfig } from "@/queries/apiConfig.ts";
 import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
 import { getExtinguishedLinesQuery, getExtinguishedLinesQueryKey } from "@/queries/extinguished-lines.ts";
-import { getLabelsQueryKey } from "@/queries/labels.ts";
+import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
 import { getLinesQuery, getLinesQueryKey } from "@/queries/lines.ts";
 
 import { markStyleFunction } from "./markStyles";
@@ -262,7 +262,7 @@ export const extinguishedLinesLayer = (transactionId: number, maxZoom: number): 
   } as LolOpenLayersVectorLayerDef;
 };
 
-export const labelsLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
+export const diagramLabelsLayer = (transactionId: number, maxZoom: number): LolOpenLayersVectorLayerDef => {
   return {
     name: Layer.LABELS,
     type: LayerType.VECTOR,
@@ -272,9 +272,10 @@ export const labelsLayer = (transactionId: number, maxZoom: number): LolOpenLaye
     togglable: false,
     zIndex: zIndexes[Layer.LABELS],
     style: labelStyles,
+    highlightStyle: labelStylesSelected,
     source: {
       type: SourceType.FEATURES,
-      queryKey: getLabelsQueryKey(transactionId),
+      queryKey: getDiagramLabelsQueryKey(transactionId),
       queryFun: async () =>
         getLabelsForOpenLayers(await new DiagramLabelsControllerApi(apiConfig()).getLabels({ transactionId })),
       maxZoom,

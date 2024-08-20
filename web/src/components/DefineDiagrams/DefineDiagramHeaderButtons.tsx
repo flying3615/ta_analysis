@@ -59,7 +59,7 @@ export const DefineDiagramMenuButtons = () => {
   });
 
   const {
-    loading: loadingRemoveDiagrams,
+    loading: removeDiagramLoading,
     canRemoveDiagram,
     removeDiagrams,
   } = useRemoveDiagram({ transactionId, selectedDiagramIds });
@@ -101,7 +101,7 @@ export const DefineDiagramMenuButtons = () => {
             console.error("An error occurred:", error);
           }
         }}
-        loading={canRemoveDiagram ? loadingRemoveDiagrams : loadingRemoveLines}
+        loading={canRemoveDiagram ? removeDiagramLoading : loadingRemoveLines}
       />
       <VerticalSpacer />
       <ActionHeaderButton title="Zoom in" icon="ic_add" onClick={() => zoomByDelta(1)} />
@@ -180,7 +180,7 @@ export const DefineDiagramMenuButtons = () => {
         title="Select diagram"
         icon="ic_select_diagram"
         action="select_diagram"
-        disabled={insertDiagramLoading || resizeDiagramLoading}
+        disabled={insertDiagramLoading || resizeDiagramLoading || removeDiagramLoading}
       />
       <ActionHeaderButton title="Label diagrams" icon="ic_label_diagrams" />
       <VerticalSpacer />

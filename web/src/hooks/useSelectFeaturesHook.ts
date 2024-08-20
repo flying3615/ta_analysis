@@ -1,8 +1,9 @@
 import { ClickedFeature, LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
+import { ILayerStatus } from "@linzjs/landonline-openlayers-map/dist/src/model/layerstatus";
 import area from "@turf/area";
-import { compact, isEmpty, isEqual, minBy, sortBy, uniq, xor } from "lodash-es";
+import { compact, flatten, isEmpty, isEqual, minBy, pick, sortBy, uniq, xor } from "lodash-es";
 import MapBrowserEvent from "ol/MapBrowserEvent";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo, useRef } from "react";
 
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
@@ -11,7 +12,7 @@ import { GeoJsonFromFeature, getClickedFeatureId, getFeatureId, isGeoJsonPolygon
 export interface useSelectFeaturesProps {
   enabled: boolean;
   locked?: boolean;
-  layer: string;
+  layer: string | string[];
   filterSelect?: (feature: ClickedFeature) => boolean;
 }
 
@@ -22,18 +23,20 @@ export interface useSelectExtinguishedResult {
 export const useSelectFeatures = ({
   enabled,
   locked,
-  layer,
+  layer: _layer,
   filterSelect,
 }: useSelectFeaturesProps): useSelectExtinguishedResult => {
+  const layer = useMemo(() => (Array.isArray(_layer) ? _layer : [_layer]), [_layer]);
   const { map, getFeaturesAtPixel } = useContext(LolOpenLayersMapContext);
   const { featureSelect, setFeatureSelect, setLayerStatus, layerStatus } = useContext(LolOpenLayersMapContext);
   const funcRef = useConstFunction((ev: MapBrowserEvent<MouseEvent>): void => {
     if (!getFeaturesAtPixel || !enabled || locked) return;
 
     const layerClickedFeatures = sortBy(
-      getFeaturesAtPixel(ev.pixel, 32).filter((f) => f.layer.getClassName() === layer),
+      getFeaturesAtPixel(ev.pixel, 32).filter((f) => layer.includes(f.layer.getClassName())),
       (cf) => cf.distance,
     );
+
     // Thin min distance for polygons that have been clicked directly on will be 0
     const minDistance = minBy(layerClickedFeatures, (cf) => cf.distance)?.distance ?? 0;
     const layerClickedFeaturesNearest = layerClickedFeatures.filter((cf) => cf.distance <= minDistance + 1);
@@ -52,44 +55,54 @@ export const useSelectFeatures = ({
       const minArea = minBy(polygonTypeFeatureAreas, (cf) => cf.area)?.area ?? 0;
       layerClickedFeaturesToUse = polygonTypeFeatureAreas.filter((cf) => cf.area <= minArea);
     }
+
     const clickedFeatureIds = uniq(
       (filterSelect ? layerClickedFeaturesToUse.filter(filterSelect) : layerClickedFeaturesToUse).map(
         getClickedFeatureId,
       ),
     );
-    const currentFeatureIds = featureSelect(layer).map(getFeatureId);
+    const currentFeatureIds = flatten(layer.map((l) => featureSelect(l).map(getFeatureId)));
 
-    setFeatureSelect(
-      layer,
-      ev.originalEvent.ctrlKey
-        ? xor(currentFeatureIds, clickedFeatureIds)
-        : isEqual(clickedFeatureIds, currentFeatureIds)
-          ? []
-          : //
-            currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
-            ? xor(clickedFeatureIds, currentFeatureIds)
-            : clickedFeatureIds,
-    );
+    const select = ev.originalEvent.ctrlKey
+      ? xor(currentFeatureIds, clickedFeatureIds)
+      : isEqual(clickedFeatureIds, currentFeatureIds)
+        ? []
+        : //
+          currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
+          ? xor(clickedFeatureIds, currentFeatureIds)
+          : clickedFeatureIds;
+
+    layer.forEach((l) => setFeatureSelect(l, select));
   });
 
   const enabledChanged = useHasChanged(enabled);
+  const initialLayerState = useRef({} as Record<string, Partial<ILayerStatus>>);
   useEffect(() => {
     if (!enabledChanged) return;
-    setFeatureSelect(layer, []);
-    setLayerStatus(layer, { ...layerStatus(layer), layerVisibility: enabled });
-  }, [enabled, layer, layerStatus, enabledChanged, setFeatureSelect, setLayerStatus]);
+    layer.forEach((l, i) => {
+      setFeatureSelect(l, []);
+      const ls = layerStatus(l);
+
+      if (enabled) {
+        initialLayerState.current[l] = pick(ls, ["layerVisibility", "layerZIndex"]);
+        setLayerStatus(l, { ...ls, layerVisibility: enabled, layerZIndex: 150 + i });
+      } else {
+        const preSelectLayerState = initialLayerState.current[l];
+        delete initialLayerState.current[l];
+        setLayerStatus(l, { ...ls, ...preSelectLayerState });
+      }
+    });
+  }, [enabled, layer, layerStatus, enabledChanged, setFeatureSelect, setLayerStatus, initialLayerState]);
 
   useEffect(() => {
-    if (!map) return;
-
-    map.on("click", funcRef);
+    map?.on("click", funcRef);
     return () => {
-      map.un("click", funcRef);
+      map?.un("click", funcRef);
     };
   }, [funcRef, map]);
 
-  const selectedFeatures = featureSelect(layer);
-  const selectedFeatureIds = selectedFeatures.map(getFeatureId);
+  const selectedFeatures = flatten(layer.map((l) => featureSelect(l).map(getFeatureId)));
+  const selectedFeatureIds = uniq(selectedFeatures.map(getFeatureId));
 
   return {
     selectedFeatureIds,

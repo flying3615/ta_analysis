@@ -1,7 +1,6 @@
 import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { ClickedFeature } from "@linzjs/landonline-openlayers-map";
-import { Feature, LineString, Polygon, Position } from "geojson";
-import { castArray, chunk } from "lodash-es";
+import { castArray } from "lodash-es";
 import { Feature as olFeature } from "ol";
 import { Coordinate } from "ol/coordinate";
 import { FeatureLike } from "ol/Feature";
@@ -64,28 +63,6 @@ export const GeoJsonFromFeature = (feature: FeatureLike): GeoJSONFeature => {
 
 export const GeoJsonFromGeometry = (geometry: olGeometry): GeoJSONFeature =>
   GeoJsonFromFeature(new olFeature(geometry));
-
-export const lineStringFromFlatCoords = (coords: number[]): Feature<LineString> => {
-  return {
-    type: "Feature",
-    geometry: {
-      type: "LineString",
-      coordinates: chunk(coords, 2),
-    },
-    properties: {},
-  };
-};
-
-export const polygonFromCoords = (coordinates: number[][]): Feature<Polygon> => {
-  return {
-    type: "Feature",
-    geometry: {
-      type: "Polygon",
-      coordinates: [coordinates as Position[]],
-    },
-    properties: {},
-  };
-};
 
 export const getFeatureId = (f: number | FeatureLike | RenderFeature): number =>
   typeof f === "number" ? f : (f.get("id") as number);

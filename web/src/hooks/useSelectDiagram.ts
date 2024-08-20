@@ -13,7 +13,7 @@ export const useSelectDiagram = ({ enabled, locked }: useSelectDiagramProps) => 
   const { selectedFeatureIds: selectedDiagramIds } = useSelectFeatures({
     enabled,
     locked,
-    layer: Layer.SELECT_DIAGRAMS,
+    layer: [Layer.SELECT_DIAGRAMS, Layer.LABELS],
     filterSelect: clickedFeatureFilter("diagramType", userDefinedDiagramTypes),
   });
 

@@ -1,7 +1,7 @@
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
 import difference from "@turf/difference";
-import { featureCollection } from "@turf/helpers";
+import { feature, featureCollection, geometry } from "@turf/helpers";
 import intersect from "@turf/intersect";
 import union from "@turf/union";
 import { Feature, Polygon } from "geojson";
@@ -22,7 +22,7 @@ import {
 import { getQueryDiagram } from "@/queries/diagrams.ts";
 import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { numericToCartesian, polygonFromCoords } from "@/util/mapUtil.ts";
+import { numericToCartesian } from "@/util/mapUtil.ts";
 
 export interface useRemoveRtLineProps {
   transactionId: number;
@@ -64,7 +64,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
        * Check drawn polygon overlaps elected polygon
        */
       const selectedPolygon = diagram.shape as Feature<Polygon>;
-      const resizePolygon = polygonFromCoords(coordinates);
+      const resizePolygon = feature(geometry("Polygon", [coordinates]) as Polygon);
 
       const collection = featureCollection([selectedPolygon, resizePolygon]);
       if (intersect(collection) === null) {
@@ -77,7 +77,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
        * Check combination of selected polygon and  drawn polygon don't create a multi-polygon
        */
       const combined = combineFn(collection);
-      if (!combined || combined.geometry?.type !== "Polygon") {
+      if (!combined || combined.geometry?.type !== "Polygon" || combined.geometry.coordinates.length > 1) {
         await showPrefabModal(error32104_invalidDiagram);
         dispatch(setActiveAction("idle"));
         return;

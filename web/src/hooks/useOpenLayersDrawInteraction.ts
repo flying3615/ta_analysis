@@ -1,11 +1,13 @@
 import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
+import { geometry } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
+import { LineString, Polygon } from "geojson";
 import { isEmpty, isEqual } from "lodash-es";
 import { Coordinate } from "ol/coordinate";
 import { EventsKey } from "ol/events";
 import BaseEvent from "ol/events/Event";
-import { Polygon } from "ol/geom";
+import { Polygon as olPolygon } from "ol/geom";
 import { Type } from "ol/geom/Geometry";
 import { Draw } from "ol/interaction";
 import { createBox, DrawEvent, GeometryFunction, Options } from "ol/interaction/Draw";
@@ -20,7 +22,7 @@ import {
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { geometryToCartesian, geometryToCoordinates, lineStringFromFlatCoords } from "@/util/mapUtil.ts";
+import { geometryToCartesian, geometryToCoordinates } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
 
@@ -38,7 +40,7 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
 
 export interface DrawEndProps {
   event: DrawEvent;
-  geometry: Polygon;
+  geometry: olPolygon;
   // lat/lon shifted as number[][]
   coordinates: Coordinate[];
   // lat/lon shifted as {x, y}
@@ -80,7 +82,7 @@ export const useOpenLayersDrawInteraction = ({
   const allowDrawAddPoint = useRef(false);
   const preventDrawAbortDuringTypeChange = useRef(false);
   // The current feature needs to be retained as it's needed for finishEvent which has no access to the feature
-  const currentFeatureRef = useRef<Polygon>();
+  const currentFeatureRef = useRef<olPolygon>();
 
   const currentType = options.type;
 
@@ -130,22 +132,21 @@ export const useOpenLayersDrawInteraction = ({
     (event: DrawEvent) => {
       if (!map) return;
 
-      const feature = event.feature;
-      drawListenerRef.current = feature.getGeometry()!.on("change", (evt: BaseEvent) => {
-        const geom = evt.target as Polygon;
+      const evFeature = event.feature;
+      drawListenerRef.current = evFeature.getGeometry()?.on("change", (evt: BaseEvent) => {
+        const geom = evt.target as olPolygon;
         currentFeatureRef.current = geom;
         if (geom.getType() !== "Polygon") throw "Unsupported Geometry type";
 
         // Disable the ability to add a point if it would cause a self intersection.
         // The last coordinate hasn't been saved yet, so it's excluded
-        const flatCoords = geom.getFlatCoordinates();
-
-        // Self intersection disables drawing points
+        const coordinates = geom.getCoordinates()[0] ?? [];
         allowDrawAddPoint.current =
-          flatCoords.length <= 3 || isEmpty(kinks(lineStringFromFlatCoords(flatCoords.slice(0, -2))).features);
+          coordinates.length <= 4 ||
+          isEmpty(kinks(geometry("LineString", coordinates.slice(0, -1)) as LineString).features);
 
         if (maxPoints) {
-          const pointCount = flatCoords.length / 2 - 1;
+          const pointCount = coordinates.length - 1;
           if (pointCount > maxPoints.count) {
             maxPoints.errorCallback();
             drawInteractionRef.current?.abortDrawing();
@@ -166,7 +167,8 @@ export const useOpenLayersDrawInteraction = ({
     const finishCondition = () => {
       const c = currentFeatureRef.current?.getFlatCoordinates();
       if (!c) return false;
-      const k = kinks(lineStringFromFlatCoords(c));
+
+      const k = kinks(geometry("Polygon", [c]) as Polygon);
       return isEmpty(k.features);
     };
 

@@ -1,7 +1,11 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
+import { Feature } from "ol";
 import FeatureLike from "ol/Feature";
+import { Geometry } from "ol/geom";
 import { Fill, Stroke, Style } from "ol/style";
 import Text from "ol/style/Text";
+
+import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
 /* Note: only the user defined diagrams (UD**) will have a label
          but there are a few old surveys in legacy with system gen diagrams that have labels
  */
@@ -58,6 +62,25 @@ export const labelStyles = (feature: FeatureLike): Style => {
       backgroundFill: new Fill({ color: backgroundColor }),
       padding: [0, 3, 0, 3],
       backgroundStroke: new Stroke({ color: labelBorderColor, width: labelBorderWidth }),
+    }),
+  });
+};
+
+export const labelStylesSelected = (_plainStyle: Style | Style[], feature: Feature<Geometry>): Style => {
+  const labelType = feature.get("type") as CpgDiagramType;
+  const labelBorderWidth = labelBorderWidthMap[labelType];
+  return new Style({
+    text: new Text({
+      font: '11px "Open Sans",sans-serif',
+      textBaseline: "top",
+      textAlign: "center",
+      offsetX: 0,
+      offsetY: 0,
+      text: feature.get("name"),
+      fill: new Fill({ color: MapColors.white }),
+      backgroundFill: new Fill({ color: MapColors.pink }),
+      padding: [0, 3, 0, 3],
+      backgroundStroke: new Stroke({ color: MapColors.pink, width: labelBorderWidth }),
     }),
   });
 };

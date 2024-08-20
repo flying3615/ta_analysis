@@ -9,7 +9,6 @@ import {
   clickedFeatureFilter,
   getClickedFeatureId,
   getFeatureId,
-  lineStringFromFlatCoords,
   mapPointToCartesian,
   mapPointToCoordinate,
   normalizeLongitude,
@@ -43,21 +42,6 @@ describe("mapUtil", () => {
     expect(mapPointToCartesian([19034608.7753906, -5632300.24483069])).toEqual({
       x: 10.990799901689423,
       y: -45.068426287007306,
-    });
-  });
-
-  test("lineStringFromFlatCoords", () => {
-    expect(lineStringFromFlatCoords([1, 2, 3, 4, 5, 6])).toEqual({
-      type: "Feature",
-      geometry: {
-        type: "LineString",
-        coordinates: [
-          [1, 2],
-          [3, 4],
-          [5, 6],
-        ],
-      },
-      properties: {},
     });
   });
 

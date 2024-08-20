@@ -20,9 +20,9 @@ import {
   getVectorsForOpenLayers,
 } from "@/components/DefineDiagrams/featureMapper";
 import {
+  diagramLabelsLayer,
   diagramsQueryLayer,
   extinguishedLinesLayer,
-  labelsLayer,
   linesLayer,
   marksLayer,
   parcelsLayer,
@@ -123,7 +123,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         vectorsLayer(getVectorsForOpenLayers(features), maxZoom),
         diagramsQueryLayer(transactionId, maxZoom),
         linesLayer(transactionId, maxZoom),
-        labelsLayer(transactionId, maxZoom),
+        diagramLabelsLayer(transactionId, maxZoom),
         extinguishedLinesLayer(transactionId, maxZoom),
         selectLinesLayer(transactionId, maxZoom),
         selectDiagramsLayer(transactionId, maxZoom),
