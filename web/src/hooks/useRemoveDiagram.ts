@@ -1,12 +1,13 @@
 import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
+import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
-import { useDiagramLabelsHook } from "@/queries/labels.ts";
+import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
 import { useShowToast } from "@/util/showToast.tsx";
@@ -18,11 +19,10 @@ export interface useRemoveDiagramsProps {
 }
 
 export const useRemoveDiagram = ({ transactionId, selectedDiagramIds: diagramIds }: useRemoveDiagramsProps) => {
-  const diagramLabels = useDiagramLabelsHook(transactionId);
-
   const [loading, setLoading] = useState(false);
   const { showSuccessToast, showErrorToast } = useShowToast();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   const { removeQueryData } = useQueryDataUpdate<IFeatureSource>({
     queryKey: getDiagramsQueryKey(transactionId),
@@ -38,14 +38,14 @@ export const useRemoveDiagram = ({ transactionId, selectedDiagramIds: diagramIds
         deleteDiagramsRequestDTO: { diagramIds: diagramIds },
       });
       if (!ok) return showErrorToast(message ?? "Unexpected exception removing user defined diagram");
-      await diagramLabels.updateLabels();
+      await queryClient.invalidateQueries({ queryKey: getDiagramLabelsQueryKey(transactionId) });
       removeQueryData({ match: byId(diagramIds) });
       showSuccessToast(`Diagram${s(diagramIds)} removed successfully`);
     } finally {
       setLoading(false);
       dispatch(setActiveAction("idle"));
     }
-  }, [diagramIds, transactionId, showErrorToast, showSuccessToast, diagramLabels, removeQueryData, dispatch]);
+  }, [diagramIds, transactionId, showErrorToast, showSuccessToast, removeQueryData, queryClient, dispatch]);
 
   return {
     removeDiagrams,
