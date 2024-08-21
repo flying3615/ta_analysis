@@ -178,6 +178,18 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "text-halign": "center",
       },
     },
+    // Node styles for survey info
+    {
+      selector: "node[id^='survey_info_']",
+      style: {
+        label: "data(label)", // Display node labels
+        "text-valign": "center",
+        "text-halign": "center",
+        ...noNodeMarker,
+        height: 1,
+        width: 1,
+      },
+    },
     {
       selector: "edge",
       style: {

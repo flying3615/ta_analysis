@@ -24,17 +24,17 @@ describe("useCytoscapeCanvasExport hook", () => {
     },
   };
 
-  let startProcessing: () => void;
+  let startProcessing: (mode: "PREVIEW" | "COMPILATION") => Promise<void>;
   let ExportingCanvas: React.FC;
   let processing: boolean = false;
   let stopProcessing: () => void;
   const MockComponentWithHook = () => {
-    ({ startProcessing, ExportingCanvas, processing, stopProcessing } = useCytoscapeCanvasExport());
+    ({ startProcessing, ExportingCanvas, processing, stopProcessing } = useCytoscapeCanvasExport({}));
 
     return (
       <div>
         <ExportingCanvas />
-        <button onClick={startProcessing} data-testid="start_export">
+        <button onClick={() => startProcessing("PREVIEW")} data-testid="start_export">
           Start Export
         </button>
         <button onClick={stopProcessing} data-testid="stop_export">
@@ -75,12 +75,10 @@ describe("useCytoscapeCanvasExport hook", () => {
     const postMessageSpy = jest.spyOn(workerInstance, "postMessage");
     const workerPostMessage = workerInstance.postMessage;
     expect(workerPostMessage).toHaveBeenCalledTimes(1);
-    expect(postMessageSpy).toHaveBeenCalledWith([
-      {
-        name: "DSPT-1.png",
-        blob: expect.any(Blob),
-      },
-    ]);
+    expect(postMessageSpy).toHaveBeenCalledWith({
+      PNGFiles: [{ blob: expect.any(Blob), name: "DSPT-1.png" }],
+      type: "PREVIEW",
+    });
   });
 
   it("useCytoscapeCanvasExport support interuption", async () => {

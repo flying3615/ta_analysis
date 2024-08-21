@@ -3,6 +3,7 @@ import { negate } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
+import { createNewNode } from "@/util/mapUtil.ts";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 
@@ -36,20 +37,10 @@ export const extractPageNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
     // If bottomRightNode found, add a new node there for page number overlay
     const bottomRightNode = nodes[1];
     if (bottomRightNode) {
-      const createNewNode = (id: string, xOffset: number, yOffset: number, label = ""): INodeData => ({
-        id,
-        position: {
-          x: bottomRightNode.position.x + xOffset,
-          y: bottomRightNode.position.y + yOffset,
-        },
-        label,
-        properties: bottomRightNode.properties,
-      });
-
-      updatedNodes.push(createNewNode("border_page_no0", 0, 1));
-      updatedNodes.push(createNewNode("border_page_no1", -2, 1));
-      updatedNodes.push(createNewNode("border_page_no2", -2, 0));
-      updatedNodes.push(createNewNode("border_page_no", -1, 0.5, "T/1"));
+      updatedNodes.push(createNewNode(bottomRightNode, "border_page_no0", 0, 1));
+      updatedNodes.push(createNewNode(bottomRightNode, "border_page_no1", -2, 1));
+      updatedNodes.push(createNewNode(bottomRightNode, "border_page_no2", -2, 0));
+      updatedNodes.push(createNewNode(bottomRightNode, "border_page_no", -1, 0.5, "T/1"));
     }
 
     return updatedNodes;

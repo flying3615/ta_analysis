@@ -136,7 +136,12 @@ const PlanSheets = () => {
           data-testid="MainCytoscapeCanvas"
         />
       </div>
-      <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
+      <PlanSheetsFooter
+        diagramsPanelOpen={diagramsPanelOpen}
+        setDiagramsPanelOpen={setDiagramsPanelOpen}
+        pageConfigsNodeData={pageConfigsNodeData}
+        pageConfigsEdgeData={pageConfigsEdgeData}
+      />
     </div>
   );
 };

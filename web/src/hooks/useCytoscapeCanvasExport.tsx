@@ -6,6 +6,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   edgeDefinitionsFromData,
+  IEdgeData,
+  INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
@@ -15,11 +17,12 @@ import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { downloadBlob } from "@/util/downloadHelper.ts";
+import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
 export interface CytoscapeCanvasExport {
-  startProcessing: () => Promise<void>;
+  startProcessing: (mode: "PREVIEW" | "COMPILATION") => Promise<void>;
   ExportingCanvas: React.FC;
   processing: boolean;
   stopProcessing: () => void;
@@ -44,7 +47,10 @@ enum PlanSheetTypeAbbreviation {
   SURVEY_PLAN_SURVEY = "DSPS",
 }
 
-export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
+export const useCytoscapeCanvasExport = (props: {
+  pageConfigsEdgeData?: IEdgeData[];
+  pageConfigsNodeData?: INodeData[];
+}): CytoscapeCanvasExport => {
   const { error: errorToast } = useToast();
   const diagrams = useAppSelector(getDiagrams);
   const activeSheet = useAppSelector(getActiveSheet);
@@ -83,8 +89,10 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
     );
   };
 
-  const startProcessing = async () => {
-    if (!cyRef.current || !canvasRef.current) {
+  const startProcessing = async (mode: "PREVIEW" | "COMPILATION") => {
+    const cyRefCurrent = cyRef.current;
+
+    if (!cyRefCurrent || !canvasRef.current) {
       console.error("cytoscape instance is not available");
       return;
     }
@@ -93,7 +101,6 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
     showProcessingModal().then();
 
     setProcessing(true);
-    const cyRefCurrent = cyRef.current;
 
     // find the max pageNumber for the given activeSheet type like survey or title
     const activePlanSheetPages = pages.filter((p) => p.pageType == activeSheet);
@@ -102,6 +109,15 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
       activeSheet === PlanSheetType.TITLE.valueOf()
         ? PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE
         : PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY;
+
+    const surveyInfoNodes = extractSurveyInfoNodeData();
+
+    let nodeBgPromise, stylePromise, layoutPromise;
+    cyRefCurrent?.one("add", () => {
+      nodeBgPromise = cyRefCurrent?.nodes().promiseOn("background");
+      stylePromise = cyRefCurrent?.promiseOn("style");
+      layoutPromise = cyRefCurrent?.promiseOn("layoutstop");
+    });
 
     try {
       const pngs: PNGFile[] = [];
@@ -115,14 +131,21 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
 
         const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
 
-        const diagramNodeData = extractDiagramNodes(currentPageDiagrams);
-        const diagramEdgeData = extractDiagramEdges(currentPageDiagrams);
-
+        const diagramNodeData = [
+          ...surveyInfoNodes, // survey info text nodes
+          ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
+          ...extractDiagramNodes(currentPageDiagrams), // diagram nodes
+        ];
+        const diagramEdgeData = [
+          ...(props.pageConfigsEdgeData ?? []), // page frame edges
+          ...extractDiagramEdges(currentPageDiagrams), // diagram edges
+        ];
         const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
           canvasRef.current,
           diagrams,
           window.innerWidth,
           window.innerHeight,
+          -50,
         );
 
         cyRefCurrent.add({
@@ -130,13 +153,7 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
           edges: edgeDefinitionsFromData(diagramEdgeData),
         });
 
-        const nodeBgPromise = cyRefCurrent?.nodes().promiseOn("background");
-
-        const stylePromise = cyRefCurrent?.promiseOn("style");
-
         cyRefCurrent?.style(makeCytoscapeStylesheet(cytoscapeCoordinateMapper)).update();
-
-        const layoutPromise = cyRefCurrent?.promiseOn("layoutstop");
 
         cyRefCurrent
           .layout({
@@ -147,37 +164,27 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
           .run();
 
         // wait 10s for style, layout and node bg images applied
-        await Promise.all([stylePromise, layoutPromise, nodeBgPromise].map((p) => promiseWithTimeout(p, 10000)));
+        await Promise.all([stylePromise, layoutPromise, nodeBgPromise].map((p) => p && promiseWithTimeout(p, 10000)));
 
-        pngs.push({ name: imageName, blob: cyRefCurrent.png(cyPngConfig) });
+        const png = cyRefCurrent.png(cyPngConfig);
+        // TODO for test
+        // downloadBlob(png, imageName);
+        pngs.push({ name: imageName, blob: png });
 
         // remove all elements for the next page rendering
         cyRefCurrent.remove(cyRefCurrent.elements());
       }
 
-      worker.postMessage(pngs);
-      worker.onmessage = async (e) => {
-        const { type, payload } = e.data;
-
-        switch (type) {
-          case "DOWNLOAD":
-            downloadBlob(payload.processedBlob, payload.name);
-            break;
-          case "COMPLETED":
-            console.log("COMPLETED", payload);
-            break;
-        }
-
-        setProcessing(false);
-        cyRefCurrent?.destroy();
-      };
-      worker.onerror = (e) => {
-        console.error(e);
-        setProcessing(false);
-      };
+      if (mode === "PREVIEW") {
+        await generatePreviewPDF(pngs);
+      } else {
+        await generateCompilation(pngs, cyRefCurrent);
+      }
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
       setProcessing(false);
+    } finally {
+      cyRefCurrent?.off("add");
     }
   };
 
@@ -204,7 +211,69 @@ export const useCytoscapeCanvasExport = (): CytoscapeCanvasExport => {
     }
   };
 
-  //test purpose
+  const generateCompilation = async (pngs: PNGFile[], cyRefCurrent: cytoscape.Core) => {
+    worker.postMessage({ type: "COMPILATION", PNGFiles: pngs });
+    worker.onmessage = async (e) => {
+      const { type, payload } = e.data;
+
+      switch (type) {
+        case "DOWNLOAD":
+          downloadBlob(payload.processedBlob, payload.name);
+          break;
+        case "COMPLETED":
+          console.log("COMPLETED", payload);
+          break;
+      }
+
+      setProcessing(false);
+      cyRefCurrent?.destroy();
+    };
+    worker.onerror = (e) => {
+      console.error(e);
+      setProcessing(false);
+    };
+  };
+
+  const generatePreviewPDF = async (pngs: PNGFile[]) => {
+    worker.postMessage({ type: "PREVIEW", PNGFiles: pngs });
+    worker.onmessage = async (e) => {
+      setProcessing(false);
+      const { payload } = e.data;
+      window.open(payload, "_blank");
+    };
+    worker.onerror = (e) => {
+      console.error(e);
+      setProcessing(false);
+    };
+  };
+
+  const extractSurveyInfoNodeData = () => {
+    // TODO to call backend api to get the survey info
+    const TA_INFO1 = "Land District: Otago";
+    const TA_INFO2 = "Digitally Generated Plan";
+    const SURVEY_REF = "Education Purposes: error message";
+    const SURVEYOR = "Surveyor: Jeremy";
+    const CSD_NUM = "Record of Survey LT 602196";
+    const infoNodes = [];
+    props.pageConfigsNodeData?.sort((a, b) => {
+      if (a.position.x === b.position.x) {
+        return a.position.y - b.position.y;
+      }
+      return b.position.x - a.position.x;
+    });
+    if (props.pageConfigsNodeData) {
+      const bottomRightNode = props.pageConfigsNodeData[0];
+      if (bottomRightNode) {
+        infoNodes.push(createNewNode(bottomRightNode, "survey_info_ta_info1", -35.5, 1.5, TA_INFO1));
+        infoNodes.push(createNewNode(bottomRightNode, "survey_info_ta_info2", -35.5, 0.5, TA_INFO2));
+        infoNodes.push(createNewNode(bottomRightNode, "survey_info_survey_ref", -25.5, 1, SURVEY_REF));
+        infoNodes.push(createNewNode(bottomRightNode, "survey_info_surveyor", -11, 1, SURVEYOR));
+        infoNodes.push(createNewNode(bottomRightNode, "survey_info_csd_number", -3.5, 1, CSD_NUM));
+      }
+    }
+
+    return infoNodes;
+  };
 
   return {
     startProcessing,

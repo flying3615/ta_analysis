@@ -5,6 +5,7 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import React, { useEffect } from "react";
 
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import FooterPagination from "@/components/Footer/FooterPagination";
 import PageManager from "@/components/Footer/PageManager";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
@@ -30,9 +31,16 @@ import { UnsavedChangesModal } from "./UnsavedChangesModal";
 export interface FooterProps {
   diagramsPanelOpen: boolean;
   setDiagramsPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  pageConfigsNodeData?: INodeData[];
+  pageConfigsEdgeData?: IEdgeData[];
 }
 
-const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterProps) => {
+const PlanSheetsFooter = ({
+  diagramsPanelOpen,
+  setDiagramsPanelOpen,
+  pageConfigsNodeData,
+  pageConfigsEdgeData,
+}: FooterProps) => {
   const transactionId = useTransactionId();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -45,7 +53,10 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
   const { totalPages } = useAppSelector(getFilteredPages);
 
   const { result: isPreviewCompilationOn } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION);
-  const { startProcessing, ExportingCanvas, processing } = useCytoscapeCanvasExport();
+  const { startProcessing, ExportingCanvas, processing } = useCytoscapeCanvasExport({
+    pageConfigsNodeData,
+    pageConfigsEdgeData,
+  });
 
   const {
     mutate: updatePlanMutate,
@@ -148,7 +159,7 @@ const PlanSheetsFooter = ({ diagramsPanelOpen, setDiagramsPanelOpen }: FooterPro
         {isPreviewCompilationOn && (
           <LuiButton
             className="PlanSheetsFooter-previewButton lui-button-tertiary"
-            onClick={() => startProcessing()}
+            onClick={() => startProcessing("PREVIEW")}
             disabled={processing}
           >
             {processing ? (

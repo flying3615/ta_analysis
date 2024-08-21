@@ -12,6 +12,8 @@ import { register } from "ol/proj/proj4";
 import RenderFeature from "ol/render/Feature";
 import proj4 from "proj4";
 
+import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+
 // adding projection definitions to allow conversions between them
 // EPSG:1 is what the data from the DB comes in as
 // EPSG:3857 is used as the openlayers map projection
@@ -71,3 +73,19 @@ export const getClickedFeatureId = (cf: ClickedFeature): number => getFeatureId(
 
 export const clickedFeatureFilter = (field: string, values: unknown | unknown[]) => (clicked: ClickedFeature) =>
   castArray(values).includes(clicked.feature.get(field));
+
+export const createNewNode = (
+  bottomRightNode: INodeData,
+  id: string,
+  xOffset: number,
+  yOffset: number,
+  label = "",
+): INodeData => ({
+  id,
+  position: {
+    x: bottomRightNode.position.x + xOffset,
+    y: bottomRightNode.position.y + yOffset,
+  },
+  label,
+  properties: bottomRightNode.properties,
+});
