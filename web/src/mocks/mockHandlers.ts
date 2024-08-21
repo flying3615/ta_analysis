@@ -95,6 +95,7 @@ export const handlers: HttpHandler[] = [
     return HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" });
   }),
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
+  http.patch(/\/124\/diagrams\/6/, () => HttpResponse.json({ ok: true, statusCode: null, message: null })),
   http.delete(/\/124\/diagrams$/, () =>
     HttpResponse.json(
       { ok: true, statusCode: null, message: null },
@@ -119,7 +120,7 @@ export const handlers: HttpHandler[] = [
     return HttpResponse.json({ ok: true, statusCode: null, message: null }, { status: 200, statusText: "OK" });
   }),
   http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
-  http.patch(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
+  http.patch(/\/124\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/125\/survey-features$/, () =>
     HttpResponse.json(

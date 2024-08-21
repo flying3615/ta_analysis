@@ -387,3 +387,225 @@ DeleteDiagram.play = async ({ step }) => {
     await expect(await screen.findByText("Diagram removed successfully")).toBeInTheDocument();
   });
 };
+
+export const EnlargeDiagram: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+EnlargeDiagram.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to enlarge", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a rectangle that overlaps the selected diagram", async () => {
+    const rectangleCoordinates: Coordinate[] = [
+      [19461370.143840656, -5058116.4497893425],
+      [19461406.541349366, -5058147.414834067],
+    ];
+    await enlargeRectangle(rectangleCoordinates);
+  });
+  await step("THEN the diagram is enlarged", async () => {
+    await sleep(500);
+    //(Snapshot checks the appearance of the diagram)
+  });
+};
+
+export const EnlargeDiagramOverlapError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+EnlargeDiagramOverlapError.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to enlarge", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a rectangle that doesn't overlap the selected diagram", async () => {
+    const rectangleCoordinates: Coordinate[] = [
+      [19461942.908835247, -5057781.164343697],
+      [19462120.6946788, -5057678.53342492],
+    ];
+    await enlargeRectangle(rectangleCoordinates);
+  });
+  await step("THEN I'm shown an error message", async () => {
+    await waitFor(() => within(document.body).findByText(/The new shape must overlap part of the selected diagram/));
+  });
+};
+
+export const EnlargeDiagramInvalidShapeError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+EnlargeDiagramInvalidShapeError.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to enlarge", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a polygon that would create an invalid shape (with a hole in the middle)", async () => {
+    const polygonCoordinates: Coordinate[] = [
+      [19461362.538391076, -5058125.68497812],
+      [19461411.973813355, -5058145.785094871],
+      [19461369.600594256, -5058155.020283649],
+      [19461410.34407416, -5058171.860922008],
+      [19461338.092303135, -5058181.639357184],
+      [19461362.538391076, -5058125.68497812],
+    ];
+    await enlargePolygon(polygonCoordinates);
+  });
+  await step("THEN I'm shown an error message", async () => {
+    await waitFor(() => within(document.body).findByText(/The altered diagram is invalid and cannot be saved/));
+  });
+};
+
+export const ReduceDiagram: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+ReduceDiagram.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to reduce", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a rectangle that overlaps the selected diagram", async () => {
+    const rectangleCoordinates: Coordinate[] = [
+      [19461370.143840656, -5058116.4497893425],
+      [19461406.541349366, -5058147.414834067],
+    ];
+    await reduceRectangle(rectangleCoordinates);
+  });
+  await step("THEN the diagram is reduced", async () => {
+    await sleep(500);
+    //(Snapshot checks the appearance of the diagram)
+  });
+};
+
+export const ReduceDiagramOverlapError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+ReduceDiagramOverlapError.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to reduce", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a rectangle that doesn't overlap the selected diagram", async () => {
+    const rectangleCoordinates: Coordinate[] = [
+      [19461942.908835247, -5057781.164343697],
+      [19462120.6946788, -5057678.53342492],
+    ];
+    await reduceRectangle(rectangleCoordinates);
+  });
+  await step("THEN I'm shown an error message", async () => {
+    await waitFor(() => within(document.body).findByText(/The new shape must overlap part of the selected diagram/));
+  });
+};
+export const ReduceDiagramInvalidShapeError: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+ReduceDiagramInvalidShapeError.play = async ({ step }) => {
+  await step("GIVEN I've selected a diagram to reduce", async () => {
+    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
+    await selectDiagram(coordinatesOfPointOnDiagram);
+  });
+  await step("WHEN I draw a polygon that would create an invalid shape (with a hole in the middle)", async () => {
+    const polygonCoordinates: Coordinate[] = [
+      [19461414.14679895, -5058150.131066061],
+      [19461438.04964049, -5058139.809384486],
+      [19461423.925234124, -5058189.788053164],
+      [19461414.14679895, -5058150.131066061],
+    ];
+    await reducePolygon(polygonCoordinates);
+  });
+  await step("THEN I'm shown an error message", async () => {
+    await waitFor(() => within(document.body).findByText(/The altered diagram is invalid and cannot be saved/));
+  });
+};
+
+const selectDiagram = async (coordinatesToClick: Coordinate[]) => {
+  await waitForInitialMapLoadsToComplete();
+  const selectDiagramButton = await screen.findByLabelText("Select diagram");
+  await userEvent.click(selectDiagramButton);
+  await sleep(500); // This sleep is needed for line selection
+  await drawOnMap(coordinatesToClick);
+};
+
+const enlargeRectangle = async (coordinatesToClick: Coordinate[]) => {
+  const enlargeDiagramButton = await screen.findByLabelText("Enlarge diagram");
+  await userEvent.click(enlargeDiagramButton);
+  const rectangleMenuItem = await screen.findByRole("menuitem", {
+    name: /Rectangle/,
+  });
+  await userEvent.click(rectangleMenuItem);
+  await drawOnMap(coordinatesToClick);
+};
+
+const enlargePolygon = async (coordinatesToClick: Coordinate[]) => {
+  const enlargeDiagramButton = await screen.findByLabelText("Enlarge diagram");
+  await userEvent.click(enlargeDiagramButton);
+  const polygonMenuItem = await screen.findByRole("menuitem", {
+    name: /Polygon/,
+  });
+  await userEvent.click(polygonMenuItem);
+  await drawOnMap(coordinatesToClick);
+};
+
+const reduceRectangle = async (coordinatesToClick: Coordinate[]) => {
+  const reduceDiagramButton = await screen.findByLabelText("Reduce diagram");
+  await userEvent.click(reduceDiagramButton);
+  const rectangleMenuItem = await screen.findByRole("menuitem", {
+    name: /Rectangle/,
+  });
+  await userEvent.click(rectangleMenuItem);
+  await drawOnMap(coordinatesToClick);
+};
+const reducePolygon = async (coordinatesToClick: Coordinate[]) => {
+  const reduceDiagramButton = await screen.findByLabelText("Reduce diagram");
+  await userEvent.click(reduceDiagramButton);
+  const polygonMenuItem = await screen.findByRole("menuitem", {
+    name: /Polygon/,
+  });
+  await userEvent.click(polygonMenuItem);
+  await drawOnMap(coordinatesToClick);
+};
