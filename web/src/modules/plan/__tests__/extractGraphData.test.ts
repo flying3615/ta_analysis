@@ -102,6 +102,17 @@ describe("extractGraphData", () => {
     expect(labelNode14?.properties?.["fontSize"]).toBe(16);
     expect(labelNode14?.properties?.["symbolId"]).toBeUndefined();
 
+    const labelNode21 = extractedNodeMap["21"];
+    expect(labelNode21?.id).toBe("21");
+    expect(labelNode21?.label).toBe("Edited\nLine");
+    expect(labelNode21?.position).toStrictEqual({ x: 85, y: -40 });
+    expect(labelNode21?.properties?.["featureId"]).toBe(1001);
+    expect(labelNode21?.properties?.["featureType"]).toBe("line");
+    expect(labelNode21?.properties?.["font"]).toBe("Tahoma");
+    expect(labelNode21?.properties?.["fontColor"]).toBe("#2121F5");
+    expect(labelNode21?.properties?.["fontSize"]).toBe(14);
+    expect(labelNode21?.properties?.["circled"]).toBeFalsy();
+
     const labelNode23 = extractedNodeMap["23"];
     expect(labelNode23?.id).toBe("23");
     expect(labelNode23?.label).toBe("A");

@@ -90,7 +90,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
       return {
         id: label.id.toString(),
         position: label.position,
-        label: label.displayText,
+        label: label.editedText ?? label.displayText,
         properties: {
           labelType: label.labelType,
           font: label.font,

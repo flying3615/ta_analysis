@@ -2,6 +2,7 @@ import {
   CartesianCoordsDTO,
   DiagramDTO,
   DisplayStateEnum,
+  LabelDTO,
   LabelDTOLabelTypeEnum,
   PageDTO,
   PageDTOPageTypeEnum,
@@ -31,6 +32,8 @@ interface PageOptions {
   pageNumber?: number;
   userEdited?: boolean;
 }
+
+type IntoWhereForLabels = "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels";
 
 export class PlanDataBuilder {
   planData: PlanResponseDTO = {
@@ -218,10 +221,10 @@ export class PlanDataBuilder {
   }
 
   addLabel(
-    intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
-    id: number,
-    displayText: string,
-    position: CartesianCoordsDTO,
+    intoWhere: IntoWhereForLabels,
+    idOrOptions: number | LabelDTO,
+    displayText: string = "",
+    position?: CartesianCoordsDTO,
     featureId?: number,
     featureType?: string,
     labelType: string = "markName",
@@ -239,29 +242,32 @@ export class PlanDataBuilder {
       );
     }
 
-    const label = {
-      anchorAngle: 0,
-      displayState: displayState,
-      effect,
-      symbolType,
-      pointOffset: 0,
-      rotationAngle: 0,
-      userEdited: false,
-      id,
-      displayText,
-      position,
-      labelType: labelType as LabelDTOLabelTypeEnum,
-      font,
-      fontSize,
-      featureId,
-      featureType,
-      textAlignment: textAlignment || "centerCenter",
-      borderWidth,
-    };
+    const label =
+      typeof idOrOptions === "number"
+        ? {
+            anchorAngle: 0,
+            displayState: displayState,
+            effect,
+            symbolType,
+            pointOffset: 0,
+            rotationAngle: 0,
+            userEdited: false,
+            id: idOrOptions,
+            displayText,
+            position: position!,
+            labelType: labelType as LabelDTOLabelTypeEnum,
+            font,
+            fontSize,
+            featureId,
+            featureType,
+            textAlignment: textAlignment || "centerCenter",
+            borderWidth,
+          }
+        : (idOrOptions as LabelDTO);
 
     if (intoWhere === "parcelLabels") {
       last(this.planData.diagrams)?.parcelLabelGroups?.push({
-        id,
+        id: label.id,
         labels: [label],
       });
       return this;
@@ -279,13 +285,13 @@ export class PlanDataBuilder {
   addRotatedLabel(
     intoWhere: "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels",
     id: number,
-    displayText: string,
-    position: CartesianCoordsDTO,
+    displayText: string = "",
+    position?: CartesianCoordsDTO,
     font: string = "Tahoma",
     fontSize: number = 10,
-    rotationAngle: number,
-    anchorAngle: number,
-    pointOffset: number,
+    rotationAngle: number = 0,
+    anchorAngle: number = 0,
+    pointOffset: number = 0,
     symbolType: string | undefined = undefined,
   ) {
     if (this.planData.diagrams.length == 0) {
@@ -309,7 +315,7 @@ export class PlanDataBuilder {
       font,
       fontSize,
       symbolType,
-    };
+    } as LabelDTO;
 
     if (intoWhere === "parcelLabels") {
       last(this.planData.diagrams)?.parcelLabelGroups?.push({

@@ -1,3 +1,5 @@
+import { LabelDTO } from "@linz/survey-plan-generation-api-client";
+
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 
 export const mockPlanData = new PlanDataBuilder()
@@ -135,7 +137,16 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(1006, [40004, 40001], 1.0, "observation", "solid")
   .addLine(1007, [40002, 40005], 1.0, "observation", "peck1")
   .addLine(1008, [40005, 40003], 1.0, "observation", "peck1")
-  .addLabel("lineLabels", 21, "Line", { x: 85, y: -40 }, 1001, "line", "display", "Tahoma", 14)
+  .addLabel("lineLabels", {
+    id: 21,
+    displayText: "Line",
+    position: { x: 85, y: -40 },
+    featureId: 1001,
+    featureType: "line",
+    font: "Tahoma",
+    fontSize: 14,
+    editedText: "Edited\nLine",
+  } as LabelDTO)
   .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14, "halo")
   .addLabel(
     "parcelLabels",
