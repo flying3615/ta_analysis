@@ -26,13 +26,6 @@ interface DiagramOptions {
   box?: boolean; // draw a box around
 }
 
-interface PageOptions {
-  id?: number;
-  pageType?: PageDTOPageTypeEnum;
-  pageNumber?: number;
-  userEdited?: boolean;
-}
-
 type IntoWhereForLabels = "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels";
 
 export class PlanDataBuilder {
@@ -148,8 +141,8 @@ export class PlanDataBuilder {
     return this;
   }
 
-  addPage(optionsOrPageNumber: number | PageOptions): PlanDataBuilder {
-    const defaults = {
+  addPage(optionsOrPageNumber: number | PageDTO): PlanDataBuilder {
+    const defaults: PageDTO = {
       id: this.planData.pages.length + 1,
       pageNumber: this.planData.pages.length + 1,
       pageType: PageDTOPageTypeEnum.title,
@@ -279,6 +272,22 @@ export class PlanDataBuilder {
     }
 
     into.push(label);
+    return this;
+  }
+
+  /**
+   * Adds a user defined label (aka annotation), which relates to the page. All labels like this must
+   * have a type of "userAnnotation".
+   */
+  addUserAnnotation(label: LabelDTO) {
+    if (label.labelType !== LabelDTOLabelTypeEnum.userAnnotation) {
+      throw new Error(`Only labelType=${LabelDTOLabelTypeEnum.userAnnotation.valueOf()} supported`);
+    }
+    const targetPage = last(this.planData.pages);
+    if (targetPage && targetPage.labels === undefined) {
+      targetPage.labels = [];
+    }
+    targetPage?.labels?.push(label);
     return this;
   }
 

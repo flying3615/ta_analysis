@@ -19,12 +19,14 @@ import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
+  extractPageConfigEdges,
+  extractPageConfigNodes,
   extractPageEdges,
   extractPageNodes,
 } from "@/modules/plan/extractGraphData.ts";
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
-import { getActiveDiagrams, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActiveDiagrams, getActivePages, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
@@ -38,6 +40,7 @@ const PlanSheets = () => {
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
 
   const activeDiagrams = useAppSelector(getActiveDiagrams);
+  const activePages = useAppSelector(getActivePages);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
@@ -100,14 +103,17 @@ const PlanSheets = () => {
   }
 
   const pageConfigs = planData.configs?.[0]?.pageConfigs ?? [];
-  const pageConfigsNodeData = extractPageNodes(pageConfigs);
-  const pageConfigsEdgeData = extractPageEdges(pageConfigs);
+  const pageConfigsNodeData = extractPageConfigNodes(pageConfigs);
+  const pageConfigsEdgeData = extractPageConfigEdges(pageConfigs);
 
   const diagramNodeData = extractDiagramNodes(activeDiagrams);
   const diagramEdgeData = extractDiagramEdges(activeDiagrams);
 
-  const nodeData = [...pageConfigsNodeData, ...diagramNodeData];
-  const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData];
+  const pageNodeData = extractPageNodes(activePages);
+  const pageEdgeData = extractPageEdges(activePages);
+
+  const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
+  const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
 
   const onNodeChange = (node: INodeData) => {
     const updatedDiagrams = updateDiagramsWithNode(activeDiagrams, node);

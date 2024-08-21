@@ -1,4 +1,12 @@
-import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PageConfigDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTO,
+  DiagramDTO,
+  LabelDTO,
+  LabelDTOLabelTypeEnum,
+  LineDTO,
+  PageConfigDTO,
+  PageDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { negate } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -7,7 +15,58 @@ import { createNewNode } from "@/util/mapUtil.ts";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 
-export const extractPageNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
+const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
+const notSymbol = negate(isSymbol);
+const isUserAnnotation = (label: LabelDTO) => label.labelType === LabelDTOLabelTypeEnum.userAnnotation;
+const addDiagramKey =
+  (elementType: INodeData["properties"]["elementType"]) =>
+  (node: INodeData): INodeData => {
+    node.properties["elementType"] = elementType;
+    return node;
+  };
+
+const labelToNode = (label: LabelDTO): INodeData => {
+  return {
+    id: label.id.toString(),
+    position: label.position,
+    label: label.editedText ?? label.displayText,
+    properties: {
+      labelType: label.labelType,
+      font: label.font,
+      fontSize: label.fontSize ?? 10,
+      fontStyle: label.fontStyle,
+      fontColor: getFontColor(label),
+      zIndex: getZIndex(label),
+      circled: getIsCircled(label),
+      textBackgroundOpacity: getTextBackgroundOpacity(label),
+      textBorderOpacity: label.borderWidth ? 1 : 0,
+      textBorderWidth: label.borderWidth ?? 0,
+      textRotation: label.rotationAngle,
+      anchorAngle: label.anchorAngle,
+      pointOffset: label.pointOffset,
+      textAlignment: label.textAlignment,
+      borderWidth: label.borderWidth,
+      displayState: label.displayState,
+      featureId: label.featureId,
+      featureType: label.featureType,
+      ...(isSymbol(label) && { symbolId: label.displayText }),
+    },
+  };
+};
+export const extractPageNodes = (pages: PageDTO[]): INodeData[] => {
+  return pages.flatMap((page) => {
+    const userAnnotations =
+      page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
+    return userAnnotations;
+  });
+};
+
+export const extractPageEdges = (_: PageDTO[]): IEdgeData[] => {
+  // TODO replace later if we need any edges from extractPagesEdges
+  return [];
+};
+
+export const extractPageConfigNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const nodes: INodeData[] = pageConfig.coordinates.map((coordinate) => ({
       id: `border_${coordinate.id.toString()}`,
@@ -47,7 +106,7 @@ export const extractPageNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
   });
 };
 
-export const extractPageEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[] => {
+export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[] => {
   return pageConfigs.flatMap((pageConfig) => {
     const pageLines = pageConfig.lines
       .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
@@ -82,54 +141,26 @@ export const extractPageEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[] => {
 };
 
 export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
-  const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
-  const notSymbol = negate(isSymbol);
-
   return diagrams.flatMap((diagram) => {
-    const labelToNode = (label: LabelDTO): INodeData => {
+    const diagramLabelToNode = (label: LabelDTO) => {
+      const baseLabelToNode = labelToNode(label);
+      // Add diagram and parent ids
       return {
-        id: label.id.toString(),
-        position: label.position,
-        label: label.editedText ?? label.displayText,
+        ...baseLabelToNode,
         properties: {
-          labelType: label.labelType,
-          font: label.font,
-          fontSize: label.fontSize ?? 10,
-          fontStyle: label.fontStyle,
-          fontColor: getFontColor(label),
-          zIndex: getZIndex(label),
-          circled: getIsCircled(label),
-          textBackgroundOpacity: getTextBackgroundOpacity(label),
-          textBorderOpacity: label.borderWidth ? 1 : 0,
-          textBorderWidth: label.borderWidth ?? 0,
-          textRotation: label.rotationAngle,
-          anchorAngle: label.anchorAngle,
-          pointOffset: label.pointOffset,
-          textAlignment: label.textAlignment,
-          borderWidth: label.borderWidth,
-          displayState: label.displayState,
-          featureId: label.featureId,
-          featureType: label.featureType,
+          ...baseLabelToNode.properties,
           diagramId: diagram.id,
-          ...(isSymbol(label) && { symbolId: label.displayText }),
           parent: `D${diagram.id}`,
         },
       };
     };
-
-    const addDiagramKey =
-      (elementType: INodeData["properties"]["elementType"]) =>
-      (node: INodeData): INodeData => {
-        node.properties["elementType"] = elementType;
-        return node;
-      };
 
     // check if diagramType starts with "userDefn" otherwise skip it
     const isUserDefnDiagram = (diagramType: string): boolean => {
       return diagramType.startsWith("userDefn");
     };
     const userDefnLabels = isUserDefnDiagram(diagram.diagramType)
-      ? diagram.labels.filter(notSymbol).map(labelToNode).map(addDiagramKey("labels"))
+      ? diagram.labels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("labels"))
       : [];
 
     const coordinates = diagram.coordinates.map((coordinate) => {
@@ -150,17 +181,17 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
 
     const parcelLabelNodes =
       diagram.parcelLabelGroups?.flatMap((parcelLabelGroup) =>
-        (parcelLabelGroup.labels ?? []).filter(notSymbol).map(labelToNode).map(addDiagramKey("parcelLabels")),
+        (parcelLabelGroup.labels ?? []).filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("parcelLabels")),
       ) ?? [];
 
     const diagramNodes = [
       ...coordinates,
       ...userDefnLabels,
       ...(diagram.childDiagrams?.flatMap((childDiagram) =>
-        childDiagram?.labels?.map(labelToNode)?.map(addDiagramKey("childDiagramLabels")),
+        childDiagram?.labels?.map(diagramLabelToNode)?.map(addDiagramKey("childDiagramLabels")),
       ) ?? []),
-      ...diagram.coordinateLabels.map(labelToNode).map(addDiagramKey("coordinateLabels")),
-      ...diagram.lineLabels.filter(notSymbol).map(labelToNode).map(addDiagramKey("lineLabels")),
+      ...diagram.coordinateLabels.map(diagramLabelToNode).map(addDiagramKey("coordinateLabels")),
+      ...diagram.lineLabels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("lineLabels")),
       ...brokenLineNodes,
       ...parcelLabelNodes,
     ];

@@ -655,7 +655,7 @@ const renderBoxedUserText = () => {
   return <CanvasFromMockData data={builder.build()} />;
 };
 
-export const RendersLabelsAtCorrectSizeInLandscaoe: StoryObj<typeof CytoscapeCanvas> = {
+export const RendersLabelsAtCorrectSizeInLandscape: StoryObj<typeof CytoscapeCanvas> = {
   render: renderBoxedUserText,
   parameters: {
     viewport: {

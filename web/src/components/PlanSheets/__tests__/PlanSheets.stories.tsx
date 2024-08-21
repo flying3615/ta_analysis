@@ -145,7 +145,7 @@ UnsavedChangesModal.play = async ({ canvasElement }) => {
 };
 
 const planData = () => {
-  const builder = new PlanDataBuilder()
+  return new PlanDataBuilder()
     .addDiagram({
       bottomRightPoint: {
         x: 78,
@@ -324,7 +324,6 @@ const planData = () => {
     )
     .addPage({ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 })
     .addPage({ id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 })
-    .addPage({ id: 3, pageType: PageDTOPageTypeEnum.survey, pageNumber: 2 });
-
-  return builder.build();
+    .addPage({ id: 3, pageType: PageDTOPageTypeEnum.survey, pageNumber: 2 })
+    .build();
 };

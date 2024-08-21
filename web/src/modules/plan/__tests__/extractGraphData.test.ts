@@ -1,6 +1,6 @@
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { extractDiagramEdges, extractDiagramNodes, extractPageNodes } from "@/modules/plan/extractGraphData.ts";
 import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
 
 describe("extractGraphData", () => {
@@ -254,5 +254,13 @@ describe("extractGraphData", () => {
         expect(lineStyle).not.toHaveProperty("dashStyle");
       },
     );
+  });
+
+  test("extractPageNodes extracts user annotations", () => {
+    const extractedNodes = extractPageNodes(mockPlanData.pages);
+    expect(extractedNodes).toHaveLength(1);
+    const userAnnotationNode = extractedNodes[0];
+    expect(userAnnotationNode?.position).toStrictEqual({ x: 13, y: -13 });
+    expect(userAnnotationNode?.label).toBe("Rotated user added text");
   });
 });

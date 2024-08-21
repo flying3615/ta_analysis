@@ -1,5 +1,6 @@
 import { LabelDTO } from "@linz/survey-plan-generation-api-client";
 
+import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 
 export const mockPlanData = new PlanDataBuilder()
@@ -13,6 +14,7 @@ export const mockPlanData = new PlanDataBuilder()
     pageRef: 1,
   })
   .addPage(1)
+  .addUserAnnotation(LabelDTOBuilder.empty().build())
   .addPage(2)
   .addCooordinate(10001, {
     x: 20,

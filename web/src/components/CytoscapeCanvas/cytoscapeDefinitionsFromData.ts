@@ -1,3 +1,4 @@
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
@@ -108,7 +109,10 @@ export const nodePositionsFromData = (
   return nodeData.reduce((acc, node) => {
     let nodePositionPixels;
 
-    if (node.properties["coordType"] === "userDefined") {
+    if (
+      node.properties["coordType"] === "userDefined" ||
+      node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
+    ) {
       nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
     } else {
       const diagramId = node.properties["diagramId"];
