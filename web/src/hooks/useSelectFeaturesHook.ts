@@ -29,7 +29,13 @@ export const useSelectFeatures = ({
   const layer = useMemo(() => (Array.isArray(_layer) ? _layer : [_layer]), [_layer]);
   const { map, getFeaturesAtPixel } = useContext(LolOpenLayersMapContext);
   const { featureSelect, setFeatureSelect, setLayerStatus, layerStatus } = useContext(LolOpenLayersMapContext);
-  const funcRef = useConstFunction((ev: MapBrowserEvent<MouseEvent>): void => {
+
+  const initialLayerState = useRef({} as Record<string, Partial<ILayerStatus>>);
+
+  const selectedFeatures = flatten(layer.map((l) => featureSelect(l).map(getFeatureId)));
+  const selectedFeatureIds = uniq(selectedFeatures.map(getFeatureId));
+
+  const mapClickHandler = useConstFunction((ev: MapBrowserEvent<MouseEvent>): void => {
     if (!getFeaturesAtPixel || !enabled || locked) return;
 
     const layerClickedFeatures = sortBy(
@@ -37,7 +43,7 @@ export const useSelectFeatures = ({
       (cf) => cf.distance,
     );
 
-    // Thin min distance for polygons that have been clicked directly on will be 0
+    // The min distance for polygons that have been clicked directly on will be 0
     const minDistance = minBy(layerClickedFeatures, (cf) => cf.distance)?.distance ?? 0;
     const layerClickedFeaturesNearest = layerClickedFeatures.filter((cf) => cf.distance <= minDistance + 1);
     const polygonTypeFeatureAreas = compact(
@@ -48,7 +54,7 @@ export const useSelectFeatures = ({
       }),
     );
 
-    // Use non-polygonal smallest distance
+    // Find polygon with the smallest area
     let layerClickedFeaturesToUse = layerClickedFeaturesNearest;
     if (!isEmpty(polygonTypeFeatureAreas)) {
       // Use polygon with the smallest area
@@ -76,7 +82,6 @@ export const useSelectFeatures = ({
   });
 
   const enabledChanged = useHasChanged(enabled);
-  const initialLayerState = useRef({} as Record<string, Partial<ILayerStatus>>);
   useEffect(() => {
     if (!enabledChanged) return;
     layer.forEach((l, i) => {
@@ -95,14 +100,11 @@ export const useSelectFeatures = ({
   }, [enabled, layer, layerStatus, enabledChanged, setFeatureSelect, setLayerStatus, initialLayerState]);
 
   useEffect(() => {
-    map?.on("click", funcRef);
+    map?.on("click", mapClickHandler);
     return () => {
-      map?.un("click", funcRef);
+      map?.un("click", mapClickHandler);
     };
-  }, [funcRef, map]);
-
-  const selectedFeatures = flatten(layer.map((l) => featureSelect(l).map(getFeatureId)));
-  const selectedFeatureIds = uniq(selectedFeatures.map(getFeatureId));
+  }, [mapClickHandler, map]);
 
   return {
     selectedFeatureIds,

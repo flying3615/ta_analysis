@@ -52,7 +52,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
   const { drawType, combineFn } = actionToTypeMap[activeAction] ?? {};
 
   const enlargeDiagram = useCallback(
-    async ({ coordinates }: DrawEndProps) => {
+    async ({ latLongCoordinates }: DrawEndProps) => {
       if (!selectedDiagramIds || isEmpty(selectedDiagramIds) || !combineFn) return;
       const diagramId = selectedDiagramIds[0];
       if (diagramId == null) return;
@@ -64,7 +64,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
        * Check drawn polygon overlaps elected polygon
        */
       const selectedPolygon = diagram.shape as Feature<Polygon>;
-      const resizePolygon = feature(geometry("Polygon", [coordinates]) as Polygon);
+      const resizePolygon = feature(geometry("Polygon", [latLongCoordinates]) as Polygon);
 
       const collection = featureCollection([selectedPolygon, resizePolygon]);
       if (intersect(collection) === null) {

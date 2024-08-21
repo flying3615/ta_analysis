@@ -196,7 +196,6 @@ export const DefineDiagramMenuButtons = () => {
         action="select_diagram"
         disabled={insertDiagramLoading || resizeDiagramLoading || removeDiagramLoading}
       />
-      <ActionHeaderButton title="Label diagrams" icon="ic_label_diagrams" />
       <VerticalSpacer />
       <ActionHeaderMenu
         title={selectedDiagramIds.length <= 1 ? "Enlarge diagram" : "To enlarge a diagram, select only one diagram"}

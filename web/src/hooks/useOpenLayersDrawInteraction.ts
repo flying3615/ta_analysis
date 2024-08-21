@@ -1,9 +1,10 @@
 import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
-import { geometry } from "@turf/helpers";
+import area from "@turf/area";
+import { geometry, polygon as tpolygon } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
 import { LineString, Polygon } from "geojson";
-import { isEmpty, isEqual } from "lodash-es";
+import { isEmpty } from "lodash-es";
 import { Coordinate } from "ol/coordinate";
 import { EventsKey } from "ol/events";
 import BaseEvent from "ol/events/Event";
@@ -22,7 +23,7 @@ import {
 import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { geometryToCartesian, geometryToCoordinates } from "@/util/mapUtil.ts";
+import { geometryToLatLongCartesian, geometryToLatLongCoordinates } from "@/util/mapUtil.ts";
 
 type ExtendedDrawInteractionType = "Rectangle";
 
@@ -40,11 +41,10 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
 
 export interface DrawEndProps {
   event: DrawEvent;
+  area: number;
   geometry: olPolygon;
-  // lat/lon shifted as number[][]
-  coordinates: Coordinate[];
-  // lat/lon shifted as {x, y}
-  cartesianCoordinates: CartesianCoordsDTO[];
+  latLongCoordinates: Coordinate[];
+  latLongCartesians: CartesianCoordsDTO[];
 }
 
 export interface useOpenLayersDrawInteractionProps {
@@ -94,24 +94,19 @@ export const useOpenLayersDrawInteraction = ({
     const polygon = currentFeatureRef.current;
     if (!polygon) return;
 
-    const cartesianCoordinates = geometryToCartesian(polygon);
-    // Check that the points aren't all the same.  This can happen from double-clicking.
-    const first = cartesianCoordinates[0];
-    if (!first || !cartesianCoordinates.some((coord) => !isEqual(coord, first))) {
-      drawAbort(event);
-      return;
-    }
-
-    const coordinates = geometryToCoordinates(polygon);
+    const latLongCartesians = geometryToLatLongCartesian(polygon);
+    const latLongCoordinates = geometryToLatLongCoordinates(polygon);
+    const featureArea = area(tpolygon([latLongCoordinates]));
 
     // Prevent further drawing during save
     allowDrawAddPoint.current = false;
 
     drawEnd({
       event,
-      coordinates,
+      area: featureArea,
+      latLongCoordinates,
       geometry: polygon,
-      cartesianCoordinates,
+      latLongCartesians,
     });
   });
 

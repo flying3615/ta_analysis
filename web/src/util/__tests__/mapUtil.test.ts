@@ -1,4 +1,3 @@
-import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { Feature } from "ol";
 import Geometry from "ol/geom/Geometry";
 import { Layer } from "ol/layer";
@@ -10,11 +9,10 @@ import {
   clickedFeatureFilter,
   getClickedFeatureId,
   getFeatureId,
-  mapPointToCartesian,
-  mapPointToCoordinate,
+  metersToLatLongCartesian,
+  metersToLatLongCoordinate,
   normalizeLongitude,
   numericToCartesian,
-  validatePolygonArea,
 } from "@/util/mapUtil.ts";
 
 describe("Longitude normalization calculation", () => {
@@ -35,13 +33,13 @@ describe("mapUtil", () => {
   });
 
   test("mapPointToCoordinates", () => {
-    expect(mapPointToCoordinate([19034608.7753906, -5632300.24483069])).toEqual([
+    expect(metersToLatLongCoordinate([19034608.7753906, -5632300.24483069])).toEqual([
       10.990799901689423, -45.068426287007306,
     ]);
   });
 
   test("mapPointToCartesian", () => {
-    expect(mapPointToCartesian([19034608.7753906, -5632300.24483069])).toEqual({
+    expect(metersToLatLongCartesian([19034608.7753906, -5632300.24483069])).toEqual({
       x: 10.990799901689423,
       y: -45.068426287007306,
     });
@@ -72,45 +70,5 @@ describe("mapUtil", () => {
     expect(filterForHelloArray(clickedFeature)).toBe(true);
     const filterNotForHello = clickedFeatureFilter("x", "there");
     expect(filterNotForHello(clickedFeature)).toBe(false);
-  });
-});
-
-describe("validatePolygonArea", () => {
-  const validPolygon: CartesianCoordsDTO[] = [
-    { x: 0, y: 0 },
-    { x: 0, y: 1 },
-    { x: 1, y: 1 },
-    { x: 1, y: 0 },
-    { x: 0, y: 0 },
-  ];
-
-  const invalidPolygon: CartesianCoordsDTO[] = [
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-  ];
-
-  test("should return valid area for a square", () => {
-    const result = validatePolygonArea(validPolygon);
-    expect(result.hasArea).toBe(true);
-    expect(result.areaValue).toBeCloseTo(1, 6);
-  });
-
-  test("should return hasArea false for area less than minimum", () => {
-    const result = validatePolygonArea(validPolygon, 2);
-    expect(result.hasArea).toBe(false);
-    expect(result.areaValue).toBeCloseTo(1, 6);
-  });
-
-  test("should handle invalid polygon (less than 3 unique points)", () => {
-    const result = validatePolygonArea(invalidPolygon);
-    expect(result.hasArea).toBe(false);
-    expect(result.areaValue).toBeFalsy();
-  });
-
-  test("should handle empty coordinate array", () => {
-    const result = validatePolygonArea([]);
-    expect(result.hasArea).toBe(false);
-    expect(result.areaValue).toBeFalsy();
   });
 });

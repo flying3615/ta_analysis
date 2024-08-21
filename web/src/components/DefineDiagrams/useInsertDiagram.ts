@@ -10,7 +10,6 @@ import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOp
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { validatePolygonArea } from "@/util/mapUtil";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -51,22 +50,21 @@ export const useInsertDiagram = () => {
       count: maxSides + 1,
       errorCallback: () => showPrefabModal(error32027_diagramTooManySides(maxSides)),
     },
-    drawEnd: async ({ cartesianCoordinates }) => {
+    drawEnd: async ({ area, latLongCartesians }) => {
       if (!map || !diagramType) return;
       const zoom = map.getView().getZoom() ?? 200;
 
       try {
         setLoading(true);
 
-        const polyValidation = validatePolygonArea(cartesianCoordinates);
-        if (!polyValidation.hasArea) {
+        if (area === 0) {
           showPrefabModal(error32021_diagramNoArea);
           return;
         }
 
         await insertDiagram({
           transactionId,
-          postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: cartesianCoordinates },
+          postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: latLongCartesians },
         });
       } finally {
         setLoading(false);

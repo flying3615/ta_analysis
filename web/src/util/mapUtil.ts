@@ -34,20 +34,20 @@ export const mapPointToLatLonShifted = (point: number[]): number[] => {
 export const normalizeLongitude = (longitude: number): number =>
   longitude < -180 ? longitude + 360 : longitude > 180 ? longitude - 360 : longitude;
 
-export const mapPointToCoordinate = (v: number[]): number[] => {
+export const metersToLatLongCoordinate = (v: number[]): number[] => {
   const m = mapPointToLatLonShifted(v);
   return [normalizeLongitude(m[0]!), m[1]!];
 };
 
-export const mapPointToCartesian = (v: number[]) => numericToCartesian(mapPointToCoordinate(v));
+export const metersToLatLongCartesian = (v: number[]) => numericToCartesian(metersToLatLongCoordinate(v));
 
 const mapCoordinatesFromGeometry = (geometry: SimpleGeometry): Coordinate[] => geometry.getCoordinates()?.[0] ?? [];
 
-export const geometryToCoordinates = (geometry: SimpleGeometry): Coordinate[] =>
-  mapCoordinatesFromGeometry(geometry).map(mapPointToCoordinate);
+export const geometryToLatLongCoordinates = (geometry: SimpleGeometry): Coordinate[] =>
+  mapCoordinatesFromGeometry(geometry).map(metersToLatLongCoordinate);
 
-export const geometryToCartesian = (geometry: SimpleGeometry): CartesianCoordsDTO[] =>
-  mapCoordinatesFromGeometry(geometry).map(mapPointToCartesian);
+export const geometryToLatLongCartesian = (geometry: SimpleGeometry): CartesianCoordsDTO[] =>
+  mapCoordinatesFromGeometry(geometry).map(metersToLatLongCartesian);
 
 /** =========================================================== */
 
@@ -71,31 +71,3 @@ export const getClickedFeatureId = (cf: ClickedFeature): number => getFeatureId(
 
 export const clickedFeatureFilter = (field: string, values: unknown | unknown[]) => (clicked: ClickedFeature) =>
   castArray(values).includes(clicked.feature.get(field));
-
-export const validatePolygonArea = (coordinates: CartesianCoordsDTO[], minimumArea = 0) => {
-  if (!Array.isArray(coordinates) || coordinates.length < 4) {
-    return {
-      hasArea: false,
-      areaValue: 0,
-    };
-  }
-
-  const geoJsonCoords = coordinates.map((coord) => cartesianToNumeric(coord));
-  let areaValue = 0;
-  const n = geoJsonCoords.length;
-
-  // Simple gauss formula calculation for CartesianCoordsDTO without requiring projection conversion
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    areaValue += (geoJsonCoords[i]?.[0] ?? 0) * (geoJsonCoords[j]?.[1] ?? 0);
-    areaValue -= (geoJsonCoords[j]?.[0] ?? 0) * (geoJsonCoords[i]?.[1] ?? 0);
-  }
-
-  areaValue = Math.abs(areaValue) / 2;
-  const hasArea = areaValue > minimumArea;
-
-  return {
-    hasArea,
-    areaValue,
-  };
-};

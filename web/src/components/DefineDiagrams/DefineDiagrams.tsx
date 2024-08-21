@@ -41,7 +41,7 @@ import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
 import { PrepareDatasetError, usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
-import { mapPointToCoordinate } from "@/util/mapUtil.ts";
+import { metersToLatLongCoordinate } from "@/util/mapUtil.ts";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";
@@ -137,7 +137,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
       console.log(`Map click`, {
         pixel: e.pixel,
         meters: e.coordinate,
-        coordinate: mapPointToCoordinate(e.coordinate),
+        coordinate: metersToLatLongCoordinate(e.coordinate),
       });
     };
 
