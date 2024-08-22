@@ -143,8 +143,8 @@ export const useCytoscapeCanvasExport = (props: {
         const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
           canvasRef.current,
           diagrams,
-          window.innerWidth,
-          window.innerHeight,
+          window.screen.width, // get user's screen max width and height
+          window.screen.height,
           -50,
         );
 
@@ -182,6 +182,7 @@ export const useCytoscapeCanvasExport = (props: {
       }
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
+      console.error(e);
       setProcessing(false);
     } finally {
       cyRefCurrent?.off("add");
