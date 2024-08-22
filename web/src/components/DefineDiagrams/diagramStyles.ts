@@ -35,14 +35,14 @@ export const userDiagramStylesSelectable = (feature: FeatureLike | RenderFeature
 };
 
 export const diagramStylesSelected = new Style({
-  stroke: new Stroke({ width: 4, color: MapColors.pink }),
+  stroke: new Stroke({ width: 2, color: MapColors.pink }),
   fill: new Fill({
     color: MapFillColors.pink,
   }),
 });
 
 const diagramStyleSelectable = new Style({
-  stroke: new Stroke({ width: 4, color: MapColors.blue }),
+  stroke: new Stroke({ width: 2, color: MapColors.blue }),
   fill: new Fill({
     color: MapFillColors.blue,
   }),

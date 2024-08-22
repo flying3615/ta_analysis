@@ -12,7 +12,7 @@ export const lineStyles_ct = new Style({
 });
 
 export const lineStyle_selectable = new Style({
-  stroke: new Stroke({ width: 4, color: MapColors.blue }),
+  stroke: new Stroke({ width: 3, color: MapColors.blue }),
 });
 
 export const lineStyles_abb = new Style({
@@ -20,7 +20,7 @@ export const lineStyles_abb = new Style({
 });
 
 export const lineStyle_selected = new Style({
-  stroke: new Stroke({ width: 4, color: MapColors.pink }),
+  stroke: new Stroke({ width: 3, color: MapColors.pink }),
 });
 
 // Functional styles

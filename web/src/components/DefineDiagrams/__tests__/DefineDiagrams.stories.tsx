@@ -38,6 +38,7 @@ const initialState: DefineDiagramsState = {
 };
 
 const queryClient = new QueryClient();
+const coordinatesOfPointOnDiagramA: Coordinate[] = [[19461488.02830917, -5058113.19031095]];
 
 const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => (
   <LuiModalAsyncContextProvider>
@@ -401,8 +402,7 @@ export const EnlargeDiagram: Story = {
 
 EnlargeDiagram.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to enlarge", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a rectangle that overlaps the selected diagram", async () => {
     const rectangleCoordinates: Coordinate[] = [
@@ -430,8 +430,7 @@ export const EnlargeDiagramOverlapError: Story = {
 
 EnlargeDiagramOverlapError.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to enlarge", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a rectangle that doesn't overlap the selected diagram", async () => {
     const rectangleCoordinates: Coordinate[] = [
@@ -458,8 +457,7 @@ export const EnlargeDiagramInvalidShapeError: Story = {
 
 EnlargeDiagramInvalidShapeError.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to enlarge", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a polygon that would create an invalid shape (with a hole in the middle)", async () => {
     const polygonCoordinates: Coordinate[] = [
@@ -490,8 +488,7 @@ export const ReduceDiagram: Story = {
 
 ReduceDiagram.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to reduce", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a rectangle that overlaps the selected diagram", async () => {
     const rectangleCoordinates: Coordinate[] = [
@@ -519,8 +516,7 @@ export const ReduceDiagramOverlapError: Story = {
 
 ReduceDiagramOverlapError.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to reduce", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a rectangle that doesn't overlap the selected diagram", async () => {
     const rectangleCoordinates: Coordinate[] = [
@@ -546,8 +542,7 @@ export const ReduceDiagramInvalidShapeError: Story = {
 
 ReduceDiagramInvalidShapeError.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram to reduce", async () => {
-    const coordinatesOfPointOnDiagram: Coordinate[] = [[19461419.03601654, -5058106.128107768]];
-    await selectDiagram(coordinatesOfPointOnDiagram);
+    await selectDiagram(coordinatesOfPointOnDiagramA);
   });
   await step("WHEN I draw a polygon that would create an invalid shape (with a hole in the middle)", async () => {
     const polygonCoordinates: Coordinate[] = [
