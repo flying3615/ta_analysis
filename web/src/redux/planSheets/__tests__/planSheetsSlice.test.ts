@@ -1,3 +1,5 @@
+import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { setupStore } from "@/redux/store";
@@ -17,6 +19,7 @@ import planSheetsSlice, {
   setActivePageNumber,
   setActiveSheet,
   setPlanData,
+  updatePages,
 } from "../planSheetsSlice";
 
 describe("planSheetsSlice", () => {
@@ -215,6 +218,30 @@ describe("planSheetsSlice", () => {
 
     expect(getPlanData(store.getState()).diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 10, y: -10 });
     expect(getPlanData(store.getState()).diagrams[1]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
+    expect(hasChanges(store.getState())).toBe(true);
+  });
+
+  test("updatePages should alter pages state and set hasChanges", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+      },
+    });
+
+    expect(hasChanges(store.getState())).toBe(false);
+
+    const replacementPages = [
+      {
+        id: 2,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 2,
+      },
+    ];
+
+    store.dispatch(updatePages(replacementPages));
+
+    expect(getPlanData(store.getState()).pages[0]?.id).toBe(2);
     expect(hasChanges(store.getState())).toBe(true);
   });
 

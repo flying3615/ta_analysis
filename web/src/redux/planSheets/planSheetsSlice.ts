@@ -54,15 +54,11 @@ const planSheetsSlice = createSlice({
     setDiagramPageRef: (state, action: PayloadAction<{ id: number; pageRef: number | undefined }>) => {
       const { id, pageRef } = action.payload;
       state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
-    },
-    addDiagram: (state, action: PayloadAction<DiagramDTO>) => {
-      state.diagrams.push(action.payload);
-    },
-    removeDiagram: (state, action: PayloadAction<string>) => {
-      state.diagrams = state.diagrams.filter((d) => d.id.toString() !== action.payload);
+      state.hasChanges = true;
     },
     updatePages: (state, action: PayloadAction<PageDTO[]>) => {
       state.pages = action.payload;
+      state.hasChanges = true;
     },
   },
   selectors: {
@@ -109,16 +105,8 @@ const planSheetsSlice = createSlice({
   },
 });
 
-export const {
-  setPlanData,
-  replaceDiagrams,
-  setActiveSheet,
-  setActivePageNumber,
-  addDiagram,
-  removeDiagram,
-  setDiagramPageRef,
-  updatePages,
-} = planSheetsSlice.actions;
+export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber, setDiagramPageRef, updatePages } =
+  planSheetsSlice.actions;
 
 export const {
   getPlanData,
