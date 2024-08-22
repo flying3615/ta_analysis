@@ -107,7 +107,11 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderButton title="Select line" icon="ic_select_line" action="select_line" />
       <VerticalSpacer />
       <ActionHeaderMenu
-        title="Define primary diagram"
+        title={
+          disabledDiagramIds.includes("define_primary_diagram_rectangle" || "define_primary_diagram_polygon")
+            ? "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
+            : "Define primary diagram"
+        }
         defaultAction="define_primary_diagram_rectangle"
         loading={insertDiagramLoading}
         disabled={
@@ -128,12 +132,16 @@ export const DefineDiagramMenuButtons = () => {
         ]}
       />
       <ActionHeaderMenu
-        title="Define non-primary diagram"
+        title={
+          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygon")
+            ? "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
+            : "Define non-primary diagram"
+        }
         defaultAction="define_nonprimary_diagram_rectangle"
         loading={insertDiagramLoading}
         disabled={
           insertDiagramLoading ||
-          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygone")
+          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygon")
         }
         options={[
           {
@@ -149,7 +157,11 @@ export const DefineDiagramMenuButtons = () => {
         ]}
       />
       <ActionHeaderMenu
-        title="Define survey diagram"
+        title={
+          disabledDiagramIds.includes("define_survey_diagram_rectangle" || "define_survey_diagram_polygon")
+            ? "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey"
+            : "Define survey diagram"
+        }
         defaultAction="define_survey_diagram_rectangle"
         loading={insertDiagramLoading}
         disabled={
