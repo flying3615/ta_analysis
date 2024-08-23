@@ -1,13 +1,15 @@
 import { ClickedFeature, LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { ILayerStatus } from "@linzjs/landonline-openlayers-map/dist/src/model/layerstatus";
 import area from "@turf/area";
+import { geometry } from "@turf/helpers";
 import { compact, flatten, isEmpty, isEqual, minBy, pick, sortBy, uniq, xor } from "lodash-es";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect, useMemo, useRef } from "react";
 
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { GeoJsonFromFeature, getClickedFeatureId, getFeatureId, isGeoJsonPolygonal } from "@/util/mapUtil.ts";
+import { geometryToLatLongCoordinates, getClickedFeatureId, getFeatureId } from "@/util/mapUtil.ts";
 
 export interface useSelectFeaturesProps {
   enabled: boolean;
@@ -48,9 +50,10 @@ export const useSelectFeatures = ({
     const layerClickedFeaturesNearest = layerClickedFeatures.filter((cf) => cf.distance <= minDistance + 1);
     const polygonTypeFeatureAreas = compact(
       layerClickedFeaturesNearest.map((cf) => {
-        const jsonFeature = GeoJsonFromFeature(cf.feature);
-        if (!isGeoJsonPolygonal(jsonFeature)) return null;
-        return { ...cf, area: area(jsonFeature) };
+        const geom = cf.feature.getGeometry() as SimpleGeometry;
+        if (!geom || geom.getType() !== "Polygon") return null;
+        const resizePolygon = geometry("Polygon", [geometryToLatLongCoordinates(geom)]);
+        return { ...cf, area: area(resizePolygon) };
       }),
     );
 
@@ -69,14 +72,14 @@ export const useSelectFeatures = ({
     );
     const currentFeatureIds = flatten(layer.map((l) => featureSelect(l).map(getFeatureId)));
 
-    const select = ev.originalEvent.ctrlKey
-      ? xor(currentFeatureIds, clickedFeatureIds)
-      : isEqual(clickedFeatureIds, currentFeatureIds)
-        ? []
-        : //
-          currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
-          ? xor(clickedFeatureIds, currentFeatureIds)
-          : clickedFeatureIds;
+    const select =
+      ev.originalEvent.ctrlKey || ev.originalEvent.shiftKey
+        ? xor(currentFeatureIds, clickedFeatureIds)
+        : isEqual(clickedFeatureIds, currentFeatureIds)
+          ? []
+          : currentFeatureIds.some((id) => clickedFeatureIds.includes(id))
+            ? xor(clickedFeatureIds, currentFeatureIds)
+            : clickedFeatureIds;
 
     layer.forEach((l) => setFeatureSelect(l, select));
   });

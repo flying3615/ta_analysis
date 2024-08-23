@@ -1,12 +1,8 @@
 import { CartesianCoordsDTO } from "@linz/survey-plan-generation-api-client";
 import { ClickedFeature } from "@linzjs/landonline-openlayers-map";
 import { castArray } from "lodash-es";
-import { Feature as olFeature } from "ol";
 import { Coordinate } from "ol/coordinate";
 import { FeatureLike } from "ol/Feature";
-import { GeoJSON } from "ol/format";
-import { GeoJSONFeature } from "ol/format/GeoJSON";
-import { Geometry as olGeometry } from "ol/geom";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { register } from "ol/proj/proj4";
 import RenderFeature from "ol/render/Feature";
@@ -43,7 +39,13 @@ export const metersToLatLongCoordinate = (v: number[]): number[] => {
 
 export const metersToLatLongCartesian = (v: number[]) => numericToCartesian(metersToLatLongCoordinate(v));
 
-const mapCoordinatesFromGeometry = (geometry: SimpleGeometry): Coordinate[] => geometry.getCoordinates()?.[0] ?? [];
+const mapCoordinatesFromGeometry = (geometry: SimpleGeometry): Coordinate[] => {
+  if (geometry.getType() === "Polygon") {
+    return geometry.getCoordinates()?.[0] ?? [];
+  } else {
+    return geometry.getCoordinates() ?? [];
+  }
+};
 
 export const geometryToLatLongCoordinates = (geometry: SimpleGeometry): Coordinate[] =>
   mapCoordinatesFromGeometry(geometry).map(metersToLatLongCoordinate);
@@ -52,19 +54,6 @@ export const geometryToLatLongCartesian = (geometry: SimpleGeometry): CartesianC
   mapCoordinatesFromGeometry(geometry).map(metersToLatLongCartesian);
 
 /** =========================================================== */
-
-export const isGeoJsonPolygonal = (f: GeoJSONFeature): boolean => {
-  const type = f.geometry.type;
-  return type === "Polygon" || type === "MultiPolygon";
-};
-
-export const GeoJsonFromFeature = (feature: FeatureLike): GeoJSONFeature => {
-  const writer = new GeoJSON();
-  return writer.writeFeatureObject(feature as olFeature<olGeometry>);
-};
-
-export const GeoJsonFromGeometry = (geometry: olGeometry): GeoJSONFeature =>
-  GeoJsonFromFeature(new olFeature(geometry));
 
 export const getFeatureId = (f: number | FeatureLike | RenderFeature): number =>
   typeof f === "number" ? f : (f.get("id") as number);

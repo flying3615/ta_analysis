@@ -4,14 +4,16 @@ import area from "@turf/area";
 import { geometry, polygon as tpolygon } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
 import { LineString, Polygon } from "geojson";
-import { isEmpty } from "lodash-es";
+import { isEmpty, isEqual } from "lodash-es";
 import { Coordinate } from "ol/coordinate";
 import { EventsKey } from "ol/events";
 import BaseEvent from "ol/events/Event";
-import { Polygon as olPolygon } from "ol/geom";
+import { LineString as OlLineString, Polygon as OlPolygon } from "ol/geom";
 import { Type } from "ol/geom/Geometry";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { Draw } from "ol/interaction";
 import { createBox, DrawEvent, GeometryFunction, Options } from "ol/interaction/Draw";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useCallback, useContext, useEffect, useRef } from "react";
 
 import {
@@ -20,7 +22,6 @@ import {
   drawInteractionBoundaryFill,
   drawInteractionBoundaryFillError,
 } from "@/components/DefineDiagrams/diagramStyles.ts";
-import { BlockableDraw } from "@/hooks/BlockableDraw.ts";
 import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { geometryToLatLongCartesian, geometryToLatLongCoordinates } from "@/util/mapUtil.ts";
@@ -42,7 +43,7 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
 export interface DrawEndProps {
   event: DrawEvent;
   area: number;
-  geometry: olPolygon;
+  geometry: SimpleGeometry;
   latLongCoordinates: Coordinate[];
   latLongCartesians: CartesianCoordsDTO[];
 }
@@ -82,7 +83,7 @@ export const useOpenLayersDrawInteraction = ({
   const allowDrawAddPoint = useRef(false);
   const preventDrawAbortDuringTypeChange = useRef(false);
   // The current feature needs to be retained as it's needed for finishEvent which has no access to the feature
-  const currentFeatureRef = useRef<olPolygon>();
+  const currentFeatureRef = useRef<SimpleGeometry>();
 
   const currentType = options.type;
 
@@ -91,21 +92,20 @@ export const useOpenLayersDrawInteraction = ({
    */
   const onDrawEndEvent = useConstFunction((event: DrawEvent) => {
     event.stopPropagation();
-    const polygon = currentFeatureRef.current;
-    if (!polygon) return;
+    const feature = currentFeatureRef.current;
+    if (!feature) return;
 
-    const latLongCartesians = geometryToLatLongCartesian(polygon);
-    const latLongCoordinates = geometryToLatLongCoordinates(polygon);
-    const featureArea = area(tpolygon([latLongCoordinates]));
+    const latLongCartesians = geometryToLatLongCartesian(feature);
+    const latLongCoordinates = geometryToLatLongCoordinates(feature);
+    const featureArea = currentType === "Polygon" ? area(tpolygon([latLongCoordinates])) : -1;
 
     // Prevent further drawing during save
     allowDrawAddPoint.current = false;
-
     drawEnd({
       event,
       area: featureArea,
       latLongCoordinates,
-      geometry: polygon,
+      geometry: feature,
       latLongCartesians,
     });
   });
@@ -127,12 +127,7 @@ export const useOpenLayersDrawInteraction = ({
     (event: DrawEvent) => {
       if (!map) return;
 
-      const evFeature = event.feature;
-      drawListenerRef.current = evFeature.getGeometry()?.on("change", (evt: BaseEvent) => {
-        const geom = evt.target as olPolygon;
-        currentFeatureRef.current = geom;
-        if (geom.getType() !== "Polygon") throw "Unsupported Geometry type";
-
+      const polygonValidator = (geom: OlPolygon) => {
         // Disable the ability to add a point if it would cause a self intersection.
         // The last coordinate hasn't been saved yet, so it's excluded
         const coordinates = geom.getCoordinates()[0] ?? [];
@@ -140,16 +135,43 @@ export const useOpenLayersDrawInteraction = ({
           coordinates.length <= 4 ||
           isEmpty(kinks(geometry("LineString", coordinates.slice(0, -1)) as LineString).features);
 
-        if (maxPoints) {
-          const pointCount = coordinates.length - 1;
-          if (pointCount > maxPoints.count) {
-            maxPoints.errorCallback();
-            drawInteractionRef.current?.abortDrawing();
-          }
+        if (maxPoints && coordinates.length - 1 > maxPoints.count) {
+          maxPoints.errorCallback();
+          drawInteractionRef.current?.abortDrawing();
+        }
+      };
+
+      const lineStringValidator = (geom: OlLineString) => {
+        // Disable the ability to add a point if it would cause a self intersection.
+        const coordinates = geom.getCoordinates() ?? [];
+        allowDrawAddPoint.current =
+          coordinates.length <= 3 || isEmpty(kinks(geometry("LineString", coordinates) as LineString).features);
+
+        if (maxPoints && coordinates.length > maxPoints.count) {
+          maxPoints.errorCallback();
+          drawInteractionRef.current?.abortDrawing();
+        }
+      };
+
+      drawListenerRef.current = event.feature.getGeometry()?.on("change", (evt: BaseEvent) => {
+        currentFeatureRef.current = evt.target;
+
+        switch (currentType) {
+          case "Rectangle":
+            // empty
+            break;
+          case "Polygon":
+            polygonValidator(evt.target as OlPolygon);
+            break;
+          case "LineString":
+            lineStringValidator(evt.target as OlLineString);
+            break;
+          default:
+            alert(`Unsupported Geometry type ${currentType}`);
         }
       });
     },
-    [map, maxPoints],
+    [currentType, map, maxPoints],
   );
 
   /**
@@ -160,34 +182,57 @@ export const useOpenLayersDrawInteraction = ({
      * Checks if geometry is self intersecting
      */
     const finishCondition = () => {
-      const c = currentFeatureRef.current?.getFlatCoordinates();
-      if (!c) return false;
+      if (currentType !== "Polygon") return true;
 
-      const k = kinks(geometry("Polygon", [c]) as Polygon);
+      const rings = currentFeatureRef.current?.getCoordinates() ?? [];
+
+      // Multi-polygon or no polygon then it's invalid
+      if (rings.length !== 1) return false;
+
+      const coords = rings[0];
+
+      // Displayed polygon has duplicate points that were for display only, these need removing to test for kinks
+      for (let i = 1; i < coords.length; i++) {
+        // If previous coordinate equals current coordinate then remove it
+        if (isEqual(coords[i - 1], coords[i])) {
+          coords.splice(i, 1);
+        }
+      }
+      if (!coords) return false;
+
+      const k = kinks(geometry("Polygon", [coords]) as Polygon);
       return isEmpty(k.features);
     };
 
     allowDrawAddPoint.current = true;
     if (!map || !enabled || drawInteractionRef.current || !currentType) return;
-    const drawInteraction = (drawInteractionRef.current = new BlockableDraw(
-      {
-        style: (feature) => {
-          switch (feature.getGeometry()?.getType()) {
-            case "LineString":
-              return allowDrawAddPoint.current ? drawInteractionBoundaryBorder : drawInteractionBoundaryBorderError;
-            case "Polygon":
-              return allowDrawAddPoint.current ? drawInteractionBoundaryFill : drawInteractionBoundaryFillError;
-            default:
-              return false;
+    const drawInteraction = (drawInteractionRef.current = new Draw({
+      style: (feature) => {
+        switch (feature.getGeometry()?.getType()) {
+          case "LineString":
+            return allowDrawAddPoint.current ? drawInteractionBoundaryBorder : drawInteractionBoundaryBorderError;
+          case "Polygon":
+            return allowDrawAddPoint.current ? drawInteractionBoundaryFill : drawInteractionBoundaryFillError;
+          default:
+            return false;
+        }
+      },
+      stopClick: true,
+      condition: (e: MapBrowserEvent<MouseEvent>) => {
+        if (e.type === "pointerdown") {
+          if (e.originalEvent.buttons === 2) {
+            drawInteractionRef.current?.removeLastPoint();
+            // @ts-expect-error private method, but needed to update screen
+            drawInteractionRef.current?.handlePointerMove_(e);
+            return false;
           }
-        },
-        stopClick: true,
-        ...options,
-        ...extendedTypes[currentType]?.(),
-        finishCondition,
-      } as Options,
-      allowDrawAddPoint,
-    ));
+        }
+        return allowDrawAddPoint?.current;
+      },
+      ...options,
+      ...extendedTypes[currentType]?.(),
+      finishCondition,
+    } as Options));
 
     drawInteraction.on("drawstart", onDrawStart);
     drawInteraction.on("drawend", onDrawEndEvent);
