@@ -189,21 +189,43 @@ DrawPrimaryDiagramByRectangle.play = async () => {
   await sleep(500); //This sleep is needed for diagram to show
 };
 
-export const DrawNonPrimaryDiagramByPolygonBoundaryError: Story = {
+export const DrawButtonsDisabled: Story = {
   ...Default,
   parameters: {
     ...Default.parameters,
     backgrounds: {},
+    msw: {
+      handlers: [
+        http.get(/\/125\/diagrams-check/, async () => {
+          return HttpResponse.json(
+            {
+              isPrimaryParcelsExists: false,
+              isNonPrimaryParcelsExists: false,
+              isTraverseExists: false,
+            },
+            { status: 200, statusText: "OK" },
+          );
+        }),
+        ...handlers,
+      ],
+    },
   },
   args: {
     transactionId: "125",
   },
 };
 
-DrawNonPrimaryDiagramByPolygonBoundaryError.play = async () => {
+DrawButtonsDisabled.play = async () => {
   await waitForInitialMapLoadsToComplete();
-  const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
-  await userEvent.click(nonPrimaryDiagramButton);
+  await screen.findByLabelText(
+    "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+  );
+  await screen.findByLabelText(
+    "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+  );
+  await screen.findByLabelText(
+    "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey",
+  );
 };
 
 export const DrawNonPrimaryDiagramByPolygon: Story = {

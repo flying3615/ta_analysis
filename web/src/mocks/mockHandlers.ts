@@ -40,43 +40,30 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/api\/survey\/124\/survey-title/, async () =>
-    HttpResponse.json(
-      {
-        surveyNo: "LT 999999",
-        surveyReference: "Test Reference",
-      },
-      { status: 200, statusText: "OK" },
-    ),
-  ),
-
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-
   http.put(/\/123\/plan$/, async () => {
     await delay(2000);
     return HttpResponse.json({}, { status: 200 });
   }),
-  http.put(/\/124\/plan$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
-
   http.get(/\/123\/plan-check$/, () =>
     HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
   ),
-
   http.post(/\/123\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/125\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/126\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
-  http.post(/\/666\/prepare$/, () =>
-    HttpResponse.json(
-      { ok: false, statusCode: 20001, message: "prepare dataset application error" },
-      { status: 200, statusText: "OK" },
-    ),
+  http.get(/\/123\/diagrams$/, () =>
+    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
+  http.post(/\/123\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
+  http.get(/\/123\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/123\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/123\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
   // Survey 124 = diagrams with context, regular plan
   http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.put(/\/124\/plan$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
+  http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.get(/\/124\/survey-features$/, () =>
     HttpResponse.json(
       {
@@ -121,6 +108,18 @@ export const handlers: HttpHandler[] = [
   }),
   http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   http.patch(/\/124\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+  http.get(/\/api\/survey\/124\/survey-title/, async () =>
+    HttpResponse.json(
+      {
+        surveyNo: "LT 999999",
+        surveyReference: "Test Reference",
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  // Survey 125
+  http.post(/\/125\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   // Survey 125: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/125\/survey-features$/, () =>
     HttpResponse.json(
@@ -136,7 +135,19 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
+  http.get(/\/125\/diagrams$/, () =>
+    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.post(/\/125\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
+  http.get(/\/125\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
+  http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
+  http.get(/\/125\/diagram-labels/, () =>
+    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
+  ),
+  http.patch(/\/125\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
+  //Survey 126
+  http.post(/\/126\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   // Survey 126: Return two marks in order to center the map on the geotiles fixture data we have manually defined
   http.get(/\/126\/survey-features$/, () =>
     HttpResponse.json(
@@ -152,40 +163,36 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
-
-  http.get(/\/123\/diagrams$/, () =>
-    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
-  ),
-  http.get(/\/125\/diagrams$/, () =>
-    HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
-  ),
   http.get(/\/126\/diagrams$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
-
-  http.post(/\/125\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
-  http.post(/\/123\/diagrams$/, () => HttpResponse.json({ ok: true, statusCode: null, message: null, diagramId: 4 })),
-  http.get(/\/125\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
-  http.get(/\/123\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
   http.get(/\/126\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
-
-  http.get(/\/123\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
-  http.get(/\/125\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/126\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
-  http.get(/\/666\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
-
-  http.get(/\/123\/diagram-labels/, () =>
-    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
-  ),
-  http.patch(/\/123\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
-  http.get(/\/125\/diagram-labels/, () =>
-    HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
-  ),
-  http.patch(/\/125\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
   http.get(/\/126\/diagram-labels/, () =>
     HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
   http.patch(/\/126\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+
+  http.get(/\/diagrams-check/, async () => {
+    return HttpResponse.json(
+      {
+        isPrimaryParcelsExists: true,
+        isNonPrimaryParcelsExists: true,
+        isTraverseExists: true,
+      },
+      { status: 200, statusText: "OK" },
+    );
+  }),
+
+  http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
+  http.post(/\/666\/prepare$/, () =>
+    HttpResponse.json(
+      { ok: false, statusCode: 20001, message: "prepare dataset application error" },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.get(/\/666\/lines/, () => HttpResponse.json(new LinesBuilder().build(), { status: 200, statusText: "OK" })),
   http.get(/\/666\/diagram-labels/, () =>
     HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
