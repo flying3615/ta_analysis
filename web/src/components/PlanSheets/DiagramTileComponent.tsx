@@ -19,6 +19,28 @@ interface IDiagramTileComponentProps {
   selectedDiagramId: number | null;
   setSelectedDiagramId: (id: number | null) => void;
 }
+const usePageData = () => {
+  const activeSheet = useAppSelector(getActiveSheet);
+  const activePageNumber = useAppSelector(getActivePageNumber);
+  const activePageRef = useAppSelector(getActivePageRefFromPageNumber);
+  return { activeSheet, activePageNumber, activePageRef };
+};
+const getSheetAddress = (activeSheet: PlanSheetType, pageNumber: number | null) => {
+  const sheetFirstChar = activeSheet === PlanSheetType.TITLE ? "T" : "S";
+  return `${sheetFirstChar}${pageNumber}`;
+};
+const usePageNumber = (pageRef: number | null | undefined) => {
+  return useAppSelector((state) => (pageRef ? getPageNumberFromPageRef(state)(pageRef) : null));
+};
+const useRemoveFromPage = (diagramId: number, pageNumber: number | null) => {
+  const dispatch = useAppDispatch();
+  const activePageNumber = useAppSelector(getActivePageNumber);
+  return () => {
+    if (pageNumber === activePageNumber) {
+      dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
+    }
+  };
+};
 
 export const DiagramTileComponent = ({
   diagramDisplay,
@@ -27,43 +49,34 @@ export const DiagramTileComponent = ({
 }: IDiagramTileComponentProps) => {
   const { diagramId, level, pageRef, diagramLabel, diagramChildren } = diagramDisplay;
   const dispatch = useAppDispatch();
-  const activeSheet = useAppSelector(getActiveSheet);
-  const activePageNumber = useAppSelector(getActivePageNumber);
-  const activePageRef = useAppSelector(getActivePageRefFromPageNumber);
-  const pageNumber = useAppSelector((state) => (pageRef ? getPageNumberFromPageRef(state)(pageRef) : null));
-  const [currentPageRef, setCurrentPageRef] = useState<number | null>(null);
-  const gotoPageNumber = useAppSelector((state) =>
-    currentPageRef !== null ? getPageNumberFromPageRef(state)(currentPageRef) : null,
-  );
+  const [isNewPageNumber, setIsNewPageNumber] = useState(false);
+  const pageNumber = usePageNumber(pageRef);
+
+  const { activeSheet, activePageNumber, activePageRef } = usePageData();
   const isSelected = selectedDiagramId === diagramId;
   const paddingMultiple = level <= 1 ? 0 : level - 1;
 
   useEffect(() => {
-    if (currentPageRef !== null && gotoPageNumber !== null) {
-      dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: gotoPageNumber }));
+    if (pageNumber !== null) {
+      dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
     }
-  }, [activeSheet, currentPageRef, dispatch, gotoPageNumber]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNewPageNumber]);
+
   const updatePageRef = () => {
     if (pageRef === undefined && activePageRef) {
       setSelectedDiagramId(selectedDiagramId === diagramId ? null : diagramId);
     }
   };
-  const sheetAddress = () => {
-    const sheetFirstChar = activeSheet === PlanSheetType.TITLE ? "T" : "S";
-    return `${sheetFirstChar}${pageNumber}`;
-  };
-  const displaySheetAddress = sheetAddress();
-  const gotoPage = () => {
-    pageRef && setCurrentPageRef(pageRef);
-  };
-  const removeFromPage = () =>
-    pageNumber === activePageNumber && dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
+  const displaySheetAddress = getSheetAddress(activeSheet, pageNumber);
+  const gotoPage = () => setIsNewPageNumber((prevState) => !prevState);
+  const removeFromPage = useRemoveFromPage(diagramId, pageNumber);
 
   return (
     <div className="DiagramListLabel">
       <LuiTooltip mode="default-withDelay" message={diagramLabel} placement={right}>
         <div
-          className={`DiagramLabel ${isSelected ? "selected" : ""}`}
+          className={`DiagramLabel ${isSelected ? "selected" : ""} ${pageRef ? "muted" : ""}`}
           style={{ paddingLeft: 12 * paddingMultiple + 8 }}
           onClick={updatePageRef}
           role="presentation"
@@ -72,7 +85,7 @@ export const DiagramTileComponent = ({
             <LuiIcon size="sm" name="ic_subdirectory_arrow_right" alt="subdirectory" className="DiagramListIcon" />
           )}
 
-          <span className={`${pageRef !== undefined ? "disabled" : ""}`}>{diagramLabel}</span>
+          <span className={`${pageRef ? "disabled" : ""}`}>{diagramLabel}</span>
 
           {pageRef && (
             <div className="DiagramLabel-right-nav">

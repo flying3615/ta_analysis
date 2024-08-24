@@ -6,15 +6,14 @@ import { useState } from "react";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { StorybookRouter } from "@/test-utils/storybook-utils";
 
-import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
-
 export default {
-  title: "PlanSheetsFooter",
+  title: "PlanSheets/PlanSheetsFooter",
   component: PlanSheetsFooter,
   argTypes: {
     content: {
@@ -69,11 +68,6 @@ export const SelectTitleSheetView: Story = {
 
 export const SelectSurveySheetView: Story = {
   ...Default,
-  render: () => (
-    <div style={{ height: "100vh" }}>
-      <TemplatePlanSheetsFooter />
-    </div>
-  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 

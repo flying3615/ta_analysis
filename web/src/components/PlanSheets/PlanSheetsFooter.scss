@@ -1,6 +1,8 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
 $footerHeight: 56px;
+$errorColor: #cc0000;
+$warningColor: #ea6a2e;
 
 .PlanSheetsFooter {
   align-items: center;
@@ -10,10 +12,12 @@ $footerHeight: 56px;
   flex-direction: row;
   height: $footerHeight;
   width: 100vw;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 0 8px;
   bottom: 0;
   position: absolute;
+  color: lui.$fuscous;
+  fill: lui.$fuscous;
+
   .change-sheet-button {
     height: 40px;
     padding-right: 4px;
@@ -21,6 +25,7 @@ $footerHeight: 56px;
       margin: 0;
     }
   }
+
   .PlanSheetFooterMenuItem {
     font-weight: 400;
   }
@@ -42,8 +47,17 @@ $footerHeight: 56px;
     margin: 0 lui.$unit-xs;
   }
 
-  .lui-button-tertiary .LuiIcon--error svg * {
-    fill: #c00;
+  .LuiIcon--error svg * {
+    fill: $errorColor;
+  }
+
+  .LuiIcon--warning svg * {
+    fill: $warningColor;
+  }
+
+  .lui-button-tertiary:disabled .LuiIcon--error svg *,
+  .lui-button-tertiary:disabled .LuiIcon--warning svg * {
+    fill: #989189;
   }
 
   &-right {
@@ -60,6 +74,13 @@ $footerHeight: 56px;
     gap: 8px;
   }
 
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    color: lui.$charcoal;
+  }
   &-previewButton {
     display: flex;
     align-items: center;

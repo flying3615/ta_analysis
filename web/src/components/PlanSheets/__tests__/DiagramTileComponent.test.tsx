@@ -98,7 +98,7 @@ describe("Diagram Tile component", () => {
   it("displays disabled Remove diagram button when diagram is not in active page", async () => {
     renderWithReduxProvider(
       <DiagramTileComponent
-        diagramDisplay={{ ...mockDiagramDisplay, pageRef: 2 }}
+        diagramDisplay={{ ...mockDiagramDisplay, pageRef: 3 }}
         selectedDiagramId={null}
         setSelectedDiagramId={jest.fn()}
       />,

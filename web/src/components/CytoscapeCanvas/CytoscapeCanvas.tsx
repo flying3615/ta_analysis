@@ -17,7 +17,10 @@ import {
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
+import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
+import { getActivePages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { isPlaywrightTest, saveCytoscapeStateToStorage } from "@/test-utils/playwright-utils";
 
 export interface IInitZoom {
@@ -47,6 +50,7 @@ const CytoscapeCanvas = ({
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
   const throwAsyncError = useThrowAsyncError();
+  const activePages = useAppSelector(getActivePages);
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
@@ -125,6 +129,10 @@ const CytoscapeCanvas = ({
 
   // Handle viewport resizing
   useEffect(() => {
+    if (!activePages.length) {
+      return; // Exit if there are no pages
+    }
+
     if (!canvasRef.current) {
       throw Error("CytoscapeCanvas::resize observer - no viewport");
     }
@@ -138,7 +146,7 @@ const CytoscapeCanvas = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [initCytoscape]);
+  }, [activePages.length, initCytoscape]);
 
   // Listen and handle cytoscape events
   useEffect(() => {
@@ -178,7 +186,11 @@ const CytoscapeCanvas = ({
 
   return (
     <>
-      <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
+      {activePages.length ? (
+        <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
+      ) : (
+        <NoPageMessage />
+      )}
       {tooltipContent && tooltipPosition && (
         <LuiTooltip content={tooltipContent} visible={true} placement="left" appendTo={() => document.body}>
           <div style={{ position: "absolute", top: tooltipPosition.y, left: tooltipPosition.x - 20 }} />

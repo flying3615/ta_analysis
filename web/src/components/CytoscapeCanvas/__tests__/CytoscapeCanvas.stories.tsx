@@ -9,22 +9,37 @@ import {
   pageBorderEdges,
   pageBorderNodes,
 } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
-import { sleep } from "@/test-utils/storybook-utils";
+import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { pointsPerCm } from "@/util/pixelConversions.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
+const mockedState = {
+  planSheets: {
+    diagrams: [],
+    pages: [{ id: 0, pageNumber: 1, pageType: PlanSheetType.TITLE }],
+    activeSheet: PlanSheetType.TITLE,
+    activePageNumbers: {
+      [PlanSheetType.TITLE]: 0,
+      [PlanSheetType.SURVEY]: 0,
+    },
+    hasChanges: false,
+  },
+};
+
 export default {
   title: "CytoscapeCanvas",
   component: CytoscapeCanvas,
+  decorators: [withProviderDecorator(mockedState)],
 } as Meta<typeof CytoscapeCanvas>;
 
 type Story = StoryObj<typeof CytoscapeCanvas>;
 
-export const Default: Story = {
-  render: () => (
+const CytoscapeTemplate = () => {
+  return (
     <div style={{ height: "100vh" }}>
       <CytoscapeCanvas
         nodeData={markNodes}
@@ -34,7 +49,11 @@ export const Default: Story = {
         onEdgeChange={(data) => console.info("Cytoscape edge data changed", data)}
       />
     </div>
-  ),
+  );
+};
+
+export const Default: Story = {
+  render: () => <CytoscapeTemplate />,
 };
 
 const fromBuilder = () =>
@@ -190,7 +209,6 @@ export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
         );
       });
     }
-
     return <CanvasFromMockData data={builder.build()} />;
   },
   parameters: {

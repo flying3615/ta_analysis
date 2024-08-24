@@ -1,0 +1,30 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.LuiTextInput-sm {
+  height: 40px;
+}
+
+.hasError .LuiTextInput-inputWrapper,
+.hasWarning .LuiTextInput-inputWrapper {
+  box-shadow: none;
+}
+
+.lui-button {
+  &.lui-button-tertiary.lui-button-med {
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+  }
+}
+
+.lui-modal-v2-alert {
+  .lui-modal-v2-contents {
+    p {
+      font-weight: 400;
+    }
+
+    .delete-page {
+      color: lui.$error;
+    }
+  }
+}

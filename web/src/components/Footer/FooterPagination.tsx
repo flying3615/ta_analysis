@@ -8,8 +8,7 @@ interface IPagination {
 }
 
 const FooterPagination: React.FC<IPagination> = ({ totalPages, currentPage, onPageChange }) => {
-  const cls = "lui-button-icon lui-button-con-only lui-button-tertiary";
-
+  const cls = "lui-button-icon lui-button-con-only lui-button-tertiary change-sheet-button";
   return (
     <div className="pagination">
       <LuiButton disabled={currentPage <= 1} level="tertiary" onClick={onPageChange(1)} className={cls}>

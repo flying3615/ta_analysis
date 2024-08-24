@@ -30,7 +30,6 @@ const planSheetsSlice = createSlice({
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
       state.hasChanges = false;
-
       const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
       sheetTypes.forEach((type) => {
         if (state.pages.some((page) => page.pageType === type) && !state.activePageNumbers[type]) {
@@ -55,6 +54,13 @@ const planSheetsSlice = createSlice({
       const { id, pageRef } = action.payload;
       state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
       state.hasChanges = true;
+    },
+    removeDiagramPageRef: (state, action: PayloadAction<number>) => {
+      state.diagrams.forEach((diagram) => {
+        if (diagram.pageRef === action.payload) {
+          diagram.pageRef = undefined;
+        }
+      });
     },
     updatePages: (state, action: PayloadAction<PageDTO[]>) => {
       state.pages = action.payload;
@@ -105,8 +111,15 @@ const planSheetsSlice = createSlice({
   },
 });
 
-export const { setPlanData, replaceDiagrams, setActiveSheet, setActivePageNumber, setDiagramPageRef, updatePages } =
-  planSheetsSlice.actions;
+export const {
+  setPlanData,
+  replaceDiagrams,
+  setActiveSheet,
+  setActivePageNumber,
+  removeDiagramPageRef,
+  setDiagramPageRef,
+  updatePages,
+} = planSheetsSlice.actions;
 
 export const {
   getPlanData,

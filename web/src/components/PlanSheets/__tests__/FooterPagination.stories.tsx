@@ -1,10 +1,10 @@
 import { Meta, StoryFn } from "@storybook/react";
 import React, { useState } from "react";
 
-import FooterPagination from "@/components/Footer/FooterPagination";
+import FooterPagination from "@/components/Footer/FooterPagination.tsx";
 
 export default {
-  title: "FooterPagination",
+  title: "PlanSheets/PlanSheetsFooter/FooterPagination",
   component: FooterPagination,
 } as Meta;
 

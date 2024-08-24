@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height: calc(100vh - (header.$headerHeight + footer.$footerHeight + 110px));
+  max-height: calc(100vh - (#{header.$headerHeight} + #{footer.$footerHeight} + 110px));
 }
 
 .DiagramListIcon {
@@ -24,29 +24,30 @@
   display: block;
   white-space: nowrap;
   cursor: default;
-  margin-bottom: 4px;
   border-radius: 4px;
   color: lui.$charcoal;
-  &:hover {
-    background-color: lui.$hint;
-  }
 
   .DiagramLabel {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 0;
+    padding-left: lui.$unit-xs;
+    padding-right: lui.$unit-xs;
     height: 2rem;
+    border-radius: 5px;
+    margin: lui.$unit-xxs 0;
     span {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       flex: 1;
       &.disabled {
-        color: gray;
+        color: lui.$fuscous;
         cursor: not-allowed;
-        opacity: 0.5;
       }
+    }
+    &:hover {
+      background-color: lui.$hint;
     }
 
     .DiagramLabel-right-nav {
@@ -73,8 +74,12 @@
       color: #2a292c;
       background-color: lui.$polar;
       span {
-        font-weight: 700;
+        font-weight: 600;
       }
+    }
+
+    &.muted {
+      background-color: lui.$hint;
     }
   }
 }

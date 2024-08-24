@@ -7,6 +7,7 @@ import { delay, http, HttpResponse } from "msw";
 import { generatePath, Link, Route } from "react-router-dom";
 
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
+import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths.ts";
@@ -14,8 +15,6 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { setMockedSplitFeatures } from "@/setupTests.ts";
 import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
-
-import PlanSheetsFooter from "../PlanSheetsFooter.tsx";
 
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {
@@ -31,33 +30,15 @@ describe("PlanSheetsFooter", () => {
 
   const initStateForTwoPages = {
     ...planSheetsState,
-    activeSheet: PlanSheetType.TITLE,
     pages: [
-      {
-        pageType: PlanSheetType.TITLE,
-        id: 0,
-        pageNumber: 1,
-      },
-      {
-        pageType: PlanSheetType.TITLE,
-        id: 1,
-        pageNumber: 2,
-      },
+      { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+      { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
     ],
     activePageNumbers: {
       [PlanSheetType.TITLE]: 1,
       [PlanSheetType.SURVEY]: 0,
     },
   };
-
-  const setupAddPageTest = async (menuItemName: string | RegExp) => {
-    renderWithState(initStateForTwoPages);
-    await userEvent.click(screen.getByRole("button", { description: /Add page/ }));
-    expect(screen.getByText("Add page")).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") }));
-  };
-
   const renderWithState = (state: PlanSheetsState) => {
     renderCompWithReduxAndRoute(
       <Route
@@ -91,28 +72,16 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays menu with Title sheet selected", async () => {
-    renderCompWithReduxAndRoute(
-      <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
-        path={Paths.layoutPlanSheets}
-      />,
-      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
-      {
-        preloadedState: {
-          planSheets: {
-            ...planSheetsState,
-            activeSheet: PlanSheetType.TITLE,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
-            },
-          },
-        },
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 0,
+        [PlanSheetType.SURVEY]: 0,
       },
-    );
+    });
 
     expect(screen.queryByRole("menuitem")).toBeNull();
-
     await userEvent.click(screen.getByRole("button", { description: /Change sheet view/ }));
 
     expect(screen.getByText("Change sheet view")).toBeInTheDocument();
@@ -121,28 +90,16 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays menu with Survey sheet selected", async () => {
-    renderCompWithReduxAndRoute(
-      <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
-        path={Paths.layoutPlanSheets}
-      />,
-      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
-      {
-        preloadedState: {
-          planSheets: {
-            ...planSheetsState,
-            activeSheet: PlanSheetType.SURVEY,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
-            },
-          },
-        },
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.SURVEY,
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 0,
+        [PlanSheetType.SURVEY]: 0,
       },
-    );
+    });
 
     expect(screen.queryByRole("menuitem")).toBeNull();
-
     await userEvent.click(screen.getByRole("button", { description: /Change sheet view/ }));
 
     expect(screen.getByText("Change sheet view")).toBeInTheDocument();
@@ -345,6 +302,11 @@ describe("PlanSheetsFooter", () => {
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: initStateForTwoPages,
+        },
+      },
     );
 
     fireEvent.click(await screen.findByTitle("Add page"));
@@ -511,16 +473,8 @@ describe("PlanSheetsFooter", () => {
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
       pages: [
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 0,
-          pageNumber: 1,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 1,
-          pageNumber: 2,
-        },
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
       ],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 1,
@@ -538,16 +492,8 @@ describe("PlanSheetsFooter", () => {
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
       pages: [
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 0,
-          pageNumber: 1,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 1,
-          pageNumber: 2,
-        },
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
       ],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 2,
@@ -567,16 +513,8 @@ describe("PlanSheetsFooter", () => {
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
       pages: [
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 0,
-          pageNumber: 1,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 1,
-          pageNumber: 2,
-        },
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
       ],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 1,
@@ -590,21 +528,36 @@ describe("PlanSheetsFooter", () => {
     expect(screen.getByRole("button", { name: /Last/i })).toBeEnabled();
   });
 
+  it("should display renumber and delete page buttons with correct titles", async () => {
+    renderWithState({
+      ...planSheetsState,
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+    });
+    const verifyButton = (buttonName: RegExp, expectedTitle: unknown) => {
+      const button = screen.getByRole("button", { description: buttonName });
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute("title", expectedTitle);
+      expect(button).toBeEnabled();
+    };
+    verifyButton(/Renumber page/i, "Renumber page");
+    verifyButton(/Delete page/i, "Delete page");
+  });
+
   it("disable appropriate navigation buttons when on the last page", async () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
       pages: [
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 0,
-          pageNumber: 1,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 1,
-          pageNumber: 2,
-        },
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
       ],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 2,
@@ -623,30 +576,14 @@ describe("PlanSheetsFooter", () => {
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
       pages: [
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 0,
-          pageNumber: 1,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 1,
-          pageNumber: 2,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 2,
-          pageNumber: 3,
-        },
-        {
-          pageType: PlanSheetType.TITLE,
-          id: 3,
-          pageNumber: 4,
-        },
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        { pageType: PlanSheetType.TITLE, id: 2, pageNumber: 3 },
+        { pageType: PlanSheetType.TITLE, id: 3, pageNumber: 4 },
       ],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 4,
-        [PlanSheetType.SURVEY]: 2,
+        [PlanSheetType.SURVEY]: 0,
       },
     });
     await userEvent.click(await screen.findByRole("button", { name: /Previous/i }));
@@ -708,16 +645,8 @@ describe("PlanSheetsFooter", () => {
           planSheets: {
             ...planSheetsState,
             pages: [
-              {
-                pageType: PlanSheetType.TITLE,
-                id: 0,
-                pageNumber: 1,
-              },
-              {
-                pageType: PlanSheetType.TITLE,
-                id: 1,
-                pageNumber: 2,
-              },
+              { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+              { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
             ],
             activePageNumbers: {
               [PlanSheetType.TITLE]: 1,
@@ -755,12 +684,20 @@ describe("PlanSheetsFooter", () => {
     expect(await screen.findByText("Layout saved successfully")).toBeInTheDocument();
   });
 
+  // Add new page test
+  const setupAddPageTest = async (menuItemName: string | RegExp) => {
+    renderWithState(initStateForTwoPages);
+    await userEvent.click(screen.getByRole("button", { description: /Add page/ }));
+    expect(screen.getByText("Add page")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") }));
+  };
   const addPagesCount = [
-    ["Add new last page", "Page 1 of 3"],
-    ["Add new page after this one", "Page 1 of 3"],
     ["Add new first page", "Page 1 of 3"],
+    ["Add new page after this one", "Page 2 of 3"],
+    ["Add new last page", "Page 3 of 3"],
   ];
-  test.each(addPagesCount)("validate page count after-> %s", async (pageString, expected) => {
+  test.each(addPagesCount)("validate active page and total page count after-> %s", async (pageString, expected) => {
     await setupAddPageTest(pageString);
     const paginationElement = screen.getByText((content, element) => {
       return element?.textContent === expected;

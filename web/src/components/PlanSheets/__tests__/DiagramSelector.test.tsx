@@ -126,8 +126,6 @@ describe("Diagram Selector panel", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: /Insert diagram/ }));
 
-    // Check if the T2 label has appeared
-    expect(within(firstDiagramLabel!).getByText("T2")).toBeInTheDocument();
     expect(within(firstDiagramLabel!).getByText("Diagram 1")).toHaveClass("disabled");
     expect(within(firstDiagramLabel!).getByRole("button", { name: "Remove from sheet" })).toBeInTheDocument();
   });

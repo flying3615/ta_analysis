@@ -4,20 +4,19 @@ import "@szhsin/react-menu/dist/index.css";
 import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/PageDTO.ts";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, userEvent, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { Paths } from "@/Paths";
-import { replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
+import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
-
-import PlanSheets from "../PlanSheets";
 
 export default {
   title: "PlanSheets",
@@ -133,7 +132,7 @@ export const UnsavedChangesModal: Story = {
 UnsavedChangesModal.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
-  expect(await canvas.findByText("Save layout")).toBeInTheDocument();
+  await expect(await canvas.findByText("Save layout")).toBeInTheDocument();
 
   // Dispatch replace diagrams event to set hasChanges = true
   store.dispatch(replaceDiagrams([]));
@@ -142,6 +141,63 @@ UnsavedChangesModal.play = async ({ canvasElement }) => {
   await userEvent.click(await canvas.findByText("Sheets"));
   await userEvent.click(await canvas.findByText("Define Diagrams"));
   await sleep(500);
+};
+
+export const RenumberPage: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByTitle("Renumber page")).toBeInTheDocument();
+    await sleep(500);
+
+    await userEvent.click(await canvas.findByTitle("Renumber page"));
+    await sleep(500);
+    const modal = await screen.findByRole("dialog");
+    const inputField = within(modal).getByPlaceholderText("Enter page number");
+
+    if (inputField) {
+      fireEvent.blur(inputField, { target: { value: 2 } });
+    } else {
+      throw new Error('Input field with placeholder "Enter page number" not found');
+    }
+  },
+};
+
+export const DeletePage: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByTitle("Delete page")).toBeInTheDocument();
+    await sleep(500);
+    await userEvent.click(await canvas.findByTitle("Delete page"));
+    await sleep(500);
+    const modal = await screen.findByRole("dialog");
+    const proceedBtn = await within(modal).findByTitle("Proceed delete");
+    if (proceedBtn) {
+      await userEvent.click(proceedBtn);
+      await canvas.findAllByTitle("1 of 1 rows selected").then((selectedRows) => {
+        if (selectedRows.length === 2) {
+          console.log('Found 2 elements with the title "1 of 1 rows selected".');
+        } else {
+          throw new Error(`Expected 2 elements, but found ${selectedRows.length}.`);
+        }
+      });
+    } else {
+      throw new Error('Button "Delete page" not found');
+    }
+  },
+};
+
+export const NoPageFound: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await sleep(500);
+    store.dispatch(updatePages([]));
+    await expect(await canvas.findByText("Add new page")).toBeInTheDocument();
+  },
 };
 
 const planData = () => {

@@ -1,8 +1,12 @@
 import { expect } from "@storybook/jest";
+import { StoryFn } from "@storybook/react";
 import { waitFor } from "@storybook/testing-library";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactModal from "react-modal";
+import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
+
+import { setupStore } from "@/redux/store.ts";
 
 /* eslint-disable react-refresh/only-export-components */
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -11,6 +15,18 @@ export const StorybookRouter = ({ children, url }: { children: React.ReactNode; 
   const router = createMemoryRouter(createRoutesFromElements(children), { initialEntries: [url] });
   return <RouterProvider router={router} />;
 };
+
+export const withProviderDecorator =
+  (mockedState: Record<string, unknown> = {}) =>
+  // eslint-disable-next-line react/display-name
+  (Story: StoryFn) => {
+    const mockedStore = setupStore(mockedState);
+    return (
+      <Provider store={mockedStore}>
+        <Story />
+      </Provider>
+    );
+  };
 
 /**
  * There is a bug in React modal that means it will try and get the root element before it has rendered.
