@@ -12,6 +12,4 @@ export type DefineDiagramsActionType =
   | "define_nonprimary_diagram_rectangle"
   | "define_nonprimary_diagram_polygon"
   | "define_survey_diagram_rectangle"
-  | "define_survey_diagram_polygon"
-  | "manage_labels_view_labels"
-  | "manage_labels_dynamically_generate_list";
+  | "define_survey_diagram_polygon";

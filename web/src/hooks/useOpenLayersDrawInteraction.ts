@@ -26,7 +26,7 @@ import { useConstFunction } from "@/hooks/useConstFunction.ts";
 import { useHasChanged } from "@/hooks/useHasChanged.ts";
 import { geometryToLatLongCartesian, geometryToLatLongCoordinates } from "@/util/mapUtil.ts";
 
-type ExtendedDrawInteractionType = "Rectangle";
+type ExtendedDrawInteractionType = "Rectangle" | "Line";
 
 export type DrawInteractionType = Type | ExtendedDrawInteractionType;
 
@@ -37,6 +37,17 @@ const extendedTypes: Partial<Record<DrawInteractionType, () => { type: Type; geo
   Rectangle: () => ({
     type: "Circle",
     geometryFunction: createBox(),
+  }),
+  Line: () => ({
+    type: "Circle",
+    geometryFunction: ((coords: Coordinate[], geom: SimpleGeometry) => {
+      if (!geom) {
+        geom = new OlLineString(coords);
+      } else {
+        geom.setCoordinates(coords);
+      }
+      return geom;
+    }) as GeometryFunction,
   }),
 };
 
@@ -97,7 +108,8 @@ export const useOpenLayersDrawInteraction = ({
 
     const latLongCartesians = geometryToLatLongCartesian(feature);
     const latLongCoordinates = geometryToLatLongCoordinates(feature);
-    const featureArea = currentType === "Polygon" ? area(tpolygon([latLongCoordinates])) : -1;
+    const featureArea =
+      currentType === "Polygon" || currentType === "Rectangle" ? area(tpolygon([latLongCoordinates])) : 0;
 
     // Prevent further drawing during save
     allowDrawAddPoint.current = false;
@@ -157,6 +169,7 @@ export const useOpenLayersDrawInteraction = ({
         currentFeatureRef.current = evt.target;
 
         switch (currentType) {
+          case "Line":
           case "Rectangle":
             // empty
             break;
