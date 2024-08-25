@@ -102,7 +102,7 @@ export const DefineDiagramMenuButtons = () => {
         icon="ic_add_rt_lines"
         onClick={convertRtLines}
       />
-      <ActionHeaderButton title="Draw RT boundary" icon="ic_draw_rt_bdry" disabled={true} />
+      <ActionHeaderButton title="Draw RT line" icon="ic_draw_rt_bdry" disabled={true} />
       <ActionHeaderButton title="Draw abuttal" icon="ic_draw_abuttal" disabled={true} />
       <ActionHeaderButton title="Select line" icon="ic_select_line" action="select_line" />
       <VerticalSpacer />

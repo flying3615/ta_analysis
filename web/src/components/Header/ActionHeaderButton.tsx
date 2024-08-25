@@ -1,4 +1,5 @@
 import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
+import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import clsx from "clsx";
 import { useCallback } from "react";
 
@@ -8,7 +9,7 @@ import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineD
 
 interface ActionHeaderButtonProps {
   title: string;
-  icon: string;
+  icon: IconName;
   action?: DefineDiagramsActionType;
   disabled?: boolean;
   loading?: boolean;

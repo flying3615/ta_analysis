@@ -1,12 +1,13 @@
 import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
 import { LuiButtonProps } from "@linzjs/lui/dist/components/LuiButton/LuiButton";
+import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import clsx from "clsx";
 
 import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType";
 
 interface HeaderButtonProps {
   headerMenuLabel: PlanSheetMenuLabels;
-  iconName: string;
+  iconName: IconName;
   headerButtonLabel?: string;
   disabled?: boolean;
   loading?: boolean;
