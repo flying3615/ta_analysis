@@ -1,14 +1,21 @@
+import { LineDTO } from "@linz/survey-plan-generation-api-client";
+
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { extractDiagramEdges, extractDiagramNodes, extractPageNodes } from "@/modules/plan/extractGraphData.ts";
+import {
+  extractDiagramEdges,
+  extractDiagramNodes,
+  extractPageNodes,
+  lineToEdges,
+} from "@/modules/plan/extractGraphData.ts";
 import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
-    // 15 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
+    // 19 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
     // + six synthetic nodes the broken line
-    expect(extractedNodes).toHaveLength(42);
+    expect(extractedNodes).toHaveLength(46);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
     const node10001 = extractedNodeMap["10001"];
     expect(node10001?.id).toBe("10001");
@@ -44,7 +51,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(42); // 5 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(46); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["11"];
@@ -129,29 +136,29 @@ describe("extractGraphData", () => {
 
   test("extractEdges extracts edge data", () => {
     const extractedEdges = extractDiagramEdges(mockPlanData.diagrams);
-    expect(extractedEdges).toHaveLength(28);
+    expect(extractedEdges).toHaveLength(31);
     const extractedEdgeMap = Object.fromEntries(extractedEdges.map((n) => [n.id, n]));
 
-    expect(extractedEdgeMap["1001"]?.id).toBe("1001");
-    expect(extractedEdgeMap["1001"]?.sourceNodeId).toBe("40001");
-    expect(extractedEdgeMap["1001"]?.destNodeId).toBe("40002");
-    expect(extractedEdgeMap["1001"]?.properties?.["diagramId"]).toBe(2);
-    expect(extractedEdgeMap["1001"]?.properties?.["elementType"]).toBe("lines");
-    expect(extractedEdgeMap["1001"]?.properties?.["pointWidth"]).toBe(1.0);
+    expect(extractedEdgeMap["1001_0"]?.id).toBe("1001_0");
+    expect(extractedEdgeMap["1001_0"]?.sourceNodeId).toBe("40001");
+    expect(extractedEdgeMap["1001_0"]?.destNodeId).toBe("40002");
+    expect(extractedEdgeMap["1001_0"]?.properties?.["diagramId"]).toBe(2);
+    expect(extractedEdgeMap["1001_0"]?.properties?.["elementType"]).toBe("lines");
+    expect(extractedEdgeMap["1001_0"]?.properties?.["pointWidth"]).toBe(1.0);
 
-    expect(extractedEdgeMap["1002"]?.id).toBe("1002");
-    expect(extractedEdgeMap["1002"]?.sourceNodeId).toBe("10002");
-    expect(extractedEdgeMap["1002"]?.destNodeId).toBe("10003");
-    expect(extractedEdgeMap["1002"]?.properties?.["diagramId"]).toBe(1);
-    expect(extractedEdgeMap["1002"]?.properties?.["elementType"]).toBe("lines");
-    expect(extractedEdgeMap["1002"]?.properties?.["pointWidth"]).toBe(1.0);
+    expect(extractedEdgeMap["1002_0"]?.id).toBe("1002_0");
+    expect(extractedEdgeMap["1002_0"]?.sourceNodeId).toBe("10002");
+    expect(extractedEdgeMap["1002_0"]?.destNodeId).toBe("10003");
+    expect(extractedEdgeMap["1002_0"]?.properties?.["diagramId"]).toBe(1);
+    expect(extractedEdgeMap["1002_0"]?.properties?.["elementType"]).toBe("lines");
+    expect(extractedEdgeMap["1002_0"]?.properties?.["pointWidth"]).toBe(1.0);
 
-    expect(extractedEdgeMap["1003"]?.id).toBe("1003");
-    expect(extractedEdgeMap["1003"]?.sourceNodeId).toBe("40002");
-    expect(extractedEdgeMap["1003"]?.destNodeId).toBe("40003");
-    expect(extractedEdgeMap["1003"]?.properties?.["diagramId"]).toBe(2);
-    expect(extractedEdgeMap["1003"]?.properties?.["elementType"]).toBe("lines");
-    expect(extractedEdgeMap["1003"]?.properties?.["pointWidth"]).toBe(1.0);
+    expect(extractedEdgeMap["1003_0"]?.id).toBe("1003_0");
+    expect(extractedEdgeMap["1003_0"]?.sourceNodeId).toBe("40002");
+    expect(extractedEdgeMap["1003_0"]?.destNodeId).toBe("40003");
+    expect(extractedEdgeMap["1003_0"]?.properties?.["diagramId"]).toBe(2);
+    expect(extractedEdgeMap["1003_0"]?.properties?.["elementType"]).toBe("lines");
+    expect(extractedEdgeMap["1003_0"]?.properties?.["pointWidth"]).toBe(1.0);
 
     //  Line 1007 is a broken line, check that it is split into two edges
     expect(extractedEdgeMap["1007_S"]?.id).toBe("1007_S");
@@ -161,6 +168,19 @@ describe("extractGraphData", () => {
     expect(extractedEdgeMap["1007_E"]?.id).toBe("1007_E");
     expect(extractedEdgeMap["1007_E"]?.sourceNodeId).toBe("1007_M2");
     expect(extractedEdgeMap["1007_E"]?.destNodeId).toBe("10005");
+
+    // check that irregular line is made up of multiple edges
+    expect(extractedEdgeMap["3004_0"]?.id).toBe("3004_0");
+    expect(extractedEdgeMap["3004_0"]?.sourceNodeId).toBe("30007");
+    expect(extractedEdgeMap["3004_0"]?.destNodeId).toBe("30008");
+
+    expect(extractedEdgeMap["3004_1"]?.id).toBe("3004_1");
+    expect(extractedEdgeMap["3004_1"]?.sourceNodeId).toBe("30008");
+    expect(extractedEdgeMap["3004_1"]?.destNodeId).toBe("30009");
+
+    expect(extractedEdgeMap["3004_2"]?.id).toBe("3004_2");
+    expect(extractedEdgeMap["3004_2"]?.sourceNodeId).toBe("30009");
+    expect(extractedEdgeMap["3004_2"]?.destNodeId).toBe("30010");
   });
 
   describe("For styled lines", () => {
@@ -262,5 +282,57 @@ describe("extractGraphData", () => {
     const userAnnotationNode = extractedNodes[0];
     expect(userAnnotationNode?.position).toStrictEqual({ x: 13, y: -13 });
     expect(userAnnotationNode?.label).toBe("Rotated user added text");
+  });
+
+  describe("Lines to edges", () => {
+    it("converts a line with two coordinates to one edge", () => {
+      const line: LineDTO = {
+        lineType: "parcelBoundary",
+        id: 1,
+        coordRefs: [1, 2],
+        pointWidth: 1.0,
+        style: "solid",
+      };
+      const edges = lineToEdges(line, 2);
+
+      expect(edges).toHaveLength(1);
+      const edgeOne = edges[0];
+      expect(edgeOne?.id).toBe("1_0");
+      expect(edgeOne?.sourceNodeId).toBe("1");
+      expect(edgeOne?.destNodeId).toBe("2");
+    });
+
+    it("converts a LineDTO with 5 coordRefs to 4 edges", () => {
+      const line: LineDTO = {
+        lineType: "parcelBoundary",
+        id: 1,
+        coordRefs: [1, 2, 3, 4, 5],
+        pointWidth: 1.0,
+        style: "dot1",
+      };
+      const edges = lineToEdges(line, 2);
+
+      expect(edges).toHaveLength(4);
+
+      const edgeOne = edges[0];
+      expect(edgeOne?.id).toBe("1_0");
+      expect(edgeOne?.sourceNodeId).toBe("1");
+      expect(edgeOne?.destNodeId).toBe("2");
+
+      const edgeTwo = edges[1];
+      expect(edgeTwo?.id).toBe("1_1");
+      expect(edgeTwo?.sourceNodeId).toBe("2");
+      expect(edgeTwo?.destNodeId).toBe("3");
+
+      const edgeThree = edges[2];
+      expect(edgeThree?.id).toBe("1_2");
+      expect(edgeThree?.sourceNodeId).toBe("3");
+      expect(edgeThree?.destNodeId).toBe("4");
+
+      const edgeFour = edges[3];
+      expect(edgeFour?.id).toBe("1_3");
+      expect(edgeFour?.sourceNodeId).toBe("4");
+      expect(edgeFour?.destNodeId).toBe("5");
+    });
   });
 });

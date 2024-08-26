@@ -7,7 +7,7 @@ import {
   PageConfigDTO,
   PageDTO,
 } from "@linz/survey-plan-generation-api-client";
-import { negate } from "lodash-es";
+import { chunk, flatten, negate, zip } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
@@ -55,9 +55,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
 };
 export const extractPageNodes = (pages: PageDTO[]): INodeData[] => {
   return pages.flatMap((page) => {
-    const userAnnotations =
-      page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
-    return userAnnotations;
+    return page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
   });
 };
 
@@ -218,21 +216,33 @@ export const extractDiagramEdges = (diagrams: DiagramDTO[]): IEdgeData[] => {
         if (isBrokenLine(line)) {
           return breakLine(line, diagram);
         } else {
-          return {
-            id: line.id.toString(),
-            sourceNodeId: line.coordRefs?.[0]?.toString(),
-            destNodeId: line.coordRefs?.[1]?.toString(),
-            properties: {
-              ...getEdgeStyling(line),
-              diagramId: diagram.id,
-              elementType: "lines",
-              lineType: line.lineType,
-              coordRefs: JSON.stringify(line.coordRefs),
-            },
-          } as IEdgeData;
+          return lineToEdges(line, diagram.id);
         }
       });
   });
+};
+
+export const lineToEdges = (line: LineDTO, diagramId: number): IEdgeData[] => {
+  const coords = line.coordRefs;
+  // zip the coordinate arrays together to create  duplicate pairs of coordinates
+  // remove the first and last elements that terminate edges
+  // turn the array into chunks of two
+  return chunk(flatten(zip(coords, coords)).slice(1, -1), 2).map(
+    // map the generated pairs of coordinates to edges
+    ([sourceNodeId, destNodeId], index): IEdgeData =>
+      ({
+        id: `${line.id}_${index}`,
+        sourceNodeId: sourceNodeId?.toString(),
+        destNodeId: destNodeId?.toString(),
+        properties: {
+          ...getEdgeStyling(line),
+          diagramId: diagramId,
+          elementType: "lines",
+          lineType: line.lineType,
+          coordRefs: JSON.stringify(line.coordRefs),
+        },
+      }) as IEdgeData,
+  );
 };
 
 /**

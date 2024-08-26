@@ -72,6 +72,22 @@ export const mockPlanData = new PlanDataBuilder()
     x: 20,
     y: -70,
   })
+  .addCooordinate(30007, {
+    x: 20,
+    y: -73,
+  })
+  .addCooordinate(30008, {
+    x: 25,
+    y: -71,
+  })
+  .addCooordinate(30009, {
+    x: 30,
+    y: -72,
+  })
+  .addCooordinate(30010, {
+    x: 35,
+    y: -74,
+  })
   .addLine(1001, [10001, 10002], 0.75, "observation", "peck1")
   .addLine(1002, [10002, 10003], 1.0, "observation", "solid")
   .addLine(1003, [10003, 10004], 4.0, "observation", "solid")
@@ -83,6 +99,7 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(3001, [30001, 30002], 0.75, "observation", "doubleArrow1")
   .addLine(3002, [30003, 30004], 0.75, "observation", "brokenPeck1")
   .addLine(3003, [30005, 30006], 0.75, "observation", "brokenDot2")
+  .addLine(3004, [30007, 30008, 30009, 30010], 1.5, "observation", "peckDot1")
   .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "display", "Times New Roman", 10)
   .addSymbolLabel(12, "96", { x: 20, y: -10 }, 10)
   .addLabel("lineLabels", 13, "Label 13", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
