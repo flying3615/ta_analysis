@@ -64,17 +64,18 @@ export const clickedFeatureFilter = (field: string, values: unknown | unknown[])
   castArray(values).includes(clicked.feature.get(field));
 
 export const createNewNode = (
-  bottomRightNode: INodeData,
+  datumNode: INodeData,
   id: string,
   xOffset: number,
   yOffset: number,
   label = "",
+  customProperties?: Record<string, string | number | boolean | undefined>,
 ): INodeData => ({
   id,
   position: {
-    x: bottomRightNode.position.x + xOffset,
-    y: bottomRightNode.position.y + yOffset,
+    x: datumNode.position.x + xOffset,
+    y: datumNode.position.y + yOffset,
   },
   label,
-  properties: bottomRightNode.properties,
+  properties: { ...datumNode.properties, ...customProperties },
 });

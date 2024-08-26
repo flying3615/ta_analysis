@@ -16,6 +16,7 @@ import { useCytoscapeCanvasExport } from "@/hooks/useCytoscapeCanvasExport.tsx";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useUpdatePlanMutation } from "@/queries/plan";
+import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import {
   getActivePageNumber,
   getActiveSheet,
@@ -29,6 +30,7 @@ import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { UnsavedChangesModal } from "./UnsavedChangesModal";
 
 export interface FooterProps {
+  surveyInfo: ExternalSurveyInfoDto;
   diagramsPanelOpen: boolean;
   setDiagramsPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
   pageConfigsNodeData?: INodeData[];
@@ -36,6 +38,7 @@ export interface FooterProps {
 }
 
 const PlanSheetsFooter = ({
+  surveyInfo,
   diagramsPanelOpen,
   setDiagramsPanelOpen,
   pageConfigsNodeData,
@@ -53,7 +56,10 @@ const PlanSheetsFooter = ({
   const { totalPages } = useAppSelector(getFilteredPages);
 
   const { result: isPreviewCompilationOn } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION);
+
   const { startProcessing, ExportingCanvas, processing } = useCytoscapeCanvasExport({
+    transactionId,
+    surveyInfo,
     pageConfigsNodeData,
     pageConfigsEdgeData,
   });

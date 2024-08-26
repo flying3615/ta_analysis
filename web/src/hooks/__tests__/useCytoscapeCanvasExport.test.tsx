@@ -4,6 +4,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 import PreviewWorker from "@/workers/previewWorker?worker";
@@ -29,7 +30,10 @@ describe("useCytoscapeCanvasExport hook", () => {
   let processing: boolean = false;
   let stopProcessing: () => void;
   const MockComponentWithHook = () => {
-    ({ startProcessing, ExportingCanvas, processing, stopProcessing } = useCytoscapeCanvasExport({}));
+    ({ startProcessing, ExportingCanvas, processing, stopProcessing } = useCytoscapeCanvasExport({
+      transactionId: 123,
+      surveyInfo: mockSurveyInfo,
+    }));
 
     return (
       <div>

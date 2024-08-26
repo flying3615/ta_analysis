@@ -1,3 +1,4 @@
+import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
@@ -7,6 +8,7 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
@@ -33,14 +35,20 @@ const TemplatePlanSheetsFooter = () => {
     <QueryClientProvider client={queryClient}>
       <FeatureFlagProvider>
         <Provider store={store}>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route
-              path={Paths.layoutPlanSheets}
-              element={
-                <PlanSheetsFooter diagramsPanelOpen={diagramsPanelOpen} setDiagramsPanelOpen={setDiagramsPanelOpen} />
-              }
-            />
-          </StorybookRouter>
+          <LuiModalAsyncContextProvider>
+            <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+              <Route
+                path={Paths.layoutPlanSheets}
+                element={
+                  <PlanSheetsFooter
+                    diagramsPanelOpen={diagramsPanelOpen}
+                    setDiagramsPanelOpen={setDiagramsPanelOpen}
+                    surveyInfo={mockSurveyInfo}
+                  />
+                }
+              />
+            </StorybookRouter>
+          </LuiModalAsyncContextProvider>
         </Provider>
       </FeatureFlagProvider>
     </QueryClientProvider>

@@ -1,6 +1,8 @@
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape, { ExportBlobOptions } from "cytoscape";
+import { memoize } from "lodash-es";
+import { DateTime } from "luxon";
 import React, { useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
@@ -15,10 +17,12 @@ import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeS
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { downloadBlob } from "@/util/downloadHelper.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
+import { wrapText } from "@/util/stringUtil.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
 export interface CytoscapeCanvasExport {
@@ -48,6 +52,8 @@ enum PlanSheetTypeAbbreviation {
 }
 
 export const useCytoscapeCanvasExport = (props: {
+  transactionId: number;
+  surveyInfo: ExternalSurveyInfoDto;
   pageConfigsEdgeData?: IEdgeData[];
   pageConfigsNodeData?: INodeData[];
 }): CytoscapeCanvasExport => {
@@ -55,6 +61,15 @@ export const useCytoscapeCanvasExport = (props: {
   const diagrams = useAppSelector(getDiagrams);
   const activeSheet = useAppSelector(getActiveSheet);
   const pages = useAppSelector(getPages);
+
+  const sortedNodes = useRef(
+    props.pageConfigsNodeData?.sort((a, b) => {
+      if (a.position.x === b.position.x) {
+        return a.position.y - b.position.y;
+      }
+      return b.position.x - a.position.x;
+    }),
+  ).current;
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core>();
@@ -66,8 +81,7 @@ export const useCytoscapeCanvasExport = (props: {
 
   useEffect(() => {
     if (!processing) {
-      // Close it when exporting is done
-      processingModal.current?.resolve(false);
+      processingModal.current?.resolve?.(false);
     }
   }, [processing]);
 
@@ -105,13 +119,19 @@ export const useCytoscapeCanvasExport = (props: {
     // find the max pageNumber for the given activeSheet type like survey or title
     const activePlanSheetPages = pages.filter((p) => p.pageType == activeSheet);
     const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
-    const sheetName =
-      activeSheet === PlanSheetType.TITLE.valueOf()
-        ? PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE
-        : PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY;
+    const isSurveySheet = activeSheet === PlanSheetType.SURVEY.valueOf();
+    const sheetName = isSurveySheet
+      ? PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY
+      : PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE;
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      canvasRef.current,
+      diagrams,
+      window.screen.width, // get user's screen max width and height
+      window.screen.height,
+      -50,
+    );
 
-    const surveyInfoNodes = extractSurveyInfoNodeData();
-
+    // listen add action to wait for the node bg images, style & layout to be applied
     let nodeBgPromise, stylePromise, layoutPromise;
     cyRefCurrent?.one("add", () => {
       nodeBgPromise = cyRefCurrent?.nodes().promiseOn("background");
@@ -120,33 +140,48 @@ export const useCytoscapeCanvasExport = (props: {
     });
 
     try {
-      const pngs: PNGFile[] = [];
-      for (let i = 1; i <= maxPageNumber; i++) {
-        const imageName = `${sheetName}-${i}.png`;
-        const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == i)?.id;
+      const pngFiles: PNGFile[] = [];
+      for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
+        const imageName = `${sheetName}-${currentPageNumber}.png`;
+        const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
 
         if (!currentPageId) {
           continue;
         }
 
         const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
+        const surveyInfoNodes = await extractSurveyInfoNodeData(
+          props.surveyInfo,
+          cytoscapeCoordinateMapper.scalePixelsPerCm,
+          isSurveySheet,
+          currentPageNumber,
+          maxPageNumber,
+        );
 
         const diagramNodeData = [
           ...surveyInfoNodes, // survey info text nodes
           ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
           ...extractDiagramNodes(currentPageDiagrams), // diagram nodes
         ];
+
+        const sheetType = activeSheet === PlanSheetType.TITLE.valueOf() ? "T" : "S";
+        const secondaryBottomRightNode = sortedNodes && sortedNodes.length > 1 && sortedNodes[1];
+        const pageInfoNode = secondaryBottomRightNode
+          ? createNewNode(
+              secondaryBottomRightNode,
+              "border_page_no_preview",
+              -1,
+              0.5,
+              `${sheetType} ${currentPageNumber}/${maxPageNumber}`,
+            )
+          : undefined;
+
+        if (pageInfoNode) diagramNodeData.push(pageInfoNode);
+
         const diagramEdgeData = [
           ...(props.pageConfigsEdgeData ?? []), // page frame edges
           ...extractDiagramEdges(currentPageDiagrams), // diagram edges
         ];
-        const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
-          canvasRef.current,
-          diagrams,
-          window.screen.width, // get user's screen max width and height
-          window.screen.height,
-          -50,
-        );
 
         cyRefCurrent.add({
           nodes: nodeDefinitionsFromData(diagramNodeData, cytoscapeCoordinateMapper),
@@ -164,21 +199,23 @@ export const useCytoscapeCanvasExport = (props: {
           .run();
 
         // wait 10s for style, layout and node bg images applied
-        await Promise.all([stylePromise, layoutPromise, nodeBgPromise].map((p) => p && promiseWithTimeout(p, 10000)));
+        await Promise.all(
+          [stylePromise, layoutPromise, nodeBgPromise].map(
+            (p) => p && promiseWithTimeout(p, 10000, "wait for cytoscape rendering timedout"),
+          ),
+        );
 
         const png = cyRefCurrent.png(cyPngConfig);
-        // TODO for test
-        // downloadBlob(png, imageName);
-        pngs.push({ name: imageName, blob: png });
+        pngFiles.push({ name: imageName, blob: png });
 
         // remove all elements for the next page rendering
         cyRefCurrent.remove(cyRefCurrent.elements());
       }
 
       if (mode === "PREVIEW") {
-        await generatePreviewPDF(pngs);
+        await generatePreviewPDF(pngFiles);
       } else {
-        await generateCompilation(pngs, cyRefCurrent);
+        await generateCompilation(pngFiles, cyRefCurrent);
       }
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
@@ -248,32 +285,205 @@ export const useCytoscapeCanvasExport = (props: {
     };
   };
 
-  const extractSurveyInfoNodeData = () => {
-    // TODO to call backend api to get the survey info
-    const TA_INFO1 = "Land District: Otago";
-    const TA_INFO2 = "Digitally Generated Plan";
-    const SURVEY_REF = "Education Purposes: error message";
-    const SURVEYOR = "Surveyor: Jeremy";
-    const CSD_NUM = "Record of Survey LT 602196";
-    const infoNodes = [];
-    props.pageConfigsNodeData?.sort((a, b) => {
-      if (a.position.x === b.position.x) {
-        return a.position.y - b.position.y;
-      }
-      return b.position.x - a.position.x;
-    });
-    if (props.pageConfigsNodeData) {
-      const bottomRightNode = props.pageConfigsNodeData[0];
-      if (bottomRightNode) {
-        infoNodes.push(createNewNode(bottomRightNode, "survey_info_ta_info1", -35.5, 1.5, TA_INFO1));
-        infoNodes.push(createNewNode(bottomRightNode, "survey_info_ta_info2", -35.5, 0.5, TA_INFO2));
-        infoNodes.push(createNewNode(bottomRightNode, "survey_info_survey_ref", -25.5, 1, SURVEY_REF));
-        infoNodes.push(createNewNode(bottomRightNode, "survey_info_surveyor", -11, 1, SURVEYOR));
-        infoNodes.push(createNewNode(bottomRightNode, "survey_info_csd_number", -3.5, 1, CSD_NUM));
-      }
+  const extractSurveyInfoNodeData = async (
+    surveyInfo: ExternalSurveyInfoDto | undefined,
+    scalePixelsPerCm: number,
+    isSurveySheet: boolean,
+    pageNum: number,
+    totalPageNum: number,
+  ): Promise<INodeData[]> => {
+    const surveyInfoNodes: INodeData[] = [];
+
+    if (!surveyInfo) {
+      throw new Error("Could not query survey info");
     }
 
-    return infoNodes;
+    if (!props.pageConfigsNodeData) {
+      console.error("Invalid page config node data", props.pageConfigsNodeData);
+      return surveyInfoNodes;
+    }
+
+    const date = DateTime.fromJSDate(new Date(surveyInfo.surveyDate));
+    const formattedSurveyDate = date.toFormat("d LLLL yyyy");
+
+    const TA_LOCALITY = `Land District: ${surveyInfo.localityName}`;
+    const TA_CELL_TITLE = "Digitally Generated Plan";
+    const GENERATED_DATE_TIME = `Generated on: ${DateTime.now()
+      .toFormat("d MMM yyyy, h:mma")
+      .replace(/(AM|PM)$/, (match) => match.toLowerCase())} – Page ${pageNum}/${totalPageNum}`;
+    const SURVEY_REFERENCE = surveyInfo.description;
+    const SURVEYOR_NAME = `Surveyor: ${surveyInfo.givenNames} ${surveyInfo.surname}`;
+    const FIRM_NAME = `Firm: ${surveyInfo.corporateName}`;
+    const SURVEY_DATE = `Date of Survey: ${formattedSurveyDate}`;
+    const CSD_NUMBER_TITLE = `Record of ${surveyInfo.systemCodeDescription}`;
+    const CSD_NUMBER = `${surveyInfo.datasetSeries} ${surveyInfo.datasetId}`;
+
+    // Find the maximum y position
+    const maxY = Math.min(...props.pageConfigsNodeData.map((node) => node.position.y));
+    const bottomLineNodesAscByX = props.pageConfigsNodeData
+      ?.filter((node) => node.position.y === maxY)
+      .sort((a, b) => a.position.x - b.position.x);
+
+    if (bottomLineNodesAscByX == undefined || bottomLineNodesAscByX.length != 5) {
+      console.error("There is no bottom line nodes", bottomLineNodesAscByX);
+      return surveyInfoNodes;
+    }
+
+    const bottomLineNodePosition0 = bottomLineNodesAscByX[0]!.position;
+    const bottomLineNodePosition1 = bottomLineNodesAscByX[1]!.position;
+    const bottomLineNodePosition2 = bottomLineNodesAscByX[2]!.position;
+    const bottomLineNodePosition3 = bottomLineNodesAscByX[3]!.position;
+    const bottomLineNodePosition4 = bottomLineNodesAscByX[4]!.position;
+
+    const maxWidthCell1 = (bottomLineNodePosition1.x - bottomLineNodePosition0.x) * scalePixelsPerCm;
+    const maxWidthCell2 = (bottomLineNodePosition2.x - bottomLineNodePosition1.x) * scalePixelsPerCm;
+    const maxWidthCell3 = (bottomLineNodePosition3.x - bottomLineNodePosition2.x) * scalePixelsPerCm;
+    const maxWidthCell4 = (bottomLineNodePosition4.x - bottomLineNodePosition3.x) * scalePixelsPerCm;
+
+    // margin in pixels
+    const margin = 8;
+    const xOffsetMargin = margin / scalePixelsPerCm;
+
+    // cell height in cytoscape coordinate unit
+    const cellHeight = 2;
+
+    surveyInfoNodes.push(
+      // -----------cell1-----------
+      createNewNode(
+        bottomLineNodesAscByX[0]!,
+        "survey_info_ta_locality",
+        xOffsetMargin,
+        (cellHeight * 4) / 5,
+        TA_LOCALITY,
+        {
+          "text-max-width": maxWidthCell1 - 2 * xOffsetMargin,
+          "font-size": "12px",
+          "text-halign": "right",
+        },
+      ),
+    );
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[0]!,
+        "survey_info_ta_cell_title",
+        xOffsetMargin,
+        (cellHeight * 2) / 5,
+        TA_CELL_TITLE,
+        {
+          "text-max-width": maxWidthCell1 - 2 * xOffsetMargin,
+          "font-size": "15px",
+          "text-halign": "right",
+        },
+      ),
+    );
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[0]!,
+        "survey_info_ta_generated_datetime",
+        xOffsetMargin,
+        cellHeight / 5,
+        GENERATED_DATE_TIME,
+        {
+          "text-max-width": maxWidthCell1 - 2 * xOffsetMargin,
+          "font-size": "10px",
+          "text-halign": "right",
+        },
+      ),
+    );
+    // -----------cell2-----------
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[1]!,
+        "survey_info_survey_reference",
+        (bottomLineNodePosition1.x + bottomLineNodePosition2.x) / 2 - bottomLineNodePosition1.x,
+        1,
+        memoize(wrapText)(
+          SURVEY_REFERENCE,
+          maxWidthCell2,
+          cellHeight * scalePixelsPerCm - 2 * xOffsetMargin,
+          1.2,
+          15,
+          "Arial",
+        ),
+        {
+          "text-max-width": maxWidthCell2,
+          "font-size": "15px",
+          "text-wrap": "wrap",
+          "line-height": 1.2,
+        },
+      ),
+    );
+    // -----------cell3-----------
+    isSurveySheet &&
+      surveyInfoNodes.push(
+        createNewNode(
+          bottomLineNodesAscByX[2]!,
+          "survey_info_survey_date",
+          xOffsetMargin,
+          cellHeight / 6,
+          SURVEY_DATE,
+          {
+            "text-max-width": maxWidthCell3 - 2 * xOffsetMargin,
+            "font-size": "12px",
+            "text-halign": "right",
+          },
+        ),
+      );
+
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[2]!,
+        "survey_info_surveyor_name",
+        xOffsetMargin,
+        isSurveySheet ? (cellHeight * 5) / 6 : (cellHeight * 2) / 3,
+        SURVEYOR_NAME,
+        {
+          "text-max-width": maxWidthCell3 - 2 * xOffsetMargin,
+          "font-size": isSurveySheet ? "13px" : "15px",
+          "text-halign": "right",
+        },
+      ),
+    );
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[2]!,
+        "survey_info_firm_name",
+        xOffsetMargin,
+        isSurveySheet ? (cellHeight * 3) / 6 : cellHeight / 3,
+        FIRM_NAME,
+        {
+          "text-max-width": maxWidthCell3 - 2 * xOffsetMargin,
+          "font-size": isSurveySheet ? "13px" : "15px",
+          "text-halign": "right",
+        },
+      ),
+    );
+
+    // -----------cell4-----------
+    surveyInfoNodes.push(
+      createNewNode(
+        bottomLineNodesAscByX[3]!,
+        "survey_info_csd_number_title",
+        xOffsetMargin,
+        (cellHeight * 2) / 3,
+        CSD_NUMBER_TITLE,
+        {
+          "text-max-width": maxWidthCell4 - 2 * xOffsetMargin,
+          "font-size": "15px",
+          "text-halign": "right",
+        },
+      ),
+    );
+
+    surveyInfoNodes.push(
+      createNewNode(bottomLineNodesAscByX[3]!, "survey_info_csd_number", xOffsetMargin, cellHeight / 3, CSD_NUMBER, {
+        "text-max-width": maxWidthCell4 - 2 * xOffsetMargin,
+        "font-size": "15px",
+        "text-halign": "right",
+      }),
+    );
+
+    return surveyInfoNodes;
   };
 
   return {

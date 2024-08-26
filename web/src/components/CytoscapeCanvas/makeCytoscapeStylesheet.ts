@@ -184,10 +184,25 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         label: "data(label)", // Display node labels
         "text-valign": "center",
-        "text-halign": "center",
+        "text-halign": (ele: cytoscape.NodeSingular) => ele.data("text-halign") || "center",
+        "text-max-width": (ele: cytoscape.NodeSingular) => ele.data("text-max-width"),
+        "font-size": (ele: cytoscape.NodeSingular) => ele.data("font-size"),
+        "text-wrap": (ele: cytoscape.NodeSingular) => ele.data("text-wrap") || "ellipsis",
+        "line-height": (ele: cytoscape.NodeSingular) => ele.data("line-height") || 1.2,
         ...noNodeMarker,
         height: 1,
         width: 1,
+      },
+    },
+    {
+      // Node styles for the page number in preview
+      selector: "node[id='border_page_no_preview']",
+      style: {
+        shape: "rectangle",
+        label: "data(label)",
+        "font-size": "15px",
+        "text-valign": "center",
+        "text-halign": "center",
       },
     },
     {

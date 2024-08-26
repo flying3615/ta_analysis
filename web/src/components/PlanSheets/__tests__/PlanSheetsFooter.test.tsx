@@ -11,6 +11,7 @@ import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths.ts";
+import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { setMockedSplitFeatures } from "@/setupTests.ts";
 import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
@@ -42,7 +43,13 @@ describe("PlanSheetsFooter", () => {
   const renderWithState = (state: PlanSheetsState) => {
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={true}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
@@ -53,7 +60,13 @@ describe("PlanSheetsFooter", () => {
   it("renders", async () => {
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={true}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
@@ -117,7 +130,11 @@ describe("PlanSheetsFooter", () => {
       <Route
         element={
           <LuiMessagingContextProvider version="v2">
-            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
           </LuiMessagingContextProvider>
         }
         path={Paths.layoutPlanSheets}
@@ -185,14 +202,20 @@ describe("PlanSheetsFooter", () => {
 
     server.use(
       http.put(/\/123\/plan$/, async () => {
-        delay(20000);
+        await delay(20000);
         HttpResponse.text(null, { status: 200 });
       }),
     );
 
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={false}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
@@ -224,7 +247,11 @@ describe("PlanSheetsFooter", () => {
       <Route
         element={
           <LuiModalAsyncContextProvider>
-            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
           </LuiModalAsyncContextProvider>
         }
         path={Paths.layoutPlanSheets}
@@ -260,7 +287,11 @@ describe("PlanSheetsFooter", () => {
       <Route
         element={
           <LuiMessagingContextProvider version="v2">
-            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
           </LuiMessagingContextProvider>
         }
         path={Paths.layoutPlanSheets}
@@ -298,7 +329,13 @@ describe("PlanSheetsFooter", () => {
   it("add page menu presents options (Add first page, last page, and page after current)", async () => {
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={true}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
@@ -328,7 +365,11 @@ describe("PlanSheetsFooter", () => {
           element={
             <>
               <Link to="/dummy">Navigate</Link>
-              <PlanSheetsFooter diagramsPanelOpen={false} setDiagramsPanelOpen={jest.fn()} />
+              <PlanSheetsFooter
+                diagramsPanelOpen={false}
+                setDiagramsPanelOpen={jest.fn()}
+                surveyInfo={{} as ExternalSurveyInfoDto}
+              />
             </>
           }
           path={Paths.layoutPlanSheets}
@@ -411,7 +452,11 @@ describe("PlanSheetsFooter", () => {
           element={
             <>
               <Link to="/dummy">Navigate</Link>
-              <PlanSheetsFooter diagramsPanelOpen={false} setDiagramsPanelOpen={jest.fn()} />
+              <PlanSheetsFooter
+                diagramsPanelOpen={false}
+                setDiagramsPanelOpen={jest.fn()}
+                surveyInfo={{} as ExternalSurveyInfoDto}
+              />
             </>
           }
           path={Paths.layoutPlanSheets}
@@ -458,7 +503,13 @@ describe("PlanSheetsFooter", () => {
 
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={false}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
@@ -634,7 +685,11 @@ describe("PlanSheetsFooter", () => {
       <Route
         element={
           <LuiMessagingContextProvider version="v2">
-            <PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={false} />
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
           </LuiMessagingContextProvider>
         }
         path={Paths.layoutPlanSheets}
@@ -709,7 +764,13 @@ describe("PlanSheetsFooter", () => {
     setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT]: TREATMENTS.OFF });
     renderCompWithReduxAndRoute(
       <Route
-        element={<PlanSheetsFooter setDiagramsPanelOpen={jest.fn()} diagramsPanelOpen={true} />}
+        element={
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={true}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        }
         path={Paths.layoutPlanSheets}
       />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),

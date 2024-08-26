@@ -9,6 +9,19 @@ type TransactionTitleDTO = {
   surveyReference: string;
 };
 
+export type ExternalSurveyInfoDto = {
+  corporateName: string;
+  datasetId: string;
+  datasetSeries: string;
+  description: string;
+  givenNames: string;
+  localityName: string;
+  officeCode: string;
+  surname: string;
+  surveyDate: string;
+  systemCodeDescription: string;
+};
+
 export const useGetPlanKeyQuery: PlanGenQuery<TransactionTitleDTO> = ({ transactionId }) => {
   return useQuery({
     queryKey: getPlanQueryKey(transactionId),
@@ -33,4 +46,26 @@ const getSurveyTitle = async (transactionId: number) => {
     throw new Error("Unable to get survey title.");
   }
   return await response.json();
+};
+export const getSurveyInfoQueryKey = (transactionId: number) => ["getSurveyInfo", transactionId];
+
+export const useSurveyInfoQuery: PlanGenQuery<ExternalSurveyInfoDto> = ({ transactionId }) => {
+  return useQuery({
+    queryKey: getSurveyInfoQueryKey(transactionId),
+    queryFn: async () => {
+      return await getSurveyInfo(transactionId);
+    },
+  });
+};
+
+const getSurveyInfo = async (transactionId: number) => {
+  const config = await surveyApiConfig();
+  const basePath = config.basePath ?? "";
+  const response = await fetch(`${basePath}/api/survey/${transactionId}/survey-info`, {
+    headers: config.headers,
+  });
+  if (!response.ok) {
+    throw new Error("Unable to get survey info.");
+  }
+  return (await response.json()) as ExternalSurveyInfoDto;
 };

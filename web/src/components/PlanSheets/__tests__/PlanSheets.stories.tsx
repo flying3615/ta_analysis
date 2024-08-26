@@ -2,6 +2,7 @@
 import "@szhsin/react-menu/dist/index.css";
 
 import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/PageDTO.ts";
+import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, screen, userEvent, within } from "@storybook/testing-library";
@@ -12,6 +13,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store.ts";
@@ -30,16 +32,18 @@ const queryClient = new QueryClient();
 const PlanSheetsTemplate = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagProvider>
-        <Provider store={store}>
-          <ModalStoryWrapper>
-            <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-              <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-              <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
-            </StorybookRouter>
-          </ModalStoryWrapper>
-        </Provider>
-      </FeatureFlagProvider>
+      <LuiModalAsyncContextProvider>
+        <FeatureFlagProvider>
+          <Provider store={store}>
+            <ModalStoryWrapper>
+              <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+                <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+                <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+              </StorybookRouter>
+            </ModalStoryWrapper>
+          </Provider>
+        </FeatureFlagProvider>
+      </LuiModalAsyncContextProvider>
     </QueryClientProvider>
   );
 };
@@ -84,6 +88,9 @@ export const TitlePage1: Story = {
           console.log(`Fetched planData ${JSON.stringify(pd)}`);
           return HttpResponse.json(pd, { status: 200, statusText: "OK" });
         }),
+        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+          return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
+        }),
       ],
     },
   },
@@ -98,6 +105,9 @@ export const SurveyPage1: Story = {
           HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
         ),
         http.get(/\/123\/plan$/, () => HttpResponse.json(planData(), { status: 200, statusText: "OK" })),
+        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+          return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
+        }),
       ],
     },
   },
@@ -120,6 +130,9 @@ export const SurveyPage2: Story = {
         ),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(planData(), { status: 200, statusText: "OK" });
+        }),
+        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+          return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
     },

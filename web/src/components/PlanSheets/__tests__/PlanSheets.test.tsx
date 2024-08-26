@@ -162,7 +162,7 @@ describe("PlanSheets", () => {
     // then
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
 
-    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenCalledTimes(4);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -176,13 +176,22 @@ describe("PlanSheets", () => {
       2,
       expect.objectContaining({
         request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/v1/surveys/api/survey/124/survey-info",
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        request: expect.objectContaining({
           method: "POST",
           url: "http://localhost/api/v1/generate-plans/124/plan",
         }),
       }),
     );
     expect(requestSpy).toHaveBeenNthCalledWith(
-      3,
+      4,
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",

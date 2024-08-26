@@ -26,6 +26,7 @@ import {
 } from "@/modules/plan/extractGraphData.ts";
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
+import { useSurveyInfoQuery } from "@/queries/survey.ts";
 import { getActiveDiagrams, getActivePages, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
@@ -44,6 +45,8 @@ const PlanSheets = () => {
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
+
+  const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
 
   const {
     data: planData,
@@ -83,7 +86,7 @@ const PlanSheets = () => {
     }
   }, [regeneratePlanError, transactionId, navigate, showPrefabModal]);
 
-  if (planDataIsLoading || !planData || isRegenerating) {
+  if (planDataIsLoading || !planData || isRegenerating || surveyInfoIsLoading || !surveyInfo) {
     return (
       <div ref={modalOwnerRef}>
         <Header view="Sheets" />
@@ -143,6 +146,7 @@ const PlanSheets = () => {
         />
       </div>
       <PlanSheetsFooter
+        surveyInfo={surveyInfo}
         diagramsPanelOpen={diagramsPanelOpen}
         setDiagramsPanelOpen={setDiagramsPanelOpen}
         pageConfigsNodeData={pageConfigsNodeData}

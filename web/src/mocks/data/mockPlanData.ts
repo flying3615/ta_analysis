@@ -148,6 +148,7 @@ export const mockPlanData = new PlanDataBuilder()
     font: "Tahoma",
     fontSize: 14,
     editedText: "Edited\nLine",
+    textAlignment: "centerCenter",
   } as LabelDTO)
   .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14, "halo")
   .addLabel(
@@ -175,4 +176,5 @@ export const mockPlanData = new PlanDataBuilder()
     "Tahoma",
     14.0,
   )
+  .addConfigs()
   .build();

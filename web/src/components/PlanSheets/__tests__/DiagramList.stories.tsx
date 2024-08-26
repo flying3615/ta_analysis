@@ -14,6 +14,7 @@ import {
 import { Default } from "@/components/PlanSheets/__tests__/PlanSheets.stories.tsx";
 import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel.tsx";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
 import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
@@ -86,6 +87,9 @@ export const DiagramListDisabledRemoveButtonEnabled: Story = {
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
         }),
+        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+          return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
+        }),
       ],
     },
   },
@@ -101,6 +105,9 @@ export const RemoveDiagramFromSameAndDifferentPage: Story = {
         ),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
+        }),
+        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+          return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
     },

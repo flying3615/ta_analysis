@@ -4,7 +4,7 @@ import { keyBy } from "lodash-es";
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
 export class CytoscapeCoordinateMapper {
-  private readonly scalePixelsPerCm: number;
+  public readonly scalePixelsPerCm: number;
   private readonly diagrams: Record<number, DiagramDTO>;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL

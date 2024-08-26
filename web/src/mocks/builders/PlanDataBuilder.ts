@@ -4,10 +4,12 @@ import {
   DisplayStateEnum,
   LabelDTO,
   LabelDTOLabelTypeEnum,
+  PageConfigDTO,
   PageDTO,
   PageDTOPageTypeEnum,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
+import type { ConfigDataDTO } from "@linz/survey-plan-generation-api-client/src/models/ConfigDataDTO.ts";
 import { last } from "lodash-es";
 
 import { SYMBOLS_FONT } from "@/constants";
@@ -349,6 +351,98 @@ export class PlanDataBuilder {
       diagramRef,
       labels: [],
     });
+    return this;
+  }
+
+  addConfigs() {
+    const pageConfigDTO: PageConfigDTO = {
+      pageScale: 100,
+      unprintableMargin: 1.5,
+      diagramLimitOrigin: { x: 1.5, y: -1.5 },
+      diagramLimitBottomRight: { x: 40.5, y: -26.2 },
+      coordinates: [
+        { id: 1001, coordType: "userDefined", position: { x: 1.5, y: -1.5 }, userEdited: false },
+        { id: 1002, coordType: "userDefined", position: { x: 40.5, y: -1.5 }, userEdited: false },
+        { id: 1003, coordType: "userDefined", position: { x: 1.5, y: -26.2 }, userEdited: false },
+        { id: 1004, coordType: "userDefined", position: { x: 8.5, y: -26.2 }, userEdited: false },
+        { id: 1005, coordType: "userDefined", position: { x: 26.5, y: -26.2 }, userEdited: false },
+        { id: 1006, coordType: "userDefined", position: { x: 33.5, y: -26.2 }, userEdited: false },
+        { id: 1007, coordType: "userDefined", position: { x: 40.5, y: -26.2 }, userEdited: false },
+        { id: 1008, coordType: "userDefined", position: { x: 1.5, y: -28.2 }, userEdited: false },
+        { id: 1009, coordType: "userDefined", position: { x: 8.5, y: -28.2 }, userEdited: false },
+        { id: 1010, coordType: "userDefined", position: { x: 26.5, y: -28.2 }, userEdited: false },
+        { id: 1011, coordType: "userDefined", position: { x: 33.5, y: -28.2 }, userEdited: false },
+        { id: 1012, coordType: "userDefined", position: { x: 40.5, y: -28.2 }, userEdited: false },
+        { id: 1013, coordType: "userDefined", position: { x: 38.55, y: -1.6 }, userEdited: false },
+        { id: 1014, coordType: "userDefined", position: { x: 40.45, y: -3.5 }, userEdited: false },
+      ],
+      lines: [
+        { id: 101, lineType: "userDefined", style: "solid", coordRefs: [1001, 1002], pointWidth: 1 },
+        { id: 102, lineType: "userDefined", style: "solid", coordRefs: [1001, 1003], pointWidth: 1 },
+        { id: 103, lineType: "userDefined", style: "solid", coordRefs: [1002, 1007], pointWidth: 1 },
+        { id: 104, lineType: "userDefined", style: "solid", coordRefs: [1003, 1004], pointWidth: 1 },
+        { id: 105, lineType: "userDefined", style: "solid", coordRefs: [1003, 1008], pointWidth: 1 },
+        { id: 106, lineType: "userDefined", style: "solid", coordRefs: [1004, 1005], pointWidth: 1 },
+        { id: 107, lineType: "userDefined", style: "solid", coordRefs: [1004, 1009], pointWidth: 1 },
+        { id: 108, lineType: "userDefined", style: "solid", coordRefs: [1005, 1006], pointWidth: 1 },
+        { id: 109, lineType: "userDefined", style: "solid", coordRefs: [1005, 1010], pointWidth: 1 },
+        { id: 110, lineType: "userDefined", style: "solid", coordRefs: [1006, 1007], pointWidth: 1 },
+        { id: 111, lineType: "userDefined", style: "solid", coordRefs: [1006, 1011], pointWidth: 1 },
+        { id: 112, lineType: "userDefined", style: "solid", coordRefs: [1007, 1012], pointWidth: 1 },
+        { id: 113, lineType: "userDefined", style: "solid", coordRefs: [1008, 1009], pointWidth: 1 },
+        { id: 114, lineType: "userDefined", style: "solid", coordRefs: [1009, 1010], pointWidth: 1 },
+        { id: 115, lineType: "userDefined", style: "solid", coordRefs: [1010, 1011], pointWidth: 1 },
+        { id: 116, lineType: "userDefined", style: "solid", coordRefs: [1011, 1012], pointWidth: 1 },
+      ],
+      coordLimitOrigin: {
+        x: 1.65,
+        y: -1.65,
+      },
+      coordLimitBottomRight: {
+        x: 40.35,
+        y: -26.05,
+      },
+      images: [
+        {
+          imageFilePath:
+            "C:\\Program Files (x86)\\Land Information New Zealand\\Landonline Workspace\\Data\\NorthArrow.bmp",
+          imageOrigin: 1013,
+          imageBottomRight: 1014,
+        },
+      ],
+    };
+    const pageMaxId = Math.max(...this.planData.pages.map((page) => page.id));
+    const lineMaxId = Math.max(...this.planData.diagrams.flatMap((diagram) => diagram.lines.map((line) => line.id)));
+    const coordinateMaxId = Math.max(
+      ...this.planData.diagrams.flatMap((diagram) => diagram.coordinates.map((c) => c.id)),
+    );
+    const labelMaxId = Math.max(...this.planData.diagrams.flatMap((diagram) => diagram.labels.map((l) => l.id)));
+    const configDataArray = [] as ConfigDataDTO[];
+
+    const configData = {
+      pageConfigs: [pageConfigDTO],
+      maxElemIds: [
+        {
+          element: "Coordinate",
+          maxId: coordinateMaxId,
+        },
+        {
+          element: "Page",
+          maxId: pageMaxId,
+        },
+        {
+          element: "Line",
+          maxId: lineMaxId,
+        },
+        {
+          element: "Label",
+          maxId: labelMaxId,
+        },
+      ],
+    } as ConfigDataDTO;
+
+    configDataArray.push(configData);
+    this.planData.configs = configDataArray;
     return this;
   }
 

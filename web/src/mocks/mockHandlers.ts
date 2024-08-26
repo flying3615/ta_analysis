@@ -9,6 +9,7 @@ import { mockLines } from "@/mocks/data/mockLines.ts";
 import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
 
 import { mockInternalServerError } from "./data/mockError";
@@ -38,6 +39,20 @@ export const handlers: HttpHandler[] = [
       },
       { status: 200, statusText: "OK" },
     ),
+  ),
+
+  http.get(/\/api\/survey\/124\/survey-title/, async () =>
+    HttpResponse.json(
+      {
+        surveyNo: "LT 999999",
+        surveyReference: "Test Reference",
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.get(/\/api\/survey\/(123|124)\/survey-info/, async () =>
+    HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" }),
   ),
 
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
