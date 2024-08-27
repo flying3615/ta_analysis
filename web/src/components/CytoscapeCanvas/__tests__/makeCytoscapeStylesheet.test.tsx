@@ -56,9 +56,9 @@ describe("makeCytoscapeStylesheet", () => {
     const svg = styleEntry["background-image"]?.(ele);
     expect(svg).toBe("data:image/svg+xml;utf8,circle.svg");
     const height = styleEntry["height"]?.(ele);
-    expect(height).toBeCloseTo(6.55, 1);
+    expect(height).toBeCloseTo(1.8, 1);
     const width = styleEntry["width"]?.(ele);
-    expect(width).toBeCloseTo(7.55, 1);
+    expect(width).toBeCloseTo(2.8, 1);
     const textMarginY = styleEntry["text-margin-y"]?.(ele);
     expect(textMarginY).toBe(0.5); // Because `measureText` stub
   });

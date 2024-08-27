@@ -1,4 +1,4 @@
-import { DisplayStateEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { Meta, StoryObj } from "@storybook/react";
 import { Core } from "cytoscape";
 
@@ -497,6 +497,56 @@ export const RendersOffsetCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
     addOffsetLabel(builder, 6, "B", 20, -10, 135, false);
     addOffsetLabel(builder, 7, "C", 20, -15, 225, false);
     addOffsetLabel(builder, 8, "D", 20, -20, 270, false);
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+const addRotatedLabel = (
+  builder: PlanDataBuilder,
+  idBase: number,
+  label: string,
+  x: number,
+  y: number,
+  rotationAngle: number,
+  textAlignment: string,
+  circle: boolean,
+) => {
+  builder.addSymbolLabel(idBase * 100 + 1, "63", {
+    x,
+    y,
+  });
+  builder.addLabel("labels", {
+    id: idBase * 100,
+    displayText: label,
+    position: {
+      x,
+      y,
+    },
+    font: "Arial",
+    fontSize: 50,
+    rotationAngle,
+    textAlignment,
+    symbolType: circle ? "circle" : undefined,
+  } as LabelDTO);
+};
+
+export const RendersRotatedCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    addRotatedLabel(builder, 1, "A", 10, -5, 45, "centerCenter", false);
+    addRotatedLabel(builder, 2, "B", 10, -10, 135, "centerLeft", false);
+    addRotatedLabel(builder, 3, "C", 10, -15, 225, "centerRight", false);
+    addRotatedLabel(builder, 4, "D", 10, -20, 270, "topLeft", false);
+    addRotatedLabel(builder, 5, "A", 20, -5, 45, "centerCenter", true);
+    addRotatedLabel(builder, 6, "B", 20, -10, 135, "centerLeft", true);
+    addRotatedLabel(builder, 7, "C", 20, -15, 225, "centerRight", true);
+    addRotatedLabel(builder, 8, "D", 20, -20, 270, "topLeft", true);
     return <CanvasFromMockData data={builder.build()} />;
   },
   parameters: {
