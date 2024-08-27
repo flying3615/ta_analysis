@@ -65,14 +65,28 @@ $warningColor: #ea6a2e;
     display: flex;
     flex-direction: row;
 
-    &-icon-button {
+    &-button {
       padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 180px;
       gap: 8px;
     }
+  }
+
+  &-save-button {
+    @extend .PlanSheetsFooter-right-button;
+    width: 148px;
+  }
+
+  &-preview-button {
+    @extend .PlanSheetsFooter-right-button;
+    width: 172px;
+  }
+
+  &-compile-button {
+    @extend .PlanSheetsFooter-right-button;
+    width: 176px;
   }
 
   .pagination {

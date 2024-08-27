@@ -153,7 +153,7 @@ const PlanSheetsFooter = ({
 
       <div className="PlanSheetsFooter-right">
         <LuiButton
-          className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
+          className="PlanSheetsFooter-save-button lui-button-tertiary"
           onClick={updatePlan}
           disabled={!saveEnabled || saveEnabledLoading}
         >
@@ -168,7 +168,7 @@ const PlanSheetsFooter = ({
         </LuiButton>
         {isPreviewCompilationOn && (
           <LuiButton
-            className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
+            className="PlanSheetsFooter-preview-button lui-button-tertiary"
             onClick={startPreview}
             disabled={previewing}
           >
@@ -185,7 +185,7 @@ const PlanSheetsFooter = ({
 
         {isPreviewCompilationOn && (
           <LuiButton
-            className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
+            className="PlanSheetsFooter-compile-button lui-button-tertiary"
             onClick={startCompile}
             disabled={compiling}
           >
