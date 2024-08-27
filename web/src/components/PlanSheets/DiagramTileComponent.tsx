@@ -1,6 +1,5 @@
 import { LuiButton, LuiIcon, LuiTooltip } from "@linzjs/lui";
 import { right } from "@popperjs/core";
-import { useEffect, useState } from "react";
 
 import { DiagramDisplay } from "@/components/PlanSheets/DiagramList.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
@@ -10,7 +9,6 @@ import {
   getActivePageRefFromPageNumber,
   getActiveSheet,
   getPageNumberFromPageRef,
-  setActivePageNumber,
   setDiagramPageRef,
 } from "@/redux/planSheets/planSheetsSlice.ts";
 
@@ -18,6 +16,7 @@ interface IDiagramTileComponentProps {
   diagramDisplay: DiagramDisplay;
   selectedDiagramId: number | null;
   setSelectedDiagramId: (id: number | null) => void;
+  setNewActivePageNumber: (pageNumber: number | null) => void;
 }
 const usePageData = () => {
   const activeSheet = useAppSelector(getActiveSheet);
@@ -46,30 +45,26 @@ export const DiagramTileComponent = ({
   diagramDisplay,
   selectedDiagramId,
   setSelectedDiagramId,
+  setNewActivePageNumber,
 }: IDiagramTileComponentProps) => {
   const { diagramId, level, pageRef, diagramLabel, diagramChildren } = diagramDisplay;
-  const dispatch = useAppDispatch();
-  const [isNewPageNumber, setIsNewPageNumber] = useState(false);
   const pageNumber = usePageNumber(pageRef);
 
   const { activeSheet, activePageNumber, activePageRef } = usePageData();
   const isSelected = selectedDiagramId === diagramId;
   const paddingMultiple = level <= 1 ? 0 : level - 1;
 
-  useEffect(() => {
-    if (pageNumber !== null) {
-      dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNewPageNumber]);
-
   const updatePageRef = () => {
     if (pageRef === undefined && activePageRef) {
       setSelectedDiagramId(selectedDiagramId === diagramId ? null : diagramId);
     }
   };
+  const gotoPage = () => {
+    if (pageNumber !== null) {
+      setNewActivePageNumber(pageNumber);
+    }
+  };
   const displaySheetAddress = getSheetAddress(activeSheet, pageNumber);
-  const gotoPage = () => setIsNewPageNumber((prevState) => !prevState);
   const removeFromPage = useRemoveFromPage(diagramId, pageNumber);
 
   return (
@@ -110,6 +105,7 @@ export const DiagramTileComponent = ({
           diagramDisplay={d}
           selectedDiagramId={selectedDiagramId}
           setSelectedDiagramId={setSelectedDiagramId}
+          setNewActivePageNumber={setNewActivePageNumber}
         />
       ))}
     </div>

@@ -1,7 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
-import React from "react";
 import { generatePath, Route } from "react-router-dom";
 
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
@@ -12,6 +11,8 @@ import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+
+import { nestedTitlePlan } from "./data/plansheetDiagramData";
 
 const renderWithState = (state: PlanSheetsState) => {
   renderCompWithReduxAndRoute(
@@ -33,6 +34,24 @@ const planSheetsState = {
     [PlanSheetType.SURVEY]: 0,
   },
   hasChanges: false,
+};
+
+const mockGetPlanResponse = {
+  ...nestedTitlePlan,
+  diagrams: [
+    { ...nestedTitlePlan.diagrams[0], pageRef: 1 },
+    { ...nestedTitlePlan.diagrams[7], pageRef: 2 },
+    { ...nestedTitlePlan.diagrams[8], pageRef: 4 },
+    { ...nestedTitlePlan.diagrams[9], pageRef: 3 },
+    { ...nestedTitlePlan.diagrams[11], pageRef: 5 },
+  ],
+  pages: [
+    { id: 1, pageType: "title", pageNumber: 1 },
+    { id: 2, pageType: "title", pageNumber: 2 },
+    { id: 3, pageType: "title", pageNumber: 3 },
+    { id: 4, pageType: "title", pageNumber: 4 },
+    { id: 5, pageType: "title", pageNumber: 5 },
+  ],
 };
 
 describe("PlanSheets", () => {
@@ -97,21 +116,193 @@ describe("PlanSheets", () => {
     expect(screen.queryByText("Diagram is already on page 1")).not.toBeInTheDocument();
   });
 
-  it("displays dialog when delete button is pressed and removes pages", async () => {
-    renderWithState(planSheetsState);
-    await waitFor(async () => {
-      const deleteButton = screen.getByRole("button", { description: /Delete page/i });
-      expect(deleteButton).toBeInTheDocument();
-      await userEvent.click(deleteButton);
-    });
+  it("reorders pages correctly (page 1 to 5)", async () => {
+    const mockState = {
+      diagrams: [],
+      activeSheet: PlanSheetType.TITLE,
+      pages: [],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+      hasChanges: false,
+    };
+
+    server.use(
+      http.get(/\/123\/plan$/, async () => {
+        return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
+      }),
+    );
+
+    renderWithState(mockState);
 
     await waitFor(async () => {
-      const modal = screen.getByRole("dialog");
-      expect(modal).toBeInTheDocument();
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
-    const input = await screen.findByTitle("Proceed delete");
-    await userEvent.click(input);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    const renumberPageButton = screen.getByRole("button", { description: /Renumber page/i });
+    await waitFor(async () => {
+      expect(renumberPageButton).toBeInTheDocument();
+    });
+
+    const diagramsAndPagesBefore = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+    expect(diagramsAndPagesBefore).toStrictEqual([
+      "System Generated Primary DiagramT1",
+      "T1",
+      "System Generated Non Primary DiagramT2",
+      "T2",
+      "Diag. AT3",
+      "T3",
+      "Diag. AAT4",
+      "T4",
+      "Diag. AAAT5",
+      "T5",
+    ]);
+
+    await userEvent.click(renumberPageButton);
+    await userEvent.type(screen.getByPlaceholderText("Enter page number"), "5");
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    const diagramsAndPagesAfter = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+
+    expect(diagramsAndPagesAfter).toStrictEqual([
+      "System Generated Primary DiagramT5",
+      "T5",
+      "System Generated Non Primary DiagramT1",
+      "T1",
+      "Diag. AT2",
+      "T2",
+      "Diag. AAT3",
+      "T3",
+      "Diag. AAAT4",
+      "T4",
+    ]);
+  });
+
+  it("reorders pages correctly (page 4 to 2)", async () => {
+    const mockState = {
+      diagrams: [],
+      activeSheet: PlanSheetType.TITLE,
+      pages: [],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 4,
+        [PlanSheetType.SURVEY]: 0,
+      },
+      hasChanges: false,
+    };
+
+    server.use(
+      http.get(/\/123\/plan$/, async () => {
+        return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
+      }),
+    );
+
+    renderWithState(mockState);
+
+    await waitFor(async () => {
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
+    });
+
+    const renumberPageButton = screen.getByRole("button", { description: /Renumber page/i });
+    await waitFor(async () => {
+      expect(renumberPageButton).toBeInTheDocument();
+    });
+
+    const diagramsAndPagesBefore = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+    expect(diagramsAndPagesBefore).toStrictEqual([
+      "System Generated Primary DiagramT1",
+      "T1",
+      "System Generated Non Primary DiagramT2",
+      "T2",
+      "Diag. AT3",
+      "T3",
+      "Diag. AAT4",
+      "T4",
+      "Diag. AAAT5",
+      "T5",
+    ]);
+
+    await userEvent.click(renumberPageButton);
+    await userEvent.type(screen.getByPlaceholderText("Enter page number"), "2");
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    const diagramsAndPagesAfter = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+
+    expect(diagramsAndPagesAfter).toStrictEqual([
+      "System Generated Primary DiagramT1",
+      "T1",
+      "System Generated Non Primary DiagramT3",
+      "T3",
+      "Diag. AT4",
+      "T4",
+      "Diag. AAT2",
+      "T2",
+      "Diag. AAAT5",
+      "T5",
+    ]);
+  });
+
+  it("removes page correctly", async () => {
+    const mockState = {
+      ...planSheetsState,
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 3,
+        [PlanSheetType.SURVEY]: 0,
+      },
+    };
+
+    server.use(
+      http.get(/\/123\/plan$/, async () => {
+        return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
+      }),
+    );
+
+    renderWithState(mockState);
+
+    await waitFor(async () => {
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
+    });
+
+    const deletePageButton = screen.getByRole("button", { description: /Delete page/i });
+    await waitFor(async () => {
+      expect(deletePageButton).toBeInTheDocument();
+    });
+
+    const diagramsAndPagesBefore = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+    expect(diagramsAndPagesBefore).toStrictEqual([
+      "System Generated Primary DiagramT1",
+      "T1",
+      "System Generated Non Primary DiagramT2",
+      "T2",
+      "Diag. AT3",
+      "T3",
+      "Diag. AAT4",
+      "T4",
+      "Diag. AAAT5",
+      "T5",
+    ]);
+
+    await userEvent.click(deletePageButton);
+    await waitFor(async () => {
+      expect(screen.getByRole("heading", { name: /delete page\?/i })).toBeInTheDocument();
+    });
+    await userEvent.click(
+      screen.queryAllByRole("button", { name: "Delete" }).find((elem) => elem.textContent === "Delete") as HTMLElement,
+    );
+
+    const diagramsAndPagesAfter = screen.queryAllByRole("presentation").map((elem) => elem.textContent);
+
+    expect(diagramsAndPagesAfter).toStrictEqual([
+      "System Generated Primary DiagramT1",
+      "T1",
+      "System Generated Non Primary DiagramT2",
+      "T2",
+      "Diag. A",
+      "Diag. AAT3",
+      "T3",
+      "Diag. AAAT4",
+      "T4",
+    ]);
   });
 
   it("navigate back to landing page when clicked on dismiss button on error dialog", async () => {

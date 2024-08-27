@@ -7,7 +7,13 @@ import { useMemo, useState } from "react";
 
 import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { getActivePageNumber, getPageRefFromPageNumber, setDiagramPageRef } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePageNumber,
+  getActiveSheet,
+  getPageRefFromPageNumber,
+  setActivePageNumber,
+  setDiagramPageRef,
+} from "@/redux/planSheets/planSheetsSlice";
 
 export interface DiagramListProps {
   diagrams: DiagramDTO[];
@@ -31,12 +37,19 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
 
   const dispatch = useAppDispatch();
   const activePageNumber = useAppSelector(getActivePageNumber);
+  const activeSheet = useAppSelector(getActiveSheet);
   const getPageRef = useAppSelector((state) => getPageRefFromPageNumber(state)(activePageNumber));
 
   const insertDiagram = () => {
     if (getPageRef && selectedDiagramId) {
       dispatch(setDiagramPageRef({ id: selectedDiagramId, pageRef: getPageRef }));
       setSelectedDiagramId(null);
+    }
+  };
+
+  const setNewActivePageNumber = (pageNumber: number | null) => {
+    if (pageNumber !== null) {
+      dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
     }
   };
 
@@ -49,6 +62,7 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
             diagramDisplay={diagramDisplay}
             selectedDiagramId={selectedDiagramId}
             setSelectedDiagramId={setSelectedDiagramId}
+            setNewActivePageNumber={setNewActivePageNumber}
           />
         ))}
       </div>

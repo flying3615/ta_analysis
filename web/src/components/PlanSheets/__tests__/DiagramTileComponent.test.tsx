@@ -36,6 +36,7 @@ describe("Diagram Tile component", () => {
         diagramDisplay={mockDiagramDisplay}
         selectedDiagramId={null}
         setSelectedDiagramId={jest.fn()}
+        setNewActivePageNumber={jest.fn()}
       />,
     );
 
@@ -51,6 +52,7 @@ describe("Diagram Tile component", () => {
         diagramDisplay={mockDiagramDisplay}
         selectedDiagramId={null}
         setSelectedDiagramId={setSelectedDiagramId}
+        setNewActivePageNumber={jest.fn()}
       />,
       { store: mockStore },
     );
@@ -70,6 +72,7 @@ describe("Diagram Tile component", () => {
         diagramDisplay={nestedDiagramDisplay}
         selectedDiagramId={null}
         setSelectedDiagramId={jest.fn()}
+        setNewActivePageNumber={jest.fn()}
       />,
       { store: mockStore },
     );
@@ -85,6 +88,7 @@ describe("Diagram Tile component", () => {
         diagramDisplay={{ ...mockDiagramDisplay, pageRef: 1 }}
         selectedDiagramId={null}
         setSelectedDiagramId={jest.fn()}
+        setNewActivePageNumber={jest.fn()}
       />,
       { store: mockStore },
     );
@@ -101,6 +105,7 @@ describe("Diagram Tile component", () => {
         diagramDisplay={{ ...mockDiagramDisplay, pageRef: 3 }}
         selectedDiagramId={null}
         setSelectedDiagramId={jest.fn()}
+        setNewActivePageNumber={jest.fn()}
       />,
       { store: mockStore },
     );
