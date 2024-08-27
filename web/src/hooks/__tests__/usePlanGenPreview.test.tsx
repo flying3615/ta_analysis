@@ -9,11 +9,11 @@ import { Paths } from "@/Paths.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
-import { useCytoscapeCanvasExport } from "../useCytoscapeCanvasExport.tsx";
+import { usePlanGenPreview } from "../usePlanGenPreview.tsx";
 
 jest.mock("@/workers/previewWorker?worker");
 
-describe("useCytoscapeCanvasExport hook", () => {
+describe("usePlanGenPreview hook", () => {
   const planSheetsState = {
     diagrams: diagrams,
     pages: pages,
@@ -25,23 +25,23 @@ describe("useCytoscapeCanvasExport hook", () => {
     },
   };
 
-  let startProcessing: (mode: "PREVIEW" | "COMPILATION") => Promise<void>;
-  let ExportingCanvas: React.FC;
-  let processing: boolean = false;
-  let stopProcessing: () => void;
+  let startPreview: () => Promise<void>;
+  let PreviewExportCanvas: React.FC;
+  let previewing: boolean = false;
+  let stopPreviewing: () => void;
   const MockComponentWithHook = () => {
-    ({ startProcessing, ExportingCanvas, processing, stopProcessing } = useCytoscapeCanvasExport({
+    ({ startPreview, PreviewExportCanvas, previewing, stopPreviewing } = usePlanGenPreview({
       transactionId: 123,
       surveyInfo: mockSurveyInfo,
     }));
 
     return (
       <div>
-        <ExportingCanvas />
-        <button onClick={() => startProcessing("PREVIEW")} data-testid="start_export">
+        <PreviewExportCanvas />
+        <button onClick={() => startPreview()} data-testid="start_export">
           Start Export
         </button>
-        <button onClick={stopProcessing} data-testid="stop_export">
+        <button onClick={stopPreviewing} data-testid="stop_export">
           Stop Export
         </button>
       </div>
@@ -56,7 +56,7 @@ describe("useCytoscapeCanvasExport hook", () => {
     jest.restoreAllMocks();
   });
 
-  it("useCytoscapeCanvasExport should render the exporting canvas and can process exporting", async () => {
+  it("usePlanGenPreview should render the exporting canvas and can process exporting", async () => {
     renderCompWithReduxAndRoute(
       <Route element={<MockComponentWithHook />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
@@ -67,11 +67,11 @@ describe("useCytoscapeCanvasExport hook", () => {
       },
     );
     expect(await screen.findByTestId("cy-exporting-canvas")).toBeInTheDocument();
-    expect(processing).toBeFalsy();
+    expect(previewing).toBeFalsy();
 
     await userEvent.click(screen.getByTestId("start_export"));
     await screen.findByText("Processing...");
-    expect(processing).toBeTruthy();
+    expect(previewing).toBeTruthy();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
@@ -85,7 +85,7 @@ describe("useCytoscapeCanvasExport hook", () => {
     });
   });
 
-  it("useCytoscapeCanvasExport support interuption", async () => {
+  it("usePlanGenPreview support interruption", async () => {
     renderCompWithReduxAndRoute(
       <Route element={<MockComponentWithHook />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
@@ -96,13 +96,13 @@ describe("useCytoscapeCanvasExport hook", () => {
       },
     );
     expect(await screen.findByTestId("cy-exporting-canvas")).toBeInTheDocument();
-    expect(processing).toBeFalsy();
+    expect(previewing).toBeFalsy();
 
     await userEvent.click(screen.getByTestId("start_export"));
     await screen.findByText("Processing...");
-    expect(processing).toBeTruthy();
+    expect(previewing).toBeTruthy();
 
     await userEvent.click(screen.getByTestId("stop_export"));
-    expect(processing).toBeFalsy();
+    expect(previewing).toBeFalsy();
   });
 });

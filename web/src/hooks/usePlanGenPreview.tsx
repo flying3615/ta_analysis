@@ -1,3 +1,4 @@
+import { DisplayStateEnum, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape, { ExportBlobOptions } from "cytoscape";
@@ -19,17 +20,16 @@ import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { downloadBlob } from "@/util/downloadHelper.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 import { wrapText } from "@/util/stringUtil.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
-export interface CytoscapeCanvasExport {
-  startProcessing: (mode: "PREVIEW" | "COMPILATION") => Promise<void>;
-  ExportingCanvas: React.FC;
-  processing: boolean;
-  stopProcessing: () => void;
+export interface PlanGenPreview {
+  startPreview: () => Promise<void>;
+  PreviewExportCanvas: React.FC;
+  previewing: boolean;
+  stopPreviewing: () => void;
 }
 
 export interface PNGFile {
@@ -37,7 +37,7 @@ export interface PNGFile {
   blob: Blob;
 }
 
-const cyPngConfig = {
+export const cyPngConfig = {
   full: true,
   output: "blob",
   bg: "#fff",
@@ -45,23 +45,28 @@ const cyPngConfig = {
   maxHeight: 7016,
 } as ExportBlobOptions;
 
-enum PlanSheetTypeAbbreviation {
+export enum PlanSheetTypeAbbreviation {
   TITLE_PLAN_TITLE = "DTPS",
   SURVEY_PLAN_TITLE = "DSPT",
   SURVEY_PLAN_SURVEY = "DSPS",
 }
 
-export const useCytoscapeCanvasExport = (props: {
+export const PlanSheetTypeObject = [
+  { typeAbbr: PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE, type: PageDTOPageTypeEnum.survey },
+  { typeAbbr: PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE, type: PageDTOPageTypeEnum.title },
+  { typeAbbr: PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY, type: PageDTOPageTypeEnum.survey },
+];
+
+export const usePlanGenPreview = (props: {
   transactionId: number;
   surveyInfo: ExternalSurveyInfoDto;
   pageConfigsEdgeData?: IEdgeData[];
   pageConfigsNodeData?: INodeData[];
-}): CytoscapeCanvasExport => {
+}): PlanGenPreview => {
   const { error: errorToast } = useToast();
-  const diagrams = useAppSelector(getDiagrams);
   const activeSheet = useAppSelector(getActiveSheet);
   const pages = useAppSelector(getPages);
-
+  const diagrams = useAppSelector(getDiagrams);
   const sortedNodes = useRef(
     props.pageConfigsNodeData?.sort((a, b) => {
       if (a.position.x === b.position.x) {
@@ -73,19 +78,20 @@ export const useCytoscapeCanvasExport = (props: {
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core>();
+  const cyMapper = useRef<CytoscapeCoordinateMapper>();
 
-  const [processing, setProcessing] = useState<boolean>(false);
+  const [previewing, setPreviewing] = useState<boolean>(false);
   let worker = new PreviewWorker();
   const processingModal = useRef<PromiseWithResolve<boolean>>();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   useEffect(() => {
-    if (!processing) {
+    if (!previewing) {
       processingModal.current?.resolve?.(false);
     }
-  }, [processing]);
+  }, [previewing]);
 
-  const ExportingCanvas = () => {
+  const PreviewExportCanvas = () => {
     useEffect(() => {
       if (!canvasRef.current) {
         throw Error("CytoscapeCanvas::initCytoscape - not ready");
@@ -94,6 +100,13 @@ export const useCytoscapeCanvasExport = (props: {
         container: canvasRef.current,
         layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
       });
+      cyMapper.current = new CytoscapeCoordinateMapper(
+        canvasRef.current,
+        diagrams,
+        window.screen.width, // get user's screen max width and height
+        window.screen.height,
+        -50,
+      );
     }, []);
 
     return (
@@ -103,18 +116,19 @@ export const useCytoscapeCanvasExport = (props: {
     );
   };
 
-  const startProcessing = async (mode: "PREVIEW" | "COMPILATION") => {
-    const cyRefCurrent = cyRef.current;
-
-    if (!cyRefCurrent || !canvasRef.current) {
+  const startPreview = async () => {
+    if (!cyRef.current || !cyMapper.current) {
       console.error("cytoscape instance is not available");
       return;
     }
 
+    const cyRefCurrent = cyRef.current;
+    const cyMapperCurrent = cyMapper.current;
+
     // Don't block the exporting process
     showProcessingModal().then();
 
-    setProcessing(true);
+    setPreviewing(true);
 
     // find the max pageNumber for the given activeSheet type like survey or title
     const activePlanSheetPages = pages.filter((p) => p.pageType == activeSheet);
@@ -123,13 +137,6 @@ export const useCytoscapeCanvasExport = (props: {
     const sheetName = isSurveySheet
       ? PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY
       : PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE;
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
-      canvasRef.current,
-      diagrams,
-      window.screen.width, // get user's screen max width and height
-      window.screen.height,
-      -50,
-    );
 
     // listen add action to wait for the node bg images, style & layout to be applied
     let nodeBgPromise, stylePromise, layoutPromise;
@@ -152,7 +159,7 @@ export const useCytoscapeCanvasExport = (props: {
         const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
         const surveyInfoNodes = await extractSurveyInfoNodeData(
           props.surveyInfo,
-          cytoscapeCoordinateMapper.scalePixelsPerCm,
+          cyMapperCurrent.scalePixelsPerCm,
           isSurveySheet,
           currentPageNumber,
           maxPageNumber,
@@ -161,7 +168,12 @@ export const useCytoscapeCanvasExport = (props: {
         const diagramNodeData = [
           ...surveyInfoNodes, // survey info text nodes
           ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
-          ...extractDiagramNodes(currentPageDiagrams), // diagram nodes
+          ...extractDiagramNodes(currentPageDiagrams).filter(
+            (node) =>
+              ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
+                node.properties["displayState"]?.toString() ?? "",
+              ),
+          ), // filter out hidden diagram nodes
         ];
 
         const sheetType = activeSheet === PlanSheetType.TITLE.valueOf() ? "T" : "S";
@@ -184,17 +196,17 @@ export const useCytoscapeCanvasExport = (props: {
         ];
 
         cyRefCurrent.add({
-          nodes: nodeDefinitionsFromData(diagramNodeData, cytoscapeCoordinateMapper),
+          nodes: nodeDefinitionsFromData(diagramNodeData, cyMapperCurrent),
           edges: edgeDefinitionsFromData(diagramEdgeData),
         });
 
-        cyRefCurrent?.style(makeCytoscapeStylesheet(cytoscapeCoordinateMapper)).update();
+        cyRefCurrent?.style(makeCytoscapeStylesheet(cyMapperCurrent, true)).update();
 
         cyRefCurrent
           .layout({
             name: "preset",
             fit: false,
-            positions: nodePositionsFromData(diagramNodeData, cytoscapeCoordinateMapper),
+            positions: nodePositionsFromData(diagramNodeData, cyMapperCurrent),
           })
           .run();
 
@@ -212,25 +224,21 @@ export const useCytoscapeCanvasExport = (props: {
         cyRefCurrent.remove(cyRefCurrent.elements());
       }
 
-      if (mode === "PREVIEW") {
-        await generatePreviewPDF(pngFiles);
-      } else {
-        await generateCompilation(pngFiles, cyRefCurrent);
-      }
+      await generatePreviewPDF(pngFiles);
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
       console.error(e);
-      setProcessing(false);
+      setPreviewing(false);
     } finally {
       cyRefCurrent?.off("add");
     }
   };
 
-  const stopProcessing = () => {
+  const stopPreviewing = () => {
     // terminate the current worker and create a new one for next execution
     worker.terminate();
     worker = new PreviewWorker();
-    setProcessing(false);
+    setPreviewing(false);
   };
 
   const showProcessingModal = async () => {
@@ -245,43 +253,20 @@ export const useCytoscapeCanvasExport = (props: {
     const canceled = await processingModal.current.then();
     if (canceled) {
       // user interrupted the process
-      stopProcessing();
+      stopPreviewing();
     }
-  };
-
-  const generateCompilation = async (pngs: PNGFile[], cyRefCurrent: cytoscape.Core) => {
-    worker.postMessage({ type: "COMPILATION", PNGFiles: pngs });
-    worker.onmessage = async (e) => {
-      const { type, payload } = e.data;
-
-      switch (type) {
-        case "DOWNLOAD":
-          downloadBlob(payload.processedBlob, payload.name);
-          break;
-        case "COMPLETED":
-          console.log("COMPLETED", payload);
-          break;
-      }
-
-      setProcessing(false);
-      cyRefCurrent?.destroy();
-    };
-    worker.onerror = (e) => {
-      console.error(e);
-      setProcessing(false);
-    };
   };
 
   const generatePreviewPDF = async (pngs: PNGFile[]) => {
     worker.postMessage({ type: "PREVIEW", PNGFiles: pngs });
     worker.onmessage = async (e) => {
-      setProcessing(false);
+      setPreviewing(false);
       const { payload } = e.data;
       window.open(payload, "_blank");
     };
     worker.onerror = (e) => {
       console.error(e);
-      setProcessing(false);
+      setPreviewing(false);
     };
   };
 
@@ -487,9 +472,9 @@ export const useCytoscapeCanvasExport = (props: {
   };
 
   return {
-    startProcessing,
-    ExportingCanvas,
-    processing,
-    stopProcessing,
+    startPreview,
+    PreviewExportCanvas,
+    previewing,
+    stopPreviewing,
   };
 };

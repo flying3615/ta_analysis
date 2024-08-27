@@ -1,7 +1,7 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
-import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client/src/models/PageDTO.ts";
+import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";

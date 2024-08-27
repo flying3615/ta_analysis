@@ -17,10 +17,10 @@ import {
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
-import { FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
+import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/pixelConversions.ts";
 
-const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
+const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
   const svgDataForSymbol = (ele: cytoscape.NodeSingular) => {
     // The symbolId is either a 2/3 digit ascii code or a character
     const symbolId = ele.data("symbolId");
@@ -70,7 +70,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-halign": textHAlign,
     "text-valign": textVAlign,
     "text-justification": textJustification,
-    color: "data(fontColor)",
+    color: isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
     "z-index": "data(zIndex)",
     "text-background-color": "#FFFFFF",
     "text-background-opacity": "data(textBackgroundOpacity)",
@@ -86,7 +86,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   };
 
   const lineBaseStyle = {
-    "line-color": FOREGROUND_COLOUR,
+    "line-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
     "z-index": 150,
     "z-index-compare": "manual",
     width: "data(pointWidth)",
@@ -151,7 +151,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node style for the page border
       selector: "node[id^='border_']",
       style: {
-        "background-color": FOREGROUND_COLOUR,
+        "background-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
       },
     },
     {
@@ -232,7 +232,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         ...lineBaseStyle,
         "curve-style": "straight", // needed to render arrows
         "target-arrow-shape": "data(targetArrowShape)",
-        "target-arrow-color": FOREGROUND_COLOUR,
+        "target-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
       },
     },
     {
@@ -240,7 +240,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         ...lineBaseStyle,
         "source-arrow-shape": "data(sourceArrowShape)",
-        "source-arrow-color": FOREGROUND_COLOUR,
+        "source-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
       },
     },
     {
@@ -255,7 +255,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "#root",
       style: {
         "background-color": "white",
-        "border-color": FOREGROUND_COLOUR,
+        "border-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
       },
     },
   ] as Stylesheet[];

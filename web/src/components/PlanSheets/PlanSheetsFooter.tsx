@@ -12,8 +12,9 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { useCytoscapeCanvasExport } from "@/hooks/useCytoscapeCanvasExport.tsx";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
+import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
+import { usePlanGenPreview } from "@/hooks/usePlanGenPreview.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useUpdatePlanMutation } from "@/queries/plan";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
@@ -57,12 +58,14 @@ const PlanSheetsFooter = ({
 
   const { result: isPreviewCompilationOn } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION);
 
-  const { startProcessing, ExportingCanvas, processing } = useCytoscapeCanvasExport({
+  const { startPreview, PreviewExportCanvas, previewing } = usePlanGenPreview({
     transactionId,
     surveyInfo,
     pageConfigsNodeData,
     pageConfigsEdgeData,
   });
+
+  const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation();
 
   const {
     mutate: updatePlanMutate,
@@ -100,7 +103,8 @@ const PlanSheetsFooter = ({
 
   return (
     <footer className="PlanSheetsFooter" ref={modalOwnerRef}>
-      {isPreviewCompilationOn && <ExportingCanvas />}
+      {isPreviewCompilationOn && <PreviewExportCanvas />}
+      {isPreviewCompilationOn && <CompilationExportCanvas />}
       <Menu
         menuButton={
           <LuiButton title="Change sheet view" className="change-sheet-button lui-button-tertiary lui-button-icon">
@@ -149,7 +153,7 @@ const PlanSheetsFooter = ({
 
       <div className="PlanSheetsFooter-right">
         <LuiButton
-          className="PlanSheetsFooter-saveButton lui-button-tertiary"
+          className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
           onClick={updatePlan}
           disabled={!saveEnabled || saveEnabledLoading}
         >
@@ -164,16 +168,33 @@ const PlanSheetsFooter = ({
         </LuiButton>
         {isPreviewCompilationOn && (
           <LuiButton
-            className="PlanSheetsFooter-previewButton lui-button-tertiary"
-            onClick={() => startProcessing("PREVIEW")}
-            disabled={processing}
+            className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
+            onClick={startPreview}
+            disabled={previewing}
           >
-            {processing ? (
+            {previewing ? (
               <LuiMiniSpinner size={20} divProps={{ "data-testid": "preview-loading-spinner" }} />
             ) : (
               <>
-                <LuiIcon alt="Save" color={luiColors.sea} name="ic_layout_plan_sheets" size="md" />
+                <LuiIcon alt="Preview" color={luiColors.sea} name="ic_layout_plan_sheets" size="md" />
                 Preview layout
+              </>
+            )}
+          </LuiButton>
+        )}
+
+        {isPreviewCompilationOn && (
+          <LuiButton
+            className="PlanSheetsFooter-right-icon-button lui-button-tertiary"
+            onClick={startCompile}
+            disabled={compiling}
+          >
+            {compiling ? (
+              <LuiMiniSpinner size={20} divProps={{ "data-testid": "compilation-loading-spinner" }} />
+            ) : (
+              <>
+                <LuiIcon alt="Compile" color={luiColors.sea} name="ic_double_tick" size="md" />
+                Compile plan(s)
               </>
             )}
           </LuiButton>

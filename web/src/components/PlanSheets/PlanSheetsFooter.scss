@@ -64,14 +64,15 @@ $warningColor: #ea6a2e;
     margin-left: auto;
     display: flex;
     flex-direction: row;
-  }
 
-  &-saveButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 150px;
-    gap: 8px;
+    &-icon-button {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 180px;
+      gap: 8px;
+    }
   }
 
   .pagination {
@@ -80,12 +81,5 @@ $warningColor: #ea6a2e;
     justify-content: center;
     font-weight: 400;
     color: lui.$charcoal;
-  }
-  &-previewButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 170px;
-    gap: 5px;
   }
 }

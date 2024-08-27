@@ -1,6 +1,6 @@
-export function downloadBlob(blob: Blob, filename: string) {
-  // Create an object URL for the blob
-  const url = window.URL.createObjectURL(blob);
+export function downloadBlob(file: File, filename: string) {
+  // Create an object URL for the file
+  const url = window.URL.createObjectURL(file);
   // Create a new anchor element
   const a = document.createElement("a");
   // Set the href and download attributes of the anchor
