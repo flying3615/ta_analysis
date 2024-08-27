@@ -1,4 +1,4 @@
-import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
@@ -31,10 +31,10 @@ export const nodeDefinitionsFromData = (
   return [
     { data: { id: "root", label: "" } },
     ...data.map((nodeDataEntry) => {
-      const nodePositionPixels =
-        nodeDataEntry.properties["coordType"] === "userDefined"
-          ? cytoscapeCoordMapper.planCoordToCytoscape(nodeDataEntry.position)
-          : { x: 0, y: 0 };
+      const isUserDefined = nodeDataEntry.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined;
+      const nodePositionPixels = isUserDefined
+        ? cytoscapeCoordMapper.planCoordToCytoscape(nodeDataEntry.position)
+        : { x: 0, y: 0 };
 
       return {
         group: "nodes" as ElementGroup,
@@ -46,7 +46,7 @@ export const nodeDefinitionsFromData = (
           ...nodeDataEntry.properties,
         },
         // Note that we need a position here also in order to lock the node position
-        locked: nodeDataEntry.properties["coordType"] === "userDefined",
+        locked: isUserDefined,
         position: nodePositionPixels,
       };
     }),
@@ -110,7 +110,7 @@ export const nodePositionsFromData = (
     let nodePositionPixels;
 
     if (
-      node.properties["coordType"] === "userDefined" ||
+      node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined ||
       node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
     ) {
       nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);

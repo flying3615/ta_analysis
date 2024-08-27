@@ -51,7 +51,7 @@
     "@linz/landonline-common-js": "^6.1.0",
     "@linz/lol-auth-js": "^2.1.0",
     "@linz/luck-syscodes": "^12.8.0",
-    "@linz/survey-plan-generation-api-client": "^0.42.0",
+    "@linz/survey-plan-generation-api-client": "^0.43.2",
     "@linzjs/landonline-openlayers-map": "^6.2.1",
     "@linzjs/lui": "^21.39.1",
     "@linzjs/windows": "^3.2.4",

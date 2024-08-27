@@ -1,4 +1,10 @@
-import { DiagramDTO, DisplayStateEnum, PageDTO, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTOCoordTypeEnum,
+  DiagramDTO,
+  DisplayStateEnum,
+  PageDTO,
+  PageDTOPageTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -140,7 +146,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 1.5, y: -1.5 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -153,7 +159,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 40.5, y: -1.5 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -166,7 +172,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 1.5, y: -26.2 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -179,7 +185,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 8.5, y: -26.2 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -192,7 +198,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 26.5, y: -26.2 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -205,7 +211,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 33.5, y: -26.2 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -218,7 +224,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 40.5, y: -26.2 },
     label: "",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -231,7 +237,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 1.5, y: -28.2 },
     label: "8",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -244,7 +250,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 8.5, y: -28.2 },
     label: "9",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -257,7 +263,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 26.5, y: -28.2 },
     label: "10",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -270,7 +276,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 33.5, y: -28.2 },
     label: "11",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -283,7 +289,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 40.5, y: -28.2 },
     label: "12",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -297,7 +303,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 39.55, y: -2.55 },
     label: "13",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -310,7 +316,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 37.5, y: -26.2 },
     label: "14",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -323,7 +329,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 37.5, y: -25.2 },
     label: "15",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -336,7 +342,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 40.5, y: -25.2 },
     label: "16",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",
@@ -349,7 +355,7 @@ export const pageBorderNodes: INodeData[] = [
     position: { x: 39.0, y: -25.7 },
     label: "T/1",
     properties: {
-      coordType: "userDefined",
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
       featureId: 1,
       featureType: "",
       font: "Arial",

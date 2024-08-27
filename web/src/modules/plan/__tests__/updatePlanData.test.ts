@@ -1,4 +1,4 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -34,7 +34,7 @@ describe("updatePlanData", () => {
   test("updateDiagramsWithNode should return diagrams with updated coordinate data", () => {
     const updatedNode = {
       id: "1",
-      properties: { diagramId: 1, elementType: "coordinates", coordType: "node" },
+      properties: { diagramId: 1, elementType: "coordinates", coordType: CoordinateDTOCoordTypeEnum.node },
       position: { x: 99, y: -99 },
     } as INodeData;
 
@@ -50,7 +50,7 @@ describe("updatePlanData", () => {
               x: 20,
               y: -10,
             },
-            coordType: "node",
+            coordType: CoordinateDTOCoordTypeEnum.node,
           },
         ],
       },
