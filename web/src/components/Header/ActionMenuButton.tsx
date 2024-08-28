@@ -9,13 +9,14 @@ interface HeaderButtonProps {
   iconName: string;
   disabled?: boolean;
   isLoading?: boolean;
+  className?: string;
   selected: boolean;
   onClick?: (e: MouseEvent) => void | boolean;
   allowOpen?: () => boolean;
 }
 
 export const ActionMenuButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(function headerMenuButton(
-  { disabled, headerButtonLabel, iconName, selected, allowOpen, onClick },
+  { disabled, headerButtonLabel, iconName, selected, className, allowOpen, onClick },
   ref,
 ) {
   return (
@@ -23,7 +24,7 @@ export const ActionMenuButton = forwardRef<HTMLButtonElement, HeaderButtonProps>
       <div>
         <LuiButton
           disabled={disabled}
-          className={clsx("lui-button-menu", { selected })}
+          className={clsx("lui-button-menu", className, { selected })}
           level="tertiary"
           style={{ whiteSpace: "nowrap" }}
           onClick={(e) => {
@@ -35,7 +36,7 @@ export const ActionMenuButton = forwardRef<HTMLButtonElement, HeaderButtonProps>
           <LuiIcon name={iconName} alt={headerButtonLabel} size="md" />
           <LuiIcon
             alt="Dropdown icon"
-            className="HeaderToggle__dropdownIcon"
+            className={clsx("HeaderToggle__dropdownIcon", className)}
             color={luiColors.sea}
             name="ic_arrow_drop_down"
             size="md"

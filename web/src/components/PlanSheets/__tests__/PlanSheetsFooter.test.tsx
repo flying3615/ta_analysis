@@ -1,7 +1,7 @@
 import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { generatePath, Link, Route } from "react-router-dom";
@@ -188,7 +188,8 @@ describe("PlanSheetsFooter", () => {
       }),
     );
 
-    const successToast = await screen.findByText("Layout saved successfully");
+    const successToast = await screen.findByTestId("lui-msg-toast-show");
+    expect(await within(successToast).findByText("Layout saved successfully")).toBeInTheDocument();
     expect(successToast).toBeVisible();
     expect(successToast).toHaveClass("LuiBannerV2");
     expect(successToast).toHaveClass("success");

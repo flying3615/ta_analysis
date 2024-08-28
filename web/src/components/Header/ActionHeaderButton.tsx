@@ -14,9 +14,18 @@ interface ActionHeaderButtonProps {
   disabled?: boolean;
   loading?: boolean;
   onClick?: (ev: React.MouseEvent) => void;
+  className?: string;
 }
 
-export const ActionHeaderButton = ({ title, action, onClick, icon, disabled, loading }: ActionHeaderButtonProps) => {
+export const ActionHeaderButton = ({
+  title,
+  action,
+  onClick,
+  className,
+  icon,
+  disabled,
+  loading,
+}: ActionHeaderButtonProps) => {
   const activeAction = useAppSelector(getActiveAction);
   const dispatch = useAppDispatch();
 
@@ -39,7 +48,7 @@ export const ActionHeaderButton = ({ title, action, onClick, icon, disabled, loa
         disabled={disabled}
         level="tertiary"
         onClick={onClickHandler}
-        className={clsx("lui-button-icon-only", { selected: action === activeAction })}
+        className={clsx("lui-button-icon-only", className, { selected: action === activeAction })}
       >
         <LuiIcon name={icon} alt={title} size="md" />
       </LuiButton>

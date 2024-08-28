@@ -1,3 +1,5 @@
+import "./DefineDiagramsHeaderButtons.scss";
+
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useContext } from "react";
 
@@ -112,6 +114,7 @@ export const DefineDiagramMenuButtons = () => {
             ? "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
             : "Define primary diagram"
         }
+        className="DefineDiagram__Icon--primary"
         defaultAction="define_primary_diagram_rectangle"
         loading={insertDiagramLoading}
         disabled={
@@ -123,11 +126,13 @@ export const DefineDiagramMenuButtons = () => {
             label: "Rectangle",
             title: "Define primary diagram by rectangle",
             action: "define_primary_diagram_rectangle",
+            iconClassName: "DefineDiagram__Icon--primary",
           },
           {
             label: "Polygon",
             title: "Define primary diagram by polygon",
             action: "define_primary_diagram_polygon",
+            iconClassName: "DefineDiagram__Icon--primary",
           },
         ]}
       />
@@ -139,6 +144,7 @@ export const DefineDiagramMenuButtons = () => {
         }
         defaultAction="define_nonprimary_diagram_rectangle"
         loading={insertDiagramLoading}
+        className="DefineDiagram__Icon--non-primary"
         disabled={
           insertDiagramLoading ||
           disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygon")
@@ -148,11 +154,13 @@ export const DefineDiagramMenuButtons = () => {
             label: "Rectangle",
             title: "Define non-primary diagram by rectangle",
             action: "define_nonprimary_diagram_rectangle",
+            iconClassName: "DefineDiagram__Icon--non-primary",
           },
           {
             label: "Polygon",
             title: "Define non-primary diagram by polygon",
             action: "define_nonprimary_diagram_polygon",
+            iconClassName: "DefineDiagram__Icon--non-primary",
           },
         ]}
       />
@@ -164,6 +172,7 @@ export const DefineDiagramMenuButtons = () => {
         }
         defaultAction="define_survey_diagram_rectangle"
         loading={insertDiagramLoading}
+        className="DefineDiagram__Icon--survey"
         disabled={
           insertDiagramLoading ||
           disabledDiagramIds.includes("define_survey_diagram_rectangle" || "define_survey_diagram_polygon")
@@ -173,11 +182,13 @@ export const DefineDiagramMenuButtons = () => {
             label: "Rectangle",
             title: "Define survey diagram by rectangle",
             action: "define_survey_diagram_rectangle",
+            iconClassName: "DefineDiagram__Icon--survey",
           },
           {
             label: "Polygon",
             title: "Define survey diagram by polygon",
             action: "define_survey_diagram_polygon",
+            iconClassName: "DefineDiagram__Icon--survey",
           },
         ]}
       />

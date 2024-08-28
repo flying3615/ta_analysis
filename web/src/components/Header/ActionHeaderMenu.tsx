@@ -14,12 +14,14 @@ interface ActionHeaderMenuItemProps {
   icon?: IconName;
   label: string;
   title: string;
+  iconClassName?: string;
 }
 
 interface ActionHeaderMenuProps {
   disabled?: boolean;
   loading?: boolean;
   icon?: IconName;
+  className?: string;
   title: string;
   options: ActionHeaderMenuItemProps[];
   allowOpen?: () => boolean;
@@ -31,6 +33,7 @@ export const ActionHeaderMenu = ({
   disabled,
   defaultAction,
   icon,
+  className,
   title,
   loading,
   allowOpen,
@@ -80,6 +83,7 @@ export const ActionHeaderMenu = ({
             disabled={disabled}
             selected={menuState === "open" || subActionIsSelected}
             allowOpen={allowOpen}
+            className={className}
             onClick={() => {
               if (subActionIsSelected) {
                 // Toggle menu off on click if active
@@ -110,7 +114,12 @@ export const ActionHeaderMenu = ({
                   setMenuState("closed");
                 }}
               >
-                <LuiIcon name={o.icon ?? "ic_" + o.action ?? "ic_menu"} alt={o.title} size="md" />
+                <LuiIcon
+                  name={o.icon ?? "ic_" + o.action ?? "ic_menu"}
+                  alt={o.title}
+                  size="md"
+                  className={o.iconClassName}
+                />
                 {o.label}
               </MenuItem>
             ))}
