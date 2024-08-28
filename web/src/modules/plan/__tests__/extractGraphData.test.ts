@@ -1,5 +1,6 @@
 import { LineDTO } from "@linz/survey-plan-generation-api-client";
 
+import { nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import {
@@ -9,6 +10,7 @@ import {
   lineToEdges,
 } from "@/modules/plan/extractGraphData.ts";
 import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
+import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
@@ -132,6 +134,61 @@ describe("extractGraphData", () => {
     expect(labelNode23?.properties?.["fontSize"]).toBe(14);
     expect(labelNode23?.properties?.["circled"]).toBeTruthy();
     expect(labelNode23?.properties?.["textBackgroundOpacity"]).toBe(1);
+  });
+
+  test("extractDiagramNodes displays child diagram label with '?'", () => {
+    const mockLookupTbl: IDiagramToPage = {};
+
+    const diagram3 = nestedTitlePlan.diagrams.find((d) => d.id === 3);
+    expect(diagram3!.childDiagrams![0]?.diagramRef).toBe(6);
+    expect(diagram3!.childDiagrams![0]?.labels).toHaveLength(2);
+    expect(diagram3!.childDiagrams![0]?.labels[0]?.id).toBe(41);
+    expect(diagram3!.childDiagrams![0]?.labels[0]?.displayText).toBe("Diag. ACA");
+    expect(diagram3!.childDiagrams![0]?.labels[1]?.id).toBe(42);
+    expect(diagram3!.childDiagrams![0]?.labels[1]?.displayText).toBe("See T?");
+
+    const extractedNodes = extractDiagramNodes(nestedTitlePlan.diagrams, mockLookupTbl);
+
+    expect(extractedNodes).toHaveLength(26);
+    const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
+
+    const labelNode41 = extractedNodeMap["41"];
+    expect(labelNode41?.id).toBe("41");
+    expect(labelNode41?.label).toBe("Diag. ACA");
+
+    const labelNode42 = extractedNodeMap["42"];
+    expect(labelNode42?.id).toBe("42");
+    expect(labelNode42?.label).toBe("See T?");
+  });
+
+  test("extractDiagramNodes displays child diagram label with page number", () => {
+    const mockLookupTbl: IDiagramToPage = {
+      6: {
+        pageRef: 1,
+        page: { ...nestedTitlePlan.pages[0]!, id: 1, pageNumber: 5 },
+      },
+    };
+
+    const diagram3 = nestedTitlePlan.diagrams.find((d) => d.id === 3);
+    expect(diagram3!.childDiagrams![0]?.diagramRef).toBe(6);
+    expect(diagram3!.childDiagrams![0]?.labels).toHaveLength(2);
+    expect(diagram3!.childDiagrams![0]?.labels[0]?.id).toBe(41);
+    expect(diagram3!.childDiagrams![0]?.labels[0]?.displayText).toBe("Diag. ACA");
+    expect(diagram3!.childDiagrams![0]?.labels[1]?.id).toBe(42);
+    expect(diagram3!.childDiagrams![0]?.labels[1]?.displayText).toBe("See T?");
+
+    const extractedNodes = extractDiagramNodes(nestedTitlePlan.diagrams, mockLookupTbl);
+
+    expect(extractedNodes).toHaveLength(26);
+    const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
+
+    const labelNode41 = extractedNodeMap["41"];
+    expect(labelNode41?.id).toBe("41");
+    expect(labelNode41?.label).toBe("Diag. ACA");
+
+    const labelNode42 = extractedNodeMap["42"];
+    expect(labelNode42?.id).toBe("42");
+    expect(labelNode42?.label).toBe("See T5");
   });
 
   test("extractEdges extracts edge data", () => {

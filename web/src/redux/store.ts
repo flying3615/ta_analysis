@@ -1,5 +1,7 @@
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
 
+import { asyncDispatchMiddleware } from "@/redux/customMiddleware.ts";
+
 import defineDiagramsSlice from "./defineDiagrams/defineDiagramsSlice";
 import planSheetsSlice from "./planSheets/planSheetsSlice";
 
@@ -12,7 +14,7 @@ export const setupStore = (preloadedState?: Partial<RootState>) =>
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: false,
-      }),
+      }).concat(asyncDispatchMiddleware),
     reducer: rootReducer,
     preloadedState,
   });

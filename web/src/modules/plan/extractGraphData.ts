@@ -11,6 +11,7 @@ import { chunk, flatten, negate, zip } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
+import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
@@ -138,10 +139,28 @@ export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[
   });
 };
 
-export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
+export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagramToPage | undefined): INodeData[] => {
   return diagrams.flatMap((diagram) => {
     const diagramLabelToNode = (label: LabelDTO) => {
       const baseLabelToNode = labelToNode(label);
+      // Add diagram and parent ids
+      return {
+        ...baseLabelToNode,
+        properties: {
+          ...baseLabelToNode.properties,
+          diagramId: diagram.id,
+          parent: `D${diagram.id}`,
+        },
+      };
+    };
+
+    const childDiagramLabelToNode = (label: LabelDTO, pageNumber?: string | undefined) => {
+      const baseLabelToNode = labelToNode(label);
+      // we replace "?" with pageNumber in label.displayText if labelType is "childDiagramPage"
+      baseLabelToNode.label =
+        label.labelType === "childDiagramPage" && pageNumber !== undefined
+          ? label.displayText.replace("?", pageNumber.toString())
+          : label.displayText;
       // Add diagram and parent ids
       return {
         ...baseLabelToNode,
@@ -160,6 +179,16 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
     const userDefnLabels = isUserDefnDiagram(diagram.diagramType)
       ? diagram.labels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("labels"))
       : [];
+    const childDiagLabels =
+      diagram.childDiagrams?.flatMap((childDiagram) => {
+        const pageDetails = lookupTbl ? lookupTbl[childDiagram.diagramRef] : null;
+        const pageNumber = pageDetails ? pageDetails.page.pageNumber.toString() : "?";
+        return (
+          childDiagram?.labels
+            ?.map((label) => childDiagramLabelToNode(label, pageNumber))
+            ?.map(addDiagramKey("childDiagramLabels")) ?? []
+        );
+      }) ?? [];
 
     const coordinates = diagram.coordinates.map((coordinate) => {
       return {
@@ -185,9 +214,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[]): INodeData[] => {
     const diagramNodes = [
       ...coordinates,
       ...userDefnLabels,
-      ...(diagram.childDiagrams?.flatMap((childDiagram) =>
-        childDiagram?.labels?.map(diagramLabelToNode)?.map(addDiagramKey("childDiagramLabels")),
-      ) ?? []),
+      ...childDiagLabels,
       ...diagram.coordinateLabels.map(diagramLabelToNode).map(addDiagramKey("coordinateLabels")),
       ...diagram.lineLabels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("lineLabels")),
       ...brokenLineNodes,

@@ -2,10 +2,12 @@ import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { IDiagramToPage, populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk.ts";
 
 export interface PlanSheetsState {
   diagrams: DiagramDTO[];
   pages: PageDTO[];
+  diagPageLookupTbl?: IDiagramToPage;
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
@@ -108,6 +110,11 @@ const planSheetsSlice = createSlice({
       };
     },
     hasChanges: (state) => state.hasChanges,
+  },
+  extraReducers: (builder) => {
+    builder.addCase(populateLookupTblAsync.fulfilled, (state, action) => {
+      state.diagPageLookupTbl = action.payload;
+    });
   },
 });
 

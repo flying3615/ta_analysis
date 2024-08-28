@@ -29,7 +29,7 @@ interface DiagramOptions {
   box?: boolean; // draw a box around
 }
 
-type IntoWhereForLabels = "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels";
+type IntoWhereForLabels = "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels" | "childDiagramLabels";
 
 export class PlanDataBuilder {
   planData: PlanResponseDTO = {
@@ -270,6 +270,14 @@ export class PlanDataBuilder {
         id: label.id,
         labels: [label],
       });
+      return this;
+    }
+
+    if (intoWhere === "childDiagramLabels") {
+      label.labelType = !label.displayText.match(/See.+/)
+        ? LabelDTOLabelTypeEnum.childDiagram
+        : LabelDTOLabelTypeEnum.childDiagramPage;
+      last(last(this.planData.diagrams)?.childDiagrams)?.labels?.push(label);
       return this;
     }
 

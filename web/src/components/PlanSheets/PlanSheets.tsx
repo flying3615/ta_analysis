@@ -47,6 +47,7 @@ const PlanSheets = () => {
 
   const activeDiagrams = useAppSelector(getActiveDiagrams);
   const activePages = useAppSelector(getActivePages);
+  const lookupTbl = useAppSelector((state) => state.planSheets.diagPageLookupTbl);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
@@ -120,7 +121,7 @@ const PlanSheets = () => {
   const pageConfigsNodeData = extractPageConfigNodes(pageConfigs);
   const pageConfigsEdgeData = extractPageConfigEdges(pageConfigs);
 
-  const diagramNodeData = extractDiagramNodes(activeDiagrams);
+  const diagramNodeData = extractDiagramNodes(activeDiagrams, lookupTbl);
   const diagramEdgeData = extractDiagramEdges(activeDiagrams);
 
   const pageNodeData = extractPageNodes(activePages);

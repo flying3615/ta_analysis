@@ -48,6 +48,14 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "diagram",
   )
   .addChildDiagram({ diagramRef: 6 })
+  .addLabel("childDiagramLabels", 41, "Diag. ACA", {
+    x: 7.824,
+    y: 0,
+  })
+  .addLabel("childDiagramLabels", 42, "See T?", {
+    x: 7.924,
+    y: 0,
+  })
   .addDiagram(
     {
       x: 0.015,
