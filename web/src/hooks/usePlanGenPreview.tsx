@@ -454,7 +454,7 @@ export const usePlanGenPreview = (props: {
         CSD_NUMBER_TITLE,
         {
           "text-max-width": maxWidthCell4 - 2 * xOffsetMargin,
-          "font-size": "15px",
+          "font-size": "18px",
           "text-halign": "right",
         },
       ),
@@ -463,7 +463,7 @@ export const usePlanGenPreview = (props: {
     surveyInfoNodes.push(
       createNewNode(bottomLineNodesAscByX[3]!, "survey_info_csd_number", xOffsetMargin, cellHeight / 3, CSD_NUMBER, {
         "text-max-width": maxWidthCell4 - 2 * xOffsetMargin,
-        "font-size": "15px",
+        "font-size": "18px",
         "text-halign": "right",
       }),
     );

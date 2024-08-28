@@ -2,8 +2,8 @@ import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 
 export const mockSurveyInfo = {
   corporateName: "Test Corporate Name",
-  datasetId: "LT",
-  datasetSeries: "999999",
+  datasetId: "99999",
+  datasetSeries: "LT",
   description: "Test Description",
   givenNames: "John",
   localityName: "Wellington",
