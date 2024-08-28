@@ -10,7 +10,12 @@ import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 import Header from "@/components/Header/Header";
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
+import {
+  errorFromResponseError,
+  errorFromSerializedError,
+  unhandledErrorModal,
+} from "@/components/modals/unhandledErrorModal.tsx";
 import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import SidePanel from "@/components/SidePanel/SidePanel";
@@ -66,11 +71,17 @@ const PlanSheets = () => {
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
   useEffect(() => {
-    if (planCheckError) {
-      const serializedError = errorFromSerializedError(planCheckError);
-      newrelic.noticeError(serializedError);
-      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
-    }
+    (async () => {
+      if (planCheckError) {
+        const errorWithResponse = await errorFromResponseError(planCheckError);
+        newrelic.noticeError(errorWithResponse);
+        const modalContent =
+          errorWithResponse.response?.status === 404
+            ? errorWithResponseModal({ ...errorWithResponse, message: "Survey not found" })
+            : unhandledErrorModal(errorWithResponse);
+        showPrefabModal(modalContent).then(() => navigate(`/plan-generation/${transactionId}`));
+      }
+    })();
   }, [planCheckError, transactionId, navigate, showPrefabModal]);
 
   useEffect(() => {

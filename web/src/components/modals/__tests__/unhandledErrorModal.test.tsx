@@ -1,8 +1,17 @@
+import { ResponseError } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useEffect } from "react";
 
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import {
+  errorFromResponseError,
+  errorFromSerializedError,
+  unhandledErrorModal,
+} from "@/components/modals/unhandledErrorModal.tsx";
+
+jest.mock("@linz/survey-plan-generation-api-client", () => ({
+  ResponseError: jest.fn(),
+}));
 
 describe("unhandledErrorModal", () => {
   const TestModal = (props: { error: Error }) => {
@@ -93,5 +102,156 @@ describe("errorFromSerializedError", () => {
     expect(error.response?.status).toBe("404");
     expect(error.response?.statusText).toBe("Not found");
     expect(error.response?.url).toBe("http://api/wrong.txt");
+  });
+});
+
+describe("errorFromResponseError", () => {
+  it("should return an ErrorWithResponse object", async () => {
+    const mockJson = jest.fn().mockResolvedValue({
+      errors: [{ description: "Error description" }],
+    });
+    const error = {
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        json: mockJson,
+        status: 400,
+      },
+    } as unknown as ResponseError;
+
+    const result = await errorFromResponseError(error);
+
+    expect(result).toEqual({
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        status: 400,
+        statusText: "Error description",
+      },
+    });
+  });
+
+  it("should handle errors without a description", async () => {
+    const mockJson = jest.fn().mockResolvedValue({
+      errors: [],
+    });
+    const error = {
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        json: mockJson,
+        status: 400,
+      },
+    } as unknown as ResponseError;
+
+    const result = await errorFromResponseError(error);
+
+    expect(result).toEqual({
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        status: 400,
+        statusText: undefined,
+      },
+    });
+  });
+
+  it("should return an ErrorWithResponse object with default values", async () => {
+    const mockJson = jest.fn().mockResolvedValue({
+      errors: [{ description: "Error description" }],
+    });
+    const error = {
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        json: mockJson,
+        status: 400,
+      },
+    } as unknown as ResponseError;
+
+    const result = await errorFromResponseError(error);
+
+    expect(result).toEqual({
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        status: 400,
+        statusText: "Error description",
+      },
+    });
+  });
+
+  it("should override default values with customErrorResponse", async () => {
+    const mockJson = jest.fn().mockResolvedValue({
+      errors: [{ description: "Error description" }],
+    });
+    const error = {
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        json: mockJson,
+        status: 400,
+      },
+    } as unknown as ResponseError;
+
+    const customErrorResponse = {
+      message: "Custom error message",
+      name: "Custom error name",
+      stack: "Custom error stack",
+      response: {
+        status: 500,
+        statusText: "Custom status text",
+      },
+    };
+
+    const result = await errorFromResponseError(error, customErrorResponse);
+
+    expect(result).toEqual({
+      message: "Custom error message",
+      name: "Custom error name",
+      stack: "Custom error stack",
+      response: {
+        status: 500,
+        statusText: "Custom status text",
+      },
+    });
+  });
+
+  it("should handle partial customErrorResponse", async () => {
+    const mockJson = jest.fn().mockResolvedValue({
+      errors: [{ description: "Error description" }],
+    });
+    const error = {
+      message: "Error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        json: mockJson,
+        status: 400,
+      },
+    } as unknown as ResponseError;
+
+    const customErrorResponse = {
+      message: "Custom error message",
+    };
+
+    const result = await errorFromResponseError(error, customErrorResponse);
+
+    expect(result).toEqual({
+      message: "Custom error message",
+      name: "Error name",
+      stack: "Error stack",
+      response: {
+        status: 400,
+        statusText: "Error description",
+      },
+    });
   });
 });

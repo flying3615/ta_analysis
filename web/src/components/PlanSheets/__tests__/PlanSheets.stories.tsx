@@ -213,6 +213,55 @@ export const NoPageFound: Story = {
   },
 };
 
+export const PlanNotFoundErrorModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan-check$/, () =>
+          HttpResponse.json(
+            {
+              refreshRequired: false,
+              errors: [
+                {
+                  code: "NOT_FOUND",
+                  description: "Could not find a CPL survey with ID 999",
+                },
+              ],
+            },
+            { status: 404, statusText: "Not Found" },
+          ),
+        ),
+      ],
+    },
+  },
+};
+
+export const PlanIsLockedErrorModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan-check$/, () =>
+          HttpResponse.json(
+            {
+              refreshRequired: false,
+              errors: [
+                {
+                  code: "LOCKED",
+                  description:
+                    "The survey 123 is locked for Plan Generation. Go back on capture app and reopen the Plan Generation",
+                },
+              ],
+            },
+            { status: 423, statusText: "Not Found" },
+          ),
+        ),
+      ],
+    },
+  },
+};
+
 const planData = () => {
   return new PlanDataBuilder()
     .addDiagram({

@@ -1,6 +1,7 @@
 import "./unhandledErrorModal.scss";
 
 import { initJourneyId } from "@linz/landonline-common-js";
+import { ResponseError } from "@linz/survey-plan-generation-api-client";
 import { LuiAccordicard, LuiButton, LuiIcon } from "@linzjs/lui";
 import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { SerializedError } from "@reduxjs/toolkit";
@@ -149,3 +150,55 @@ export const errorFromSerializedError = (error: SerializedError | Error | ErrorW
     url: ("response" in error && error.response?.url) || "",
   },
 });
+
+export const errorFromResponseError = async (
+  error: Error,
+  customErrorResponse?: Partial<ErrorWithResponse>,
+): Promise<ErrorWithResponse> => {
+  const responseError = error as ResponseError;
+  const jsonBody = await responseError.response.json();
+  const errorResponse = errorResponseFromJSON(jsonBody);
+  return {
+    message: customErrorResponse?.message ?? responseError.message,
+    name: customErrorResponse?.name ?? responseError.name,
+    stack: customErrorResponse?.stack ?? responseError.stack,
+    response: {
+      status: customErrorResponse?.response?.status ?? responseError.response.status,
+      statusText: customErrorResponse?.response?.statusText ?? errorResponse.errors[0]?.description,
+    },
+  };
+};
+
+// This maps to un-exported ErrorDetail from the backend.
+// See https://github.com/linz/landonline-survey-plan-generation-api/blob/master/src/main/kotlin/nz/govt/linz/landonline/plangen/exception/CustomExceptionHandler.kt#L311
+interface ErrorDetail {
+  code: string;
+  description?: string;
+}
+
+export interface ErrorResponse {
+  errors: Array<ErrorDetail>;
+}
+
+function errorResponseFromJSON(
+  json: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+): ErrorResponse {
+  if (json === undefined || json === null) {
+    return json;
+  }
+  return {
+    errors: (json["errors"] as Array<never>).map(errorDetailFromJSON),
+  };
+}
+
+function errorDetailFromJSON(
+  json: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+): ErrorDetail {
+  if (json === undefined || json === null) {
+    return json;
+  }
+  return {
+    code: json["code"],
+    description: json["description"],
+  };
+}

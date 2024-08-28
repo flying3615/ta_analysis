@@ -90,7 +90,7 @@ describe("PlanSheets", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "404" }),
     );
 
-    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
+    expect(await screen.findByText(/Survey not found/i)).toBeInTheDocument();
   });
 
   it("displays dialog when renumber button is pressed and validates inputs", async () => {
@@ -314,7 +314,7 @@ describe("PlanSheets", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "404" }),
     );
 
-    expect(await screen.findByText("Unexpected error")).toBeInTheDocument();
+    expect(await screen.findByText(/Survey not found/i)).toBeInTheDocument();
     await userEvent.click(screen.getByText("Dismiss"));
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
