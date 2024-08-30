@@ -108,7 +108,8 @@ describe("errorFromSerializedError", () => {
 describe("errorFromResponseError", () => {
   it("should return an ErrorWithResponse object", async () => {
     const mockJson = jest.fn().mockResolvedValue({
-      errors: [{ description: "Error description" }],
+      message: "Error description",
+      errors: [],
     });
     const error = {
       message: "Error message",
@@ -162,7 +163,8 @@ describe("errorFromResponseError", () => {
 
   it("should return an ErrorWithResponse object with default values", async () => {
     const mockJson = jest.fn().mockResolvedValue({
-      errors: [{ description: "Error description" }],
+      message: "Error description",
+      errors: [],
     });
     const error = {
       message: "Error message",
@@ -189,7 +191,8 @@ describe("errorFromResponseError", () => {
 
   it("should override default values with customErrorResponse", async () => {
     const mockJson = jest.fn().mockResolvedValue({
-      errors: [{ description: "Error description" }],
+      message: "Error description",
+      errors: [],
     });
     const error = {
       message: "Error message",
@@ -226,7 +229,8 @@ describe("errorFromResponseError", () => {
 
   it("should handle partial customErrorResponse", async () => {
     const mockJson = jest.fn().mockResolvedValue({
-      errors: [{ description: "Error description" }],
+      message: "Error description",
+      errors: [],
     });
     const error = {
       message: "Error message",

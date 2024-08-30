@@ -222,12 +222,9 @@ export const PlanNotFoundErrorModal: Story = {
           HttpResponse.json(
             {
               refreshRequired: false,
-              errors: [
-                {
-                  code: "NOT_FOUND",
-                  description: "Could not find a CPL survey with ID 999",
-                },
-              ],
+              code: "NOT_FOUND",
+              message: "Could not find a CPL survey with ID 999",
+              errors: [],
             },
             { status: 404, statusText: "Not Found" },
           ),
@@ -246,13 +243,10 @@ export const PlanIsLockedErrorModal: Story = {
           HttpResponse.json(
             {
               refreshRequired: false,
-              errors: [
-                {
-                  code: "LOCKED",
-                  description:
-                    "The survey 123 is locked for Plan Generation. Go back on capture app and reopen the Plan Generation",
-                },
-              ],
+              code: "LOCKED",
+              message:
+                "The survey 123 is locked for Plan Generation. Go back on capture app and reopen the Plan Generation",
+              errors: [],
             },
             { status: 423, statusText: "Not Found" },
           ),
