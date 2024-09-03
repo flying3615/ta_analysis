@@ -17,7 +17,6 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!(ol|lodash-es|@linzjs/windows/|@linzjs/lui/|@fontsource))",
   ],
-  resetMocks: true,
   coverageReporters: ["text", "cobertura"],
   moduleNameMapper: {
     "^@/(.*)\\.svg\?(.*)": "<rootDir>/src/$1.svg",

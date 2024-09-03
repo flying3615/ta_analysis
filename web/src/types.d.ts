@@ -8,6 +8,7 @@ declare interface Window {
     oidcIssuerUri: string;
     splitKey: string;
     surveyBaseUrl: string;
+    secureFileUploadBaseUrl: string;
   };
   isStorybook?: true | undefined;
 }

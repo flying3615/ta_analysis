@@ -1,4 +1,6 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import { FileUploaderClient } from "@linz/secure-file-upload";
+import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
+import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve } from "@linzjs/windows";
 import cytoscape from "cytoscape";
@@ -13,9 +15,9 @@ import {
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { cyPngConfig, PlanSheetTypeAbbreviation, PlanSheetTypeObject, PNGFile } from "@/hooks/usePlanGenPreview.tsx";
+import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { downloadBlob } from "@/util/downloadHelper.ts";
 import { convertPNGImageDataTo1Bit, generateBlankPNG } from "@/util/imageUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 
@@ -36,6 +38,16 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
   const [compiling, setCompiling] = useState<boolean>(false);
   const processingModal = useRef<PromiseWithResolve<boolean>>();
+  const transactionId = useTransactionId();
+
+  const secureFileUploadClient = new FileUploaderClient({
+    maxFileSizeHint: 1024 * 1024 * 100,
+    allowableFileExtHint: [".png"],
+    errorNotifier: (error) => {
+      console.log(error);
+    },
+    baseUrl: window._env_.secureFileUploadBaseUrl,
+  });
 
   useEffect(() => {
     if (!compiling) {
@@ -153,7 +165,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           // remove all elements for the next page rendering
           cyRefCurrent.remove(cyRefCurrent.elements());
         }
-
         await generateCompilation(pngFiles);
       });
     } catch (e) {
@@ -167,13 +178,25 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
   const generateCompilation = async (pngFiles: PNGFile[]) => {
     try {
-      const processedFiles = pngFiles.map(async (f) => {
+      const processUploadJobs = pngFiles.map(async (f) => {
         const file = await convertPNGImageDataTo1Bit(f);
-        downloadBlob(file.processedBlob, file.name);
-        return file;
+        return await secureFileUploadClient.uploadFile(file.processedBlob);
       });
-      // TODO call upload to SFU and BE endpoint
-      console.log(processedFiles);
+
+      const sfuCombinedResponse = await Promise.all(processUploadJobs);
+
+      const planCompilationRequest: PlanCompileRequest = {
+        transactionId: transactionId,
+        planGraphicsCompileRequest: sfuCombinedResponse as unknown as PlanGraphicsCompileRequest,
+      };
+
+      console.log("---Plan Graphic Request to our BE", planCompilationRequest);
+
+      // TODO wait for BE api to be ready and the below API returns 501 not implemented at this time
+      // const planGraphicResponsePdf = await new PlanGraphicsControllerApi(apiConfig()).planCompile(
+      //   planCompilationRequest,
+      // );
+      // console.log("the compile response is ", planGraphicResponsePdf.statusMessage);
     } catch (e) {
       console.error(e);
     } finally {

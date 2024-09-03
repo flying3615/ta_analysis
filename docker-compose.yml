@@ -160,5 +160,13 @@ services:
       timeout: 5s
       retries: 5
 
+  stub-secure-file-upload:
+    container_name: stub-secure-file-upload
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/common-services/stub-secure-file-upload"
+    ports:
+      - "12999:12999"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
 volumes:
   informix-db-data:

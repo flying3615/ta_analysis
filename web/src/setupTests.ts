@@ -29,6 +29,7 @@ window._env_ = {
   oidcIssuerUri: "https://auth.dev.landonline.govt.nz/realms/landonline",
   splitKey: "localhost",
   surveyBaseUrl: "http://localhost/v1/surveys",
+  secureFileUploadBaseUrl: "http://localhost/api",
 };
 
 // @ts-expect-error Deliberatley stub the newrelic object

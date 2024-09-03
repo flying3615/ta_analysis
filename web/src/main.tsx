@@ -24,6 +24,7 @@ export async function renderInit() {
     oidcIssuerUri,
     splitKey,
     surveyBaseUrl,
+    secureFileUploadBaseUrl: apiGatewayBaseUrl,
   };
 
   // patch fetch requests to add authorization header to api gateway requests
