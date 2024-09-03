@@ -109,11 +109,10 @@ export const nodePositionsFromData = (
   return nodeData.reduce((acc, node) => {
     let nodePositionPixels;
 
-    if (
-      node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined ||
-      node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
-    ) {
+    if (node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined) {
       nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
+    } else if (node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation) {
+      nodePositionPixels = cytoscapeCoordinateMapper.pageLabelCoordToCytoscape(node.position);
     } else {
       const diagramId = node.properties["diagramId"];
       if (typeof diagramId !== "number") {

@@ -110,6 +110,19 @@ export class CytoscapeCoordinateMapper {
       y: -this.planCmToCytoscape(yPosCm) + this.pixelMargin,
     };
   }
+  /**
+   * Converts page labels coordinates (metres) to Cytoscape pixel coordinates.
+   * @param position - Page label coordinates to convert.
+   * @returns Cytoscape pixel coordinates.
+   */
+  pageLabelCoordToCytoscape(position: GroundMetresPosition): cytoscape.Position {
+    const xPosInMetres = position.x;
+    const yPosInMetres = position.y;
+    return {
+      x: this.planCmToCytoscape(xPosInMetres * 100) + this.pixelMargin,
+      y: -this.planCmToCytoscape(yPosInMetres * 100) + this.pixelMargin,
+    };
+  }
 
   /**
    * Convert relative centimetres on plan into cytoscape pixels

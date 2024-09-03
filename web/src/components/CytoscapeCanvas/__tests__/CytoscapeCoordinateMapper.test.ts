@@ -64,6 +64,11 @@ describe("CytoscapeCoordinateMapper", () => {
     expect(cytoscapeCoordinateMapper.planCoordToCytoscape({ x: 10, y: 15 }).y).toBeCloseTo(-145.4, 1);
   });
 
+  test("pageLabelCoordToCytoscape maps page label metres to cytoscape pixels", () => {
+    expect(cytoscapeCoordinateMapper.pageLabelCoordToCytoscape({ x: 0.1, y: 0.15 }).x).toBeCloseTo(80.24, 1);
+    expect(cytoscapeCoordinateMapper.pageLabelCoordToCytoscape({ x: 0.1, y: 0.15 }).y).toBeCloseTo(-145.35, 1);
+  });
+
   test("planCmToCytoscape scales plan cm into cytoscape pixels", () => {
     expect(cytoscapeCoordinateMapper.planCmToCytoscape(1.0)).toBeCloseTo(9.0, 1);
   });
