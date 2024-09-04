@@ -14,6 +14,7 @@ import MapBrowserEvent from "ol/MapBrowserEvent";
 import { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 
+import { CommonButtons } from "@/components/CommonButtons.tsx";
 import {
   getMarksForOpenLayers,
   getParcelsForOpenLayers,
@@ -151,6 +152,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     <div className="MainWindow">
       <Header view="Diagrams">
         <DefineDiagramMenuButtons />
+        <CommonButtons />
       </Header>
       <div className="DefineDiagrams">
         {isLoading && <LuiLoadingSpinner />}

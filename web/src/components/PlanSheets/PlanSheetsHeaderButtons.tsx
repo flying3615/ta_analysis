@@ -1,13 +1,14 @@
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useState } from "react";
 
+import { CommonButtons } from "@/components/CommonButtons.tsx";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 
 import { PlanSheetMenuLabels } from "./PlanSheetType";
 
-const PlanSheetsHeaderButtons = () => {
+export const PlanSheetsHeaderButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
 
   const handleHeaderButtonClick = (label: string) => {
@@ -194,8 +195,8 @@ const PlanSheetsHeaderButtons = () => {
         }}
         selectedButtonLabel={selectedButtonLabel}
       />
+
+      <CommonButtons />
     </>
   );
 };
-
-export default PlanSheetsHeaderButtons;

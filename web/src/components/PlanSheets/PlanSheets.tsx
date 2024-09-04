@@ -35,7 +35,7 @@ import { useSurveyInfoQuery } from "@/queries/survey.ts";
 import { getActiveDiagrams, getActivePages, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
-import PlanSheetsHeaderButtons from "./PlanSheetsHeaderButtons.tsx";
+import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();

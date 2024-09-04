@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 
 import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
 
-import PlanSheetsHeaderButtons from "../PlanSheetsHeaderButtons";
+import { PlanSheetsHeaderButtons } from "../PlanSheetsHeaderButtons";
 import { PlanSheetMenuLabels } from "../PlanSheetType";
 
 describe("PlanSheetsHeaderButtons", () => {

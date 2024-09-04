@@ -44,6 +44,30 @@ const LandingPage = () => {
               </LuiShadow>
             </Link>
           </div>
+          <div className="LandingPage-options">
+            <Link className="LandingPage-option" to={"javascript:alert('Not implemented yet')"}>
+              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
+                <LuiIcon
+                  name="ic_layers"
+                  className="LandingPage-optionIcon"
+                  alt="Maintain diagram layers"
+                  color={luiColors.sea}
+                />
+                <p>Maintain diagram layers</p>
+              </LuiShadow>
+            </Link>
+            <Link className="LandingPage-option" to={"javascript:alert('Not implemented yet')"}>
+              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
+                <LuiIcon
+                  name="ic_label_settings"
+                  className="LandingPage-optionIcon"
+                  alt="Label preferences"
+                  color={luiColors.sea}
+                />
+                <p>Label preferences</p>
+              </LuiShadow>
+            </Link>
+          </div>
         </div>
         <div className="LandingPage-footer">
           <LuiIcon name="ic_info_outline" size="md" alt="Info" color="#6b6966" />
