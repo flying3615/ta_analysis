@@ -14,11 +14,16 @@ import {
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { cyPngConfig, PlanSheetTypeAbbreviation, PlanSheetTypeObject, PNGFile } from "@/hooks/usePlanGenPreview.tsx";
+import {
+  cyImageExportConfig,
+  ImageFile,
+  PlanSheetTypeAbbreviation,
+  PlanSheetTypeObject,
+} from "@/hooks/usePlanGenPreview.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { convertPNGImageDataTo1Bit, generateBlankPNG } from "@/util/imageUtil.ts";
+import { convertImageDataTo1Bit, generateBlankImageBlob } from "@/util/imageUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 
 export interface PlanGenCompilation {
@@ -102,9 +107,9 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           layoutPromise = cyRefCurrent?.promiseOn("layoutstop");
         });
 
-        const pngFiles: PNGFile[] = [];
+        const imageFiles: ImageFile[] = [];
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
-          const imageName = `${obj.typeAbbr}-${currentPageNumber}.png`;
+          const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
 
           if (!currentPageId) {
@@ -132,8 +137,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           if (diagramNodeData.length === 0 && diagramEdgeData.length === 0) {
             // generate a blank 100x100 white image for empty page
-            const png = await generateBlankPNG(100, 100);
-            pngFiles.push({ name: imageName, blob: png });
+            const blob = await generateBlankImageBlob(100, 100);
+            imageFiles.push({ name: imageName, blob: blob });
             continue;
           }
 
@@ -159,13 +164,13 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             ),
           );
 
-          const png = cyRefCurrent.png(cyPngConfig);
-          pngFiles.push({ name: imageName, blob: png });
+          const png = cyRefCurrent?.png(cyImageExportConfig);
+          imageFiles.push({ name: imageName, blob: png });
 
           // remove all elements for the next page rendering
           cyRefCurrent.remove(cyRefCurrent.elements());
         }
-        await generateCompilation(pngFiles);
+        await generateCompilation(imageFiles);
       });
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
@@ -176,10 +181,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     }
   };
 
-  const generateCompilation = async (pngFiles: PNGFile[]) => {
+  const generateCompilation = async (imageFiles: ImageFile[]) => {
     try {
-      const processUploadJobs = pngFiles.map(async (f) => {
-        const file = await convertPNGImageDataTo1Bit(f);
+      const processUploadJobs = imageFiles.map(async (f) => {
+        const file = await convertImageDataTo1Bit(f);
         return await secureFileUploadClient.uploadFile(file.processedBlob);
       });
 

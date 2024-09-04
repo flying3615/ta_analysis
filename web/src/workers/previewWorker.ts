@@ -1,38 +1,40 @@
 import jsPDF from "jspdf";
 import { memoize } from "lodash-es";
 
-import { PNGFile } from "@/hooks/usePlanGenPreview.tsx";
+import { ImageFile } from "@/hooks/usePlanGenPreview.tsx";
 
 export interface INCOMING_EVENT {
-  PNGFiles: PNGFile[];
+  ImageFiles: ImageFile[];
 }
 
+const viewMode = "landscape";
+
 onmessage = async (event: MessageEvent<INCOMING_EVENT>) => {
-  const pngFiles = event.data.PNGFiles;
-  const pdfUrl = await generatePDF(pngFiles);
+  const imageFiles = event.data.ImageFiles;
+  const pdfUrl = await generatePDF(imageFiles);
   postMessage({ type: "COMPLETED", payload: pdfUrl });
 };
 
-const generatePDF = async (pngFiles: PNGFile[]): Promise<string> => {
-  const doc = new jsPDF("landscape");
+const generatePDF = async (ImageFiles: ImageFile[]): Promise<string> => {
+  const doc = new jsPDF(viewMode);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  for (let i = 0; i < pngFiles.length; i++) {
-    const file = pngFiles[i];
+  for (let i = 0; i < ImageFiles.length; i++) {
+    const file = ImageFiles[i];
     if (!file) continue;
-    const pngBlob = file.blob;
+    const imageBlob = file.blob;
 
     // Convert blob to data URL
     const dataURL = (await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = reject;
-      reader.readAsDataURL(pngBlob);
+      reader.readAsDataURL(imageBlob);
     })) as string;
 
-    const { width, height } = await memoize(getPngDimensions)("size", pngBlob);
+    const { width, height } = await memoize(getImageDimensions)("size", imageBlob);
     const scaleX = (pageWidth - 10) / width; // give some margin
     const scaleY = (pageHeight - 10) / height; // give some margin
     // uses the smaller one to ensure that the image fits within the page
@@ -46,10 +48,10 @@ const generatePDF = async (pngFiles: PNGFile[]): Promise<string> => {
     const x = (pageWidth - scaledWidth) / 2;
     const y = (pageHeight - scaledHeight) / 2;
     // Add image to PDF
-    doc.addImage(dataURL, "PNG", x, y, scaledWidth, scaledHeight, undefined, "FAST");
+    doc.addImage(dataURL, "JPEG", x, y, scaledWidth, scaledHeight, undefined, "FAST");
 
     // Add new page for next image except for the last one
-    if (i < pngFiles.length - 1) {
+    if (i < ImageFiles.length - 1) {
       doc.addPage();
     }
   }
@@ -57,7 +59,7 @@ const generatePDF = async (pngFiles: PNGFile[]): Promise<string> => {
   return doc.output("bloburl").toString();
 };
 
-const getPngDimensions = async (_: string, blob: Blob): Promise<{ width: number; height: number }> => {
+const getImageDimensions = async (_: string, blob: Blob): Promise<{ width: number; height: number }> => {
   const bitmap = await createImageBitmap(blob);
   const offscreenCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const ctx = offscreenCanvas.getContext("2d");

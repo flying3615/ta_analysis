@@ -17,7 +17,7 @@ jest.mock("@/util/imageUtil.ts", () => {
   return {
     __esModule: true,
     ...jest.requireActual("@/util/imageUtil.ts"),
-    convertPNGImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.png" }),
+    convertImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.png" }),
   };
 });
 jest.mock("@linz/secure-file-upload", () => {
@@ -69,7 +69,7 @@ describe("usePlanGenCompilation hook", () => {
     jest.restoreAllMocks();
   });
 
-  it("usePlanGenPreview should render the exporting canvas and can process exporting", async () => {
+  it("usePlanGenCompilation should render the exporting canvas and can process exporting", async () => {
     renderCompWithReduxAndRoute(
       <Route element={<MockComponentWithHook />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
@@ -86,6 +86,6 @@ describe("usePlanGenCompilation hook", () => {
     await waitForElementToBeRemoved(() => screen.queryByTestId("compilation-loading-spinner"));
 
     expect(compiling).toBeFalsy();
-    expect(mockUploadFile).toHaveBeenCalled();
+    expect(mockUploadFile).toHaveBeenCalledTimes(3);
   });
 });

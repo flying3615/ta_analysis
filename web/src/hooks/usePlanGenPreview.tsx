@@ -32,12 +32,12 @@ export interface PlanGenPreview {
   stopPreviewing: () => void;
 }
 
-export interface PNGFile {
+export interface ImageFile {
   name: string;
   blob: Blob;
 }
 
-export const cyPngConfig = {
+export const cyImageExportConfig = {
   full: true,
   output: "blob",
   bg: "#fff",
@@ -147,9 +147,9 @@ export const usePlanGenPreview = (props: {
     });
 
     try {
-      const pngFiles: PNGFile[] = [];
+      const imageFiles: ImageFile[] = [];
       for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
-        const imageName = `${sheetName}-${currentPageNumber}.png`;
+        const imageName = `${sheetName}-${currentPageNumber}.jpg`;
         const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
 
         if (!currentPageId) {
@@ -217,14 +217,14 @@ export const usePlanGenPreview = (props: {
           ),
         );
 
-        const png = cyRefCurrent.png(cyPngConfig);
-        pngFiles.push({ name: imageName, blob: png });
+        const jpg = cyRefCurrent?.jpg({ ...cyImageExportConfig, quality: 0 });
+        imageFiles.push({ name: imageName, blob: jpg });
 
         // remove all elements for the next page rendering
         cyRefCurrent.remove(cyRefCurrent.elements());
       }
 
-      await generatePreviewPDF(pngFiles);
+      await generatePreviewPDF(imageFiles);
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
       console.error(e);
@@ -257,8 +257,8 @@ export const usePlanGenPreview = (props: {
     }
   };
 
-  const generatePreviewPDF = async (pngs: PNGFile[]) => {
-    worker.postMessage({ type: "PREVIEW", PNGFiles: pngs });
+  const generatePreviewPDF = async (imageFiles: ImageFile[]) => {
+    worker.postMessage({ type: "PREVIEW", ImageFiles: imageFiles });
     worker.onmessage = async (e) => {
       setPreviewing(false);
       const { payload } = e.data;

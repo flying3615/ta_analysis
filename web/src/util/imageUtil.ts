@@ -1,13 +1,13 @@
 import imageCompression from "browser-image-compression";
 
-import { PNGFile } from "@/hooks/usePlanGenPreview.tsx";
+import { ImageFile } from "@/hooks/usePlanGenPreview.tsx";
 
 /**
- *  Convert the PNG image data to 1 bit
- * @param pngFile
+ *  Convert the image data to 1 bit
+ * @param imageFile
  */
-export const convertPNGImageDataTo1Bit = async (pngFile: PNGFile) => {
-  const bitmap = await createImageBitmap(pngFile.blob);
+export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
+  const bitmap = await createImageBitmap(imageFile.blob);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -32,25 +32,25 @@ export const convertPNGImageDataTo1Bit = async (pngFile: PNGFile) => {
   ctx.putImageData(imageData, 0, 0);
   const blob = await canvas.convertToBlob();
 
-  const file = new File([blob], pngFile.name, { type: blob.type });
+  const file = new File([blob], imageFile.name, { type: blob.type });
 
   // Compress the Blob using browser-image-compression
   const options = {
     maxSizeMB: 1, // Maximum file size in MB
   };
   const processedBlob = await imageCompression(file, options);
-  return { processedBlob, name: pngFile.name };
+  return { processedBlob, name: imageFile.name };
 };
 
 /**
- * This function generates a blank PNG image with the specified width and height.
+ * This function generates a blank image with the specified width and height.
  *
  * @param width - The width of the image in pixels.
  * @param height - The height of the image in pixels.
  *
  * @returns A Promise that resolves with a Blob representing the image data.
  */
-export const generateBlankPNG = async (width: number, height: number): Promise<Blob> => {
+export const generateBlankImageBlob = async (width: number, height: number): Promise<Blob> => {
   // Create a new OffscreenCanvas object
   const canvas = new OffscreenCanvas(width, height);
 
