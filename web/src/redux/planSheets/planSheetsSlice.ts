@@ -109,6 +109,9 @@ const planSheetsSlice = createSlice({
         totalPages: filteredPages.length,
       };
     },
+    getDiagToPageLookupTbl: (state) => {
+      return state.diagPageLookupTbl;
+    },
     hasChanges: (state) => state.hasChanges,
   },
   extraReducers: (builder) => {
@@ -140,6 +143,7 @@ export const {
   getActiveDiagrams,
   getActivePageNumber,
   getFilteredPages,
+  getDiagToPageLookupTbl,
   hasChanges,
 } = planSheetsSlice.selectors;
 

@@ -6,6 +6,7 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import {
   nestedMiniTitlePlan,
   nestedSurveyPlan,
@@ -36,11 +37,13 @@ const TemplateDiagramList = ({ diagrams }: IDiagramListProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <ModalStoryWrapper>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route path={Paths.layoutPlanSheets} element={<DiagramList diagrams={diagrams} />} />
-          </StorybookRouter>
-        </ModalStoryWrapper>
+        <CytoscapeContextProvider>
+          <ModalStoryWrapper>
+            <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+              <Route path={Paths.layoutPlanSheets} element={<DiagramList diagrams={diagrams} />} />
+            </StorybookRouter>
+          </ModalStoryWrapper>
+        </CytoscapeContextProvider>
       </Provider>
     </QueryClientProvider>
   );

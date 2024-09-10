@@ -12,6 +12,7 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
+import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths";
@@ -256,6 +257,20 @@ export const PlanIsLockedErrorModal: Story = {
   },
 };
 
+export const DiagramZoomAndPan: Story = {
+  ...SmallViewport,
+};
+DiagramZoomAndPan.play = async () => {
+  await sleep(1000);
+  const ZoomInBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn });
+  const ZoomOutBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut });
+  const ZoomCentreBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre });
+  await userEvent.click(ZoomInBtn);
+  await sleep(1000);
+  await userEvent.click(ZoomOutBtn);
+  await sleep(1000);
+  await userEvent.click(ZoomCentreBtn);
+};
 const planData = () => {
   return new PlanDataBuilder()
     .addDiagram({

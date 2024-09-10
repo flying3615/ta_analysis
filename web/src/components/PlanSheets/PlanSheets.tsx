@@ -6,7 +6,8 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas.tsx";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 import Header from "@/components/Header/Header";
@@ -32,7 +33,12 @@ import {
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { getActiveDiagrams, getActivePages, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
+import {
+  getActiveDiagrams,
+  getActivePages,
+  getDiagToPageLookupTbl,
+  replaceDiagrams,
+} from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
@@ -47,7 +53,7 @@ const PlanSheets = () => {
 
   const activeDiagrams = useAppSelector(getActiveDiagrams);
   const activePages = useAppSelector(getActivePages);
-  const lookupTbl = useAppSelector((state) => state.planSheets.diagPageLookupTbl);
+  const lookupTbl = useAppSelector(getDiagToPageLookupTbl);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
@@ -140,31 +146,33 @@ const PlanSheets = () => {
   };
 
   return (
-    <div className="MainWindow">
-      <Header view="Sheets">
-        <PlanSheetsHeaderButtons />
-      </Header>
-      <div className="PlanSheets" ref={modalOwnerRef}>
-        <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
-          <DiagramSelector />
-        </SidePanel>
-        <CytoscapeCanvas
-          nodeData={nodeData}
-          edgeData={edgeData}
-          diagrams={activeDiagrams}
-          onNodeChange={onNodeChange}
-          onEdgeChange={onEdgeChange}
-          data-testid="MainCytoscapeCanvas"
+    <CytoscapeContextProvider>
+      <div className="MainWindow">
+        <Header view="Sheets">
+          <PlanSheetsHeaderButtons />
+        </Header>
+        <div className="PlanSheets" ref={modalOwnerRef}>
+          <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
+            <DiagramSelector />
+          </SidePanel>
+          <CytoscapeCanvas
+            nodeData={nodeData}
+            edgeData={edgeData}
+            diagrams={activeDiagrams}
+            onNodeChange={onNodeChange}
+            onEdgeChange={onEdgeChange}
+            data-testid="MainCytoscapeCanvas"
+          />
+        </div>
+        <PlanSheetsFooter
+          surveyInfo={surveyInfo}
+          diagramsPanelOpen={diagramsPanelOpen}
+          setDiagramsPanelOpen={setDiagramsPanelOpen}
+          pageConfigsNodeData={pageConfigsNodeData}
+          pageConfigsEdgeData={pageConfigsEdgeData}
         />
       </div>
-      <PlanSheetsFooter
-        surveyInfo={surveyInfo}
-        diagramsPanelOpen={diagramsPanelOpen}
-        setDiagramsPanelOpen={setDiagramsPanelOpen}
-        pageConfigsNodeData={pageConfigsNodeData}
-        pageConfigsEdgeData={pageConfigsEdgeData}
-      />
-    </div>
+    </CytoscapeContextProvider>
   );
 };
 

@@ -6,6 +6,7 @@ import ReactModal from "react-modal";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import { setupStore } from "@/redux/store.ts";
 
 /* eslint-disable react-refresh/only-export-components */
@@ -23,7 +24,9 @@ export const withProviderDecorator =
     const mockedStore = setupStore(mockedState);
     return (
       <Provider store={mockedStore}>
-        <Story />
+        <CytoscapeContextProvider>
+          <Story />
+        </CytoscapeContextProvider>
       </Provider>
     );
   };

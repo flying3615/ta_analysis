@@ -12,6 +12,7 @@ import { errorFromSerializedError, unhandledErrorModal } from "@/components/moda
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
 import { usePlanGenPreview } from "@/hooks/usePlanGenPreview.tsx";
@@ -55,6 +56,7 @@ const PlanSheetsFooter = ({
 
   const currentPage = useAppSelector(getActivePageNumber);
   const { totalPages } = useAppSelector(getFilteredPages);
+  const { zoomToFit } = useCytoscapeContext();
 
   const { result: isPreviewCompilationOn } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION);
 
@@ -99,6 +101,7 @@ const PlanSheetsFooter = ({
 
   const handlePageChange = (pageNumber: number) => () => {
     dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
+    zoomToFit();
   };
 
   return (

@@ -4,6 +4,7 @@ import { right } from "@popperjs/core";
 import { DiagramDisplay } from "@/components/PlanSheets/DiagramList.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import {
   getActivePageNumber,
   getActivePageRefFromPageNumber,
@@ -51,6 +52,7 @@ export const DiagramTileComponent = ({
 }: IDiagramTileComponentProps) => {
   const { diagramId, level, pageRef, diagramLabel, diagramChildren } = diagramDisplay;
   const pageNumber = usePageNumber(pageRef);
+  const { zoomToFit } = useCytoscapeContext();
 
   const { activeSheet, activePageNumber, activePageRef } = usePageData();
   const isSelected = selectedDiagramId === diagramId;
@@ -64,6 +66,7 @@ export const DiagramTileComponent = ({
   const gotoPage = () => {
     if (pageNumber !== null) {
       setNewActivePageNumber(pageNumber);
+      zoomToFit();
     }
   };
   const displaySheetAddress = getSheetAddress(activeSheet, pageNumber);

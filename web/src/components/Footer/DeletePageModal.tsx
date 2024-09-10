@@ -11,7 +11,7 @@ const DeletePageModal = ({ closeModal, pageInfo, callback }: IPopupModal) => (
     onClose={closeModal}
   >
     <p>
-      Are you sure you want to remove {pageInfo.activeSheet.replace(/\b\w/g, (char) => char.toUpperCase())} Page{" "}
+      Are you sure you want to remove {pageInfo.activeSheet.replace(/\b\w/g, (char) => char.toUpperCase())} page{" "}
       {pageInfo.activePageNumber}?
     </p>
     <LuiModalV2.Buttons>

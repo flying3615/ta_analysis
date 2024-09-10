@@ -5,11 +5,14 @@ import { CommonButtons } from "@/components/CommonButtons.tsx";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
 
 import { PlanSheetMenuLabels } from "./PlanSheetType";
 
 export const PlanSheetsHeaderButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+  const { zoomToFit, zoomByDelta } = useCytoscapeContext();
 
   const handleHeaderButtonClick = (label: string) => {
     setSelectedButtonLabel(label);
@@ -37,48 +40,23 @@ export const PlanSheetsHeaderButtons = () => {
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.PanMap}
-        iconName="ic_pan_map_alt"
-        onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.PanMap);
-          alert("Not Yet Implemented");
-        }}
+        headerMenuLabel={PlanSheetMenuLabels.ZoomIn}
+        iconName="ic_add"
+        disabled={false}
+        onClick={() => zoomByDelta(ZOOM_DELTA)}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton
         headerMenuLabel={PlanSheetMenuLabels.ZoomOut}
         iconName="ic_zoom_out"
-        onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomOut);
-          alert("Not Yet Implemented");
-        }}
-        selectedButtonLabel={selectedButtonLabel}
-      />
-      <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.ZoomIn}
-        iconName="ic_add"
-        onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomIn);
-          alert("Not Yet Implemented");
-        }}
-        selectedButtonLabel={selectedButtonLabel}
-      />
-      <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.ZoomPrevious}
-        iconName="ic_zoom_previous"
-        onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomPrevious);
-          alert("Not Yet Implemented");
-        }}
+        disabled={false}
+        onClick={() => zoomByDelta(-ZOOM_DELTA)}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton
         headerMenuLabel={PlanSheetMenuLabels.ZoomCentre}
         iconName="ic_zoom_centre"
-        onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.ZoomCentre);
-          alert("Not Yet Implemented");
-        }}
+        onClick={zoomToFit}
         selectedButtonLabel={selectedButtonLabel}
       />
       <VerticalSpacer />

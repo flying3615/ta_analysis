@@ -17,7 +17,7 @@ describe("extractGraphData", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
     // 19 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
     // + six synthetic nodes the broken line
-    expect(extractedNodes).toHaveLength(46);
+    expect(extractedNodes).toHaveLength(44);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
     const node10001 = extractedNodeMap["10001"];
     expect(node10001?.id).toBe("10001");
@@ -53,7 +53,7 @@ describe("extractGraphData", () => {
   test("extractNodes extracts label node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(46); // 5 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(44); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["11"];
@@ -149,7 +149,7 @@ describe("extractGraphData", () => {
 
     const extractedNodes = extractDiagramNodes(nestedTitlePlan.diagrams, mockLookupTbl);
 
-    expect(extractedNodes).toHaveLength(26);
+    expect(extractedNodes).toHaveLength(13);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode41 = extractedNodeMap["41"];
@@ -179,7 +179,7 @@ describe("extractGraphData", () => {
 
     const extractedNodes = extractDiagramNodes(nestedTitlePlan.diagrams, mockLookupTbl);
 
-    expect(extractedNodes).toHaveLength(26);
+    expect(extractedNodes).toHaveLength(13);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode41 = extractedNodeMap["41"];
@@ -259,7 +259,7 @@ describe("extractGraphData", () => {
       const [edge] = extractDiagramEdges(diagrams);
 
       // Two nodes, dashed pattern
-      expect(nodes).toHaveLength(3);
+      expect(nodes).toHaveLength(2);
       expect(edge?.sourceNodeId).toBe("1");
       expect(edge?.destNodeId).toBe("2");
       expect(edge?.properties?.["pointWidth"]).toBe(2.0);
@@ -272,7 +272,7 @@ describe("extractGraphData", () => {
       const [edge] = extractDiagramEdges(diagrams);
 
       // Two nodes, dot pattern
-      expect(nodes).toHaveLength(3);
+      expect(nodes).toHaveLength(2);
       expect(edge?.sourceNodeId).toBe("1");
       expect(edge?.destNodeId).toBe("2");
       expect(edge?.properties?.["pointWidth"]).toBe(2.0);
@@ -285,7 +285,7 @@ describe("extractGraphData", () => {
       const nodes = extractDiagramNodes(diagrams);
       const [edge] = extractDiagramEdges(diagrams);
 
-      expect(nodes).toHaveLength(3);
+      expect(nodes).toHaveLength(2);
       expect(edge?.sourceNodeId).toBe("1");
       expect(edge?.destNodeId).toBe("2");
       expect(edge?.properties?.["pointWidth"]).toBe(1.0);
@@ -298,7 +298,7 @@ describe("extractGraphData", () => {
       const [edge] = extractDiagramEdges(diagrams);
 
       // Arrow points at target (end)
-      expect(nodes).toHaveLength(3);
+      expect(nodes).toHaveLength(2);
       expect(edge?.properties?.["targetArrowShape"]).toBe("triangle");
       expect(edge?.properties).not.toContain("sourceArrowShape");
     });
@@ -309,7 +309,7 @@ describe("extractGraphData", () => {
       const [edge] = extractDiagramEdges(diagrams);
 
       // Arrow points at target (end)
-      expect(nodes).toHaveLength(3);
+      expect(nodes).toHaveLength(2);
       expect(edge?.properties?.["targetArrowShape"]).toBe("triangle");
       expect(edge?.properties?.["sourceArrowShape"]).toBe("triangle");
     });

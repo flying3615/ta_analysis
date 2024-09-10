@@ -9,6 +9,7 @@ import DeletePageModal from "@/components/Footer/DeletePageModal.tsx";
 import { RenumberPageModal } from "@/components/Footer/RenumberPageModal.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import {
   getActivePageNumber,
   getActivePages,
@@ -33,6 +34,7 @@ const PageManager = () => {
   const activePageNumber = useAppSelector(getActivePageNumber);
   const activeSheet = useAppSelector(getActiveSheet);
   const dispatch = useAppDispatch();
+  const { zoomToFit } = useCytoscapeContext();
 
   const onPageRefRemoved = (pageId: number) => dispatch(removeDiagramPageRef(pageId));
   const onPageUpdated = (pages: PageDTO[]) => dispatch(updatePages(pages));
@@ -53,6 +55,7 @@ const PageManager = () => {
     };
     onActivePageNumberUpdated(newPageNumber);
     onPageUpdated([...getAllPages, newPage]);
+    zoomToFit();
   };
   const addNewPageAfterCurrent = () => {
     const newPageNumber = activePageNumber + 1;
@@ -77,6 +80,7 @@ const PageManager = () => {
     );
     onActivePageNumberUpdated(newPageNumber);
     onPageUpdated(updatedPages);
+    zoomToFit();
   };
   const addNewFirstPage = () => {
     const newPageId = getMaxId(getAllPages) + 1;
@@ -97,6 +101,7 @@ const PageManager = () => {
 
     onActivePageNumberUpdated(1);
     onPageUpdated(updatedPages);
+    zoomToFit();
   };
   const renumberPages = (pageNumber: number) => {
     const updatedPages = getAllPages.map((page) => {
@@ -145,6 +150,7 @@ const PageManager = () => {
 
     onActivePageNumberUpdated(nextAvailPage);
     onPageUpdated(newPages);
+    zoomToFit();
   };
 
   const openRenumberModal = () => setRenumberPageModal(true);

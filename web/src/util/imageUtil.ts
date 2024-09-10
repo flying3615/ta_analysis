@@ -52,10 +52,18 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
  */
 export const generateBlankImageBlob = async (width: number, height: number): Promise<Blob> => {
   // Create a new OffscreenCanvas object
-  const canvas = new OffscreenCanvas(width, height);
+  let canvas: OffscreenCanvas | HTMLCanvasElement;
+  if (typeof OffscreenCanvas !== "undefined") {
+    canvas = new OffscreenCanvas(width, height);
+  } else {
+    canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+  }
+  // const canvas = new OffscreenCanvas(width, height);
 
   // Get the 2D rendering context from the canvas
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
   if (!ctx) {
     throw new Error("Failed to get canvas context");
   }
@@ -65,5 +73,17 @@ export const generateBlankImageBlob = async (width: number, height: number): Pro
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Convert the canvas to a Blob object
-  return await canvas.convertToBlob();
+  if ("convertToBlob" in canvas) {
+    return await (canvas as OffscreenCanvas).convertToBlob();
+  } else {
+    return new Promise<Blob>((resolve, reject) => {
+      (canvas as HTMLCanvasElement).toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Blob conversion failed"));
+        }
+      });
+    });
+  }
 };

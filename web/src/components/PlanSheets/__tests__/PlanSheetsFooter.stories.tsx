@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
@@ -36,18 +37,20 @@ const TemplatePlanSheetsFooter = () => {
       <FeatureFlagProvider>
         <Provider store={store}>
           <LuiModalAsyncContextProvider>
-            <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-              <Route
-                path={Paths.layoutPlanSheets}
-                element={
-                  <PlanSheetsFooter
-                    diagramsPanelOpen={diagramsPanelOpen}
-                    setDiagramsPanelOpen={setDiagramsPanelOpen}
-                    surveyInfo={mockSurveyInfo}
-                  />
-                }
-              />
-            </StorybookRouter>
+            <CytoscapeContextProvider>
+              <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+                <Route
+                  path={Paths.layoutPlanSheets}
+                  element={
+                    <PlanSheetsFooter
+                      diagramsPanelOpen={diagramsPanelOpen}
+                      setDiagramsPanelOpen={setDiagramsPanelOpen}
+                      surveyInfo={mockSurveyInfo}
+                    />
+                  }
+                />
+              </StorybookRouter>
+            </CytoscapeContextProvider>
           </LuiModalAsyncContextProvider>
         </Provider>
       </FeatureFlagProvider>

@@ -13,7 +13,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
-import { pointsPerCm } from "@/util/pixelConversions.ts";
+import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 

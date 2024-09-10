@@ -9,7 +9,7 @@ export interface IDiagramToPage {
     page: PageDTO;
   };
 }
-// Async thunk to create the lookupTbl
+// Creates the lookupTbl
 export const populateLookupTblAsync = createAsyncThunk("planSheets/initLookupTblAsync", async (_, { getState }) => {
   const state = getState() as RootState;
   const { diagrams, pages } = state.planSheets;

@@ -1,0 +1,49 @@
+import cytoscape from "cytoscape";
+import React, { createContext, ReactElement, ReactNode, useState } from "react";
+
+import { cytoscapeUtils } from "@/util/cytoscapeUtil.ts";
+
+export interface CytoscapeContextType {
+  cyto?: cytoscape.Core;
+  setCyto: (cy: cytoscape.Core) => void;
+  zoomToFit: () => void;
+  zoomByDelta: (delta: number) => void;
+  zoomToSelectedRegion: (x1: number, y1: number, x2: number, y2: number) => void;
+  scrollToZoom: (cy: cytoscape.Core) => void;
+  keepPanWithinBoundaries: (cy: cytoscape.Core) => void;
+  onViewportChange: (cy: cytoscape.Core) => void;
+}
+
+export const CytoscapeContext = createContext<CytoscapeContextType | undefined>(undefined);
+
+interface ProviderProps {
+  children: ReactNode;
+}
+
+export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | null => {
+  const [cyto, setCyto] = useState<cytoscape.Core>();
+  const zoomToFit = () => cytoscapeUtils.zoomToFit(cyto);
+  const zoomByDelta = (delta: number) => cytoscapeUtils.zoomByDelta(delta, cyto);
+  const zoomToSelectedRegion = (x1: number, y1: number, x2: number, y2: number) =>
+    cytoscapeUtils.zoomToSelectedRegion(x1, y1, x2, y2, cyto);
+  const scrollToZoom = (cy: cytoscape.Core) => cytoscapeUtils.scrollToZoom(cy);
+  const keepPanWithinBoundaries = (cy: cytoscape.Core) => cytoscapeUtils.keepPanWithinBoundaries(cy);
+  const onViewportChange = (cy: cytoscape.Core) => cytoscapeUtils.onViewportChange(cy);
+
+  return (
+    <CytoscapeContext.Provider
+      value={{
+        cyto,
+        setCyto,
+        zoomToFit,
+        zoomByDelta,
+        zoomToSelectedRegion,
+        scrollToZoom,
+        keepPanWithinBoundaries,
+        onViewportChange,
+      }}
+    >
+      {props.children}
+    </CytoscapeContext.Provider>
+  );
+};

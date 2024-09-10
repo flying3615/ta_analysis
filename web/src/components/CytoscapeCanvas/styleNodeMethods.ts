@@ -4,7 +4,7 @@ import { max, sum } from "lodash-es";
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
-import { pointsPerCm } from "@/util/pixelConversions.ts";
+import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 export const LABEL_PADDING_PX = 1;
 export const CIRCLE_FACTOR = 0.9;

@@ -7,6 +7,7 @@ import React, { PropsWithChildren, ReactNode } from "react";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import { APPROX_DEGREES_PER_METRE, CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder.ts";
 import { AppStore, RootState, setupStore } from "@/redux/store";
 
@@ -42,7 +43,9 @@ export function renderWithReduxProvider(
       <LuiModalAsyncContextProvider>
         <LuiMessagingContextProvider version="v2">
           <QueryClientProvider client={queryClient}>
-            <Provider store={store}>{children}</Provider>
+            <Provider store={store}>
+              <CytoscapeContextProvider>{children}</CytoscapeContextProvider>
+            </Provider>
           </QueryClientProvider>
         </LuiMessagingContextProvider>
       </LuiModalAsyncContextProvider>

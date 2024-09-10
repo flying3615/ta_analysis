@@ -20,7 +20,7 @@ describe("DeletePageModal", () => {
     render(<DeletePageModal closeModal={closeModalSpy} pageInfo={pageInfo} callback={callbackSpy} />);
 
     expect(screen.getByRole("heading", { name: "Delete page?" })).toBeInTheDocument();
-    expect(screen.getByText("Are you sure you want to remove Title Page 5?")).toBeInTheDocument();
+    expect(screen.getByText("Are you sure you want to remove Title page 5?")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
   });

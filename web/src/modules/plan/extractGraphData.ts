@@ -211,7 +211,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
         (parcelLabelGroup.labels ?? []).filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("parcelLabels")),
       ) ?? [];
 
-    const diagramNodes = [
+    return [
       ...coordinates,
       ...userDefnLabels,
       ...childDiagLabels,
@@ -220,18 +220,6 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       ...brokenLineNodes,
       ...parcelLabelNodes,
     ];
-
-    diagramNodes.push({
-      id: `D${diagram.id}`,
-      position: { x: 1, y: 1 },
-      properties: {
-        coordType: "",
-        diagramId: diagram.id,
-        elementType: "coordinates",
-      },
-    });
-
-    return diagramNodes;
   });
 };
 

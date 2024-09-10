@@ -18,7 +18,7 @@ import {
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling.ts";
-import { pixelsPerPoint, pointsPerCm } from "@/util/pixelConversions.ts";
+import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
   const svgDataForSymbol = (ele: cytoscape.NodeSingular) => {

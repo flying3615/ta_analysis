@@ -160,7 +160,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           // wait 10s for style, layout and node bg images applied
           await Promise.all(
             [stylePromise, layoutPromise, nodeBgPromise].map(
-              (p) => p && promiseWithTimeout(p, 10000, "wait for cytoscape rendering timed out"),
+              (p) => p && promiseWithTimeout(p, 30000, "wait for cytoscape rendering timed out"),
             ),
           );
 
