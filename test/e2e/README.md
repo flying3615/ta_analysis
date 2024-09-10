@@ -39,6 +39,8 @@ To add test data, add a file with the name **Vxx__some_description.sql** in the 
 
 For test data details refer [README.md](data/README.md)
 
+We also use localstack for running DynamoDB locally. See `./localstack/dynamodb.sh` for the table set up.
+
 ### Run the e2e tests
 
 ```

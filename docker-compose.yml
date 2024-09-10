@@ -22,11 +22,7 @@ services:
     ports:
       - "9088:9088"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "STARTED=$$(grep -r \"<EOM>OK\" /opt/ifx/informix/tmp/startup.informix | wc -l);  if [ $$STARTED -gt 0 ]; then echo 0; else echo 1; fi"
-        ]
+      test: [ "CMD-SHELL", "STARTED=$$(grep -r \"<EOM>OK\" /opt/ifx/informix/tmp/startup.informix | wc -l);  if [ $$STARTED -gt 0 ]; then echo 0; else echo 1; fi" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -55,6 +51,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+    environment:
+      - SERVICES=dynamodb
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./test/e2e/localstack:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: awslocal dynamodb describe-table --region ap-southeast-2 --table-name plangen_prepare_dataset_status
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth-db:
     container_name: auth-db
