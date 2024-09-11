@@ -12,7 +12,9 @@ import { PlanSheetMenuLabels } from "./PlanSheetType";
 
 export const PlanSheetsHeaderButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
-  const { zoomToFit, zoomByDelta } = useCytoscapeContext();
+  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
+  const zoomIn = () => zoomByDelta(ZOOM_DELTA);
+  const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
 
   const handleHeaderButtonClick = (label: string) => {
     setSelectedButtonLabel(label);
@@ -42,15 +44,15 @@ export const PlanSheetsHeaderButtons = () => {
       <HeaderButton
         headerMenuLabel={PlanSheetMenuLabels.ZoomIn}
         iconName="ic_add"
-        disabled={false}
-        onClick={() => zoomByDelta(ZOOM_DELTA)}
+        disabled={isMaxZoom}
+        onClick={zoomIn}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton
         headerMenuLabel={PlanSheetMenuLabels.ZoomOut}
         iconName="ic_zoom_out"
-        disabled={false}
-        onClick={() => zoomByDelta(-ZOOM_DELTA)}
+        disabled={isMinZoom}
+        onClick={zoomOut}
         selectedButtonLabel={selectedButtonLabel}
       />
       <HeaderButton

@@ -188,14 +188,13 @@ const CytoscapeCanvas = ({
     };
     cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
     cy?.addListener("position", debounce(emitChange, 1000)); // 1s debounce since lots of position events are fired very quickly
-
     cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
     cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
-
     cy?.addListener("mouseover", "node", onMouseOver);
     cy?.addListener("mouseout", "node", onMouseOut);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
+
     cy?.on("dragpan", (event) => keepPanWithinBoundaries(event.cy));
     cy?.on("scrollzoom", (event) => scrollToZoom(event.cy));
     cy?.on("viewport", (event) => onViewportChange(event.cy));
