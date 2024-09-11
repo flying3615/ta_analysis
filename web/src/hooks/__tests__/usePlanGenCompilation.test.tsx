@@ -17,7 +17,7 @@ jest.mock("@/util/imageUtil.ts", () => {
   return {
     __esModule: true,
     ...jest.requireActual("@/util/imageUtil.ts"),
-    convertImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.png" }),
+    convertImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.jpg" }),
   };
 });
 jest.mock("@linz/secure-file-upload", () => {

@@ -1,7 +1,7 @@
 import { DisplayStateEnum, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
-import cytoscape, { ExportBlobOptions } from "cytoscape";
+import cytoscape, { EventHandler, ExportBlobOptions } from "cytoscape";
 import { memoize } from "lodash-es";
 import { DateTime } from "luxon";
 import React, { useEffect, useRef, useState } from "react";
@@ -96,10 +96,6 @@ export const usePlanGenPreview = (props: {
       if (!canvasRef.current) {
         throw Error("CytoscapeCanvas::initCytoscape - not ready");
       }
-      cyRef.current = cytoscape({
-        container: canvasRef.current,
-        layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
-      });
       cyMapper.current = new CytoscapeCoordinateMapper(
         canvasRef.current,
         diagrams,
@@ -107,6 +103,11 @@ export const usePlanGenPreview = (props: {
         window.screen.height,
         -50,
       );
+      cyRef.current = cytoscape({
+        container: canvasRef.current,
+        layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
+        style: makeCytoscapeStylesheet(cyMapper.current, true),
+      });
     }, []);
 
     return (
@@ -138,16 +139,9 @@ export const usePlanGenPreview = (props: {
       ? PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY
       : PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE;
 
-    // listen add action to wait for the node bg images, style & layout to be applied
-    let nodeBgPromise, stylePromise, layoutPromise;
-    cyRefCurrent?.one("add", () => {
-      nodeBgPromise = cyRefCurrent?.nodes().promiseOn("background");
-      stylePromise = cyRefCurrent?.promiseOn("style");
-      layoutPromise = cyRefCurrent?.promiseOn("layoutstop");
-    });
-
     try {
       const imageFiles: ImageFile[] = [];
+      let firstTimeExport = true;
       for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
         const imageName = `${sheetName}-${currentPageNumber}.jpg`;
         const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
@@ -155,6 +149,18 @@ export const usePlanGenPreview = (props: {
         if (!currentPageId) {
           continue;
         }
+
+        let nodeBgPromise: Promise<EventHandler | void>[] = [];
+        let layoutPromise: Promise<EventHandler | void> = Promise.resolve();
+        cyRefCurrent?.one("add", async () => {
+          layoutPromise = cyRefCurrent?.promiseOn("layoutstop").then(() => {
+            nodeBgPromise = cyRefCurrent?.nodes().map((n, _) => {
+              // :nonbackgrounding : Matches an element if its background image not currently loading;
+              // i.e. there is no image or the image is already loaded.
+              return n.is(":nonbackgrounding") ? Promise.resolve() : n.promiseOn("background");
+            });
+          });
+        });
 
         const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
         const surveyInfoNodes = await extractSurveyInfoNodeData(
@@ -200,8 +206,6 @@ export const usePlanGenPreview = (props: {
           edges: edgeDefinitionsFromData(diagramEdgeData),
         });
 
-        cyRefCurrent?.style(makeCytoscapeStylesheet(cyMapperCurrent, true)).update();
-
         cyRefCurrent
           .layout({
             name: "preset",
@@ -210,18 +214,38 @@ export const usePlanGenPreview = (props: {
           })
           .run();
 
-        // wait 10s for style, layout and node bg images applied
+        await layoutPromise;
+
+        // wait 30s for node bg images to be applied
         await Promise.all(
-          [stylePromise, layoutPromise, nodeBgPromise].map(
-            (p) => p && promiseWithTimeout(p, 10000, "wait for cytoscape rendering timedout"),
+          [layoutPromise, ...nodeBgPromise].map((p, index) =>
+            promiseWithTimeout(
+              {
+                promise: p,
+                name: `page ${currentPageNumber} ${index} node background images promise`,
+              },
+              30000,
+              "timed out",
+            ),
           ),
         );
 
         const jpg = cyRefCurrent?.jpg({ ...cyImageExportConfig, quality: 0 });
+
+        // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
+        // so here we just rerun the export for each pages
+        if (firstTimeExport) {
+          currentPageNumber--;
+          firstTimeExport = false;
+          continue;
+        }
+
         imageFiles.push({ name: imageName, blob: jpg });
+        firstTimeExport = true;
 
         // remove all elements for the next page rendering
         cyRefCurrent.remove(cyRefCurrent.elements());
+        cyRefCurrent?.removeAllListeners();
       }
 
       await generatePreviewPDF(imageFiles);
@@ -303,10 +327,10 @@ export const usePlanGenPreview = (props: {
     const CSD_NUMBER_TITLE = `Record of ${surveyInfo.systemCodeDescription}`;
     const CSD_NUMBER = `${surveyInfo.datasetSeries} ${surveyInfo.datasetId}`;
 
-    // Find the maximum y position
-    const maxY = Math.min(...props.pageConfigsNodeData.map((node) => node.position.y));
+    // Find the minimum y position
+    const minY = Math.min(...props.pageConfigsNodeData.map((node) => node.position.y));
     const bottomLineNodesAscByX = props.pageConfigsNodeData
-      ?.filter((node) => node.position.y === maxY)
+      ?.filter((node) => node.position.y === minY)
       .sort((a, b) => a.position.x - b.position.x);
 
     if (bottomLineNodesAscByX == undefined || bottomLineNodesAscByX.length != 5) {

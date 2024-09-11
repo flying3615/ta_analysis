@@ -3,7 +3,7 @@ import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generati
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve } from "@linzjs/windows";
-import cytoscape from "cytoscape";
+import cytoscape, { EventHandler } from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
@@ -47,7 +47,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
   const secureFileUploadClient = new FileUploaderClient({
     maxFileSizeHint: 1024 * 1024 * 100,
-    allowableFileExtHint: [".png"],
+    allowableFileExtHint: [".jpg"],
     errorNotifier: (error) => {
       console.log(error);
     },
@@ -65,10 +65,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
       if (!canvasRef.current) {
         throw Error("CytoscapeCanvas::initCytoscape - not ready");
       }
-      cyRef.current = cytoscape({
-        container: canvasRef.current,
-        layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
-      });
       cyMapper.current = new CytoscapeCoordinateMapper(
         canvasRef.current,
         // eslint-disable-next-line react/prop-types
@@ -77,6 +73,11 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
         window.screen.height,
         -50,
       );
+      cyRef.current = cytoscape({
+        container: canvasRef.current,
+        layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
+        style: makeCytoscapeStylesheet(cyMapper.current, true),
+      });
     }, []);
 
     return (
@@ -99,15 +100,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
       Object.values(PlanSheetTypeObject).map(async (obj) => {
         const activePlanSheetPages = pages.filter((p) => p.pageType == obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
-        // listen add action to wait for the node bg images, style & layout to be applied
-        let nodeBgPromise, stylePromise, layoutPromise;
-        cyRefCurrent?.one("add", () => {
-          nodeBgPromise = cyRefCurrent?.nodes().promiseOn("background");
-          stylePromise = cyRefCurrent?.promiseOn("style");
-          layoutPromise = cyRefCurrent?.promiseOn("layoutstop");
-        });
 
         const imageFiles: ImageFile[] = [];
+        let firstTimeExport = true;
+
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
@@ -115,6 +111,18 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           if (!currentPageId) {
             continue;
           }
+
+          let nodeBgPromise: Promise<EventHandler | void>[] = [];
+          let layoutPromise: Promise<EventHandler | void> = Promise.resolve();
+          cyRefCurrent?.one("add", async () => {
+            layoutPromise = cyRefCurrent?.promiseOn("layoutstop").then(() => {
+              nodeBgPromise = cyRefCurrent?.nodes().map((n, _) => {
+                // :nonbackgrounding : Matches an element if its background image not currently loading;
+                // i.e. there is no image or the image is already loaded.
+                return n.is(":nonbackgrounding") ? Promise.resolve() : n.promiseOn("background");
+              });
+            });
+          });
 
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
 
@@ -147,8 +155,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             edges: edgeDefinitionsFromData(diagramEdgeData),
           });
 
-          cyRefCurrent?.style(makeCytoscapeStylesheet(cyMapperCurrent, true)).update();
-
           cyRefCurrent
             .layout({
               name: "preset",
@@ -157,18 +163,36 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             })
             .run();
 
-          // wait 10s for style, layout and node bg images applied
+          // wait 30s for layout and node bg images to be applied
           await Promise.all(
-            [stylePromise, layoutPromise, nodeBgPromise].map(
-              (p) => p && promiseWithTimeout(p, 30000, "wait for cytoscape rendering timed out"),
+            [layoutPromise, ...nodeBgPromise].map((p, index) =>
+              promiseWithTimeout(
+                {
+                  promise: p,
+                  name: `page ${currentPageNumber} ${index} node background images promise`,
+                },
+                30000,
+                "timed out",
+              ),
             ),
           );
 
-          const png = cyRefCurrent?.png(cyImageExportConfig);
-          imageFiles.push({ name: imageName, blob: png });
+          const jpg = cyRefCurrent?.jpg({ ...cyImageExportConfig, quality: 1 });
+
+          // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
+          // so here we just rerun the export for each pages
+          if (firstTimeExport) {
+            currentPageNumber--;
+            firstTimeExport = false;
+            continue;
+          }
+
+          imageFiles.push({ name: imageName, blob: jpg });
+          firstTimeExport = true;
 
           // remove all elements for the next page rendering
           cyRefCurrent.remove(cyRefCurrent.elements());
+          cyRefCurrent?.removeAllListeners();
         }
         await generateCompilation(imageFiles);
       });

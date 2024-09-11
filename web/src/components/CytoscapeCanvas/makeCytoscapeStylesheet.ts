@@ -103,10 +103,10 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
       style: {
         ...labelBaseStyle,
-        "background-image": (ele) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
-        height: (ele) => circleLabel(ele, cytoscapeCoordinateMapper).width,
+        "background-image": (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
+        height: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).width,
         width: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).height,
-        "bounds-expansion": 300,
+        ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 300 }),
       },
     },
     {
