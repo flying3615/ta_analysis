@@ -57,8 +57,11 @@ describe("PlanSheetsHeaderButtons", () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
 
     expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn })).toBeEnabled();
     expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut })).toBeEnabled();
     expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre })).toBeEnabled();
   });
 
   it("should handle Zoom in button click", async () => {
@@ -73,6 +76,26 @@ describe("PlanSheetsHeaderButtons", () => {
     const button = screen.getByRole("button", { name: "Zoom out" });
     await userEvent.click(button);
     expect(zoomByDeltaMock).toHaveBeenCalledWith(-0.5);
+  });
+
+  it("should disable Zoom in button when at maximum", async () => {
+    (useCytoscapeContext as jest.Mock).mockReturnValue({
+      isMaxZoom: true,
+    });
+
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />);
+    const button = screen.getByRole("button", { name: "Zoom in" });
+    expect(button).not.toBeEnabled();
+  });
+
+  it("should disable Zoom out button when at minimum", async () => {
+    (useCytoscapeContext as jest.Mock).mockReturnValue({
+      isMinZoom: true,
+    });
+
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />);
+    const button = screen.getByRole("button", { name: "Zoom out" });
+    expect(button).not.toBeEnabled();
   });
 
   it("should handle Zoom centre button click", async () => {

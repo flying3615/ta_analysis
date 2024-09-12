@@ -31,7 +31,7 @@ export const HeaderButton = ({
       onClick={loading ? () => {} : onClick}
       className={clsx("lui-button-icon-only", { selected: headerMenuLabel === selectedButtonLabel })}
     >
-      <LuiIcon name={iconName} alt={headerMenuLabel} size="md" />
+      <LuiIcon name={iconName} alt={headerMenuLabel} size="md" title={headerMenuLabel} />
     </LuiButton>
   );
 
