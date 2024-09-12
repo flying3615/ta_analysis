@@ -1,10 +1,12 @@
 import {
   CartesianCoordsDTO,
+  CoordinateDTO,
   CoordinateDTOCoordTypeEnum,
   DiagramDTO,
   DisplayStateEnum,
   LabelDTO,
   LabelDTOLabelTypeEnum,
+  LineDTO,
   PageConfigDTO,
   PageDTO,
   PageDTOPageTypeEnum,
@@ -303,6 +305,32 @@ export class PlanDataBuilder {
       targetPage.labels = [];
     }
     targetPage?.labels?.push(label);
+    return this;
+  }
+
+  addUserCoordinate(coordinate: CoordinateDTO) {
+    if (coordinate.coordType != CoordinateDTOCoordTypeEnum.userDefined) {
+      throw new Error(
+        `Only ${CoordinateDTOCoordTypeEnum.userDefined.valueOf()} coordinate types supported as a child of page`,
+      );
+    }
+    const targetPage = last(this.planData.pages);
+    if (targetPage && targetPage.coordinates === undefined) {
+      targetPage.coordinates = [];
+    }
+    targetPage?.coordinates?.push(coordinate);
+    return this;
+  }
+
+  addUserLine(line: LineDTO) {
+    if (line.lineType != "userDefined") {
+      throw new Error(`Only userDefined line types supported as a child of page`);
+    }
+    const targetPage = last(this.planData.pages);
+    if (targetPage && targetPage.lines === undefined) {
+      targetPage.lines = [];
+    }
+    targetPage?.lines?.push(line);
     return this;
   }
 

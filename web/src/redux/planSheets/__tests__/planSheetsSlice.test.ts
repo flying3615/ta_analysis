@@ -7,6 +7,7 @@ import { setupStore } from "@/redux/store";
 
 import planSheetsSlice, {
   getActiveDiagrams,
+  getActivePage,
   getActivePageNumber,
   getActivePages,
   getActiveSheet,
@@ -96,6 +97,26 @@ describe("planSheetsSlice", () => {
 
     store.dispatch(planSheetsSlice.actions.updatePages(pages));
     expect(getActivePages(store.getState())).toEqual([{ id: 0, pageNumber: 1, pageType: "title" }]);
+  });
+
+  test("getActivePage should return active page", () => {
+    const pages = [
+      {
+        pageType: PlanSheetType.TITLE,
+        id: 0,
+        pageNumber: 1,
+      },
+      {
+        pageType: PlanSheetType.SURVEY,
+        id: 1,
+        pageNumber: 2,
+      },
+    ];
+
+    expect(getActivePage(store.getState())).toEqual([]);
+
+    store.dispatch(planSheetsSlice.actions.updatePages(pages));
+    expect(getActivePage(store.getState())).toEqual([{ id: 0, pageNumber: 1, pageType: "title" }]);
   });
 
   test("getActivePageNumber should return active page number", () => {

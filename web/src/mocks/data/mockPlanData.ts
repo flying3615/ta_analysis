@@ -1,4 +1,4 @@
-import { LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, LabelDTO } from "@linz/survey-plan-generation-api-client";
 
 import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
@@ -15,6 +15,28 @@ export const mockPlanData = new PlanDataBuilder()
   })
   .addPage(1)
   .addUserAnnotation(LabelDTOBuilder.empty().build())
+  .addUserCoordinate({
+    id: 10011,
+    coordType: CoordinateDTOCoordTypeEnum.userDefined,
+    position: {
+      x: 20,
+      y: -10,
+    },
+  })
+  .addUserCoordinate({
+    id: 10012,
+    coordType: CoordinateDTOCoordTypeEnum.userDefined,
+    position: {
+      x: 50,
+      y: -10,
+    },
+  })
+  .addUserLine({
+    id: 10013,
+    coordRefs: [10011, 10012],
+    lineType: "userDefined",
+    style: "arrowhead",
+  })
   .addPage(2)
   .addCooordinate(10001, {
     x: 20,

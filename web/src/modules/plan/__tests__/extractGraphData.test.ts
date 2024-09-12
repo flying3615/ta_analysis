@@ -6,6 +6,7 @@ import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
+  extractPageEdges,
   extractPageNodes,
   lineToEdges,
 } from "@/modules/plan/extractGraphData.ts";
@@ -335,10 +336,35 @@ describe("extractGraphData", () => {
 
   test("extractPageNodes extracts user annotations", () => {
     const extractedNodes = extractPageNodes(mockPlanData.pages);
-    expect(extractedNodes).toHaveLength(1);
+    expect(extractedNodes).toHaveLength(3);
     const userAnnotationNode = extractedNodes[0];
+    expect(userAnnotationNode?.id).toBe("23");
     expect(userAnnotationNode?.position).toStrictEqual({ x: 13, y: -13 });
     expect(userAnnotationNode?.label).toBe("Rotated user added text");
+    expect(userAnnotationNode?.properties?.["elementType"]).toBe("labels");
+    expect(userAnnotationNode?.properties?.["labelType"]).toBe("userAnnotation");
+    expect(userAnnotationNode?.properties?.["displayState"]).toBe("display");
+    expect(userAnnotationNode?.properties?.["font"]).toBe("Tahoma");
+    expect(userAnnotationNode?.properties?.["fontSize"]).toBe(14);
+    expect(userAnnotationNode?.properties?.["fontStyle"]).toBe("italic");
+    expect(userAnnotationNode?.properties?.["textAlignment"]).toBe("centerCenter");
+    expect(userAnnotationNode?.properties?.["textBackgroundOpacity"]).toBe(0);
+    expect(userAnnotationNode?.properties?.["anchorAngle"]).toBe(72.7);
+    expect(userAnnotationNode?.properties?.["pointOffset"]).toBe(0);
+    expect(userAnnotationNode?.properties?.["textRotation"]).toBe(25);
+  });
+
+  test("extractPageEdges extracts edge data", () => {
+    const extractedPageEdges = extractPageEdges(mockPlanData.pages);
+    expect(extractedPageEdges).toHaveLength(1);
+    const extractedPageEdgesMap = Object.fromEntries(extractedPageEdges.map((n) => [n.id, n]));
+
+    expect(extractedPageEdgesMap["10013_0"]?.id).toBe("10013_0");
+    expect(extractedPageEdgesMap["10013_0"]?.sourceNodeId).toBe("10011");
+    expect(extractedPageEdgesMap["10013_0"]?.destNodeId).toBe("10012");
+    expect(extractedPageEdgesMap["10013_0"]?.properties?.["originalStyle"]).toBe("arrowhead");
+    expect(extractedPageEdgesMap["10013_0"]?.properties?.["lineType"]).toBe("userDefined");
+    expect(extractedPageEdgesMap["10013_0"]?.properties?.["coordRefs"]).toBe("[10011,10012]");
   });
 
   describe("Lines to edges", () => {

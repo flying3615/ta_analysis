@@ -35,7 +35,7 @@ import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
 import {
   getActiveDiagrams,
-  getActivePages,
+  getActivePage,
   getDiagToPageLookupTbl,
   replaceDiagrams,
 } from "@/redux/planSheets/planSheetsSlice.ts";
@@ -52,7 +52,7 @@ const PlanSheets = () => {
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
 
   const activeDiagrams = useAppSelector(getActiveDiagrams);
-  const activePages = useAppSelector(getActivePages);
+  const activePage = useAppSelector(getActivePage);
   const lookupTbl = useAppSelector(getDiagToPageLookupTbl);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
@@ -130,8 +130,8 @@ const PlanSheets = () => {
   const diagramNodeData = extractDiagramNodes(activeDiagrams, lookupTbl);
   const diagramEdgeData = extractDiagramEdges(activeDiagrams);
 
-  const pageNodeData = extractPageNodes(activePages);
-  const pageEdgeData = extractPageEdges(activePages);
+  const pageNodeData = extractPageNodes(activePage);
+  const pageEdgeData = extractPageEdges(activePage);
 
   const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];

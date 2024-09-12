@@ -99,6 +99,10 @@ const planSheetsSlice = createSlice({
     getActivePages: (state) => {
       return state.pages.filter((page) => state.activeSheet === page.pageType);
     },
+    getActivePage: (state) => {
+      const activePageNumber = state.activePageNumbers[state.activeSheet];
+      return state.pages.filter((page) => state.activeSheet === page.pageType && page.pageNumber === activePageNumber);
+    },
     getActivePageNumber: (state) => {
       const pageType = state.activeSheet;
       return state.activePageNumbers[pageType];
@@ -136,6 +140,7 @@ export const {
   getDiagrams,
   getPages,
   getActivePages,
+  getActivePage,
   getActiveSheet,
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,

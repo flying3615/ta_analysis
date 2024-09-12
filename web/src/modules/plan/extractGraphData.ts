@@ -54,15 +54,36 @@ const labelToNode = (label: LabelDTO): INodeData => {
     },
   };
 };
+
+const coordinateToNode = (coordinate: CoordinateDTO): INodeData => {
+  return {
+    id: coordinate.id.toString(),
+    position: coordinate.position,
+    properties: {
+      coordType: coordinate.coordType,
+      elementType: "coordinates",
+    },
+  };
+};
+
 export const extractPageNodes = (pages: PageDTO[]): INodeData[] => {
   return pages.flatMap((page) => {
-    return page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
+    const labels =
+      page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
+
+    const coordinates = page.coordinates?.map(coordinateToNode) ?? [];
+    return [...labels, ...coordinates] as INodeData[];
   });
 };
 
-export const extractPageEdges = (_: PageDTO[]): IEdgeData[] => {
-  // TODO replace later if we need any edges from extractPagesEdges
-  return [];
+export const extractPageEdges = (pages: PageDTO[]): IEdgeData[] => {
+  return pages.flatMap((page) => {
+    return (
+      (page.lines
+        ?.filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
+        .flatMap(baseLineToEdges) as IEdgeData[]) ?? []
+    );
+  });
 };
 
 export const extractPageConfigNodes = (pageConfigs: PageConfigDTO[]): INodeData[] => {
@@ -191,13 +212,12 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       }) ?? [];
 
     const coordinates = diagram.coordinates.map((coordinate) => {
+      const baseCoordinate = coordinateToNode(coordinate);
       return {
-        id: coordinate.id.toString(),
-        position: coordinate.position,
+        ...baseCoordinate,
         properties: {
-          coordType: coordinate.coordType,
+          ...baseCoordinate.properties,
           diagramId: diagram.id,
-          elementType: "coordinates",
           parent: `D${diagram.id}`,
         },
       };
@@ -238,6 +258,16 @@ export const extractDiagramEdges = (diagrams: DiagramDTO[]): IEdgeData[] => {
 };
 
 export const lineToEdges = (line: LineDTO, diagramId: number): IEdgeData[] => {
+  return baseLineToEdges(line).flatMap((line) => ({
+    ...line,
+    properties: {
+      ...line.properties,
+      diagramId,
+    },
+  }));
+};
+
+const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
   const coords = line.coordRefs;
   // zip the coordinate arrays together to create  duplicate pairs of coordinates
   // remove the first and last elements that terminate edges
@@ -251,7 +281,6 @@ export const lineToEdges = (line: LineDTO, diagramId: number): IEdgeData[] => {
         destNodeId: destNodeId?.toString(),
         properties: {
           ...getEdgeStyling(line),
-          diagramId: diagramId,
           elementType: "lines",
           lineType: line.lineType,
           coordRefs: JSON.stringify(line.coordRefs),
