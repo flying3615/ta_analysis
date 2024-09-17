@@ -29,7 +29,11 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       : symbolSvgs[symbolId as keyof typeof symbolSvgs];
     if (!symbolSvg) {
       console.warn(`Symbol ${symbolId} not recognised`);
-      return { svg: "", width: 0, height: 0 };
+      return {
+        svg: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>',
+        width: 0,
+        height: 0,
+      };
     }
 
     const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
