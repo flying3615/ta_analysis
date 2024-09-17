@@ -258,20 +258,34 @@ export const PlanIsLockedErrorModal: Story = {
   },
 };
 
-export const DiagramZoomAndPan: Story = {
-  ...SmallViewport,
+export const ZoomIn: Story = {
+  ...Default,
+  play: async () => {
+    await sleep(1000);
+    const ZoomInBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn });
+    await userEvent.click(ZoomInBtn);
+  },
 };
-DiagramZoomAndPan.play = async () => {
-  await sleep(1000);
-  const ZoomInBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn });
-  const ZoomOutBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut });
-  const ZoomCentreBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre });
-  await userEvent.click(ZoomInBtn);
-  await sleep(1000);
-  await userEvent.click(ZoomOutBtn);
-  await sleep(1000);
-  await userEvent.click(ZoomCentreBtn);
+
+export const ZoomOut: Story = {
+  ...Default,
+  play: async () => {
+    await sleep(1000);
+    const ZoomOutBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut });
+    await userEvent.click(ZoomOutBtn);
+  },
 };
+
+export const ZoomCentre: Story = {
+  ...Default,
+  play: async () => {
+    await sleep(1000);
+    await userEvent.click(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut }));
+    await sleep(1000);
+    await userEvent.click(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre }));
+  },
+};
+
 const planData = () => {
   return new PlanDataBuilder()
     .addDiagram({
