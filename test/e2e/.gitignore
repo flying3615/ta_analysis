@@ -8,3 +8,4 @@ output/
 .eslintcache
 auth/*.json
 allure-results/
+**/planSheetImages/

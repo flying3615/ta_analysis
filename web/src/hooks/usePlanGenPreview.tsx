@@ -20,11 +20,11 @@ import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
+import { isPlaywrightTest } from "@/test-utils/playwright-utils";
 import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 import { wrapText } from "@/util/stringUtil.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
-
 export interface PlanGenPreview {
   startPreview: () => Promise<void>;
   PreviewExportCanvas: React.FC;
@@ -247,7 +247,11 @@ export const usePlanGenPreview = (props: {
         cyRefCurrent.remove(cyRefCurrent.elements());
         cyRefCurrent?.removeAllListeners();
       }
-
+      if (isPlaywrightTest()) {
+      /* eslint-disable */
+      // to download jpeg images in tests
+      (window as any).imageFiles = imageFiles;
+      }
       await generatePreviewPDF(imageFiles);
     } catch (e) {
       errorToast("An error occurred while previewing the layout.");
@@ -287,6 +291,11 @@ export const usePlanGenPreview = (props: {
       setPreviewing(false);
       const { payload } = e.data;
       window.open(payload, "_blank");
+      if (isPlaywrightTest()) {
+        /* eslint-disable */
+        // to download pdf in tests
+        (window as any).pdfBlobUrl = payload;
+      }
     };
     worker.onerror = (e) => {
       console.error(e);

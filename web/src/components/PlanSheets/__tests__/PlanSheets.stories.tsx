@@ -5,7 +5,7 @@ import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, screen, userEvent, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitForElementToBeRemoved, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
@@ -20,6 +20,7 @@ import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { downloadBlob } from "@/util/downloadHelper.ts";
 
 export default {
   title: "PlanSheets",
@@ -453,4 +454,38 @@ const planData = () => {
     .addPage({ id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 })
     .addPage({ id: 3, pageType: PageDTOPageTypeEnum.survey, pageNumber: 2 })
     .build();
+};
+
+export const ExportPdfAndDownload: Story = {
+  ...Default,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByText("Preview layout"));
+
+    const modal = (await screen.findByRole("dialog")) as HTMLElement;
+    const modalText = /Processing.*Preparing preview of Layout Plan/i;
+    await expect(modal.textContent).toMatch(modalText);
+    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"), { timeout: 20000 });
+
+    // code if you want to download the images
+    /* eslint-disable-next-line */
+    // const imageFiles = (window as any).imageFiles ;
+    // imageFiles.forEach((imageFile: ImageFile) => {
+    //   const file = new File([imageFile.blob], "image.jpeg", { type: "image/jpeg" });
+    //   downloadBlob(file, `layout-plan-${imageFile.name}.jpeg`);
+    // });
+
+    /* eslint-disable-next-line */
+    const pdf = (window as any).pdfBlob;
+    const blob = await fetch(pdf).then((r) => r.blob());
+    const file = new File([blob], "layout-plan-123.pdf", { type: "application/pdf" });
+    downloadBlob(file, `layout-plan-123.pdf`);
+  },
 };

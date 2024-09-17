@@ -45,7 +45,7 @@ const LandingPage = () => {
             </Link>
           </div>
           <div className="LandingPage-options">
-            <Link className="LandingPage-option" to={"javascript:alert('Not implemented yet')"}>
+            <Link className="LandingPage-option" to="javascript:alert('Not implemented yet')">
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_layers"
@@ -56,7 +56,7 @@ const LandingPage = () => {
                 <p>Maintain diagram layers</p>
               </LuiShadow>
             </Link>
-            <Link className="LandingPage-option" to={"javascript:alert('Not implemented yet')"}>
+            <Link className="LandingPage-option" to="javascript:alert('Not implemented yet')">
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_label_settings"
