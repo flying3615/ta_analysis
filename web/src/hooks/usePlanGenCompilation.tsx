@@ -23,7 +23,7 @@ import {
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { convertImageDataTo1Bit, generateBlankImageBlob } from "@/util/imageUtil.ts";
+import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 
 export interface PlanGenCompilation {
@@ -47,7 +47,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
   const secureFileUploadClient = new FileUploaderClient({
     maxFileSizeHint: 1024 * 1024 * 100,
-    allowableFileExtHint: [".jpg"],
+    allowableFileExtHint: [".jpg", ".jpeg"],
     errorNotifier: (error) => {
       console.log(error);
     },
@@ -145,7 +145,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           if (diagramNodeData.length === 0 && diagramEdgeData.length === 0) {
             // generate a blank 100x100 white image for empty page
-            const blob = await generateBlankImageBlob(100, 100);
+            const blob = await generateBlankJpegBlob(100, 100);
             imageFiles.push({ name: imageName, blob: blob });
             continue;
           }
@@ -208,8 +208,12 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   const generateCompilation = async (imageFiles: ImageFile[]) => {
     try {
       const processUploadJobs = imageFiles.map(async (f) => {
-        const file = await convertImageDataTo1Bit(f);
-        return await secureFileUploadClient.uploadFile(file.processedBlob);
+        try {
+          const file = await convertImageDataTo1Bit(f);
+          return await secureFileUploadClient.uploadFile(file.processedBlob);
+        } catch (e) {
+          return Promise.reject(e);
+        }
       });
 
       const sfuCombinedResponse = await Promise.all(processUploadJobs);

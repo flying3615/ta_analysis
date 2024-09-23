@@ -30,7 +30,7 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
   }
 
   ctx.putImageData(imageData, 0, 0);
-  const blob = await canvas.convertToBlob();
+  const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 1 });
 
   const file = new File([blob], imageFile.name, { type: blob.type });
 
@@ -43,14 +43,14 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
 };
 
 /**
- * This function generates a blank image with the specified width and height.
+ * This function generates a blank jpeg image with the specified width and height.
  *
  * @param width - The width of the image in pixels.
  * @param height - The height of the image in pixels.
  *
  * @returns A Promise that resolves with a Blob representing the image data.
  */
-export const generateBlankImageBlob = async (width: number, height: number): Promise<Blob> => {
+export const generateBlankJpegBlob = async (width: number, height: number): Promise<Blob> => {
   // Create a new OffscreenCanvas object
   let canvas: OffscreenCanvas | HTMLCanvasElement;
   if (typeof OffscreenCanvas !== "undefined") {
@@ -74,16 +74,20 @@ export const generateBlankImageBlob = async (width: number, height: number): Pro
 
   // Convert the canvas to a Blob object
   if ("convertToBlob" in canvas) {
-    return await (canvas as OffscreenCanvas).convertToBlob();
+    return await (canvas as OffscreenCanvas).convertToBlob({ type: "image/jpeg", quality: 1 });
   } else {
     return new Promise<Blob>((resolve, reject) => {
-      (canvas as HTMLCanvasElement).toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("Blob conversion failed"));
-        }
-      });
+      (canvas as HTMLCanvasElement).toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Blob conversion failed"));
+          }
+        },
+        "image/jpeg",
+        1,
+      );
     });
   }
 };
