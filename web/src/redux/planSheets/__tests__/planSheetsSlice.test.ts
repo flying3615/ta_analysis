@@ -13,6 +13,7 @@ import planSheetsSlice, {
   getActiveSheet,
   getDiagrams,
   getFilteredPages,
+  getPageConfigs,
   getPages,
   getPlanData,
   hasChanges,
@@ -26,6 +27,7 @@ import planSheetsSlice, {
 
 describe("planSheetsSlice", () => {
   const initialState: PlanSheetsState = {
+    configs: [],
     diagrams: [],
     pages: [],
     activeSheet: PlanSheetType.TITLE,
@@ -38,7 +40,8 @@ describe("planSheetsSlice", () => {
 
   let store = setupStore();
 
-  const { diagrams, pages } = new PlanDataBuilder()
+  const { configs, diagrams, pages } = new PlanDataBuilder()
+    .addConfigs()
     .addDiagram({
       bottomRightPoint: {
         x: 80,
@@ -205,7 +208,8 @@ describe("planSheetsSlice", () => {
     expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], pages: [] });
     expect(hasChanges(store.getState())).toBe(true);
 
-    store.dispatch(setPlanData({ diagrams, pages }));
+    store.dispatch(setPlanData({ configs, diagrams, pages }));
+    expect(getPageConfigs(store.getState())).toStrictEqual(configs[0]?.pageConfigs);
     expect(getPlanData(store.getState())).toStrictEqual({ diagrams, pages });
     expect(getDiagrams(store.getState())).toStrictEqual(diagrams);
     expect(getPages(store.getState())).toStrictEqual(pages);

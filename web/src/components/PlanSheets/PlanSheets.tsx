@@ -23,22 +23,14 @@ import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
-  extractDiagramEdges,
-  extractDiagramNodes,
-  extractPageConfigEdges,
-  extractPageConfigNodes,
-  extractPageEdges,
-  extractPageNodes,
-} from "@/modules/plan/extractGraphData.ts";
+  selectActiveDiagramsEdgesAndNodes,
+  selectActivePageEdgesAndNodes,
+  selectPageConfigEdgesAndNodes,
+} from "@/modules/plan/selectGraphData.ts";
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import {
-  getActiveDiagrams,
-  getActivePage,
-  getDiagToPageLookupTbl,
-  replaceDiagrams,
-} from "@/redux/planSheets/planSheetsSlice.ts";
+import { replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
@@ -51,9 +43,13 @@ const PlanSheets = () => {
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
 
-  const activeDiagrams = useAppSelector(getActiveDiagrams);
-  const activePage = useAppSelector(getActivePage);
-  const lookupTbl = useAppSelector(getDiagToPageLookupTbl);
+  const {
+    data: activeDiagrams,
+    edges: diagramEdgeData,
+    nodes: diagramNodeData,
+  } = useAppSelector(selectActiveDiagramsEdgesAndNodes);
+  const { edges: pageEdgeData, nodes: pageNodeData } = useAppSelector(selectActivePageEdgesAndNodes);
+  const { edges: pageConfigsEdgeData, nodes: pageConfigsNodeData } = useAppSelector(selectPageConfigEdgesAndNodes);
 
   const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
     useCheckAndRegeneratePlan(transactionId);
@@ -122,16 +118,6 @@ const PlanSheets = () => {
       </div>
     );
   }
-
-  const pageConfigs = planData.configs?.[0]?.pageConfigs ?? [];
-  const pageConfigsNodeData = extractPageConfigNodes(pageConfigs);
-  const pageConfigsEdgeData = extractPageConfigEdges(pageConfigs);
-
-  const diagramNodeData = extractDiagramNodes(activeDiagrams, lookupTbl);
-  const diagramEdgeData = extractDiagramEdges(activeDiagrams);
-
-  const pageNodeData = extractPageNodes(activePage);
-  const pageEdgeData = extractPageEdges(activePage);
 
   const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];

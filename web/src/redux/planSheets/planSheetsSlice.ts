@@ -1,10 +1,11 @@
-import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
+import { ConfigDataDTO, DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { IDiagramToPage, populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk.ts";
 
 export interface PlanSheetsState {
+  configs?: ConfigDataDTO[];
   diagrams: DiagramDTO[];
   pages: PageDTO[];
   diagPageLookupTbl?: IDiagramToPage;
@@ -14,6 +15,7 @@ export interface PlanSheetsState {
 }
 
 const initialState: PlanSheetsState = {
+  configs: [],
   diagrams: [],
   pages: [],
   activeSheet: PlanSheetType.TITLE,
@@ -28,7 +30,11 @@ const planSheetsSlice = createSlice({
   name: "planSheets",
   initialState,
   reducers: {
-    setPlanData: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; pages: PageDTO[] }>) => {
+    setPlanData: (
+      state,
+      action: PayloadAction<{ configs?: ConfigDataDTO[]; diagrams: DiagramDTO[]; pages: PageDTO[] }>,
+    ) => {
+      state.configs = action.payload.configs;
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
       state.hasChanges = false;
@@ -74,6 +80,7 @@ const planSheetsSlice = createSlice({
     getDiagrams: (state) => state.diagrams,
     getPages: (state) => state.pages,
     getActiveSheet: (state) => state.activeSheet,
+    getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
     getPageNumberFromPageRef: (state) => (pageID: number) => {
       const page = state.pages.find((page) => page.pageType === state.activeSheet && page.id === pageID);
       return page?.pageNumber ?? null;
@@ -142,6 +149,7 @@ export const {
   getActivePages,
   getActivePage,
   getActiveSheet,
+  getPageConfigs,
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,
   getActivePageRefFromPageNumber,
