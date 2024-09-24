@@ -6,11 +6,13 @@ import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
 
 import { PlanSheetMenuLabels } from "./PlanSheetType";
 
 export const PlanSheetsHeaderButtons = () => {
+  const transactionId = useTransactionId();
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
   const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
@@ -176,7 +178,7 @@ export const PlanSheetsHeaderButtons = () => {
         selectedButtonLabel={selectedButtonLabel}
       />
 
-      <CommonButtons />
+      <CommonButtons transactionId={transactionId} lockLabelsForThisPlan={true} />
     </>
   );
 };

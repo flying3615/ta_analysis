@@ -8,6 +8,11 @@ import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 
 jest.mock("@/hooks/useCytoscapeContext");
 
+const mockedUseTransactionId = jest.fn();
+jest.mock("@/hooks/useTransactionId", () => ({
+  useTransactionId: () => mockedUseTransactionId(),
+}));
+
 describe("PlanSheetsHeaderButtons", () => {
   const buttonLabels = [
     [PlanSheetMenuLabels.LineArcReverse],

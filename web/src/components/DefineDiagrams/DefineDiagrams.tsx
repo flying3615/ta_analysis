@@ -152,7 +152,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     <div className="MainWindow">
       <Header view="Diagrams">
         <DefineDiagramMenuButtons />
-        <CommonButtons />
+        <CommonButtons transactionId={transactionId} />
       </Header>
       <div className="DefineDiagrams">
         {isLoading && <LuiLoadingSpinner />}

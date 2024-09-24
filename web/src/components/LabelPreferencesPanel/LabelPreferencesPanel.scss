@@ -10,3 +10,13 @@
   color: colours.$sea;
   fill: colours.$sea;
 }
+
+.LabelPreferencesPanel__Footer {
+  display: flex;
+  margin-left: auto;
+  padding: 16px;
+}
+
+.LabelPreferencesPanel__Footer button.lui-button {
+  width: 120px;
+}

@@ -21,11 +21,11 @@ export interface LabelPreferencesDTOWithId extends LabelPreferencesResponseDTO {
   userLabelPreferences: Array<LabelPreferenceDTOWithId>;
 }
 
-export const useUserLabelPreferencesQueryKey = (transactionId: number) => ["userLabelPreferences", transactionId];
+export const userLabelPreferencesQueryKey = (transactionId: number) => ["userLabelPreferences", transactionId];
 
 export const useUserLabelPreferences = ({ transactionId }: GetSurveyLabelPreferenceRequest) => {
   return useQuery({
-    queryKey: useUserLabelPreferencesQueryKey(transactionId),
+    queryKey: userLabelPreferencesQueryKey(transactionId),
     queryFn: async () => {
       const r = (await new LabelPreferencesControllerApi(apiConfig()).getSurveyLabelPreference({
         transactionId,
