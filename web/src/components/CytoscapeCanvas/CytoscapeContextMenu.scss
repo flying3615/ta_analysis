@@ -1,0 +1,59 @@
+.cytoscape-context-menu {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 4px 0;
+  margin: 0;
+  list-style: none;
+  position: absolute;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  z-index: 1000;
+
+  .cytoscape-context-menu-item {
+    position: relative;
+
+    .menu-item-content {
+      font-size: 14px;
+      padding: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+
+      &:hover {
+        background: #eee;
+      }
+    }
+
+    .submenu-indicator {
+      float: right;
+    }
+
+    .submenu-container {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      margin-left: -1px;
+
+      &.push-left {
+        margin-left: -300px;
+      }
+    }
+
+    &.hover > .submenu-container {
+      display: block;
+    }
+
+    &.disabled {
+      pointer-events: none;
+      opacity: 0.5;
+
+      .menu-item-content {
+        cursor: default;
+      }
+
+      .submenu-indicator {
+        display: none;
+      }
+    }
+  }
+}

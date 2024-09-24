@@ -2,10 +2,11 @@ import "./CytoscapeCanvas.scss";
 
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiTooltip } from "@linzjs/lui";
-import cytoscape from "cytoscape";
+import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import CytoscapeContextMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   edgeDefinitionsFromData,
@@ -205,17 +206,72 @@ const CytoscapeCanvas = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cy, onNodeChange, onEdgeChange, canvasRef.current]);
 
-  // Shift + right-click to zoom into an area
+  // Shift + left-click to zoom into an area
   useOnKeyDownAndMouseDown(
     ({ shiftKey }) => shiftKey,
     ({ button }) => button === 0,
     enableZoomToArea,
   );
+  const getProperties = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
+    const { target } = event;
+    if (target) {
+      const selectedId = target.id();
+      console.log("Selected ID:", selectedId);
+      // Todo get properties
+      console.log(lineMenus);
+    }
+  };
+
+  const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
+    const { cy } = event;
+    if (cy) {
+      const selectedNodes = cy.$("node:selected");
+      if (selectedNodes.length > 0) {
+        const selectedNodeIds = selectedNodes.map((node) => node.data("id"));
+        const parentNode = cy.getElementById(selectedNodeIds[0]);
+        if (parentNode.length > 0) {
+          const childNodes = parentNode.children();
+          childNodes.forEach((child) => {
+            console.log("Child Node ID:", child.id());
+          });
+          // Todo move to a page
+        }
+      } else {
+        console.log("No nodes selected");
+      }
+    }
+  };
+
+  const diagramMenus: MenuItem[] = [
+    { title: "Properties", callback: getProperties },
+    { title: "Cut", isDisabled: true },
+    { title: "Copy", isDisabled: true },
+    { title: "Paste", isDisabled: true },
+    { title: "Move To Page...", callback: movetoPage },
+  ];
+  const lineMenus: MenuItem[] = [
+    { title: "Original Location", callback: getProperties },
+    { title: "Show", isDisabled: true },
+    { title: "Properties", callback: getProperties },
+    { title: "Cut", isDisabled: true },
+    { title: "Copy", isDisabled: true },
+    { title: "Paste", isDisabled: true },
+    {
+      title: "Select",
+      submenu: [
+        { title: "Observation Distance", callback: getProperties },
+        { title: "All", callback: getProperties },
+      ],
+    },
+  ];
 
   return (
     <>
       {activePages.length ? (
-        <div className="CytoscapeCanvas" style={{ cursor: "default" }} data-testid={testId} ref={canvasRef} />
+        <>
+          <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
+          <CytoscapeContextMenu menuItems={diagramMenus} cy={cy} />
+        </>
       ) : (
         <NoPageMessage />
       )}

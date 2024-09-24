@@ -14,7 +14,7 @@ import { PlanSheetMenuLabels } from "./PlanSheetType";
 export const PlanSheetsHeaderButtons = () => {
   const transactionId = useTransactionId();
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
-  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
+  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom, applyGraphOptions } = useCytoscapeContext();
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
 
@@ -89,7 +89,7 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_pointer_outlined"
         onClick={() => {
           handleHeaderButtonClick(PlanSheetMenuLabels.Cursor);
-          alert("Not Yet Implemented");
+          applyGraphOptions({ nodeSelectable: false, edgeSelectable: false });
         }}
         selectedButtonLabel={selectedButtonLabel}
       />
@@ -98,7 +98,7 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_select_diagram"
         onClick={() => {
           handleHeaderButtonClick(PlanSheetMenuLabels.SelectDiagram);
-          alert("Not Yet Implemented");
+          applyGraphOptions({ nodeSelectable: true, edgeSelectable: true, elements: ":parent" });
         }}
         selectedButtonLabel={selectedButtonLabel}
       />

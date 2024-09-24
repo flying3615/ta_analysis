@@ -18,8 +18,6 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanSheetMenuLabels.LineArcReverse],
     [PlanSheetMenuLabels.Delete],
     [PlanSheetMenuLabels.View],
-    [PlanSheetMenuLabels.Cursor],
-    [PlanSheetMenuLabels.SelectDiagram],
     [PlanSheetMenuLabels.SelectLabel],
     [PlanSheetMenuLabels.SelectCoordinates],
     [PlanSheetMenuLabels.SelectLine],

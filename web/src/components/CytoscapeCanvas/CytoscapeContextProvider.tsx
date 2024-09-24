@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 import React, { createContext, ReactElement, ReactNode, useEffect, useState } from "react";
 
-import { cytoscapeUtils } from "@/util/cytoscapeUtil.ts";
+import { cytoscapeUtils, GraphActionsProps } from "@/util/cytoscapeUtil.ts";
 
 export interface CytoscapeContextType {
   cyto?: cytoscape.Core;
@@ -14,6 +14,7 @@ export interface CytoscapeContextType {
   scrollToZoom: (cy: cytoscape.Core) => void;
   keepPanWithinBoundaries: (cy: cytoscape.Core) => void;
   onViewportChange: (cy: cytoscape.Core) => void;
+  applyGraphOptions: (options: GraphActionsProps) => void;
 }
 
 export const CytoscapeContext = createContext<CytoscapeContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
   const scrollToZoom = (cy: cytoscape.Core) => cytoscapeUtils.scrollToZoom(cy);
   const keepPanWithinBoundaries = (cy: cytoscape.Core) => cytoscapeUtils.keepPanWithinBoundaries(cy);
   const onViewportChange = (cy: cytoscape.Core) => cytoscapeUtils.onViewportChange(cy);
+  const applyGraphOptions = (options: GraphActionsProps) => cytoscapeUtils.applyGraphOptions(options, cyto);
 
   const checkZoomLimits = () => {
     if (cyto) {
@@ -73,6 +75,7 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
         scrollToZoom,
         keepPanWithinBoundaries,
         onViewportChange,
+        applyGraphOptions,
       }}
     >
       {props.children}

@@ -231,7 +231,16 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
         (parcelLabelGroup.labels ?? []).filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("parcelLabels")),
       ) ?? [];
 
+    const parentNode = [
+      {
+        id: `D${diagram.id}`,
+        position: { x: 1, y: 1 },
+        properties: { coordType: "", diagramId: diagram.id, elementType: "coordinates" },
+      },
+    ];
+
     return [
+      ...parentNode,
       ...coordinates,
       ...userDefnLabels,
       ...childDiagLabels,

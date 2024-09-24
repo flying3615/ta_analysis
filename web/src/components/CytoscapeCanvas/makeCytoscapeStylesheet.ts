@@ -103,6 +103,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
   return [
     {
+      selector: "node, node:active, edge, edge:active",
+      style: {
+        "overlay-padding": 0,
+        "overlay-opacity": 0,
+      },
+    },
+    {
       // Node with label, circled
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
       style: {
@@ -110,7 +117,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "background-image": (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
         height: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).width,
         width: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).height,
-        ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 300 }),
+        ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 12 }),
       },
     },
     {
@@ -249,10 +256,19 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     },
     {
       selector: ":parent",
-      css: {
-        "background-opacity": 0,
+      style: {
         "border-width": 0,
+        padding: 0,
         label: "",
+      },
+    },
+    {
+      selector: ".elem-selected:selected",
+      style: {
+        "background-opacity": 0.1,
+        "background-color": "#0099FF",
+        "border-width": 1,
+        "border-color": "#0099FF",
       },
     },
     {
