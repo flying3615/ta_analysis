@@ -1,0 +1,12 @@
+@use "@linzjs/lui/dist/scss/Foundation/Variables/ColorVars.scss" as colours;
+
+.LabelPreferencesPanel .LuiTabsPanel--active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.LabelPreferencesPanel [col-id="revert"] path {
+  color: colours.$sea;
+  fill: colours.$sea;
+}

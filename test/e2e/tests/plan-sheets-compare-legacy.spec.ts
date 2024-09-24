@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { expect, test } from "@playwright/test";
 import * as fs from "fs";
 import path from "path";

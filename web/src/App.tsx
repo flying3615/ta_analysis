@@ -1,10 +1,15 @@
+import "@linzjs/step-ag-grid/dist/GridTheme.scss";
+import "@linzjs/step-ag-grid/dist/index.css";
+import "@linzjs/lui/dist/fonts";
+import "@linzjs/lui/dist/scss/base.scss";
+
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
-import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows";
+import { LuiModalAsyncContextProvider, PanelsContextProvider, useLuiModalPrefab } from "@linzjs/windows";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { ErrorInfo, ReactNode, useEffect } from "react";
+import { ErrorInfo, ReactNode, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { Route, useRouteError } from "react-router";
@@ -163,6 +168,7 @@ const App = () => {
     );
   };
 
+  // There are two LuiModalAsyncContextProvider as ErrorBoundary uses it
   return (
     <LuiModalAsyncContextProvider>
       <ErrorBoundary FallbackComponent={ShowUnhandledModal} onError={errorHandler}>
@@ -171,7 +177,11 @@ const App = () => {
             <FeatureFlagProvider>
               <QueryClientProvider client={queryClient}>
                 <Provider store={store}>
-                  <PlangenApp />
+                  <LuiModalAsyncContextProvider>
+                    <PanelsContextProvider baseZIndex={500}>
+                      <PlangenApp />
+                    </PanelsContextProvider>
+                  </LuiModalAsyncContextProvider>
                 </Provider>
               </QueryClientProvider>
             </FeatureFlagProvider>

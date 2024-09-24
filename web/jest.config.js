@@ -15,7 +15,7 @@ module.exports = {
     "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(ol|lodash-es|@linzjs/windows/|@linzjs/lui/|@fontsource))",
+    "node_modules/(?!(ol|lodash-es|@linzjs/windows/|@linzjs/lui/|@fontsource|@linzjs/step-ag-grid))",
   ],
   coverageReporters: ["text", "cobertura"],
   moduleNameMapper: {

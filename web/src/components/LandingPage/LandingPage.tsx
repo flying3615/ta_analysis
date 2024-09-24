@@ -1,14 +1,26 @@
 import "./LandingPage.scss";
 
 import { LuiIcon, LuiShadow } from "@linzjs/lui";
+import { PanelsContext } from "@linzjs/windows";
+import { useContext } from "react";
 import { generatePath, Link } from "react-router-dom";
 
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
 import { luiColors } from "@/constants.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths.ts";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 
 const LandingPage = () => {
   const transactionId = useTransactionId();
+  const { openPanel } = useContext(PanelsContext);
+
+  const { result: labelPreferencesAllowed, loading: splitLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,
+  );
+
+  const labelPreferencesEnabled = labelPreferencesAllowed && !splitLoading;
 
   return (
     <>
@@ -45,7 +57,7 @@ const LandingPage = () => {
             </Link>
           </div>
           <div className="LandingPage-options">
-            <Link className="LandingPage-option" to="javascript:alert('Not implemented yet')">
+            <Link className="LandingPage-option" onClick={() => alert("Coming soon!")} to="">
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_layers"
@@ -56,7 +68,18 @@ const LandingPage = () => {
                 <p>Maintain diagram layers</p>
               </LuiShadow>
             </Link>
-            <Link className="LandingPage-option" to="javascript:alert('Not implemented yet')">
+            <Link
+              className="LandingPage-option"
+              onClick={() => {
+                if (!labelPreferencesEnabled) {
+                  alert("Coming soon!");
+                  return;
+                }
+                openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
+                return false;
+              }}
+              to=""
+            >
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon
                   name="ic_label_settings"
