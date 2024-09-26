@@ -3,6 +3,8 @@ import "@linzjs/lui/dist/scss/base.scss";
 import "@linzjs/lui/dist/fonts";
 import "@/index.scss";
 import "@szhsin/react-menu/dist/index.css";
+import "@linzjs/step-ag-grid/dist/GridTheme.scss";
+import "@linzjs/step-ag-grid/dist/index.css";
 
 import { initialize, mswLoader } from "msw-storybook-addon";
 import { handlers } from "../src/mocks/mockHandlers";

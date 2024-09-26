@@ -4,6 +4,7 @@ import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder.ts";
 import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
+import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences.ts";
 import { mockLabels } from "@/mocks/data/mockLabels.ts";
 import { mockLines } from "@/mocks/data/mockLines.ts";
 import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
@@ -198,6 +199,18 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     );
   }),
+
+  http.get(/\/label-preference/, async () =>
+    HttpResponse.json(
+      {
+        fonts: mockLabelPreferences.fonts,
+        defaults: mockLabelPreferences.defaults,
+        userLabelPreferences: mockLabelPreferences.userLabelPreferences,
+        surveyLabelPreferences: mockLabelPreferences.surveyLabelPreferences,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
 
   http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/666\/prepare$/, () =>

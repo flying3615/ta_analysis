@@ -49,7 +49,7 @@ export const LabelPreferencesPanel = ({ transactionId, lockLabelsForThisPlan }: 
                   transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
-                  labelPreferences={queryData.userLabelPreferences}
+                  labelPreferences={queryData.surveyLabelPreferences}
                   readOnly={lockLabelsForThisPlan}
                 />
               </GridContextProvider>
@@ -62,7 +62,7 @@ export const LabelPreferencesPanel = ({ transactionId, lockLabelsForThisPlan }: 
                   transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
-                  labelPreferences={queryData.surveyLabelPreferences}
+                  labelPreferences={queryData.userLabelPreferences}
                 />
               </GridContextProvider>
             </GridUpdatingContextProvider>
