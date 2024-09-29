@@ -183,5 +183,26 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
+  locking:
+    container_name: lock-service
+    image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/landonline-lock-service:latest"
+    environment:
+      DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=5
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      OIDC_ISSUER_URL: http://keycloak:8080/realms/landonline
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "13045:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 1GB
+    depends_on:
+      informix-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
 volumes:
   informix-db-data:
