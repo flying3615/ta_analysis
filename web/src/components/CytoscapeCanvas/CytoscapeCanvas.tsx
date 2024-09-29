@@ -78,10 +78,17 @@ const CytoscapeCanvas = ({
         setTooltipPosition({ x: x + canvasRect.left, y: y + canvasRect.top });
       }
     }
+    if (node.data("label")) {
+      node.addClass("hovered");
+    }
   };
-  const onMouseOut = () => {
+  const onMouseOut = (event: cytoscape.EventObject) => {
     setTooltipContent(null);
     setTooltipPosition(null);
+    if (event.target.isNode()) {
+      const node = event.target as cytoscape.NodeSingular;
+      !node.selected() && node.removeClass("hovered");
+    }
   };
   const enableZoomToArea = () => {
     cy?.userPanningEnabled(false);

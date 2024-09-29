@@ -63,6 +63,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   };
 
   const labelBaseStyle = {
+    "text-events": "yes",
     label: "data(label)",
     "line-height": 1,
     "text-wrap": "wrap",
@@ -99,6 +100,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
   const noNodeMarker = {
     "background-opacity": 0,
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const showNodeDebugStyle = {
+    "text-background-opacity": 0,
+    "background-color": "red",
+    "background-opacity": 1,
   };
 
   return [
@@ -147,6 +155,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         ...noNodeMarker,
         height: 1,
         width: 1,
+        // ...showNodeDebugStyle, // Uncomment it to show node debug style
+      },
+    },
+    {
+      selector: "node[label].hovered",
+      style: {
+        color: "#0099FF",
       },
     },
     {

@@ -19,7 +19,7 @@ export const textDimensions = (ele: cytoscape.NodeSingular) => {
   // Use the presumed cytoscape canvas to measure
   // text size in context
   const cyCanvas = document.querySelector('canvas[data-id="layer2-node"]') as HTMLCanvasElement;
-  const cyContext = cyCanvas.getContext("2d");
+  const cyContext = cyCanvas?.getContext("2d");
 
   if (cyContext) {
     cyContext.font = `${fontSize}px ${fontName}`; // order matters here
