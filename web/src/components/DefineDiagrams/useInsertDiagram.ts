@@ -10,6 +10,7 @@ import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOp
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { mapZoomScale } from "@/util/mapUtil.ts";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -52,7 +53,8 @@ export const useInsertDiagram = () => {
     },
     drawEnd: async ({ area, latLongCartesians }) => {
       if (!map || !diagramType) return;
-      const zoom = map.getView().getZoom() ?? 200;
+
+      const zoomScale = mapZoomScale(map);
 
       try {
         setLoading(true);
@@ -64,7 +66,7 @@ export const useInsertDiagram = () => {
 
         await insertDiagram({
           transactionId,
-          postDiagramsRequestDTO: { diagramType, zoomScale: zoom, coordinates: latLongCartesians },
+          postDiagramsRequestDTO: { diagramType, zoomScale, coordinates: latLongCartesians },
         });
       } finally {
         setLoading(false);

@@ -4,6 +4,7 @@ import { castArray } from "lodash-es";
 import { Coordinate } from "ol/coordinate";
 import { FeatureLike } from "ol/Feature";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
+import OlMap from "ol/Map";
 import { register } from "ol/proj/proj4";
 import RenderFeature from "ol/render/Feature";
 import proj4 from "proj4";
@@ -79,3 +80,29 @@ export const createNewNode = (
   label,
   properties: { ...datumNode.properties, ...customProperties },
 });
+
+export const pixelsToMeters = (pixels: number): number => {
+  // Assuming 96 DPI as a base.  There is no way of getting exact DPI in browser.
+  // On my screen this calculation is off by 15%; inaccuracy is expected.
+  const dpi = window.devicePixelRatio * 96;
+  // Convert pixels to meters
+  return ((pixels / dpi) * 2.54) / 100;
+};
+
+export const mapViewWidthMeters = (map: OlMap) => {
+  const viewExtent = map.getView().calculateExtent();
+  // @ts-expect-error object possible undefined
+  return viewExtent[2] - viewExtent[0];
+};
+
+export const mapViewportWidthMeters = (map: OlMap) => {
+  return pixelsToMeters(map.getViewport().getBoundingClientRect().width);
+};
+
+/**
+ * This is based on legacy calculation from function of_sc_mapscale:
+ * ll_scale = LONG(ld_mapWidth / ldc_screenMeters)
+ */
+export const mapZoomScale = (map: OlMap) => {
+  return Math.floor(mapViewWidthMeters(map) / mapViewportWidthMeters(map)) || 1;
+};
