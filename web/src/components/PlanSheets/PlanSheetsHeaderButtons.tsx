@@ -7,6 +7,7 @@ import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useEscapeKey } from "@/hooks/useEscape";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
@@ -26,6 +27,8 @@ export const PlanSheetsHeaderButtons = () => {
   const handleHeaderButtonClick = (label: PlanMode) => {
     dispatch(setPlanMode(label));
   };
+
+  useEscapeKey({ callback: () => handleHeaderButtonClick(PlanMode.Cursor) });
 
   return (
     <>
@@ -149,7 +152,6 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_add_label"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.AddLabel);
-          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />

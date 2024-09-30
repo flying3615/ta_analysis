@@ -71,7 +71,7 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.View],
     [PlanMode.SelectLabel],
     [PlanMode.SelectPolygon],
-    [PlanMode.AddLabel],
+    [PlanMode.Cursor],
     [PlanMode.AddLine],
     [PlanMode.FormatLinesText],
     [PlanMode.SelectRectangle],

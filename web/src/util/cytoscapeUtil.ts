@@ -1,11 +1,25 @@
 import cytoscape from "cytoscape";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 10.0;
 export const ZOOM_DELTA = 0.5;
 export const SCROLL_THRESHOLD = 1.3;
 export const pixelsPerPoint = 0.75;
 export const pointsPerCm = 28.3465;
+
+export interface IAreaLimitsPx {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+}
+export interface IDiagramAreasLimits {
+  diagramOuterLimitsPx: IAreaLimitsPx;
+  disabledAreasLimitsPx: IAreaLimitsPx[];
+}
+
 let _panX: number;
 let _panY: number;
 let _prevZoomX: number;
@@ -120,6 +134,45 @@ const onViewportChange = (cy: cytoscape.Core) => {
   }
 };
 
+/**
+ * Get areas limits for the diagram
+ * @param cytoscapeCoordMapper
+ * @param cy
+ * @returns outer limits of page frame and disabled areas limits (reserved for text blocks and page number block)
+ */
+const getDiagramAreasLimits = (
+  cytoscapeCoordMapper: CytoscapeCoordinateMapper,
+  cy?: cytoscape.Core,
+): IDiagramAreasLimits | undefined => {
+  if (!cy) return;
+
+  // Get outer limits of page frame
+  const diagramOuterLimitsPx = cytoscapeCoordMapper.getDiagramOuterLimitsPx();
+  // Get limits of disabled areas (text blocks and page number block)
+  const node1 = cy.getElementById("border_page_no1").position();
+  const node2 = cy.getElementById("border_page_no2").position();
+
+  if (!node1 || !node2) return;
+
+  const disabledAreasLimitsPx: IAreaLimitsPx[] = [
+    { xMin: node1.x, xMax: diagramOuterLimitsPx.xMax, yMin: node1.y, yMax: node2.y },
+    {
+      xMin: diagramOuterLimitsPx.xMin,
+      xMax: diagramOuterLimitsPx.xMax,
+      yMin: node2.y,
+      yMax: diagramOuterLimitsPx.yMax,
+    },
+  ];
+
+  return { diagramOuterLimitsPx, disabledAreasLimitsPx };
+};
+
+const isPositionWithinAreaLimits = (position: cytoscape.Position, areas: IAreaLimitsPx[]): boolean => {
+  return areas.some((area) => {
+    return position.x >= area.xMin && position.x <= area.xMax && position.y >= area.yMin && position.y <= area.yMax;
+  });
+};
+
 export const cytoscapeUtils = {
   zoomToFit,
   zoomByDelta,
@@ -127,4 +180,6 @@ export const cytoscapeUtils = {
   scrollToZoom,
   keepPanWithinBoundaries,
   onViewportChange,
+  getDiagramAreasLimits,
+  isPositionWithinAreaLimits,
 };

@@ -1,6 +1,8 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { keyBy } from "lodash-es";
 
+import { IAreaLimitsPx } from "@/util/cytoscapeUtil";
+
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
 export class CytoscapeCoordinateMapper {
@@ -139,6 +141,19 @@ export class CytoscapeCoordinateMapper {
    */
   fontScaleFactor() {
     return this.scalePixelsPerCm / 38.3;
+  }
+
+  /**
+   * Returns the diagram outer limits in pixels
+   */
+  getDiagramOuterLimitsPx(): IAreaLimitsPx {
+    const pixelMargin = Math.abs(this.pixelMargin);
+    return {
+      xMin: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitOriginX) - pixelMargin,
+      xMax: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitBottomRightX) - pixelMargin,
+      yMin: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitOriginY)) - pixelMargin,
+      yMax: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.borderBottomRightY)) - pixelMargin,
+    };
   }
 
   /**

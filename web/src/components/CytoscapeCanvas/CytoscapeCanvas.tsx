@@ -20,6 +20,7 @@ import {
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
 import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
+import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput";
 import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
@@ -65,6 +66,7 @@ const CytoscapeCanvas = ({
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
+  const [cytoCoorMapper, setCytoCoordMapper] = useState<CytoscapeCoordinateMapper>();
   const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
   const [pan, setPan] = useState<cytoscape.Position>(initZoom?.pan ?? { x: 0, y: 0 });
 
@@ -139,6 +141,7 @@ const CytoscapeCanvas = ({
       throw Error("CytoscapeCanvas::initCytoscape - no canvas");
     }
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
+    setCytoCoordMapper(cytoscapeCoordinateMapper);
 
     const cyRef = cytoscape({
       container: canvasRef.current,
@@ -248,6 +251,7 @@ const CytoscapeCanvas = ({
         <>
           <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
           <CytoscapeContextMenu menuState={menuState} hideMenu={hideMenu} />
+          <PageLabelInput cy={cy} cytoCoordMapper={cytoCoorMapper} />
         </>
       ) : (
         <NoPageMessage />
