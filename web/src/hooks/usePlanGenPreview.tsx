@@ -20,7 +20,7 @@ import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { isPlaywrightTest } from "@/test-utils/playwright-utils";
+import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 import { wrapText } from "@/util/stringUtil.ts";

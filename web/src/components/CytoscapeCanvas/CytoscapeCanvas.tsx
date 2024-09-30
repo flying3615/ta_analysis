@@ -6,7 +6,7 @@ import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import CytoscapeContextMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
+import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   edgeDefinitionsFromData,
@@ -17,14 +17,17 @@ import {
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
 import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
+import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu.ts";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown.ts";
 import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
 import { getActivePages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { isPlaywrightTest, saveCytoscapeStateToStorage } from "@/test-utils/playwright-utils";
+import { isPlaywrightTest, isStorybookTest, saveCytoscapeStateToStorage } from "@/test-utils/cytoscape-data-utils.ts";
 import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
 
 export interface IInitZoom {
@@ -40,6 +43,8 @@ export interface ICytoscapeCanvasProps {
   onNodeChange: (node: INodeData) => void;
   onEdgeChange: (node: IEdgeData) => void;
   onCyInit?: (cy: cytoscape.Core) => void;
+  selectionSelector?: string;
+  getContextMenuItems: (element: NodeSingular | EdgeSingular | cytoscape.Core) => MenuItem[] | undefined;
   "data-testid"?: string;
 }
 
@@ -51,6 +56,8 @@ const CytoscapeCanvas = ({
   onNodeChange,
   onEdgeChange,
   onCyInit,
+  selectionSelector,
+  getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
   const throwAsyncError = useThrowAsyncError();
@@ -63,36 +70,37 @@ const CytoscapeCanvas = ({
 
   const [tooltipContent, setTooltipContent] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
-  const { setCyto, scrollToZoom, zoomToSelectedRegion, keepPanWithinBoundaries, onViewportChange } =
+  const { setCyto, zoomToSelectedRegion, scrollToZoom, keepPanWithinBoundaries, onViewportChange } =
     useCytoscapeContext();
+
   const startCoordsRef = useRef({ x1: 0, y1: 0 });
+
+  const pageNumberTooltips = (cy: HTMLDivElement | null, node: NodeSingular) => {
+    const canvasRect = cy?.getBoundingClientRect();
+    const { x, y } = node.renderedPosition();
+    setTooltipContent("Reserved for sheet numbers");
+    setTooltipPosition({ x: x + (canvasRect?.left ?? 0), y: y + (canvasRect?.top ?? 0) });
+  };
 
   const onMouseOver = (event: cytoscape.EventObject) => {
     const node = event.target;
-    if (node.id() === "border_page_no") {
-      const { x, y } = node.renderedPosition();
-
-      if (canvasRef.current) {
-        const canvasRect = canvasRef.current.getBoundingClientRect();
-        setTooltipContent("Reserved for sheet numbers");
-        setTooltipPosition({ x: x + canvasRect.left, y: y + canvasRect.top });
-      }
-    }
-    if (node.data("label")) {
-      node.addClass("hovered");
+    if (node.isNode) {
+      const parentNode = node.parent();
+      if (selectionSelector === "node" && parentNode.nonempty()) parentNode.addClass(PlanStyleClassName.DiagramHover);
+      if (selectionSelector === "node" && node.children().nonempty()) node.addClass(PlanStyleClassName.DiagramHover);
+      if (node.id() === "border_page_no") pageNumberTooltips(canvasRef.current, node);
     }
   };
-  const onMouseOut = (event: cytoscape.EventObject) => {
+  const onMouseOut = () => {
     setTooltipContent(null);
     setTooltipPosition(null);
-    if (event.target.isNode()) {
-      const node = event.target as cytoscape.NodeSingular;
-      !node.selected() && node.removeClass("hovered");
+    if (selectionSelector === "node") {
+      cy?.elements()?.forEach((ele) => {
+        ele.removeClass(PlanStyleClassName.DiagramHover);
+      });
     }
   };
-  const enableZoomToArea = () => {
-    cy?.userPanningEnabled(false);
-  };
+
   const onMouseDown = (event: cytoscape.EventObject) => {
     startCoordsRef.current.x1 = event.position.x;
     startCoordsRef.current.y1 = event.position.y;
@@ -101,6 +109,28 @@ const CytoscapeCanvas = ({
     if (!cy?.userPanningEnabled()) {
       zoomToSelectedRegion(startCoordsRef.current.x1, startCoordsRef.current.y1, event.position.x, event.position.y);
       cy?.userPanningEnabled(true);
+    }
+  };
+
+  const enableZoomToArea = () => {
+    cy?.userPanningEnabled(false);
+  };
+
+  const emitChange = (event: cytoscape.EventObject) => {
+    try {
+      if (event.target.isNode()) {
+        const node = event.target as cytoscape.NodeSingular;
+        if (!canvasRef.current) {
+          throw Error("CytoscapeCanvas::emitChange listener - no viewport");
+        }
+        const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
+        onNodeChange(getNodeData(node, cytoscapeCoordinateMapper));
+      } else {
+        const edge = event.target as cytoscape.EdgeSingular;
+        onEdgeChange(getEdgeData(edge));
+      }
+    } catch (error) {
+      throwAsyncError(error as Error);
     }
   };
 
@@ -128,6 +158,14 @@ const CytoscapeCanvas = ({
       // the stylesheet for the graph
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),
     });
+    cyRef.nodes().unselectify();
+    cyRef.nodes().ungrabify();
+    cyRef.edges().unselectify();
+
+    if (selectionSelector) {
+      cyRef.$(selectionSelector).selectify();
+      cyRef.nodes(":parent").addClass(PlanStyleClassName.DiagramNode);
+    }
 
     if (onCyInit && !cy) {
       onCyInit(cyRef);
@@ -135,7 +173,7 @@ const CytoscapeCanvas = ({
     setCy(cyRef);
     setCyto(cyRef);
 
-    if (isPlaywrightTest()) {
+    if (isPlaywrightTest() || isStorybookTest()) {
       saveCytoscapeStateToStorage(cyRef, testId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,32 +215,14 @@ const CytoscapeCanvas = ({
 
   // Listen and handle cytoscape events
   useEffect(() => {
-    const emitChange = (event: cytoscape.EventObject) => {
-      try {
-        if (event.target.isNode()) {
-          const node = event.target as cytoscape.NodeSingular;
-          if (!canvasRef.current) {
-            throw Error("CytoscapeCanvas::emitChange listener - no viewport");
-          }
-          const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
-          onNodeChange(getNodeData(node, cytoscapeCoordinateMapper));
-        } else {
-          const edge = event.target as cytoscape.EdgeSingular;
-          onEdgeChange(getEdgeData(edge));
-        }
-      } catch (error) {
-        throwAsyncError(error as Error);
-      }
-    };
     cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
     cy?.addListener("position", debounce(emitChange, 1000)); // 1s debounce since lots of position events are fired very quickly
-    cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
-    cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
-    cy?.addListener("mouseover", "node", onMouseOver);
-    cy?.addListener("mouseout", "node", onMouseOut);
+    cy?.addListener("mouseover", onMouseOver);
+    cy?.addListener("mouseout", onMouseOut);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
-
+    cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
+    cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
     cy?.on("dragpan", (event) => keepPanWithinBoundaries(event.cy));
     cy?.on("scrollzoom", (event) => scrollToZoom(event.cy));
     cy?.on("viewport", (event) => onViewportChange(event.cy));
@@ -219,65 +239,15 @@ const CytoscapeCanvas = ({
     ({ button }) => button === 0,
     enableZoomToArea,
   );
-  const getProperties = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    const { target } = event;
-    if (target) {
-      const selectedId = target.id();
-      console.log("Selected ID:", selectedId);
-      // Todo get properties
-      console.log(lineMenus);
-    }
-  };
 
-  const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    const { cy } = event;
-    if (cy) {
-      const selectedNodes = cy.$("node:selected");
-      if (selectedNodes.length > 0) {
-        const selectedNodeIds = selectedNodes.map((node) => node.data("id"));
-        const parentNode = cy.getElementById(selectedNodeIds[0]);
-        if (parentNode.length > 0) {
-          const childNodes = parentNode.children();
-          childNodes.forEach((child) => {
-            console.log("Child Node ID:", child.id());
-          });
-          // Todo move to a page
-        }
-      } else {
-        console.log("No nodes selected");
-      }
-    }
-  };
-
-  const diagramMenus: MenuItem[] = [
-    { title: "Properties", callback: getProperties },
-    { title: "Cut", isDisabled: true },
-    { title: "Copy", isDisabled: true },
-    { title: "Paste", isDisabled: true },
-    { title: "Move To Page...", callback: movetoPage },
-  ];
-  const lineMenus: MenuItem[] = [
-    { title: "Original Location", callback: getProperties },
-    { title: "Show", isDisabled: true },
-    { title: "Properties", callback: getProperties },
-    { title: "Cut", isDisabled: true },
-    { title: "Copy", isDisabled: true },
-    { title: "Paste", isDisabled: true },
-    {
-      title: "Select",
-      submenu: [
-        { title: "Observation Distance", callback: getProperties },
-        { title: "All", callback: getProperties },
-      ],
-    },
-  ];
+  const { menuState, hideMenu } = useCytoscapeContextMenu(cy, getContextMenuItems);
 
   return (
     <>
       {activePages.length ? (
         <>
           <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
-          <CytoscapeContextMenu menuItems={diagramMenus} cy={cy} />
+          <CytoscapeContextMenu menuState={menuState} hideMenu={hideMenu} />
         </>
       ) : (
         <NoPageMessage />

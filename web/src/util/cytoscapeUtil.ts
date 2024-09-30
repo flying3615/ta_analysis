@@ -6,26 +6,13 @@ export const ZOOM_DELTA = 0.5;
 export const SCROLL_THRESHOLD = 1.3;
 export const pixelsPerPoint = 0.75;
 export const pointsPerCm = 28.3465;
-export interface GraphActionsProps {
-  nodeSelectable?: boolean;
-  edgeSelectable?: boolean;
-  labelSelectable?: boolean;
-  addNode?: boolean;
-  addEdge?: boolean;
-  addLabel?: boolean;
-  addPolygon?: boolean;
-  formatLineText?: boolean;
-  elements?: string;
-}
 let _panX: number;
 let _panY: number;
 let _prevZoomX: number;
 let _prevZoomY: number;
 
 const zoomToFit = (cy?: cytoscape.Core) => {
-  if (cy) {
-    cy.reset();
-  }
+  cy?.reset();
 };
 
 const zoomByDelta = (delta: number, cy?: cytoscape.Core) => {
@@ -133,43 +120,6 @@ const onViewportChange = (cy: cytoscape.Core) => {
   }
 };
 
-const applyGraphOptions = (options: GraphActionsProps, cy?: cytoscape.Core) => {
-  if (!cy) return;
-
-  const { nodeSelectable, edgeSelectable, labelSelectable, elements } = options;
-  cy.elements().removeClass("elem-selected edge-selected label-selected");
-  cy.nodes().unselectify();
-  cy.edges().unselectify();
-  cy.nodes().ungrabify();
-
-  if (nodeSelectable) {
-    cy.nodes().selectify();
-    cy.on("select", "node", function (event) {
-      const node = event.target;
-      node.addClass("node-selected");
-    });
-  }
-
-  if (edgeSelectable) {
-    cy.edges().selectify();
-    cy.on("select", "edge", function (event) {
-      const edge = event.target;
-      edge.addClass("edge-selected");
-    });
-  }
-
-  if (labelSelectable) {
-    cy.on("select", "node, edge", function (event) {
-      const ele = event.target;
-      ele.addClass("label-selected");
-    });
-  }
-
-  if (elements) {
-    cy.elements(`${elements}`).addClass("elem-selected");
-  }
-};
-
 export const cytoscapeUtils = {
   zoomToFit,
   zoomByDelta,
@@ -177,5 +127,4 @@ export const cytoscapeUtils = {
   scrollToZoom,
   keepPanWithinBoundaries,
   onViewportChange,
-  applyGraphOptions,
 };

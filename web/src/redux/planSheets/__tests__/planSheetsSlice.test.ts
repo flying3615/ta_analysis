@@ -1,6 +1,6 @@
 import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk";
 import { setupStore } from "@/redux/store";
@@ -16,6 +16,7 @@ import planSheetsSlice, {
   getPageConfigs,
   getPages,
   getPlanData,
+  getPlanMode,
   hasChanges,
   PlanSheetsState,
   replaceDiagrams,
@@ -36,6 +37,7 @@ describe("planSheetsSlice", () => {
       [PlanSheetType.SURVEY]: 1,
     },
     hasChanges: false,
+    planMode: PlanMode.View,
   };
 
   let store = setupStore();
@@ -292,5 +294,12 @@ describe("planSheetsSlice", () => {
 
     const newState = planSheetsSlice.reducer(initialState, action);
     expect(newState.diagPageLookupTbl).toEqual(payload);
+  });
+
+  test("planMode should contain current plan mode", () => {
+    expect(getPlanMode(store.getState())).toBe(PlanMode.View);
+
+    store = setupStore({ planSheets: { ...initialState, planMode: PlanMode.SelectDiagram } });
+    expect(getPlanMode(store.getState())).toBe(PlanMode.SelectDiagram);
   });
 });

@@ -1,5 +1,5 @@
 import cytoscape from "cytoscape";
-
+localStorage.setItem("isStorybookTest", "1");
 export const isPlaywrightTest = () => localStorage.getItem("isPlaywrightTest") === "1";
 
 /**
@@ -7,3 +7,5 @@ export const isPlaywrightTest = () => localStorage.getItem("isPlaywrightTest") =
  */
 export const saveCytoscapeStateToStorage = (cytoscape: cytoscape.Core, testId: string) =>
   localStorage.setItem(`${testId}-cytoscapeData`, JSON.stringify(cytoscape.json()));
+
+export const isStorybookTest = () => localStorage.getItem("isStorybookTest") === "1";

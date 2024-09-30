@@ -111,6 +111,15 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
   return [
     {
+      selector: ".node-selected",
+      style: {
+        "background-opacity": 0.1,
+        "background-color": "#0099FF",
+        "border-width": 1,
+        "border-color": "#0099FF",
+      },
+    },
+    {
       selector: "node, node:active, edge, edge:active",
       style: {
         "overlay-padding": 0,
@@ -278,12 +287,21 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: ".elem-selected:selected",
+      selector: ".diagram-nodes-hover",
       style: {
         "background-opacity": 0.1,
         "background-color": "#0099FF",
         "border-width": 1,
         "border-color": "#0099FF",
+      },
+    },
+    {
+      selector: ".diagram-nodes:selected",
+      style: {
+        "background-opacity": 0.2,
+        "background-color": "#F81BEF",
+        "border-width": 1,
+        "border-color": "#F81BEF",
       },
     },
     {

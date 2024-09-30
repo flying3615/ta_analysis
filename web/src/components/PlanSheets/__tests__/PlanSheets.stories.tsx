@@ -12,7 +12,7 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths";
@@ -262,7 +262,7 @@ export const ZoomIn: Story = {
   ...Default,
   play: async () => {
     await sleep(1000);
-    const ZoomInBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn });
+    const ZoomInBtn = screen.getByRole("button", { name: PlanMode.ZoomIn });
     await userEvent.click(ZoomInBtn);
   },
 };
@@ -271,7 +271,7 @@ export const ZoomOut: Story = {
   ...Default,
   play: async () => {
     await sleep(1000);
-    const ZoomOutBtn = screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut });
+    const ZoomOutBtn = screen.getByRole("button", { name: PlanMode.ZoomOut });
     await userEvent.click(ZoomOutBtn);
   },
 };
@@ -280,9 +280,9 @@ export const ZoomCentre: Story = {
   ...Default,
   play: async () => {
     await sleep(1000);
-    await userEvent.click(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut }));
+    await userEvent.click(screen.getByRole("button", { name: PlanMode.ZoomOut }));
     await sleep(1000);
-    await userEvent.click(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre }));
+    await userEvent.click(screen.getByRole("button", { name: PlanMode.ZoomCentre }));
   },
 };
 
@@ -501,5 +501,20 @@ export const ExportPdfAndDownload: Story = {
     const blob = await fetch(pdf).then((r) => r.blob());
     const file = new File([blob], "layout-plan-123.pdf", { type: "application/pdf" });
     downloadBlob(file, `layout-plan-123.pdf`);
+  },
+};
+
+export const SelectDiagram: Story = {
+  ...Default,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select diagram"));
+    await sleep(500);
   },
 };

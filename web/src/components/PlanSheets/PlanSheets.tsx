@@ -19,6 +19,8 @@ import {
 } from "@/components/modals/unhandledErrorModal.tsx";
 import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
+import { getMenuItemsForPlanMode } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -30,7 +32,7 @@ import {
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
@@ -55,6 +57,7 @@ const PlanSheets = () => {
     useCheckAndRegeneratePlan(transactionId);
 
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
+  const planMode = useAppSelector(getPlanMode);
 
   const {
     data: planData,
@@ -131,6 +134,19 @@ const PlanSheets = () => {
     dispatch(replaceDiagrams(updatedDiagrams));
   };
 
+  let selectionSelector = "";
+  switch (planMode) {
+    case PlanMode.SelectDiagram:
+      selectionSelector = "node";
+      break;
+    case PlanMode.SelectCoordinates:
+      selectionSelector = "node";
+      break;
+    case PlanMode.SelectLine:
+      selectionSelector = "edge";
+      break;
+  }
+
   return (
     <CytoscapeContextProvider>
       <div className="MainWindow">
@@ -147,6 +163,8 @@ const PlanSheets = () => {
             diagrams={activeDiagrams}
             onNodeChange={onNodeChange}
             onEdgeChange={onEdgeChange}
+            selectionSelector={selectionSelector}
+            getContextMenuItems={(element) => getMenuItemsForPlanMode(planMode, element)}
             data-testid="MainCytoscapeCanvas"
           />
         </div>

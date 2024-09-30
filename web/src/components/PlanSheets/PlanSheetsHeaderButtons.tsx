@@ -5,67 +5,72 @@ import { CommonButtons } from "@/components/CommonButtons.tsx";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
+import { getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
 
-import { PlanSheetMenuLabels } from "./PlanSheetType";
+import { PlanMode } from "./PlanSheetType";
 
 export const PlanSheetsHeaderButtons = () => {
   const transactionId = useTransactionId();
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
-  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom, applyGraphOptions } = useCytoscapeContext();
+  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
+  const dispatch = useAppDispatch();
+  const planMode = useAppSelector(getPlanMode);
+
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
 
-  const handleHeaderButtonClick = (label: string) => {
-    setSelectedButtonLabel(label);
+  const handleHeaderButtonClick = (label: PlanMode) => {
+    dispatch(setPlanMode(label));
   };
 
   return (
     <>
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.LineArcReverse}
+        headerMenuLabel={PlanMode.LineArcReverse}
         iconName="ic_line_arc_reverse"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.LineArcReverse);
+          handleHeaderButtonClick(PlanMode.LineArcReverse);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.Delete}
+        headerMenuLabel={PlanMode.Delete}
         iconName="ic_delete_forever"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.Delete);
+          handleHeaderButtonClick(PlanMode.Delete);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.ZoomIn}
+        headerMenuLabel={PlanMode.ZoomIn}
         iconName="ic_add"
         disabled={isMaxZoom}
         onClick={zoomIn}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.ZoomOut}
+        headerMenuLabel={PlanMode.ZoomOut}
         iconName="ic_zoom_out"
         disabled={isMinZoom}
         onClick={zoomOut}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.ZoomCentre}
+        headerMenuLabel={PlanMode.ZoomCentre}
         iconName="ic_zoom_centre"
         onClick={zoomToFit}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderMenu
-        primaryButtonLabel={PlanSheetMenuLabels.ManageLabels}
+        primaryButtonLabel={PlanMode.ManageLabels}
         primaryButtonIcon="ic_manage_labels"
         selectedButtonLabel={selectedButtonLabel}
         setSelectedButtonLabel={setSelectedButtonLabel}
@@ -75,107 +80,106 @@ export const PlanSheetsHeaderButtons = () => {
         <MenuItem>Dynamically gen list</MenuItem>
       </HeaderMenu>
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.View}
+        headerMenuLabel={PlanMode.View}
         iconName="ic_view"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.View);
+          handleHeaderButtonClick(PlanMode.View);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.Cursor}
+        headerMenuLabel={PlanMode.Cursor}
         iconName="ic_pointer_outlined"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.Cursor);
-          applyGraphOptions({ nodeSelectable: false, edgeSelectable: false });
+          handleHeaderButtonClick(PlanMode.Cursor);
+          alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectDiagram}
+        headerMenuLabel={PlanMode.SelectDiagram}
         iconName="ic_select_diagram"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectDiagram);
-          applyGraphOptions({ nodeSelectable: true, edgeSelectable: true, elements: ":parent" });
+          handleHeaderButtonClick(PlanMode.SelectDiagram);
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectLabel}
+        headerMenuLabel={PlanMode.SelectLabel}
         iconName="ic_select_label"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectLabel);
+          handleHeaderButtonClick(PlanMode.SelectLabel);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectCoordinates}
+        headerMenuLabel={PlanMode.SelectCoordinates}
         iconName="ic_select_coordinates"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectCoordinates);
+          handleHeaderButtonClick(PlanMode.SelectCoordinates);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectLine}
+        headerMenuLabel={PlanMode.SelectLine}
         iconName="ic_select_line"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectLine);
+          handleHeaderButtonClick(PlanMode.SelectLine);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectPolygon}
+        headerMenuLabel={PlanMode.SelectPolygon}
         iconName="ic_polygon_selection"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectPolygon);
+          handleHeaderButtonClick(PlanMode.SelectPolygon);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.AddLabel}
+        headerMenuLabel={PlanMode.AddLabel}
         iconName="ic_add_label"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.AddLabel);
+          handleHeaderButtonClick(PlanMode.AddLabel);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.AddLine}
+        headerMenuLabel={PlanMode.AddLine}
         iconName="ic_add_line"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.AddLine);
+          handleHeaderButtonClick(PlanMode.AddLine);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.FormatLinesText}
+        headerMenuLabel={PlanMode.FormatLinesText}
         iconName="ic_format_lines_text"
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.FormatLinesText);
+          handleHeaderButtonClick(PlanMode.FormatLinesText);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
+        selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanSheetMenuLabels.SelectRectangle}
+        headerMenuLabel={PlanMode.SelectRectangle}
         iconName="ic_square_selection"
+        selectedButtonLabel={planMode}
         onClick={() => {
-          handleHeaderButtonClick(PlanSheetMenuLabels.SelectRectangle);
+          handleHeaderButtonClick(PlanMode.SelectRectangle);
           alert("Not Yet Implemented");
         }}
-        selectedButtonLabel={selectedButtonLabel}
       />
 
       <CommonButtons transactionId={transactionId} lockLabelsForThisPlan={true} />

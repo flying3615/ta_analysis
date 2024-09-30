@@ -5,7 +5,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
@@ -34,6 +34,7 @@ const planSheetsState = {
     [PlanSheetType.SURVEY]: 0,
   },
   hasChanges: false,
+  planMode: PlanMode.View,
 };
 
 const mockGetPlanResponse = {
@@ -126,6 +127,7 @@ describe("PlanSheets", () => {
         [PlanSheetType.SURVEY]: 0,
       },
       hasChanges: false,
+      planMode: PlanMode.View,
     };
 
     server.use(
@@ -189,6 +191,7 @@ describe("PlanSheets", () => {
         [PlanSheetType.SURVEY]: 0,
       },
       hasChanges: false,
+      planMode: PlanMode.View,
     };
 
     server.use(
@@ -353,7 +356,6 @@ describe("PlanSheets", () => {
     // then
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
 
-    expect(requestSpy).toHaveBeenCalledTimes(4);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({

@@ -32,6 +32,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
     position: label.position,
     label: label.editedText ?? label.displayText,
     properties: {
+      elementType: "labels",
       labelType: label.labelType,
       font: label.font,
       fontSize: label.fontSize ?? 10,
@@ -235,7 +236,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       {
         id: `D${diagram.id}`,
         position: { x: 1, y: 1 },
-        properties: { coordType: "", diagramId: diagram.id, elementType: "coordinates" },
+        properties: { coordType: "", diagramId: diagram.id, elementType: "diagram" },
       },
     ];
 

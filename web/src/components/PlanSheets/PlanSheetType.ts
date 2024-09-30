@@ -3,7 +3,7 @@ export enum PlanSheetType {
   TITLE = "title",
 }
 
-export enum PlanSheetMenuLabels {
+export enum PlanMode {
   LineArcReverse = "Line arc reverse",
   Delete = "Delete",
   PanMap = "Pan map",
@@ -24,4 +24,9 @@ export enum PlanSheetMenuLabels {
   AddLine = "Add line",
   FormatLinesText = "Format lines text",
   SelectRectangle = "Select rectangle",
+}
+
+export enum PlanStyleClassName {
+  DiagramNode = "diagram-nodes",
+  DiagramHover = "diagram-nodes-hover",
 }

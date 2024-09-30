@@ -1,7 +1,7 @@
 import { ConfigDataDTO, DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { IDiagramToPage, populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk.ts";
 
 export interface PlanSheetsState {
@@ -12,6 +12,7 @@ export interface PlanSheetsState {
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
+  planMode?: PlanMode;
 }
 
 const initialState: PlanSheetsState = {
@@ -24,6 +25,7 @@ const initialState: PlanSheetsState = {
     [PlanSheetType.SURVEY]: 0,
   },
   hasChanges: false,
+  planMode: PlanMode.View,
 };
 
 const planSheetsSlice = createSlice({
@@ -73,6 +75,9 @@ const planSheetsSlice = createSlice({
     updatePages: (state, action: PayloadAction<PageDTO[]>) => {
       state.pages = action.payload;
       state.hasChanges = true;
+    },
+    setPlanMode: (state: PlanSheetsState, action: PayloadAction<PlanMode>) => {
+      state.planMode = action.payload;
     },
   },
   selectors: {
@@ -124,6 +129,7 @@ const planSheetsSlice = createSlice({
       return state.diagPageLookupTbl;
     },
     hasChanges: (state) => state.hasChanges,
+    getPlanMode: (state) => state.planMode,
   },
   extraReducers: (builder) => {
     builder.addCase(populateLookupTblAsync.fulfilled, (state, action) => {
@@ -140,6 +146,7 @@ export const {
   removeDiagramPageRef,
   setDiagramPageRef,
   updatePages,
+  setPlanMode,
 } = planSheetsSlice.actions;
 
 export const {
@@ -158,6 +165,7 @@ export const {
   getFilteredPages,
   getDiagToPageLookupTbl,
   hasChanges,
+  getPlanMode,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

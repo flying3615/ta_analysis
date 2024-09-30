@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import PageManager from "@/components/Footer/PageManager";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 
@@ -17,6 +17,7 @@ describe("PageManager", () => {
         [PlanSheetType.TITLE]: 1,
         [PlanSheetType.SURVEY]: 1,
       },
+      planMode: PlanMode.View,
     },
   });
 
@@ -52,6 +53,7 @@ describe("PageManager", () => {
           [PlanSheetType.TITLE]: 0,
           [PlanSheetType.SURVEY]: 1,
         },
+        planMode: PlanMode.View,
       },
     });
 

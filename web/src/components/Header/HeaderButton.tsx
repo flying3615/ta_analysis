@@ -3,10 +3,10 @@ import { LuiButtonProps } from "@linzjs/lui/dist/components/LuiButton/LuiButton"
 import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import clsx from "clsx";
 
-import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 
 interface HeaderButtonProps {
-  headerMenuLabel: PlanSheetMenuLabels;
+  headerMenuLabel: PlanMode;
   iconName: IconName;
   headerButtonLabel?: string;
   disabled?: boolean;

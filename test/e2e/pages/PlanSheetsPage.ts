@@ -1,5 +1,7 @@
 import { Locator, Page } from "playwright-core";
 
+import { CytoscapeData, CytoscapeElement } from "../types";
+
 export class PlanSheetsPage {
   private readonly page: Page;
   private readonly baseURL: string;

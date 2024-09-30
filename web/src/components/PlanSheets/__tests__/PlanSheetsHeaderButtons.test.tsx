@@ -1,9 +1,10 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { PlanSheetsHeaderButtons } from "@/components/PlanSheets/PlanSheetsHeaderButtons";
-import { PlanSheetMenuLabels } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { setupStore } from "@/redux/store.ts";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 
 jest.mock("@/hooks/useCytoscapeContext");
@@ -13,19 +14,35 @@ jest.mock("@/hooks/useTransactionId", () => ({
   useTransactionId: () => mockedUseTransactionId(),
 }));
 
+const mockStore = setupStore({
+  planSheets: {
+    diagrams: [],
+    pages: [],
+    hasChanges: false,
+    activeSheet: PlanSheetType.TITLE,
+    activePageNumbers: {
+      [PlanSheetType.TITLE]: 1,
+      [PlanSheetType.SURVEY]: 1,
+    },
+    planMode: PlanMode.View,
+  },
+});
+
 describe("PlanSheetsHeaderButtons", () => {
   const buttonLabels = [
-    [PlanSheetMenuLabels.LineArcReverse],
-    [PlanSheetMenuLabels.Delete],
-    [PlanSheetMenuLabels.View],
-    [PlanSheetMenuLabels.SelectLabel],
-    [PlanSheetMenuLabels.SelectCoordinates],
-    [PlanSheetMenuLabels.SelectLine],
-    [PlanSheetMenuLabels.SelectPolygon],
-    [PlanSheetMenuLabels.AddLabel],
-    [PlanSheetMenuLabels.AddLine],
-    [PlanSheetMenuLabels.FormatLinesText],
-    [PlanSheetMenuLabels.SelectRectangle],
+    [PlanMode.LineArcReverse],
+    [PlanMode.Delete],
+    [PlanMode.View],
+    [PlanMode.Cursor],
+    [PlanMode.SelectDiagram],
+    [PlanMode.SelectLabel],
+    [PlanMode.SelectCoordinates],
+    [PlanMode.SelectLine],
+    [PlanMode.SelectPolygon],
+    [PlanMode.AddLabel],
+    [PlanMode.AddLine],
+    [PlanMode.FormatLinesText],
+    [PlanMode.SelectRectangle],
   ];
 
   const zoomByDeltaMock = jest.fn();
@@ -35,6 +52,7 @@ describe("PlanSheetsHeaderButtons", () => {
     (useCytoscapeContext as jest.Mock).mockReturnValue({
       zoomByDelta: zoomByDeltaMock,
       zoomToFit: zoomToFitMock,
+      applyGraphOptions: () => {},
     });
   });
 
@@ -42,29 +60,39 @@ describe("PlanSheetsHeaderButtons", () => {
     jest.clearAllMocks();
   });
 
-  it.each(buttonLabels)("renders the %s header button", async (label: PlanSheetMenuLabels) => {
+  it.each(buttonLabels)("renders the %s header button", async (label: PlanMode) => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
     expect(await screen.findByRole("button", { name: label })).toBeInTheDocument();
   });
 
-  it.each(buttonLabels)("handles button clicks and updates the %s button label", async (label: PlanSheetMenuLabels) => {
+  it.each([
+    [PlanMode.LineArcReverse],
+    [PlanMode.Delete],
+    [PlanMode.View],
+    [PlanMode.SelectLabel],
+    [PlanMode.SelectPolygon],
+    [PlanMode.AddLabel],
+    [PlanMode.AddLine],
+    [PlanMode.FormatLinesText],
+    [PlanMode.SelectRectangle],
+  ])("handles unimplemented button %s", async (label: PlanMode) => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
     window.alert = jest.fn();
 
     const button = screen.getByRole("button", { name: label });
     await userEvent.click(button);
-    expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented");
+    await waitFor(() => expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented"));
   });
 
   it("displays Zoom In, Zoom Out, and Zoom to Fit buttons in the toolbar", () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
 
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomIn })).toBeEnabled();
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomOut })).toBeEnabled();
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: PlanSheetMenuLabels.ZoomCentre })).toBeEnabled();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomIn })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomIn })).toBeEnabled();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomOut })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomOut })).toBeEnabled();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomCentre })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PlanMode.ZoomCentre })).toBeEnabled();
   });
 
   it("should handle Zoom in button click", async () => {
@@ -106,5 +134,45 @@ describe("PlanSheetsHeaderButtons", () => {
     const button = screen.getByRole("button", { name: "Zoom centre" });
     await userEvent.click(button);
     expect(zoomToFitMock).toHaveBeenCalled();
+  });
+
+  it("should handle select coordinates click", async () => {
+    (useCytoscapeContext as jest.Mock).mockReturnValue({
+      zoomByDelta: zoomByDeltaMock,
+      zoomToFit: zoomToFitMock,
+      applyGraphOptions: (options: { nodeSelectable: boolean; edgeSelectable: boolean; elements: string }) => {
+        expect(options.nodeSelectable).toBeTruthy();
+        expect(options.edgeSelectable).toBeFalsy();
+        expect(options.elements).toBeUndefined();
+      },
+    });
+
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStore });
+    const button = screen.getByRole("button", { name: "Select coordinates" });
+    await userEvent.click(button);
+
+    await waitFor(() => expect(button).toHaveClass("selected"));
+
+    expect(mockStore.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectCoordinates);
+  });
+
+  it("should handle select lines click", async () => {
+    (useCytoscapeContext as jest.Mock).mockReturnValue({
+      zoomByDelta: zoomByDeltaMock,
+      zoomToFit: zoomToFitMock,
+      applyGraphOptions: (options: { nodeSelectable: boolean; edgeSelectable: boolean; elements: string }) => {
+        expect(options.nodeSelectable).toBeFalsy();
+        expect(options.edgeSelectable).toBeTruthy();
+        expect(options.elements).toBeUndefined();
+      },
+    });
+
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStore });
+    const button = screen.getByRole("button", { name: "Select line" });
+    await userEvent.click(button);
+
+    await expect(button).toHaveClass("selected");
+
+    expect(mockStore.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
   });
 });

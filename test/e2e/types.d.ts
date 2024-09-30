@@ -1,4 +1,4 @@
-interface CytoscapeData {
+export interface CytoscapeData {
   elements: {
     nodes: CytoscapeElement[];
     edges: CytoscapeElement[];
