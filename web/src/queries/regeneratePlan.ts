@@ -15,7 +15,7 @@ export const useRegeneratePlanMutation: PlanGenMutation<RegeneratePlanResponseDT
     ...params,
     mutationKey: regeneratePlanQueryKey(transactionId),
     mutationFn: async () => {
-      const regenerateResponse = await new PlanControllerApi(apiConfig()).regeneratePlan({ transactionId });
+      const regenerateResponse = await new PlanControllerApi(apiConfig()).regeneratePlanOld({ transactionId });
 
       if (regenerateResponse.ok) return regenerateResponse;
 
