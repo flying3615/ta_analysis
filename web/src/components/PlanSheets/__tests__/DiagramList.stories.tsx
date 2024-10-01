@@ -84,9 +84,7 @@ export const DiagramListDisabledRemoveButtonEnabled: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
-          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-        ),
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
         }),
@@ -103,9 +101,7 @@ export const RemoveDiagramFromSameAndDifferentPage: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
-          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-        ),
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
         }),

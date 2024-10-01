@@ -13,6 +13,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths";
@@ -82,9 +83,7 @@ export const TitlePage1: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
-          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-        ),
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
         http.get(/\/123\/plan$/, () => {
           const pd = planData();
           console.log(`Fetched planData ${JSON.stringify(pd)}`);
@@ -103,9 +102,7 @@ export const SurveyPage1: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
-          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-        ),
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
         http.get(/\/123\/plan$/, () => HttpResponse.json(planData(), { status: 200, statusText: "OK" })),
         http.get(/\/api\/survey\/123\/survey-info/, async () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
@@ -127,9 +124,7 @@ export const SurveyPage2: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
-          HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-        ),
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(planData(), { status: 200, statusText: "OK" });
         }),
@@ -220,10 +215,9 @@ export const PlanNotFoundErrorModal: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
+        http.post(/\/123\/plan-regenerate$/, () =>
           HttpResponse.json(
             {
-              refreshRequired: false,
               code: "NOT_FOUND",
               message: "Could not find a CPL survey with ID 999",
               errors: [],
@@ -241,10 +235,9 @@ export const PlanIsLockedErrorModal: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get(/\/123\/plan-check$/, () =>
+        http.post(/\/123\/plan-regenerate$/, () =>
           HttpResponse.json(
             {
-              refreshRequired: false,
               code: "LOCKED",
               message:
                 "The survey 123 is locked for Plan Generation. Go back on capture app and reopen the Plan Generation",
@@ -252,6 +245,22 @@ export const PlanIsLockedErrorModal: Story = {
             },
             { status: 423, statusText: "Not Found" },
           ),
+        ),
+      ],
+    },
+  },
+};
+
+export const PlanRegenerationFailedModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.post(/\/123\/plan-regenerate$/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+        ),
+        http.get(/\/123\/async-task/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
         ),
       ],
     },
