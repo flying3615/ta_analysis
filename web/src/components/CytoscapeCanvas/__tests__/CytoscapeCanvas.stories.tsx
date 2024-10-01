@@ -1,6 +1,10 @@
 import { DisplayStateEnum, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
+import { userEvent, within } from "@storybook/testing-library";
 import { Core } from "cytoscape";
+import { useContext, useEffect } from "react";
 
 import {
   diagrams,
@@ -9,7 +13,10 @@ import {
   pageBorderEdges,
   pageBorderNodes,
 } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
+import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
+import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
@@ -121,6 +128,7 @@ PageConfigBorder.play = async () => {
   if (!cy) {
     throw new Error("Cytoscape instance is not available");
   }
+  // eslint-disable-next-line testing-library/no-node-access
   const node = cy.getElementById("border_page_no");
   if (!node) {
     throw new Error("Node 'border_page_no' not found");
@@ -811,5 +819,53 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
       defaultViewport: "mobile1",
       defaultOrientation: "landscape",
     },
+  },
+};
+
+const mockHideMenu = fn();
+const mockMenuState: ContextMenuState = {
+  visible: true,
+  items: [
+    { title: "Item 1", callback: fn() },
+    { title: "Item 2", callback: fn(), disabled: true },
+    { title: "Item 3", callback: fn(), submenu: [{ title: "Subitem 1", callback: fn() }] },
+  ],
+  position: { x: 100, y: 100 },
+  target: null,
+  leftMenu: false,
+};
+const CxtMenuComponent = () => {
+  const cytoscapeContext = useContext(CytoscapeContext);
+
+  useEffect(() => {
+    if (cytoscapeContext?.cyto) {
+      const cy = cytoscapeContext.cyto;
+      const node = cy.add({
+        group: "nodes",
+        data: { id: "D1" },
+        position: { x: 100, y: 100 },
+      });
+      node.trigger("cxttap");
+    }
+  }, [cytoscapeContext?.cyto]);
+
+  return <CytoscapeContextMenu menuState={mockMenuState} hideMenu={mockHideMenu} />;
+};
+export const RenderCytoscapeContextMenu: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    return <CxtMenuComponent />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "mobile1",
+      defaultOrientation: "landscape",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const item3 = canvas.getByText("Item 3");
+    await userEvent.click(item3);
+    // eslint-disable-next-line testing-library/no-node-access
+    await expect(item3.closest(".context-menu-item")).toHaveClass("hover");
   },
 };
