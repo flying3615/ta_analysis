@@ -5,7 +5,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths";
@@ -16,6 +16,7 @@ describe("Diagram Selector panel", () => {
     diagrams: [],
     pages: [],
     hasChanges: false,
+    planMode: PlanMode.View,
   };
 
   beforeAll(() => {

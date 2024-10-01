@@ -2,6 +2,7 @@ export const makeScaledSVG = (
   symbolSvg: string,
   widthPixels: number,
   heightPixels: number,
+  lineColor: string = "black",
   viewportWidth: number = 0,
   viewportHeight: number = 0,
   centreX: number = 0,
@@ -17,7 +18,8 @@ export const makeScaledSVG = (
     .replaceAll("%VIEWPORT_HEIGHT%", viewportHeight.toString())
     .replaceAll("%CENTRE_X%", centreX.toString())
     .replaceAll("%CENTRE_Y%", centreY.toString())
-    .replaceAll("%RADIUS%", radius.toString());
+    .replaceAll("%RADIUS%", radius.toString())
+    .replaceAll("%LINE_COLOR%", lineColor.toString());
 
   return {
     svg: "data:image/svg+xml;utf8," + encodeURIComponent(substSVG),

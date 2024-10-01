@@ -14,7 +14,15 @@ import { SYMBOLS_FONT } from "@/constants";
 import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 
-import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
+import {
+  getEdgeStyling,
+  getFontColor,
+  getIsCircled,
+  getTextBackgroundOpacity,
+  getZIndex,
+  isHidden,
+  LineStyle,
+} from "./styling";
 
 const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
 const notSymbol = negate(isSymbol);
@@ -52,6 +60,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
       featureId: label.featureId,
       featureType: label.featureType,
       ...(isSymbol(label) && { symbolId: label.displayText }),
+      isHidden: isHidden(label),
     },
   };
 };
@@ -293,6 +302,7 @@ const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
           ...getEdgeStyling(line),
           elementType: "lines",
           lineType: line.lineType,
+          displayState: line.displayState,
           coordRefs: JSON.stringify(line.coordRefs),
         },
       }) as IEdgeData,

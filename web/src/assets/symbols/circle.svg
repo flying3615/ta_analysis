@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE svg>
 <svg width="%WIDTH%px" height="%HEIGHT%px" viewBox="0,0,%VIEWPORT_WIDTH%,%VIEWPORT_HEIGHT%" fill="#FFC0C0" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="%CENTRE_X%" cy="%CENTRE_Y%" r="%RADIUS%" fill="none" stroke="black" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <circle cx="%CENTRE_X%" cy="%CENTRE_Y%" r="%RADIUS%" fill="none" stroke="%LINE_COLOR%" stroke-width="1" vector-effect="non-scaling-stroke"/>
 </svg>

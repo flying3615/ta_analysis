@@ -75,4 +75,18 @@ describe("makeCytoscapeStylesheet", () => {
     expect(styleEntry["width"]).toBeCloseTo(13.8, 1);
     expect(styleEntry["height"]).toBeCloseTo(13.8, 1);
   });
+
+  test("has style for selected nodes", () => {
+    const selectedNodeStyle = stylesheet.find(
+      (s) => s.selector === "node:selected.node-selected",
+    ) as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
+    expect(styleEntry["outline-color"]).toBe("rgba(248, 27, 239, 1)");
+  });
+
+  test("has style for selected edges", () => {
+    const selectedNodeStyle = stylesheet.find((s) => s.selector === "edge:selected") as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
+    expect(styleEntry["line-outline-color"]).toBe("rgba(248, 27, 239, 1)");
+  });
 });

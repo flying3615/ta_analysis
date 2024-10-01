@@ -6,6 +6,7 @@ import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { setupStore } from "@/redux/store.ts";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 jest.mock("@/hooks/useCytoscapeContext");
 
@@ -14,17 +15,14 @@ jest.mock("@/hooks/useTransactionId", () => ({
   useTransactionId: () => mockedUseTransactionId(),
 }));
 
-const mockStore = setupStore({
+const mockStoreRedux = setupStore({
   planSheets: {
-    diagrams: [],
+    ...mockStore.planSheets,
     pages: [],
-    hasChanges: false,
-    activeSheet: PlanSheetType.TITLE,
     activePageNumbers: {
       [PlanSheetType.TITLE]: 1,
       [PlanSheetType.SURVEY]: 1,
     },
-    planMode: PlanMode.View,
   },
 });
 
@@ -71,7 +69,7 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.View],
     [PlanMode.SelectLabel],
     [PlanMode.SelectPolygon],
-    [PlanMode.Cursor],
+    [PlanMode.AddLabel],
     [PlanMode.AddLine],
     [PlanMode.FormatLinesText],
     [PlanMode.SelectRectangle],
@@ -147,13 +145,13 @@ describe("PlanSheetsHeaderButtons", () => {
       },
     });
 
-    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStore });
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
     const button = screen.getByRole("button", { name: "Select coordinates" });
     await userEvent.click(button);
 
     await waitFor(() => expect(button).toHaveClass("selected"));
 
-    expect(mockStore.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectCoordinates);
+    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectCoordinates);
   });
 
   it("should handle select lines click", async () => {
@@ -167,12 +165,12 @@ describe("PlanSheetsHeaderButtons", () => {
       },
     });
 
-    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStore });
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
     const button = screen.getByRole("button", { name: "Select line" });
     await userEvent.click(button);
 
     await expect(button).toHaveClass("selected");
 
-    expect(mockStore.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
+    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
   });
 });

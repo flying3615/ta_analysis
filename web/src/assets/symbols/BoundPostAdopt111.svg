@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE svg>
 <svg width="%WIDTH%" height="%HEIGHT%" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.5" y="0.5" width="11" height="11" fill="white" stroke="black"/>
+    <rect x="0.5" y="0.5" width="11" height="11" fill="white" stroke="%LINE_COLOR%"/>
 </svg>

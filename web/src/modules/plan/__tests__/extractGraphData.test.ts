@@ -78,9 +78,9 @@ describe("extractGraphData", () => {
     expect(labelNode12?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode12?.properties?.["diagramId"]).toBe(1);
     expect(labelNode12?.properties?.["elementType"]).toBe("coordinateLabels");
-    expect(labelNode12?.properties?.["labelType"]).toBe("display");
-    expect(labelNode12?.properties?.["featureId"]).toBeUndefined();
-    expect(labelNode12?.properties?.["featureType"]).toBeUndefined();
+    expect(labelNode12?.properties?.["labelType"]).toBe("nodeSymbol1");
+    expect(labelNode12?.properties?.["featureId"]).toBe(10001);
+    expect(labelNode12?.properties?.["featureType"]).toBe("coordinate");
     expect(labelNode12?.properties?.["fontSize"]).toBe(10);
     expect(labelNode12?.properties?.["symbolId"]).toBe("96");
 
@@ -119,7 +119,7 @@ describe("extractGraphData", () => {
     expect(labelNode21?.properties?.["featureId"]).toBe(1001);
     expect(labelNode21?.properties?.["featureType"]).toBe("line");
     expect(labelNode21?.properties?.["font"]).toBe("Tahoma");
-    expect(labelNode21?.properties?.["fontColor"]).toBe("#2121F5");
+    expect(labelNode21?.properties?.["fontColor"]).toBe("#000");
     expect(labelNode21?.properties?.["fontSize"]).toBe(14);
     expect(labelNode21?.properties?.["circled"]).toBeFalsy();
 

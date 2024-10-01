@@ -3,7 +3,7 @@ import "./CytoscapeCanvas.scss";
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiTooltip } from "@linzjs/lui";
 import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
-import { debounce } from "lodash-es";
+import { debounce, isArray } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
@@ -44,6 +44,7 @@ export interface ICytoscapeCanvasProps {
   onNodeChange: (node: INodeData) => void;
   onEdgeChange: (node: IEdgeData) => void;
   onCyInit?: (cy: cytoscape.Core) => void;
+  applyClasses?: Record<string, string | string[]>;
   selectionSelector?: string;
   getContextMenuItems: (element: NodeSingular | EdgeSingular | cytoscape.Core) => MenuItem[] | undefined;
   "data-testid"?: string;
@@ -57,6 +58,7 @@ const CytoscapeCanvas = ({
   onNodeChange,
   onEdgeChange,
   onCyInit,
+  applyClasses,
   selectionSelector,
   getContextMenuItems,
   "data-testid": dataTestId,
@@ -161,20 +163,27 @@ const CytoscapeCanvas = ({
       // the stylesheet for the graph
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),
     });
-    cyRef.nodes().unselectify();
-    cyRef.nodes().ungrabify();
-    cyRef.edges().unselectify();
-
-    if (selectionSelector) {
-      cyRef.$(selectionSelector).selectify();
-      cyRef.nodes(":parent").addClass(PlanStyleClassName.DiagramNode);
-    }
 
     if (onCyInit && !cy) {
       onCyInit(cyRef);
     }
     setCy(cyRef);
     setCyto(cyRef);
+
+    cyRef.nodes().ungrabify();
+    cyRef.nodes().unselectify();
+    cyRef.edges().unselectify();
+    if (selectionSelector) {
+      cyRef.$(selectionSelector).selectify();
+    }
+
+    Object.entries(applyClasses ?? {}).forEach(([selector, classNames]) => {
+      if (isArray(classNames)) {
+        classNames.forEach((cn) => cyRef.elements(selector).addClass(cn));
+      } else {
+        cyRef.elements(selector).addClass(classNames);
+      }
+    });
 
     if (isPlaywrightTest() || isStorybookTest()) {
       saveCytoscapeStateToStorage(cyRef, testId);

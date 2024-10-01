@@ -1,6 +1,7 @@
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { setupStore } from "@/redux/store";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 import { PlanSheetsState } from "../planSheetsSlice";
 import { populateLookupTblAsync } from "../planSheetsThunk";
@@ -41,14 +42,9 @@ describe("populateLookupTblAsync", () => {
       .build();
 
     const mockState: PlanSheetsState = {
+      ...mockStore.planSheets,
       diagrams: diagrams,
       pages: pages,
-      activeSheet: PlanSheetType.TITLE,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 1,
-      },
-      hasChanges: false,
     };
 
     const expectedResult = {

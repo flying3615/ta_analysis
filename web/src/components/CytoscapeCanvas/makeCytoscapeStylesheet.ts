@@ -17,7 +17,7 @@ import {
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
-import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling.ts";
+import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
@@ -43,7 +43,9 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       (symbolSvg!.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
     );
 
-    return makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels);
+    const svgLineColor = ele.data("isHidden") ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR;
+
+    return makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, svgLineColor);
   };
 
   // Dimensions for the compass in plan units
@@ -102,6 +104,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "background-opacity": 0,
   };
 
+  const hotPink = "rgba(248, 27, 239, 1)";
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const showNodeDebugStyle = {
     "text-background-opacity": 0,
@@ -111,12 +115,19 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
   return [
     {
-      selector: ".node-selected",
+      selector: "node:selected.node-selected",
       style: {
-        "background-opacity": 0.1,
-        "background-color": "#0099FF",
-        "border-width": 1,
-        "border-color": "#0099FF",
+        "outline-width": 2,
+        "outline-offset": 4,
+        "outline-color": hotPink,
+        "background-image-containment": "over",
+      },
+    },
+    {
+      selector: "edge:selected",
+      style: {
+        "line-outline-width": 5,
+        "line-outline-color": hotPink,
       },
     },
     {
@@ -287,7 +298,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: ".diagram-nodes-hover",
+      selector: ".diagram-nodes-hover.diagram-nodes",
       style: {
         "background-opacity": 0.1,
         "background-color": "#0099FF",

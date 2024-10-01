@@ -6,6 +6,7 @@ import { RenumberPageModal } from "@/components/Footer/RenumberPageModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 describe("RenumberPageModal", () => {
   const pageInfo = {
@@ -13,12 +14,10 @@ describe("RenumberPageModal", () => {
     activePageNumber: 3,
   };
 
-  const mockStore = setupStore({
+  const mockStoreRedux = setupStore({
     planSheets: {
-      diagrams: [],
+      ...mockStore.planSheets,
       pages: [...pages, ...pages],
-      hasChanges: false,
-      activeSheet: PlanSheetType.TITLE,
       activePageNumbers: {
         [PlanSheetType.TITLE]: 3,
         [PlanSheetType.SURVEY]: 1,
@@ -28,7 +27,7 @@ describe("RenumberPageModal", () => {
 
   test("renders the component", () => {
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={jest.fn} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     expect(screen.getByRole("heading", { name: "Renumber page" })).toBeInTheDocument();
@@ -42,7 +41,7 @@ describe("RenumberPageModal", () => {
 
   test("validates page number to be within valid range", async () => {
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={jest.fn} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     await userEvent.type(screen.getByPlaceholderText("Enter page number"), "5");
@@ -53,7 +52,7 @@ describe("RenumberPageModal", () => {
 
   test("validates page number (non-negative)", async () => {
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={jest.fn} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     await userEvent.type(screen.getByPlaceholderText("Enter page number"), "-3");
@@ -64,7 +63,7 @@ describe("RenumberPageModal", () => {
 
   test("validates only numbers can be entered", async () => {
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={jest.fn} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     await userEvent.type(screen.getByPlaceholderText("Enter page number"), "abc");
@@ -74,7 +73,7 @@ describe("RenumberPageModal", () => {
 
   test("validates if page number is the current page", async () => {
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={jest.fn} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     await userEvent.type(screen.getByPlaceholderText("Enter page number"), "3");
@@ -86,7 +85,7 @@ describe("RenumberPageModal", () => {
   test("calls callback with new page number", async () => {
     const callbackSpy = jest.fn();
     renderWithReduxProvider(<RenumberPageModal closeModal={jest.fn} pageInfo={pageInfo} callback={callbackSpy} />, {
-      store: mockStore,
+      store: mockStoreRedux,
     });
 
     await userEvent.type(screen.getByPlaceholderText("Enter page number"), "2");

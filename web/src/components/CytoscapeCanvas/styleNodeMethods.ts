@@ -263,6 +263,7 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
     CircleSVG,
     svgWidth,
     svgHeight,
+    "black",
     svgWidth,
     svgHeight,
     svgCentreX,

@@ -1,31 +1,99 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { NodeSingular } from "cytoscape";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { getMenuItemsForPlanMode } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
+import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
+import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { LookupGraphData } from "@/modules/plan/LookupGraphData.ts";
 
 describe("PlanSheetsContextMenu", () => {
   test("getMenuItemsForPlanMode for Select diagram returns diagram menu", () => {
-    const diagramMenuItems = getMenuItemsForPlanMode(PlanMode.SelectDiagram, {
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    const diagramMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectDiagram, {
       data: (key: string) => ({ id: "D1", elementType: PlanElementType.DIAGRAM })[key],
     } as unknown as NodeSingular);
 
-    expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual(["Properties", "Move To Page..."]);
+    expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual([
+      "Properties",
+      "Cut",
+      "Copy",
+      "Paste",
+      "Move To Page...",
+    ]);
   });
 
   test("getMenuItemsForPlanMode for Select coordinate returns coordinate menu", () => {
-    const coordinateMenuItems = getMenuItemsForPlanMode(PlanMode.SelectCoordinates, {
-      data: (key: string) => ({ id: "1001", elementType: PlanElementType.COORDINATES })[key],
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    const coordinateMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectCoordinates, {
+      data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
     } as unknown as NodeSingular);
 
-    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original Location", "Show", "Properties"]);
+    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
+      "Original Location",
+      "Hide",
+      "Properties",
+      "Cut",
+      "Copy",
+      "Paste",
+    ]);
+  });
+
+  test("getMenuItemsForPlanMode for Select coordinate returns Show option when mark symbol hidden", () => {
+    const planData = {
+      ...mockPlanData,
+    };
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    const coordinateLabel = planData.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
+    coordinateLabel!.displayState = DisplayStateEnum.hide;
+
+    const coordinateMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectCoordinates, {
+      data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
+    } as unknown as NodeSingular);
+
+    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
+      "Original Location",
+      "Show",
+      "Properties",
+      "Cut",
+      "Copy",
+      "Paste",
+    ]);
   });
 
   test("getMenuItemsForPlanMode for Select line returns line menu", () => {
-    const lineMenuItems = getMenuItemsForPlanMode(PlanMode.SelectLine, {
-      data: (key: string) => ({ id: "200", elementType: PlanElementType.LINES })[key],
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    const lineMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectLine, {
+      data: (key: string) => ({ id: "1001", elementType: PlanElementType.LINES })[key],
     } as unknown as NodeSingular);
 
-    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original Location", "Properties", "Select"]);
+    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+      "Original Location",
+      "Show",
+      "Properties",
+      "Cut",
+      "Copy",
+      "Paste",
+      "Select",
+    ]);
+  });
+
+  test("getMenuItemsForPlanMode for Select line disables line menu when line is systemDisplay", () => {
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    const lineMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectLine, {
+      data: (key: string) =>
+        ({ id: "1001", elementType: PlanElementType.LINES, displayState: DisplayStateEnum.systemDisplay })[key],
+    } as unknown as NodeSingular);
+
+    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+      "Original Location",
+      "Hide",
+      "Properties",
+      "Cut",
+      "Copy",
+      "Paste",
+      "Select",
+    ]);
+    expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
   });
 });

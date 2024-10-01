@@ -19,8 +19,8 @@ const CYTOSCAPE_ARROW_TRIANGLE = "triangle";
 
 const LABEL_SYMBOL_CIRCLE = "circle";
 
-const GREYED_FOREGROUND_COLOUR = "#B0B0F0";
-export const FOREGROUND_COLOUR = "#2121F5";
+export const GREYED_FOREGROUND_COLOUR = "#B0B0F0";
+export const FOREGROUND_COLOUR = "#000";
 export const FOREGROUND_COLOUR_BLACK = "#000";
 
 enum LabelEffect {
@@ -103,7 +103,7 @@ export const getEdgeStyling = (line: LineDTO) => {
 
 export const getTextBackgroundOpacity = (label: LabelDTO): number => (label.effect === LabelEffect.HALO ? 1 : 0);
 
-const isHidden = (label: LabelDTO) =>
+export const isHidden = (label: LabelDTO) =>
   [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(label.displayState);
 
 export const getFontColor = (label: LabelDTO): string =>

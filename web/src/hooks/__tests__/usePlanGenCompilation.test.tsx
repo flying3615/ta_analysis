@@ -6,10 +6,10 @@ import React from "react";
 import { generatePath, Route } from "react-router-dom";
 
 import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
 import { Paths } from "@/Paths.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 const mockUploadFile: jest.Mock = jest.fn().mockResolvedValue({} as IFileStatusResponse);
 
@@ -31,14 +31,9 @@ jest.mock("@linz/secure-file-upload", () => {
 });
 describe("usePlanGenCompilation hook", () => {
   const planSheetsState = {
+    ...mockStore.planSheets,
     diagrams: diagrams,
     pages: pages,
-    activeSheet: PlanSheetType.TITLE,
-    hasChanges: false,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 0,
-      [PlanSheetType.SURVEY]: 0,
-    },
   };
 
   let compiling: boolean = false;

@@ -8,6 +8,8 @@ export interface MenuItem {
   submenu?: MenuItem[];
   divider?: boolean;
   disabled?: boolean;
+  disableWhen?: (element: NodeSingular | EdgeSingular | cytoscape.Core) => boolean;
+  hideWhen?: (element: NodeSingular | EdgeSingular | cytoscape.Core) => boolean;
 }
 
 interface ICytoscapeMenu {

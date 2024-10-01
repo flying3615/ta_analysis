@@ -208,17 +208,25 @@ export class PlanDataBuilder {
     return this;
   }
 
-  addSymbolLabel(id: number, displayText: string, position: CartesianCoordsDTO, fontSize: number = 8) {
+  addSymbolLabel(
+    id: number,
+    displayText: string,
+    position: CartesianCoordsDTO,
+    fontSize: number = 8,
+    featureId: number | undefined = undefined,
+  ) {
     return this.addLabel(
       "coordinateLabels",
       id,
       displayText,
       position,
-      undefined,
-      undefined,
-      DisplayStateEnum.display,
+      featureId,
+      featureId ? "coordinate" : undefined,
+      "nodeSymbol1",
       SYMBOLS_FONT,
       fontSize,
+      undefined,
+      DisplayStateEnum.display,
     );
   }
 

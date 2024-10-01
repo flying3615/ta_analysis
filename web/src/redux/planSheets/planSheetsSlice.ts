@@ -1,7 +1,9 @@
-import { ConfigDataDTO, DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
+import { ConfigDataDTO, DiagramDTO, LabelDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { LookupGraphData, LookupSourceResult } from "@/modules/plan/LookupGraphData.ts";
 import { IDiagramToPage, populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk.ts";
 
 export interface PlanSheetsState {
@@ -12,7 +14,9 @@ export interface PlanSheetsState {
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
-  planMode?: PlanMode;
+  planMode: PlanMode;
+  // NOTE: regenerate this when diagrams or pages change
+  lookupGraphData?: LookupGraphData;
 }
 
 const initialState: PlanSheetsState = {
@@ -26,6 +30,7 @@ const initialState: PlanSheetsState = {
   },
   hasChanges: false,
   planMode: PlanMode.View,
+  lookupGraphData: undefined,
 };
 
 const planSheetsSlice = createSlice({
@@ -46,12 +51,14 @@ const planSheetsSlice = createSlice({
           state.activePageNumbers[type] = 1;
         }
       });
+      state.lookupGraphData = new LookupGraphData({ diagrams: state.diagrams, pages: state.pages, configs: [] });
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       action.payload.forEach((diagram) => {
         const index = state.diagrams.findIndex((d) => d.id === diagram.id);
         state.diagrams[index] = diagram;
       });
+      state.lookupGraphData = new LookupGraphData({ diagrams: state.diagrams, pages: state.pages, configs: [] });
       state.hasChanges = true;
     },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
@@ -74,9 +81,10 @@ const planSheetsSlice = createSlice({
     },
     updatePages: (state, action: PayloadAction<PageDTO[]>) => {
       state.pages = action.payload;
+      state.lookupGraphData = new LookupGraphData({ diagrams: state.diagrams, pages: state.pages, configs: [] });
       state.hasChanges = true;
     },
-    setPlanMode: (state: PlanSheetsState, action: PayloadAction<PlanMode>) => {
+    setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
     },
   },
@@ -130,6 +138,24 @@ const planSheetsSlice = createSlice({
     },
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
+    /**
+     * Get a function to lookup the source data for a plan element using
+     * the id (of the cytoscape node or edge).
+     * @param state
+     */
+    lookupSource:
+      (state) =>
+      (planElementType: PlanElementType, idString: string): LookupSourceResult | undefined =>
+        state.lookupGraphData?.lookupSource(planElementType, idString),
+    /**
+     * Get a function to find the mark symbol for a feature
+     * given the feature's LookupSourceResult
+     * @param state
+     */
+    findMarkSymbol:
+      (state) =>
+      (fromFeature: LookupSourceResult | undefined): LabelDTO | undefined =>
+        state.lookupGraphData?.findMarkSymbol(fromFeature),
   },
   extraReducers: (builder) => {
     builder.addCase(populateLookupTblAsync.fulfilled, (state, action) => {
@@ -166,6 +192,8 @@ export const {
   getDiagToPageLookupTbl,
   hasChanges,
   getPlanMode,
+  lookupSource,
+  findMarkSymbol,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

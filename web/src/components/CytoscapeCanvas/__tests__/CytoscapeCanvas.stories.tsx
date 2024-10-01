@@ -15,27 +15,16 @@ import {
 } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
 import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { mockStore } from "@/test-utils/store-mock.ts";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 
-const mockedState = {
-  planSheets: {
-    diagrams: [],
-    pages: [{ id: 0, pageNumber: 1, pageType: PlanSheetType.TITLE }],
-    activeSheet: PlanSheetType.TITLE,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 0,
-      [PlanSheetType.SURVEY]: 0,
-    },
-    hasChanges: false,
-  },
-};
+const mockedState = { ...mockStore };
 
 export default {
   title: "CytoscapeCanvas",
@@ -823,13 +812,14 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
 };
 
 const mockHideMenu = fn();
+const mockMenuItems = [
+  { title: "Item 1", callback: fn() },
+  { title: "Item 2", callback: fn(), disabled: true },
+  { title: "Item 3", callback: fn(), submenu: [{ title: "Subitem 1", callback: fn() }] },
+];
 const mockMenuState: ContextMenuState = {
   visible: true,
-  items: [
-    { title: "Item 1", callback: fn() },
-    { title: "Item 2", callback: fn(), disabled: true },
-    { title: "Item 3", callback: fn(), submenu: [{ title: "Subitem 1", callback: fn() }] },
-  ],
+  items: mockMenuItems,
   position: { x: 100, y: 100 },
   target: null,
   leftMenu: false,

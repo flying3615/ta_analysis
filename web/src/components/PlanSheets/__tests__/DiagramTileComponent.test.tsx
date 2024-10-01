@@ -6,14 +6,13 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 describe("Diagram Tile component", () => {
-  const mockStore = setupStore({
+  const mockStoreRedux = setupStore({
     planSheets: {
-      diagrams: [],
+      ...mockStore.planSheets,
       pages: mockPlanData.pages,
-      hasChanges: false,
-      activeSheet: PlanSheetType.TITLE,
       activePageNumbers: {
         [PlanSheetType.TITLE]: 1,
         [PlanSheetType.SURVEY]: 1,
@@ -54,7 +53,7 @@ describe("Diagram Tile component", () => {
         setSelectedDiagramId={setSelectedDiagramId}
         setNewActivePageNumber={jest.fn()}
       />,
-      { store: mockStore },
+      { store: mockStoreRedux },
     );
 
     await userEvent.click(screen.getByText("Diagram A"));
@@ -74,7 +73,7 @@ describe("Diagram Tile component", () => {
         setSelectedDiagramId={jest.fn()}
         setNewActivePageNumber={jest.fn()}
       />,
-      { store: mockStore },
+      { store: mockStoreRedux },
     );
 
     expect(screen.getByText("Diagram A")).toBeInTheDocument();
@@ -90,7 +89,7 @@ describe("Diagram Tile component", () => {
         setSelectedDiagramId={jest.fn()}
         setNewActivePageNumber={jest.fn()}
       />,
-      { store: mockStore },
+      { store: mockStoreRedux },
     );
 
     expect(screen.getByText("Diagram A")).toBeInTheDocument();
@@ -107,7 +106,7 @@ describe("Diagram Tile component", () => {
         setSelectedDiagramId={jest.fn()}
         setNewActivePageNumber={jest.fn()}
       />,
-      { store: mockStore },
+      { store: mockStoreRedux },
     );
 
     expect(screen.getByText("Diagram A")).toBeInTheDocument();

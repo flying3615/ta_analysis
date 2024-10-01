@@ -16,17 +16,16 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
 import { setMockedSplitFeatures } from "@/setupTests.ts";
 import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { mockStore } from "@/test-utils/store-mock.ts";
 
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {
-    diagrams: [],
+    ...mockStore.planSheets,
     pages: [],
-    activeSheet: PlanSheetType.TITLE,
     activePageNumbers: {
       [PlanSheetType.TITLE]: 0,
       [PlanSheetType.SURVEY]: 0,
     },
-    hasChanges: false,
   };
 
   const initStateForTwoPages = {

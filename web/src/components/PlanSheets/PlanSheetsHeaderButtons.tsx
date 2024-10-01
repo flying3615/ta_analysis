@@ -25,6 +25,7 @@ export const PlanSheetsHeaderButtons = () => {
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
 
   const handleHeaderButtonClick = (label: PlanMode) => {
+    setSelectedButtonLabel(label);
     dispatch(setPlanMode(label));
   };
 
@@ -97,7 +98,6 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_pointer_outlined"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.Cursor);
-          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />
@@ -123,7 +123,6 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_select_coordinates"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.SelectCoordinates);
-          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />
@@ -132,7 +131,6 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_select_line"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.SelectLine);
-          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />
@@ -152,6 +150,7 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_add_label"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.AddLabel);
+          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />

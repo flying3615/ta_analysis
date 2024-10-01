@@ -3,10 +3,10 @@ import { screen } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
 import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { mockStore } from "@/test-utils/store-mock.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
 import { usePlanGenPreview } from "../usePlanGenPreview.tsx";
@@ -15,14 +15,9 @@ jest.mock("@/workers/previewWorker?worker");
 
 describe("usePlanGenPreview hook", () => {
   const planSheetsState = {
+    ...mockStore.planSheets,
     diagrams: diagrams,
     pages: pages,
-    activeSheet: PlanSheetType.TITLE,
-    hasChanges: false,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 0,
-      [PlanSheetType.SURVEY]: 0,
-    },
   };
 
   let startPreview: () => Promise<void>;
