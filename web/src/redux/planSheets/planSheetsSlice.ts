@@ -1,6 +1,8 @@
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { ConfigDataDTO, DiagramDTO, LabelDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { GroundMetresPosition } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { LookupGraphData, LookupSourceResult } from "@/modules/plan/LookupGraphData.ts";
@@ -86,6 +88,31 @@ const planSheetsSlice = createSlice({
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
+    },
+    addPageLabel: (state, action: PayloadAction<{ labelText: string; position: GroundMetresPosition }>) => {
+      const { labelText, position } = action.payload;
+      const activePage = getActivePage({ planSheets: state as PlanSheetsState })[0];
+      if (!activePage) throw new Error("Active Page not found");
+
+      const newId = Math.max(...(activePage.labels?.map((label) => label.id) ?? []), 0) + 1;
+      activePage.labels = activePage.labels ?? [];
+      activePage.labels.push({
+        labelType: LabelDTOLabelTypeEnum.userAnnotation,
+        displayText: labelText,
+        id: newId,
+        position: position,
+        rotationAngle: 0,
+        pointOffset: 0,
+        anchorAngle: 0,
+        textAlignment: "centerCenter",
+        displayState: DisplayStateEnum.display,
+        effect: "none",
+        fontStyle: "italic",
+        font: "Tahoma",
+        fontSize: 14,
+        userEdited: false,
+      });
+      state.hasChanges = true;
     },
   },
   selectors: {
@@ -173,6 +200,7 @@ export const {
   setDiagramPageRef,
   updatePages,
   setPlanMode,
+  addPageLabel,
 } = planSheetsSlice.actions;
 
 export const {

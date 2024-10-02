@@ -1,4 +1,4 @@
-import cytoscape from "cytoscape";
+import cytoscape, { BoundingBox12 } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 
@@ -8,16 +8,9 @@ export const ZOOM_DELTA = 0.5;
 export const SCROLL_THRESHOLD = 1.3;
 export const pixelsPerPoint = 0.75;
 export const pointsPerCm = 28.3465;
-
-export interface IAreaLimitsPx {
-  xMin: number;
-  xMax: number;
-  yMin: number;
-  yMax: number;
-}
 export interface IDiagramAreasLimits {
-  diagramOuterLimitsPx: IAreaLimitsPx;
-  disabledAreasLimitsPx: IAreaLimitsPx[];
+  diagramOuterLimitsPx: BoundingBox12;
+  disabledAreasLimitsPx: BoundingBox12[];
 }
 
 let _panX: number;
@@ -154,22 +147,22 @@ const getDiagramAreasLimits = (
 
   if (!node1 || !node2) return;
 
-  const disabledAreasLimitsPx: IAreaLimitsPx[] = [
-    { xMin: node1.x, xMax: diagramOuterLimitsPx.xMax, yMin: node1.y, yMax: node2.y },
+  const disabledAreasLimitsPx: BoundingBox12[] = [
+    { x1: node1.x, x2: diagramOuterLimitsPx.x2, y1: node1.y, y2: node2.y },
     {
-      xMin: diagramOuterLimitsPx.xMin,
-      xMax: diagramOuterLimitsPx.xMax,
-      yMin: node2.y,
-      yMax: diagramOuterLimitsPx.yMax,
+      x1: diagramOuterLimitsPx.x1,
+      x2: diagramOuterLimitsPx.x2,
+      y1: node2.y,
+      y2: diagramOuterLimitsPx.y2,
     },
   ];
 
   return { diagramOuterLimitsPx, disabledAreasLimitsPx };
 };
 
-const isPositionWithinAreaLimits = (position: cytoscape.Position, areas: IAreaLimitsPx[]): boolean => {
+const isPositionWithinAreaLimits = (position: cytoscape.Position, areas: BoundingBox12[]): boolean => {
   return areas.some((area) => {
-    return position.x >= area.xMin && position.x <= area.xMax && position.y >= area.yMin && position.y <= area.yMax;
+    return position.x >= area.x1 && position.x <= area.x2 && position.y >= area.y1 && position.y <= area.y2;
   });
 };
 

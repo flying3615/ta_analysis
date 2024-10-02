@@ -1,0 +1,41 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.PageLabelInput-container {
+  position: absolute;
+  z-index: 1000;
+}
+
+.PageLabelInput {
+  padding: lui.$unit-xs;
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: 3px;
+  border-color: lui.$silver;
+  color: lui.$charcoal;
+  &::placeholder {
+    color: lui.$fuscous;
+    font-style: italic;
+  }
+  &:focus {
+    border-color: lui.$sea;
+    border-width: 2px;
+    outline: none; /* Remove default outline */
+  }
+  &.error {
+    border-color: lui.$error;
+  }
+}
+
+.PageLabelInput-error {
+  font-size: 14px;
+  font-weight: 600;
+  color: lui.$charcoal;
+  display: flex;
+  align-items: center;
+  margin-top: -(lui.$unit-xxs);
+  background-color: white;
+}
+
+.PageLabelInput-error-icon {
+  margin-right: lui.$unit-xxs;
+}

@@ -29,7 +29,7 @@ export const PlanSheetsHeaderButtons = () => {
     dispatch(setPlanMode(label));
   };
 
-  useEscapeKey({ callback: () => handleHeaderButtonClick(PlanMode.Cursor) });
+  useEscapeKey({ callback: () => handleHeaderButtonClick(PlanMode.View) });
 
   return (
     <>

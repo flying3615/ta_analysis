@@ -1,7 +1,6 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
+import { BoundingBox12 } from "cytoscape";
 import { keyBy } from "lodash-es";
-
-import { IAreaLimitsPx } from "@/util/cytoscapeUtil";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
@@ -127,6 +126,20 @@ export class CytoscapeCoordinateMapper {
   }
 
   /**
+   * Converts Cytoscape pixel coordinates to page labels coordinates (metres).
+   * @param position - Cytoscape pixel coordinates to convert.
+   * @returns Page label coordinates.
+   */
+  pageLabelCytoscapeToCoord(position: cytoscape.Position): GroundMetresPosition {
+    const xPosCm = this.cytoscapeToPlanCm(position.x - this.pixelMargin);
+    const yPosCm = this.cytoscapeToPlanCm(-position.y + this.pixelMargin);
+    return {
+      x: xPosCm / 100,
+      y: yPosCm / 100,
+    };
+  }
+
+  /**
    * Convert relative centimetres on plan into cytoscape pixels
    *
    * @param cm a distance in cm
@@ -146,13 +159,13 @@ export class CytoscapeCoordinateMapper {
   /**
    * Returns the diagram outer limits in pixels
    */
-  getDiagramOuterLimitsPx(): IAreaLimitsPx {
+  getDiagramOuterLimitsPx(): BoundingBox12 {
     const pixelMargin = Math.abs(this.pixelMargin);
     return {
-      xMin: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitOriginX) - pixelMargin,
-      xMax: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitBottomRightX) - pixelMargin,
-      yMin: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitOriginY)) - pixelMargin,
-      yMax: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.borderBottomRightY)) - pixelMargin,
+      x1: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitOriginX) - pixelMargin,
+      x2: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitBottomRightX) - pixelMargin,
+      y1: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitOriginY)) - pixelMargin,
+      y2: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.borderBottomRightY)) - pixelMargin,
     };
   }
 
