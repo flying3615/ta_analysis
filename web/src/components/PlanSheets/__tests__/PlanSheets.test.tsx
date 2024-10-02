@@ -6,6 +6,7 @@ import { generatePath, Route } from "react-router-dom";
 import LandingPage from "@/components/LandingPage/LandingPage.tsx";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
@@ -342,26 +343,66 @@ describe("PlanSheets", () => {
     expect(screen.queryByTestId("CytoscapeCanvas")).not.toBeInTheDocument();
   });
 
-  it("regenerates plan and displays message when refreshRequired", async () => {
+  it("regenerates plan asynchronously and allows retrying if it fails", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
+
+    server.use(
+      http.post(/\/124\/plan-regenerate$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/124\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
 
     renderCompWithReduxAndRoute(
       <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
     );
 
-    expect(await screen.findByText(/Preparing survey and diagrams for Layout Plan Sheets/)).toBeVisible();
-    expect(await screen.findByText(/This may take a few moments\.\.\./)).toBeVisible();
-    // then
-    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
+    expect(await screen.findByText(/Failed to regenerate plan/)).not.toBeNull();
+    expect(await screen.findByText(/Retry, or call us on/)).not.toBeNull();
+    expect(await screen.findByText(/if it continues failing./)).not.toBeNull();
+    const retryButton = await screen.findByText("Retry");
+    expect(retryButton).not.toBeNull();
 
+    expect(requestSpy).toHaveBeenCalledTimes(3);
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "POST",
+          url: expect.stringMatching(/\/124\/plan-regenerate$/),
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: expect.stringMatching(/\/124\/async-task/),
+        }),
+      }),
+    );
+
+    requestSpy.mockReset();
+    server.use(
+      http.get(/\/124\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
+    await userEvent.click(retryButton);
+
+    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
+    expect(requestSpy).toHaveBeenCalledTimes(3);
     expect(requestSpy).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
         request: expect.objectContaining({
-          method: "GET",
-          url: "http://localhost/api/v1/generate-plans/124/plan-check",
+          method: "POST",
+          url: expect.stringMatching(/\/124\/plan-regenerate$/),
         }),
       }),
     );
@@ -370,7 +411,7 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/v1/surveys/api/survey/124/survey-info",
+          url: expect.stringMatching(/\/124\/async-task/),
         }),
       }),
     );
@@ -378,37 +419,24 @@ describe("PlanSheets", () => {
       3,
       expect.objectContaining({
         request: expect.objectContaining({
-          method: "POST",
-          url: "http://localhost/api/v1/generate-plans/124/plan",
-        }),
-      }),
-    );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      4,
-      expect.objectContaining({
-        request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/api/v1/generate-plans/124/plan",
+          url: expect.stringMatching(/\/124\/plan$/),
         }),
       }),
     );
-  });
+  }, 20000);
 
-  it("displays error when regenerate fails", async () => {
+  it("shows message while regenerate plan task is in progress", async () => {
     server.use(
-      http.post(/\/124\/plan$/, async () => {
-        return HttpResponse.json(
-          { ok: false, statusCode: 20001, message: "prepare dataset application error" },
-          { status: 200, statusText: "OK" },
-        );
-      }),
+      http.get(/\/124\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), { status: 200, statusText: "OK" }),
+      ),
     );
-
     renderCompWithReduxAndRoute(
       <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
       generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
     );
-
-    expect(await screen.findByText(/prepare dataset application error/)).not.toBeNull();
+    expect(await screen.findByText(/Preparing survey and diagrams for Layout Plan Sheets/)).toBeVisible();
+    expect(await screen.findByText(/This may take a few moments\.\.\./)).toBeVisible();
   });
 });

@@ -1,9 +1,11 @@
 import { delay, http, HttpHandler, HttpResponse } from "msw";
 
+import { AsyncTaskBuilder, failedTaskId, successfulTaskId } from "@/mocks/builders/AsyncTaskBuilder";
 import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder.ts";
 import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
+import { mockInternalServerError } from "@/mocks/data/mockError";
 import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences.ts";
 import { mockLabels } from "@/mocks/data/mockLabels.ts";
 import { mockLines } from "@/mocks/data/mockLines.ts";
@@ -12,8 +14,6 @@ import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
-
-import { mockInternalServerError } from "./data/mockError";
 
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features
@@ -59,11 +59,9 @@ export const handlers: HttpHandler[] = [
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
   http.put(/\/123\/plan$/, async () => {
     await delay(2000);
-    return HttpResponse.json({}, { status: 200 });
+    return HttpResponse.json(undefined, { status: 200 });
   }),
-  http.get(/\/123\/plan-check$/, () =>
-    HttpResponse.json({ refreshRequired: false }, { status: 200, statusText: "OK" }),
-  ),
+  http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
   http.post(/\/123\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.get(/\/123\/diagrams$/, () =>
     HttpResponse.json(new DiagramsBuilder().build(), { status: 200, statusText: "OK" }),
@@ -91,12 +89,14 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
-  http.get(/\/124\/plan-check$/, () => HttpResponse.json({ refreshRequired: true }, { status: 200, statusText: "OK" })),
-  // regenerate xml with delay
-  http.post(/\/124\/plan$/, async () => {
-    await delay(2000);
-    return HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" });
-  }),
+  http.post(/\/124\/plan-regenerate$/, () =>
+    HttpResponse.json(new AsyncTaskBuilder().withRegeneratePlanType().withTaskId(successfulTaskId).withQueuedStatus(), {
+      status: 202,
+      statusText: "ACCEPTED",
+    }),
+  ),
+
+  // Get diagrams
   http.get(/\/124\/diagrams$/, () => HttpResponse.json(mockDiagrams(), { status: 200, statusText: "OK" })),
   http.patch(/\/124\/diagrams\/6/, () => HttpResponse.json({ ok: true, statusCode: null, message: null })),
   http.delete(/\/124\/diagrams$/, () =>
@@ -189,6 +189,14 @@ export const handlers: HttpHandler[] = [
   ),
   http.patch(/\/126\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
+  // Survey 127: Regenerate Plan async task fails
+  http.post(/\/127\/plan-regenerate$/, () =>
+    HttpResponse.json(
+      new AsyncTaskBuilder().withTaskId(failedTaskId).withRegeneratePlanType().withFailedStatus().build(),
+      { status: 202, statusText: "ACCEPTED" },
+    ),
+  ),
+
   http.get(/\/diagrams-check/, async () => {
     return HttpResponse.json(
       {
@@ -226,6 +234,23 @@ export const handlers: HttpHandler[] = [
   ),
   http.patch(/\/666\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
+  // Async task handler
+  http.get(/\/async-task/, function* ({ request }) {
+    const response = new AsyncTaskBuilder().withRegeneratePlanType();
+
+    // On first call return in progress status, then subsequent calls will return complete/failed
+    yield HttpResponse.json(response.withInProgressStatus().build(), { status: 200, statusText: "OK" });
+
+    const taskId = new URL(request.url).searchParams.get("taskId");
+    if (taskId === successfulTaskId) {
+      response.withCompleteStatus();
+    } else {
+      response.withFailedStatus();
+    }
+
+    return HttpResponse.json(response.build(), { status: 200, statusText: "OK" });
+  }),
+
   // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint
   http.get(/\/v1\/generate-plans\/tiles\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/, async ({ params }) => {
@@ -255,19 +280,10 @@ export const handlers: HttpHandler[] = [
   http.post(/\/404\/prepare/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
-  http.get(/\/plan\/404/, () =>
+  http.post(/\/404\/plan-regenerate$/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
-  ),
-  http.get(/\/plan\/check\/404/, () =>
-    HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
-  ),
-  http.get(/\/plan-check/, () =>
-    HttpResponse.json({ errors: [{ code: 404, description: "Not found" }] }, { status: 404, statusText: "Not found" }),
   ),
   http.post(/\/404\/diagrams$/, () =>
-    HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
-  ),
-  http.post(/\/prepare\/404$/, () =>
     HttpResponse.json({ code: 404, message: "Not found" }, { status: 404, statusText: "Not found" }),
   ),
 ];
