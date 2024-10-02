@@ -29,4 +29,7 @@ export enum PlanMode {
 export enum PlanStyleClassName {
   DiagramNode = "diagram-nodes",
   DiagramHover = "diagram-nodes-hover",
+  ElementHover = "hover",
+
+  RelatedLabelSelected = "related-label-selected",
 }

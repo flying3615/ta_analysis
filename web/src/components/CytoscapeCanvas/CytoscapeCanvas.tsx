@@ -6,7 +6,6 @@ import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce, isArray } from "lodash-es";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   edgeDefinitionsFromData,
@@ -30,6 +29,8 @@ import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
 import { getActivePages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { isPlaywrightTest, isStorybookTest, saveCytoscapeStateToStorage } from "@/test-utils/cytoscape-data-utils.ts";
 import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
+
+import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
 
 export interface IInitZoom {
   zoom?: number;
@@ -87,15 +88,18 @@ const CytoscapeCanvas = ({
   };
 
   const onMouseOver = (event: cytoscape.EventObject) => {
-    const node = event.target;
-    if (node.isNode) {
-      const parentNode = node.parent();
+    const element = event.target;
+    if (element.isNode) {
+      const parentNode = element.parent();
       if (selectionSelector === "node" && parentNode.nonempty()) parentNode.addClass(PlanStyleClassName.DiagramHover);
-      if (selectionSelector === "node" && node.children().nonempty()) node.addClass(PlanStyleClassName.DiagramHover);
-      if (node.id() === "border_page_no") pageNumberTooltips(canvasRef.current, node);
+      if (selectionSelector === "node" && element.children().nonempty()) {
+        element.addClass(PlanStyleClassName.DiagramHover);
+      }
+      if (element.id() === "border_page_no") pageNumberTooltips(canvasRef.current, element);
     }
+    element.addClass?.(PlanStyleClassName.ElementHover);
   };
-  const onMouseOut = () => {
+  const onMouseOut = (event: cytoscape.EventObject) => {
     setTooltipContent(null);
     setTooltipPosition(null);
     if (selectionSelector === "node") {
@@ -103,6 +107,7 @@ const CytoscapeCanvas = ({
         ele.removeClass(PlanStyleClassName.DiagramHover);
       });
     }
+    event.target.removeClass?.(PlanStyleClassName.ElementHover);
   };
 
   const onMouseDown = (event: cytoscape.EventObject) => {
@@ -113,6 +118,30 @@ const CytoscapeCanvas = ({
     if (!cy?.userPanningEnabled()) {
       zoomToSelectedRegion(startCoordsRef.current.x1, startCoordsRef.current.y1, event.position.x, event.position.y);
       cy?.userPanningEnabled(true);
+    }
+  };
+
+  const labelTypesWithRelatedElements = ["lineLabels", "coordinateLabels"];
+
+  const onSelected = (event: cytoscape.EventObject) => {
+    const nodeData = event.target.data();
+    if (labelTypesWithRelatedElements.includes(nodeData.elementType)) {
+      event.cy.$(`edge[id*='${nodeData.featureId}_'], node[id='${nodeData.featureId}']`).forEach((ele) => {
+        ele.addClass(PlanStyleClassName.RelatedLabelSelected);
+      });
+    }
+  };
+
+  const onUnselected = (event: cytoscape.EventObject) => {
+    const nodeData = event.target.data();
+    if (labelTypesWithRelatedElements.includes(nodeData.elementType)) {
+      const selectedElements = event.cy.$(":selected");
+      event.cy.$(`edge[id*='${nodeData.featureId}_'], node[id='${nodeData.featureId}']`).forEach((ele) => {
+        //only remove the class is not other labels are selected with this related feature
+        //e.g. some lines can have two labels (bearing/distance)
+        selectedElements.filter((x) => x.data().featureId == nodeData.featureId).length == 0 &&
+          ele.removeClass(PlanStyleClassName.RelatedLabelSelected);
+      });
     }
   };
 
@@ -233,6 +262,8 @@ const CytoscapeCanvas = ({
     cy?.addListener("mouseout", onMouseOut);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
+    cy?.addListener("select", "node", onSelected);
+    cy?.addListener("unselect", "node", onUnselected);
     cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
     cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
     cy?.on("dragpan", (event) => keepPanWithinBoundaries(event.cy));

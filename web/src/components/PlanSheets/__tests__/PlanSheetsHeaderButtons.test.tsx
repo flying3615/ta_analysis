@@ -67,7 +67,6 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.LineArcReverse],
     [PlanMode.Delete],
     [PlanMode.View],
-    [PlanMode.SelectLabel],
     [PlanMode.SelectPolygon],
     [PlanMode.AddLabel],
     [PlanMode.AddLine],
@@ -172,5 +171,15 @@ describe("PlanSheetsHeaderButtons", () => {
     await expect(button).toHaveClass("selected");
 
     expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
+  });
+
+  it("should handle select labels click", async () => {
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
+    const button = screen.getByRole("button", { name: "Select label" });
+    await userEvent.click(button);
+
+    await expect(button).toHaveClass("selected");
+
+    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLabel);
   });
 });

@@ -78,15 +78,25 @@ describe("makeCytoscapeStylesheet", () => {
 
   test("has style for selected nodes", () => {
     const selectedNodeStyle = stylesheet.find(
-      (s) => s.selector === "node:selected.node-selected",
+      (s) => s.selector === "node:selected.node-selected, node.related-label-selected",
     ) as cytoscape.Stylesheet;
     const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
     expect(styleEntry["outline-color"]).toBe("rgba(248, 27, 239, 1)");
   });
 
   test("has style for selected edges", () => {
-    const selectedNodeStyle = stylesheet.find((s) => s.selector === "edge:selected") as cytoscape.Stylesheet;
+    const selectedNodeStyle = stylesheet.find(
+      (s) => s.selector === "edge:selected, edge.related-label-selected",
+    ) as cytoscape.Stylesheet;
     const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
-    expect(styleEntry["line-outline-color"]).toBe("rgba(248, 27, 239, 1)");
+    expect(styleEntry["line-color"]).toBe("rgba(248, 27, 239, 1)");
+  });
+
+  test("has style for selected labels", () => {
+    const selectedNodeStyle = stylesheet.find(
+      (s) => s.selector === "node:selected.selectable-label",
+    ) as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
+    expect(styleEntry["text-background-color"]).toBe("rgba(248, 27, 239, 1)");
   });
 });

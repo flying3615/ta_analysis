@@ -113,6 +113,19 @@ function getAllMenuItemsForElement(
     { title: "Paste", disabled: true },
   ];
 
+  const labelMenus: MenuItem[] = [
+    { title: "Original Location", callback: getProperties },
+    {
+      title: "Show",
+      hideWhen: symbolShouldBeDisplayed,
+    },
+    { title: "Hide", hideWhen: (element) => !symbolShouldBeDisplayed(element) },
+    { title: "Properties", callback: getProperties },
+    { title: "Cut", disabled: true },
+    { title: "Copy", disabled: true },
+    { title: "Paste", disabled: true },
+  ];
+
   if (lookupGraphData === undefined) return undefined;
   switch (planMode) {
     case PlanMode.SelectDiagram:
@@ -124,6 +137,11 @@ function getAllMenuItemsForElement(
     case PlanMode.SelectCoordinates:
       if (planElementType !== PlanElementType.COORDINATES) return undefined;
       return nodeMenus;
+    case PlanMode.SelectLabel:
+      //There are labels, lineLabels, parcelLabel, childDiagramLabels
+      //this catches them all but might need to revisit if different label types have different menus
+      if (!planElementType.toLowerCase().endsWith(PlanElementType.LABELS)) return undefined;
+      return labelMenus;
     default:
       return undefined;
   }

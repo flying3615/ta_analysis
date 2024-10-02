@@ -171,6 +171,10 @@ const PlanSheets = () => {
     case PlanMode.SelectLine:
       selectionSelector = "edge";
       break;
+    case PlanMode.SelectLabel:
+      selectionSelector = "node[label]";
+      applyClasses = { node: "selectable-label" };
+      break;
   }
 
   return (

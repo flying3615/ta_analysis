@@ -64,8 +64,9 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     height: heightPixels,
   };
 
+  const hotPink = "rgba(248, 27, 239, 1)";
+
   const labelBaseStyle = {
-    "text-events": "yes",
     label: "data(label)",
     "line-height": 1,
     "text-wrap": "wrap",
@@ -89,6 +90,9 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "bounds-expansion": 12, // ensure circles are visible
     "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).x,
     "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).y,
+    "text-outline-color": "white",
+    "text-outline-width": "0.5px",
+    "text-outline-opacity": 0,
     "z-index-compare": "manual",
   };
 
@@ -104,8 +108,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "background-opacity": 0,
   };
 
-  const hotPink = "rgba(248, 27, 239, 1)";
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const showNodeDebugStyle = {
     "text-background-opacity": 0,
@@ -113,30 +115,90 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "background-opacity": 1,
   };
 
-  return [
+  const markStyles = [
     {
-      selector: "node:selected.node-selected",
+      // Node shown as a symbol
+      selector: "node[symbolId]",
+      style: {
+        label: "",
+        "background-image": (ele) => svgDataForSymbol(ele).svg,
+        width: (ele: cytoscape.NodeSingular) => svgDataForSymbol(ele).width,
+        height: (ele) => svgDataForSymbol(ele).height,
+        "background-clip": "none",
+        "bounds-expansion": 12,
+        shape: "rectangle",
+      },
+    },
+
+    {
+      // Node with no label
+      selector: "node[^label]",
+      style: {
+        ...noNodeMarker,
+        height: 5,
+        width: 5,
+      },
+    },
+    {
+      selector: "node:selected.node-selected, node.related-label-selected",
       style: {
         "outline-width": 2,
-        "outline-offset": 4,
+        "outline-offset": 2,
         "outline-color": hotPink,
+        "outline-opacity": 0.5,
         "background-image-containment": "over",
       },
     },
+  ] as Stylesheet[];
+
+  const lineStyles = [
     {
-      selector: "edge:selected",
+      selector: "edge",
       style: {
-        "line-outline-width": 5,
-        "line-outline-color": hotPink,
+        ...lineBaseStyle,
+        "line-cap": "round",
       },
     },
     {
-      selector: "node, node:active, edge, edge:active",
+      selector: "edge[dashStyle]",
       style: {
-        "overlay-padding": 0,
-        "overlay-opacity": 0,
+        ...lineBaseStyle,
+        "line-style": "data(dashStyle)",
       },
     },
+    {
+      selector: "edge[dashPattern]",
+      style: {
+        ...lineBaseStyle,
+        "line-cap": "butt",
+      },
+    },
+    {
+      selector: "edge[targetArrowShape]",
+      style: {
+        ...lineBaseStyle,
+        "curve-style": "straight", // needed to render arrows
+        "target-arrow-shape": "data(targetArrowShape)",
+        "target-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
+      },
+    },
+    {
+      selector: "edge[sourceArrowShape]",
+      style: {
+        ...lineBaseStyle,
+        "source-arrow-shape": "data(sourceArrowShape)",
+        "source-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
+      },
+    },
+    {
+      selector: "edge:selected, edge.related-label-selected",
+      style: {
+        "line-color": hotPink,
+      },
+    },
+  ] as Stylesheet[];
+
+  const labelStyles = [
     {
       // Node with label, circled
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
@@ -158,15 +220,25 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      // Node shown as a symbol
-      selector: "node[symbolId]",
+      selector: "node[label].selectable-label",
       style: {
-        label: "",
-        "background-image": (ele) => svgDataForSymbol(ele).svg,
-        width: (ele: cytoscape.NodeSingular) => svgDataForSymbol(ele).width,
-        height: (ele) => svgDataForSymbol(ele).height,
-        "background-clip": "none",
-        "bounds-expansion": 12,
+        "text-events": "yes",
+      },
+    },
+    {
+      // Node with label selected
+      selector: "node:selected.selectable-label",
+      style: {
+        "text-background-color": hotPink,
+        "text-background-opacity": 0.5,
+        "text-background-shape": "roundrectangle",
+        "text-outline-opacity": 0.8,
+      },
+    },
+    {
+      selector: "node[label].selectable-label.hover",
+      style: {
+        color: "#0099FF",
       },
     },
     {
@@ -178,19 +250,14 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         // ...showNodeDebugStyle, // Uncomment it to show node debug style
       },
     },
+  ] as Stylesheet[];
+
+  const otherStyles = [
     {
-      selector: "node[label].hovered",
+      selector: "node, node:active, edge, edge:active",
       style: {
-        color: "#0099FF",
-      },
-    },
-    {
-      // Node with no label
-      selector: "node[^label]",
-      style: {
-        ...noNodeMarker,
-        height: 1,
-        width: 1,
+        "overlay-padding": 0,
+        "overlay-opacity": 0,
       },
     },
     {
@@ -251,44 +318,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "text-halign": "center",
       },
     },
-    {
-      selector: "edge",
-      style: {
-        ...lineBaseStyle,
-        "line-cap": "round",
-      },
-    },
-    {
-      selector: "edge[dashStyle]",
-      style: {
-        ...lineBaseStyle,
-        "line-style": "data(dashStyle)",
-      },
-    },
-    {
-      selector: "edge[dashPattern]",
-      style: {
-        ...lineBaseStyle,
-        "line-cap": "butt",
-      },
-    },
-    {
-      selector: "edge[targetArrowShape]",
-      style: {
-        ...lineBaseStyle,
-        "curve-style": "straight", // needed to render arrows
-        "target-arrow-shape": "data(targetArrowShape)",
-        "target-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
-      },
-    },
-    {
-      selector: "edge[sourceArrowShape]",
-      style: {
-        ...lineBaseStyle,
-        "source-arrow-shape": "data(sourceArrowShape)",
-        "source-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
-      },
-    },
+
     {
       selector: ":parent",
       style: {
@@ -323,6 +353,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
   ] as Stylesheet[];
+
+  return [...labelStyles, ...lineStyles, ...markStyles, ...otherStyles] as Stylesheet[];
 };
 
 export default makeCytoscapeStylesheet;
