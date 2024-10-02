@@ -1,7 +1,6 @@
 import "./PlanSheets.scss";
 import "@/components/MainWindow.scss";
 
-import { ResponseError } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useEffect, useState } from "react";
@@ -10,20 +9,20 @@ import { useNavigate } from "react-router-dom";
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas.tsx";
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
 import Header from "@/components/Header/Header";
-import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal.tsx";
 import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
 import {
   errorFromResponseError,
   errorFromSerializedError,
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal.tsx";
+import { useCheckAndRegeneratePlan } from "@/components/PlanSheets/checkAndRegeneratePlan.ts";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
 import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   selectActiveDiagramsEdgesAndNodes,
@@ -32,7 +31,6 @@ import {
 } from "@/modules/plan/selectGraphData.ts";
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
-import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
 import { findMarkSymbol, getPlanMode, lookupSource, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
@@ -55,43 +53,8 @@ const PlanSheets = () => {
   const { edges: pageEdgeData, nodes: pageNodeData } = useAppSelector(selectActivePageEdgesAndNodes);
   const { edges: pageConfigsEdgeData, nodes: pageConfigsNodeData } = useAppSelector(selectPageConfigEdgesAndNodes);
 
-  const regeneratePlanMutationResult = useRegeneratePlanMutation(transactionId);
-  const regeneratePlanMutate = () => regeneratePlanMutationResult.mutate();
-  const {
-    isPending: isRegenerating,
-    isSuccess: regenerateDoneOrNotNeeded,
-    isError: regenerationHasFailed,
-    error: regenerateApiError,
-  } = useAsyncTaskHandler(regeneratePlanMutationResult, regeneratePlanMutate);
-
-  useEffect(() => {
-    if (regenerationHasFailed) {
-      showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
-        if (retry) {
-          regeneratePlanMutate();
-        } else {
-          navigate(`/plan-generation/${transactionId}`);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regenerationHasFailed, navigate, showPrefabModal]);
-
-  useEffect(() => {
-    (async () => {
-      if (regenerateApiError) {
-        newrelic.noticeError(regenerateApiError);
-        const modalContent =
-          (regenerateApiError as ResponseError).response?.status === 404
-            ? errorWithResponseModal({
-                ...(await errorFromResponseError(regenerateApiError as ResponseError)),
-                message: "Survey not found",
-              })
-            : unhandledErrorModal(regenerateApiError);
-        showPrefabModal(modalContent).then(() => navigate(`/plan-generation/${transactionId}`));
-      }
-    })();
-  }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
+  const { isRegenerating, regenerateDoneOrNotNeeded, planCheckError, regeneratePlanError } =
+    useCheckAndRegeneratePlan(transactionId);
 
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
   const planMode = useAppSelector(getPlanMode);
@@ -117,14 +80,34 @@ const PlanSheets = () => {
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
-  if (
-    planDataIsLoading ||
-    !planData ||
-    !regenerateDoneOrNotNeeded ||
-    surveyInfoIsLoading ||
-    !surveyInfo ||
-    regenerationHasFailed
-  ) {
+  useEffect(() => {
+    (async () => {
+      if (planCheckError) {
+        const errorWithResponse = await errorFromResponseError(planCheckError);
+        newrelic.noticeError(errorWithResponse);
+        const modalContent =
+          errorWithResponse.response?.status === 404
+            ? errorWithResponseModal({ ...errorWithResponse, message: "Survey not found" })
+            : unhandledErrorModal(errorWithResponse);
+        showPrefabModal(modalContent).then(() => navigate(`/plan-generation/${transactionId}`));
+      }
+    })();
+  }, [planCheckError, transactionId, navigate, showPrefabModal]);
+
+  useEffect(() => {
+    if (regeneratePlanError) {
+      const serializedError = errorFromSerializedError(regeneratePlanError);
+      newrelic.noticeError(serializedError);
+
+      // We get a regeneratePlanError here if we delegated to regenerating a plan
+      // and that caused an application error
+      showPrefabModal(prepareDatasetErrorModal(regeneratePlanError)).then(() =>
+        navigate(`/plan-generation/${transactionId}`),
+      );
+    }
+  }, [regeneratePlanError, transactionId, navigate, showPrefabModal]);
+
+  if (planDataIsLoading || !planData || isRegenerating || surveyInfoIsLoading || !surveyInfo) {
     return (
       <div ref={modalOwnerRef}>
         <Header view="Sheets" />

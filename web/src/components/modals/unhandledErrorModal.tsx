@@ -107,7 +107,7 @@ export const unhandledErrorModal = (
                   <h6>API Status:</h6>
                   <pre>{error.response?.status}</pre>
                   <h6>API Message:</h6>
-                  <pre>{error.response?.message ?? error.response?.statusText}</pre>
+                  <pre>{error.response?.statusText}</pre>
                   <h6>API URL:</h6>
                   <pre>{error.response?.url}</pre>
                 </>
@@ -152,9 +152,10 @@ export const errorFromSerializedError = (error: SerializedError | Error | ErrorW
 });
 
 export const errorFromResponseError = async (
-  responseError: ResponseError,
+  error: Error,
   customErrorResponse?: Partial<ErrorWithResponse>,
 ): Promise<ErrorWithResponse> => {
+  const responseError = error as ResponseError;
   const errorResponse = (await responseError.response.json()) as ErrorResponseDTO | undefined;
   return {
     message: customErrorResponse?.message ?? responseError.message,
