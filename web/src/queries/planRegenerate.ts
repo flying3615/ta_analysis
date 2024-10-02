@@ -13,12 +13,11 @@ export const useRegeneratePlanMutation = (transactionId: number) => {
     mutationKey: regeneratePlanQueryKey(transactionId),
     mutationFn: async () => {
       const response = await new PlanRegenerateControllerApi(apiConfig()).regeneratePlanRaw({ transactionId });
-      if (response.raw.status === 200) {
-        // If the response code is 200, the response body will be empty
+      if ((await response.raw.clone().text()).length === 0) {
+        // Don't parse the response if it's empty
         return null;
       }
-      // Otherwise response code will be 202 which will have a body
-      return await response.value();
+      return response.value();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });

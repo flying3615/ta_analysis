@@ -426,8 +426,11 @@ describe("PlanSheets", () => {
     );
   }, 20000);
 
-  it("shows message while regenerate plan task is in progress", async () => {
+  it("shows message while regenerate plan task is already in progress", async () => {
     server.use(
+      http.post(/\/124\/plan-regenerate$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 200, statusText: "OK" }),
+      ),
       http.get(/\/124\/async-task/, async () =>
         HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), { status: 200, statusText: "OK" }),
       ),
