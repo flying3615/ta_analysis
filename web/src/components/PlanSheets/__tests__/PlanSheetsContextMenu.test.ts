@@ -2,7 +2,7 @@ import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { NodeSingular } from "cytoscape";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
+import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { LookupGraphData } from "@/modules/plan/LookupGraphData.ts";

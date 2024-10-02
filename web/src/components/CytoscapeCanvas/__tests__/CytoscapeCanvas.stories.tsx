@@ -856,6 +856,6 @@ export const RenderCytoscapeContextMenu: StoryObj<typeof CytoscapeCanvas> = {
     const item3 = canvas.getByText("Item 3");
     await userEvent.click(item3);
     // eslint-disable-next-line testing-library/no-node-access
-    await expect(item3.closest(".context-menu-item")).toHaveClass("hover");
+    await expect(item3.closest(".context-menu-item")).toHaveClass("hovered");
   },
 };

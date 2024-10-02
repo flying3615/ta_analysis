@@ -80,6 +80,10 @@ export class LookupGraphData {
         if (!result) return undefined;
         return { resultType: "LineDTO", result };
       case PlanElementType.LABELS:
+      case PlanElementType.COORDINATE_LABELS:
+      case PlanElementType.LINE_LABELS:
+      case PlanElementType.PARCEL_LABELS:
+      case PlanElementType.CHILD_DIAGRAM_LABELS:
         result = this.labelsById[id];
         if (!result) return undefined;
         return { resultType: "LabelDTO", result };

@@ -12,7 +12,6 @@
 
   .context-menu-item {
     position: relative;
-    cursor: pointer;
 
     .menu-item-content {
       font-size: 14px;
@@ -20,10 +19,6 @@
       white-space: nowrap;
       line-height: 1.5;
       padding: 4px 12px;
-
-      &:hover {
-        background-color: #f0f6fc;
-      }
     }
 
     .submenu-indicator {
@@ -55,7 +50,7 @@
       }
     }
 
-    &.hover > .submenu-container {
+    &.hovered > .submenu-container {
       display: block;
     }
 
@@ -83,9 +78,9 @@
         color: red;
       }
     }
-  }
 
-  .delete-item {
-    color: #ff4d4d;
+    .delete-item {
+      color: #ff4d4d;
+    }
   }
 }

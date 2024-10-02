@@ -1,6 +1,7 @@
 import { DisplayStateEnum, LabelDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 
+import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
@@ -41,7 +42,7 @@ function getAllMenuItemsForElement(
     findMarkSymbol: (fromFeature: LookupSourceResult | undefined) => LabelDTO | undefined;
   },
   planMode: PlanMode,
-  elementId: string,
+  element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
   planElementType: PlanElementType,
 ) {
   const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
@@ -100,20 +101,34 @@ function getAllMenuItemsForElement(
     );
   };
 
-  const nodeMenus: MenuItem[] = [
-    { title: "Original Location", callback: getProperties },
-    {
-      title: "Show",
-      hideWhen: symbolShouldBeDisplayed,
-    },
-    { title: "Hide", hideWhen: (element) => !symbolShouldBeDisplayed(element) },
-    { title: "Properties", callback: getProperties },
-    { title: "Cut", disabled: true },
-    { title: "Copy", disabled: true },
-    { title: "Paste", disabled: true },
-  ];
+  const buildLabelMenus = (targetLabel: NodeSingular): MenuItem[] => {
+    return [
+      { title: "Original Location", callback: getProperties },
+      { title: "Show", hideWhen: symbolShouldBeDisplayed },
+      { title: "Properties", callback: getProperties },
+      {
+        title: "Select",
+        divider: true,
+        submenu: [
+          { title: "Observation distance" },
+          { title: "Observation bearing" },
+          { title: "Observation code" },
+          { title: "All" },
+        ],
+      },
+      {
+        title: "Rotate Label",
+        submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }],
+      },
+      { title: "Move To Page...", callback: movetoPage },
+      { title: "Cut", divider: true },
+      { title: "Copy" },
+      { title: "Paste" },
+      { title: "Delete", className: "delete-item" },
+    ];
+  };
 
-  const labelMenus: MenuItem[] = [
+  const nodeMenus: MenuItem[] = [
     { title: "Original Location", callback: getProperties },
     {
       title: "Show",
@@ -129,7 +144,7 @@ function getAllMenuItemsForElement(
   if (lookupGraphData === undefined) return undefined;
   switch (planMode) {
     case PlanMode.SelectDiagram:
-      if (elementId == null) return undefined;
+      if (element.data("id") == null) return undefined;
       return diagramMenus;
     case PlanMode.SelectLine:
       if (planElementType !== PlanElementType.LINES) return undefined;
@@ -138,10 +153,17 @@ function getAllMenuItemsForElement(
       if (planElementType !== PlanElementType.COORDINATES) return undefined;
       return nodeMenus;
     case PlanMode.SelectLabel:
-      //There are labels, lineLabels, parcelLabel, childDiagramLabels
-      //this catches them all but might need to revisit if different label types have different menus
-      if (!planElementType.toLowerCase().endsWith(PlanElementType.LABELS)) return undefined;
-      return labelMenus;
+      if (
+        ![
+          PlanElementType.LABELS,
+          PlanElementType.PARCEL_LABELS,
+          PlanElementType.LINE_LABELS,
+          PlanElementType.COORDINATE_LABELS,
+          PlanElementType.CHILD_DIAGRAM_LABELS,
+        ].includes(planElementType)
+      )
+        return undefined;
+      return buildLabelMenus(element as NodeSingular);
     default:
       return undefined;
   }
@@ -156,9 +178,8 @@ export const getMenuItemsForPlanElement = (
   element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
 ): MenuItem[] | undefined => {
   const planElementType = element.data("elementType") as PlanElementType;
-  const elementId = element.data("id");
 
-  return getAllMenuItemsForElement(lookupSelectors, planMode, elementId, planElementType)
+  return getAllMenuItemsForElement(lookupSelectors, planMode, element, planElementType)
     ?.map((menuItem) => ({
       ...menuItem,
       disabled: menuItem.disabled || menuItem.disableWhen?.(element),

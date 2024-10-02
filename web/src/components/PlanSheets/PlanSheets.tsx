@@ -19,7 +19,7 @@ import {
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
-import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.ts";
+import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.tsx";
 import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";

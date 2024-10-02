@@ -1,0 +1,45 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.rotate-slider-menu {
+  display: flex;
+  flex-direction: column;
+  margin: -4px 0;
+
+  .title {
+    color: lui.$fuscous;
+    padding: 4px 0;
+  }
+
+  .bar-container {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+
+    .slider-bar {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: lui.$spray;
+      outline: none;
+      border-radius: 4px;
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border-radius: 50%;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: lui.$sea;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .slider-value {
+    font-size: 14px;
+    padding: 4px 0;
+    color: lui.$fuscous;
+    font-weight: 600;
+  }
+}

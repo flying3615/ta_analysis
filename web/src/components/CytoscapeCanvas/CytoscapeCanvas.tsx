@@ -66,6 +66,7 @@ const CytoscapeCanvas = ({
 }: ICytoscapeCanvasProps) => {
   const throwAsyncError = useThrowAsyncError();
   const activePages = useAppSelector(getActivePages);
+
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
