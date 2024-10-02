@@ -84,6 +84,7 @@ export const createNewNode = (
 export const pixelsToMeters = (pixels: number): number => {
   // Assuming 96 DPI as a base.  There is no way of getting exact DPI in browser.
   // On my screen this calculation is off by 15%; inaccuracy is expected.
+  // 96 DPI was lifted directly from legacy io_ole_shapeset.object.getpixelsperlogInch
   const dpi = window.devicePixelRatio * 96;
   // Convert pixels to meters
   return ((pixels / dpi) * 2.54) / 100;

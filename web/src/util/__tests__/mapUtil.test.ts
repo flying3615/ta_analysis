@@ -80,15 +80,16 @@ describe("mapUtil", () => {
     expect(pixelsToMeters(10000000)).toBe(2645.833333333334);
   });
 
+  // This example is lifted directly from data in legacy
   test("mapZoomScale", () => {
     const map = {
       getView: () => ({
-        calculateExtent: () => [10, 5, 100, 200],
+        calculateExtent: () => [10, 5, 141.585334757925, 200], // 131 wide
       }),
       getViewport: () => ({
-        getBoundingClientRect: () => ({ width: 900 }),
+        getBoundingClientRect: () => ({ width: 1685 }),
       }),
     } as unknown as OlMap;
-    expect(mapZoomScale(map)).toBe(377);
+    expect(mapZoomScale(map)).toBe(295);
   });
 });
