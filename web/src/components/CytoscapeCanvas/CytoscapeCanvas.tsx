@@ -169,10 +169,11 @@ const CytoscapeCanvas = ({
     setCyto(cyRef);
 
     cyRef.nodes().ungrabify();
-    cyRef.nodes().unselectify();
-    cyRef.edges().unselectify();
+    cyRef.elements().unselectify();
+    cyRef.elements().style("events", "no");
     if (selectionSelector) {
       cyRef.$(selectionSelector).selectify();
+      cyRef.$(selectionSelector).style("events", "yes");
     }
 
     Object.entries(applyClasses ?? {}).forEach(([selector, classNames]) => {
