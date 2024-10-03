@@ -1,9 +1,16 @@
-import { PlanControllerApi, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  PlanCompileRequest,
+  PlanControllerApi,
+  PlanGraphicsControllerApi,
+  PlanResponseDTO,
+  PreCompilePlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
+import type { CompilePlanResponseDTO } from "@linz/survey-plan-generation-api-client/src/models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { apiConfig } from "@/queries/apiConfig";
-import { PlanGenMutation, PlanGenQuery } from "@/queries/types";
+import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
 
 export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactionId];
@@ -21,6 +28,21 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
   });
 };
 
+export const preCompilePlanQueryKey = (transactionId: number) => ["preCompilePlan", transactionId];
+
+export const usePreCompilePlanCheck: PlanGenMutation<PreCompilePlanResponseDTO> = ({ transactionId, ...params }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...params,
+    mutationKey: preCompilePlanQueryKey(transactionId),
+    mutationFn: () => new PlanGraphicsControllerApi(apiConfig()).prePlanCompile({ transactionId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: preCompilePlanQueryKey(transactionId) });
+    },
+  });
+};
+
 export const updatePlanQueryKey = (transactionId: number) => ["updatePlan", transactionId];
 
 export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ...params }) => {
@@ -31,6 +53,26 @@ export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ..
     ...params,
     mutationKey: updatePlanQueryKey(transactionId),
     mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequestDTO: planData }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
+    },
+  });
+};
+
+export const updateCompilePlanQueryKey = (transactionId: number) => ["compilePlan", transactionId];
+
+export const useCompilePlanMutation: PlanGenCompileMutation<CompilePlanResponseDTO> = ({
+  transactionId,
+  ...params
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...params,
+    mutationKey: updateCompilePlanQueryKey(transactionId),
+    mutationFn: async (planCompilationRequest: PlanCompileRequest) => {
+      return await new PlanGraphicsControllerApi(apiConfig()).planCompile(planCompilationRequest);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
     },

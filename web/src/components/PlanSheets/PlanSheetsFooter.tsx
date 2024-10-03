@@ -70,6 +70,7 @@ const PlanSheetsFooter = ({
   const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation();
 
   const {
+    mutateAsync: updatePlanMutateAsync,
     mutate: updatePlanMutate,
     isSuccess: updatePlanIsSuccess,
     isPending: updatePlanIsPending,
@@ -189,7 +190,9 @@ const PlanSheetsFooter = ({
         {isPreviewCompilationOn && (
           <LuiButton
             className="PlanSheetsFooter-compile-button lui-button-tertiary"
-            onClick={startCompile}
+            onClick={() => {
+              startCompile(updatePlanMutateAsync).then();
+            }}
             disabled={compiling}
           >
             {compiling ? (
@@ -197,7 +200,7 @@ const PlanSheetsFooter = ({
             ) : (
               <>
                 <LuiIcon alt="Compile" color={luiColors.sea} name="ic_double_tick" size="md" />
-                Compile plan(s)
+                Compile record of survey
               </>
             )}
           </LuiButton>

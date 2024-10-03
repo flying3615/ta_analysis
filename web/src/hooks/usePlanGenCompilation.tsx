@@ -1,9 +1,10 @@
 import { FileUploaderClient } from "@linz/secure-file-upload";
 import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
+import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails.ts";
 import { useToast } from "@linzjs/lui";
-import { PromiseWithResolve } from "@linzjs/windows";
-import cytoscape, { EventHandler } from "cytoscape";
+import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
+import cytoscape from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
@@ -13,6 +14,12 @@ import {
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import {
+  info126026_planGenCompileProgress,
+  info126026_planGenCompileSuccess,
+} from "@/components/PlanSheets/prefabInfo.tsx";
+import { warning126024_planGenHasRunBefore } from "@/components/PlanSheets/prefabWarnings.tsx";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import {
   cyImageExportConfig,
@@ -22,12 +29,12 @@ import {
 } from "@/hooks/usePlanGenPreview.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
+import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan.ts";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil.ts";
-import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 
 export interface PlanGenCompilation {
-  startCompile: () => Promise<void>;
+  startCompile: (savePlan: () => Promise<void>) => Promise<void>;
   CompilationExportCanvas: React.FC;
   compiling: boolean;
 }
@@ -44,15 +51,63 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   const [compiling, setCompiling] = useState<boolean>(false);
   const processingModal = useRef<PromiseWithResolve<boolean>>();
   const transactionId = useTransactionId();
+  const { showPrefabModal } = useLuiModalPrefab();
 
-  const secureFileUploadClient = new FileUploaderClient({
-    maxFileSizeHint: 1024 * 1024 * 100,
-    allowableFileExtHint: [".jpg", ".jpeg"],
-    errorNotifier: (error) => {
-      console.log(error);
-    },
-    baseUrl: window._env_.secureFileUploadBaseUrl,
-  });
+  const {
+    mutateAsync: compilePlan,
+    isSuccess: compilePlanIsSuccess,
+    error: compilePlanError,
+  } = useCompilePlanMutation({ transactionId });
+
+  const {
+    mutateAsync: preCompilePlanCheck,
+    isSuccess: preCompilePlanIsSuccess,
+    isPending: preCompilePlanIsPending,
+    error: preCompilePlanError,
+  } = usePreCompilePlanCheck({ transactionId });
+
+  const preCheckResult = () => !preCompilePlanIsPending && preCompilePlanCheck();
+
+  const secureFileUploadClient = useRef<FileUploaderClient>(
+    new FileUploaderClient({
+      maxFileSizeHint: 1024 * 1024 * 100,
+      allowableFileExtHint: [".jpg", ".jpeg"],
+      errorNotifier: (error) => {
+        console.log(error);
+      },
+      baseUrl: window._env_.secureFileUploadBaseUrl,
+    }),
+  ).current;
+
+  useEffect(() => {
+    if (preCompilePlanIsSuccess) {
+      console.log("Pre-compile plan check is successful.");
+    }
+  }, [preCompilePlanIsSuccess]);
+
+  useEffect(() => {
+    if (compilePlanIsSuccess) {
+      console.log("Compile plan process has successfully been initiated.");
+    }
+  }, [compilePlanIsSuccess]);
+
+  useEffect(() => {
+    if (!preCompilePlanError) {
+      return;
+    }
+    const serializedPreCompileError = errorFromSerializedError(preCompilePlanError);
+    newrelic.noticeError(serializedPreCompileError);
+    showPrefabModal(unhandledErrorModal(serializedPreCompileError));
+  }, [preCompilePlanError, showPrefabModal, transactionId]);
+
+  useEffect(() => {
+    if (!compilePlanError) {
+      return;
+    }
+    const serializedCompilePlanError = errorFromSerializedError(compilePlanError);
+    newrelic.noticeError(serializedCompilePlanError);
+    showPrefabModal(unhandledErrorModal(serializedCompilePlanError));
+  }, [compilePlanError, showPrefabModal, transactionId]);
 
   useEffect(() => {
     if (!compiling) {
@@ -87,21 +142,37 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     );
   };
 
-  const startCompile = async () => {
+  const startCompile = async (savePlan: () => Promise<void>) => {
+    await savePlan();
+    const preCheckPassed = await preCheckResult();
+    if (preCheckPassed) {
+      if (preCheckPassed.hasPlanGenRanBefore) {
+        const result = await showPrefabModal(warning126024_planGenHasRunBefore);
+        result === "continue" && (await continueCompile());
+      } else {
+        await continueCompile();
+      }
+    } else {
+      console.log("Pre-compile plan check failed.");
+      return;
+    }
+  };
+
+  const continueCompile = async () => {
     if (!cyRef.current || !cyMapper.current) {
       console.error("cytoscape instance is not available");
       return;
     }
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
-
     try {
       setCompiling(true);
-      Object.values(PlanSheetTypeObject).map(async (obj) => {
+
+      const processFilesGroupPromises = Object.values(PlanSheetTypeObject).map(async (obj) => {
+        const imageFiles: ImageFile[] = [];
         const activePlanSheetPages = pages.filter((p) => p.pageType == obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
 
-        const imageFiles: ImageFile[] = [];
         let firstTimeExport = true;
 
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
@@ -111,18 +182,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           if (!currentPageId) {
             continue;
           }
-
-          let nodeBgPromise: Promise<EventHandler | void>[] = [];
-          let layoutPromise: Promise<EventHandler | void> = Promise.resolve();
-          cyRefCurrent?.one("add", async () => {
-            layoutPromise = cyRefCurrent?.promiseOn("layoutstop").then(() => {
-              nodeBgPromise = cyRefCurrent?.nodes().map((n, _) => {
-                // :nonbackgrounding : Matches an element if its background image not currently loading;
-                // i.e. there is no image or the image is already loaded.
-                return n.is(":nonbackgrounding") ? Promise.resolve() : n.promiseOn("background");
-              });
-            });
-          });
 
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
 
@@ -163,20 +222,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             })
             .run();
 
-          // wait 30s for layout and node bg images to be applied
-          await Promise.all(
-            [layoutPromise, ...nodeBgPromise].map((p, index) =>
-              promiseWithTimeout(
-                {
-                  promise: p,
-                  name: `page ${currentPageNumber} ${index} node background images promise`,
-                },
-                30000,
-                "timed out",
-              ),
-            ),
-          );
-
           const jpg = cyRefCurrent?.jpg({ ...cyImageExportConfig, quality: 1 });
 
           // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
@@ -190,12 +235,14 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           imageFiles.push({ name: imageName, blob: jpg });
           firstTimeExport = true;
 
-          // remove all elements for the next page rendering
           cyRefCurrent.remove(cyRefCurrent.elements());
           cyRefCurrent?.removeAllListeners();
         }
-        await generateCompilation(imageFiles);
+        return imageFiles;
       });
+
+      const imageFiles = (await Promise.all(processFilesGroupPromises)).flat();
+      await generateCompilation(imageFiles);
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
       console.error(e);
@@ -218,18 +265,29 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
       const sfuCombinedResponse = await Promise.all(processUploadJobs);
 
-      const planCompilationRequest: PlanCompileRequest = {
-        transactionId: transactionId,
-        planGraphicsCompileRequest: sfuCombinedResponse as unknown as PlanGraphicsCompileRequest,
+      const sfuResponse = sfuCombinedResponse.map((response) => ({
+        fileUlid: response.fileUlid,
+        encodedFileMetadata: response.encodedFileMetadata,
+        verifiedFileFormat: response.verifiedFileFormat,
+        verifiedFileSize: response.verifiedFileSize,
+        originalFileName: response.originalFileName,
+      })) as unknown as FileUploadDetails[];
+
+      const planGraphicsCompileRequest: PlanGraphicsCompileRequest = {
+        graphicFiles: sfuResponse,
       };
 
-      console.log("---Plan Graphic Request to our BE", planCompilationRequest);
+      const planCompilationRequest: PlanCompileRequest = {
+        transactionId: transactionId,
+        planGraphicsCompileRequest: planGraphicsCompileRequest,
+      };
 
-      // TODO wait for BE api to be ready and the below API returns 501 not implemented at this time
-      // const planGraphicResponsePdf = await new PlanGraphicsControllerApi(apiConfig()).planCompile(
-      //   planCompilationRequest,
-      // );
-      // console.log("the compile response is ", planGraphicResponsePdf.statusMessage);
+      const response = await compilePlan(planCompilationRequest);
+      if (response.batchRunTime == null) {
+        showPrefabModal(info126026_planGenCompileSuccess);
+      } else {
+        showPrefabModal(info126026_planGenCompileProgress(response.batchRunTime));
+      }
     } catch (e) {
       console.error(e);
     } finally {

@@ -220,6 +220,32 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
+  http.get(/\/123\/pre-compile-plans$/, async () => {
+    return HttpResponse.json(
+      {
+        hasPlanGenRanBefore: true,
+      },
+      { status: 200, statusText: "OK" },
+    );
+  }),
+
+  http.get(/\/456\/pre-compile-plans$/, async () => {
+    return HttpResponse.json(
+      {
+        hasPlanGenRanBefore: false,
+      },
+      { status: 200, statusText: "OK" },
+    );
+  }),
+
+  http.post(/\/123\/compile-plans$/, () =>
+    HttpResponse.json({ batchRunTime: null }, { status: 200, statusText: "OK" }),
+  ),
+
+  http.post(/\/456\/compile-plans$/, () =>
+    HttpResponse.json({ batchRunTime: "11:30:00" }, { status: 200, statusText: "OK" }),
+  ),
+
   http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/666\/prepare$/, () =>
     HttpResponse.json(

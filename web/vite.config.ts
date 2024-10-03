@@ -35,11 +35,6 @@ export default defineConfig(
     server: {
       port: 11065,
       proxy: {
-        "/secure-file-upload/": {
-          target: "http://localhost:12999",
-          changeOrigin: true,
-          secure: true,
-        },
         "/plan-generation/config/": {
           target: "http://localhost:11065",
           selfHandleResponse: true,

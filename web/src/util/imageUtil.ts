@@ -37,6 +37,7 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
   // Compress the Blob using browser-image-compression
   const options = {
     maxSizeMB: 1, // Maximum file size in MB
+    fileType: "image/jpeg", // Output file type
   };
   const processedBlob = await imageCompression(file, options);
   return { processedBlob, name: imageFile.name };
