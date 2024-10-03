@@ -33,6 +33,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         svg: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>',
         width: 0,
         height: 0,
+        nodeShape: "ellipse",
       };
     }
 
@@ -45,7 +46,10 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
     const svgLineColor = ele.data("isHidden") ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR;
 
-    return makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, svgLineColor);
+    return {
+      ...makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, svgLineColor),
+      nodeShape: symbolSvg.nodeShape,
+    };
   };
 
   // Dimensions for the compass in plan units
@@ -126,7 +130,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         height: (ele) => svgDataForSymbol(ele).height,
         "background-clip": "none",
         "bounds-expansion": 12,
-        shape: "rectangle",
+        shape: (ele) => svgDataForSymbol(ele).nodeShape,
       },
     },
 
@@ -194,6 +198,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "edge:selected, edge.related-label-selected",
       style: {
         "line-color": hotPink,
+        "source-arrow-color": hotPink,
+        "target-arrow-color": hotPink,
       },
     },
   ] as Stylesheet[];

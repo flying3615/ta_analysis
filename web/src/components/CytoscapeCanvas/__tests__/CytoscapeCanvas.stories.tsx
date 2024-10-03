@@ -1,4 +1,9 @@
-import { DisplayStateEnum, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  DisplayStateEnum,
+  LabelDTO,
+  LabelDTOLabelTypeEnum,
+  PlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
@@ -23,6 +28,7 @@ import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
+import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";
 
 const mockedState = { ...mockStore };
 
@@ -69,9 +75,16 @@ const fromBuilder = () =>
 
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
 
-const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom }) => {
-  const nodeData = extractDiagramNodes(props.data.diagrams);
-  const edgeData = extractDiagramEdges(props.data.diagrams);
+let cyRef: Core;
+
+const CanvasFromMockData = (props: {
+  data: PlanResponseDTO;
+  initZoom?: IInitZoom;
+  nodeData?: INodeData[];
+  edgeData?: IEdgeData[];
+}) => {
+  const nodeData = props.nodeData ?? extractDiagramNodes(props.data.diagrams);
+  const edgeData = props.edgeData ?? extractDiagramEdges(props.data.diagrams);
 
   return (
     <div style={{ height: "100vh" }}>
@@ -79,6 +92,9 @@ const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom
         nodeData={nodeData}
         edgeData={edgeData}
         diagrams={props.data.diagrams}
+        onCyInit={(cy) => {
+          cyRef = cy;
+        }}
         initZoom={props.initZoom}
         onNodeChange={(data) => console.info("Cytoscape node data changed", data)}
         onEdgeChange={(data) => console.info("Cytoscape edge data changed", data)}
@@ -87,8 +103,6 @@ const CanvasFromMockData = (props: { data: PlanResponseDTO; initZoom?: IInitZoom
     </div>
   );
 };
-
-let cyRef: Core;
 
 export const PageConfigBorder: Story = () => {
   const nodeData = [...pageBorderNodes, ...markNodes];
@@ -176,6 +190,70 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const RendersSpecifiedLineTypesSelected: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const lineStyles = [
+      "solid",
+      "peck1",
+      "dot1",
+      "dot2",
+      "arrow1",
+      "doubleArrow1",
+      "peckDot1",
+      "brokenSolid1",
+      "brokenPeck1",
+      "brokenDot1",
+      "brokenDot2",
+    ];
+
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 5;
+    const xEnd = 30;
+
+    const builder = fromBuilder();
+    lineStyles.forEach((lineStyle, index) => {
+      const idFrom = (index + 1) * 10;
+      const idTo = (index + 1) * 10 + 1;
+      const yPos = -(index * gap + yStart);
+
+      builder.addCooordinate(idFrom, { x: xStart, y: yPos });
+      builder.addCooordinate(idTo, { x: xEnd, y: yPos });
+
+      builder.addLine((index + 1) * 1000, [idFrom, idTo], 1, "observation", lineStyle);
+      builder.addLabel(
+        "lineLabels",
+        (index + 1) * 1000 + 1,
+        lineStyle,
+        { x: xEnd + 2, y: yPos },
+        undefined,
+        undefined,
+        "display",
+        "Tahoma",
+        14,
+      );
+    });
+    const mockLineTypes = builder.build();
+    return <CanvasFromMockData data={mockLineTypes} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+RendersSpecifiedLineTypesSelected.play = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$("edge").selectify();
+  cy.$("edge").select();
 };
 
 export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
@@ -743,6 +821,148 @@ export const RendersLabelsAtCorrectSizeInPortrait: StoryObj<typeof CytoscapeCanv
   },
 };
 
+export const RendersSelectedLabels: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    builder.addLabel(
+      "labels",
+      9000000,
+      `borderWidth: 1.0`,
+      {
+        x: 5,
+        y: -5,
+      },
+      undefined,
+      undefined,
+      "display",
+      "Tahoma",
+      14,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      1,
+    );
+    builder.addLabel(
+      "labels",
+      9000001,
+      "A",
+      {
+        x: 5,
+        y: -7,
+      },
+      undefined,
+      undefined,
+      "display",
+      "Tahoma",
+      14,
+      "none",
+      "display",
+      "circle",
+      "bottomCenter,textCenter",
+    );
+    builder.addRotatedLabel(
+      "labels",
+      9000002,
+      `rotate=100`,
+      {
+        x: 5,
+        y: -9,
+      },
+      "Arial",
+      20,
+      100,
+      0,
+      0,
+    );
+    addOffsetLabel(builder, 9000003, "B", 5, -12, 135, false);
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+RendersSelectedLabels.play = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$("node").selectify();
+  cy.$("node").addClass("selectable-label");
+  cy.$("node").select();
+};
+
+export const RendersSelectedLabelsWithRelatedElements: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    builder.addSymbolLabel(9000000, "181", {
+      x: 10,
+      y: -5,
+    });
+    builder.addLabel(
+      "coordinateLabels",
+      9000001,
+      `Mark label`,
+      {
+        x: 5,
+        y: -5,
+      },
+      9000000,
+      "coordinate",
+      LabelDTOLabelTypeEnum.markName,
+      "Tahoma",
+      14,
+    );
+
+    builder.addCooordinate(1, { x: 10, y: -10 });
+    builder.addCooordinate(2, { x: 12, y: -15 });
+    builder.addCooordinate(3, { x: 17, y: -12 });
+    builder.addCooordinate(4, { x: 25, y: -10 });
+    builder.addLine(9000002, [1, 2, 3, 4], 1, "solid");
+    builder.addLabel(
+      "lineLabels",
+      9000003,
+      `Line label`,
+      {
+        x: 5,
+        y: -10,
+      },
+      9000002,
+      "edge",
+      LabelDTOLabelTypeEnum.obsBearing,
+      "Tahoma",
+      14,
+    );
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+RendersSelectedLabelsWithRelatedElements.play = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$("node[label]").selectify();
+  cy.$("node[label]").addClass("selectable-label");
+  cy.$("node[label]").select();
+};
+
 export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
@@ -762,8 +982,8 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
           x: 10,
           y: ypos,
         },
-        undefined,
-        undefined,
+        idx * 10,
+        "coordinate",
         "display",
         "Tahoma",
         8,
@@ -809,6 +1029,39 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const SymbolNodesSelected: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+
+    allSymbolCodes.forEach((code, idx) => {
+      const ypos = -2 - 2 * idx;
+
+      builder.addSymbolLabel(idx * 10, code.toString(), {
+        x: 5,
+        y: ypos,
+      });
+    });
+    return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 1.5, pan: { x: 0, y: 0 } }} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+SymbolNodesSelected.play = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$("node[symbolId]").selectify();
+  cy.$("node[symbolId]").addClass("node-selected");
+  cy.$("node[symbolId]").select();
 };
 
 const mockHideMenu = fn();

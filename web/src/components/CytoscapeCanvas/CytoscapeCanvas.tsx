@@ -138,7 +138,7 @@ const CytoscapeCanvas = ({
     if (labelTypesWithRelatedElements.includes(nodeData.elementType)) {
       const selectedElements = event.cy.$(":selected");
       event.cy.$(`edge[id*='${nodeData.featureId}_'], node[id='${nodeData.featureId}']`).forEach((ele) => {
-        //only remove the class is not other labels are selected with this related feature
+        //only remove the class if no other labels are selected with this related feature
         //e.g. some lines can have two labels (bearing/distance)
         selectedElements.filter((x) => x.data().featureId == nodeData.featureId).length == 0 &&
           ele.removeClass(PlanStyleClassName.RelatedLabelSelected);

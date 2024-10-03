@@ -13,45 +13,54 @@ export const symbolSvgs = {
     svg: CSNMAdopt63,
     widthPlanPixels: 14,
     heightPlanPixels: 12,
+    nodeShape: "triangle",
   },
   "117": {
     svg: CSNMOld117,
     widthPlanPixels: 14,
     heightPlanPixels: 12,
+    nodeShape: "triangle",
   },
   "96": {
     svg: PrmNew96,
     widthPlanPixels: 20,
     heightPlanPixels: 20,
+    nodeShape: "ellipse",
   },
   "97": {
     svg: PrmOld97,
     widthPlanPixels: 20,
     heightPlanPixels: 20,
+    nodeShape: "ellipse",
   },
   "111": {
     svg: BoundPostAdopt111,
     widthPlanPixels: 12,
     heightPlanPixels: 12,
+    nodeShape: "rectangle",
   },
   "112": {
     svg: BoundPostOld112,
     widthPlanPixels: 12,
     heightPlanPixels: 12,
+    nodeShape: "rectangle",
   },
   "179": {
     svg: UnmkNew179,
     widthPlanPixels: 8,
     heightPlanPixels: 8,
+    nodeShape: "rectangle",
   },
   "181": {
     svg: OtherNew181,
     widthPlanPixels: 8,
     heightPlanPixels: 8,
+    nodeShape: "ellipse",
   },
   "182": {
     svg: OtherOld182,
     widthPlanPixels: 8,
     heightPlanPixels: 8,
+    nodeShape: "ellipse",
   },
-} as Record<string, { svg: string; widthPlanPixels: number; heightPlanPixels: number }>;
+} as Record<string, { svg: string; widthPlanPixels: number; heightPlanPixels: number; nodeShape: string }>;
