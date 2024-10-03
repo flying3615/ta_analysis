@@ -36,6 +36,8 @@ import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
 import { findMarkSymbol, getPlanMode, lookupSource, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
 
+import { ElementHover } from "./interactions/ElementHover.tsx";
+import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
 
@@ -198,6 +200,8 @@ const PlanSheets = () => {
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"
           />
+          <ElementHover />
+          <PageNumberTooltips />
         </div>
         <PlanSheetsFooter
           surveyInfo={surveyInfo}

@@ -1,10 +1,9 @@
 import "./CytoscapeCanvas.scss";
 
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
-import { LuiTooltip } from "@linzjs/lui";
 import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce, isArray } from "lodash-es";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
@@ -37,7 +36,7 @@ export interface IInitZoom {
   pan?: { x: number; y: number };
 }
 
-export interface ICytoscapeCanvasProps {
+export interface ICytoscapeCanvasProps extends PropsWithChildren {
   nodeData: INodeData[];
   edgeData: IEdgeData[];
   diagrams: DiagramDTO[];
@@ -52,6 +51,7 @@ export interface ICytoscapeCanvasProps {
 }
 
 const CytoscapeCanvas = ({
+  children,
   nodeData,
   edgeData,
   diagrams,
@@ -74,42 +74,10 @@ const CytoscapeCanvas = ({
   const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
   const [pan, setPan] = useState<cytoscape.Position>(initZoom?.pan ?? { x: 0, y: 0 });
 
-  const [tooltipContent, setTooltipContent] = useState<string | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
   const { setCyto, zoomToSelectedRegion, scrollToZoom, keepPanWithinBoundaries, onViewportChange } =
     useCytoscapeContext();
 
   const startCoordsRef = useRef({ x1: 0, y1: 0 });
-
-  const pageNumberTooltips = (cy: HTMLDivElement | null, node: NodeSingular) => {
-    const canvasRect = cy?.getBoundingClientRect();
-    const { x, y } = node.renderedPosition();
-    setTooltipContent("Reserved for sheet numbers");
-    setTooltipPosition({ x: x + (canvasRect?.left ?? 0), y: y + (canvasRect?.top ?? 0) });
-  };
-
-  const onMouseOver = (event: cytoscape.EventObject) => {
-    const element = event.target;
-    if (element.isNode) {
-      const parentNode = element.parent();
-      if (selectionSelector === "node" && parentNode.nonempty()) parentNode.addClass(PlanStyleClassName.DiagramHover);
-      if (selectionSelector === "node" && element.children().nonempty()) {
-        element.addClass(PlanStyleClassName.DiagramHover);
-      }
-      if (element.id() === "border_page_no") pageNumberTooltips(canvasRef.current, element);
-    }
-    element.addClass?.(PlanStyleClassName.ElementHover);
-  };
-  const onMouseOut = (event: cytoscape.EventObject) => {
-    setTooltipContent(null);
-    setTooltipPosition(null);
-    if (selectionSelector === "node") {
-      cy?.elements()?.forEach((ele) => {
-        ele.removeClass(PlanStyleClassName.DiagramHover);
-      });
-    }
-    event.target.removeClass?.(PlanStyleClassName.ElementHover);
-  };
 
   const onMouseDown = (event: cytoscape.EventObject) => {
     startCoordsRef.current.x1 = event.position.x;
@@ -259,8 +227,6 @@ const CytoscapeCanvas = ({
   useEffect(() => {
     cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
     cy?.addListener("position", debounce(emitChange, 1000)); // 1s debounce since lots of position events are fired very quickly
-    cy?.addListener("mouseover", onMouseOver);
-    cy?.addListener("mouseout", onMouseOut);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
     cy?.addListener("select", "node", onSelected);
@@ -293,14 +259,10 @@ const CytoscapeCanvas = ({
           <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
           <CytoscapeContextMenu menuState={menuState} hideMenu={hideMenu} />
           <PageLabelInput cy={cy} cytoCoordMapper={cytoCoorMapper} />
+          {children}
         </>
       ) : (
         <NoPageMessage />
-      )}
-      {tooltipContent && tooltipPosition && (
-        <LuiTooltip content={tooltipContent} visible={true} placement="left" appendTo={() => document.body}>
-          <div style={{ position: "absolute", top: tooltipPosition.y, left: tooltipPosition.x - 20 }} />
-        </LuiTooltip>
       )}
     </>
   );
