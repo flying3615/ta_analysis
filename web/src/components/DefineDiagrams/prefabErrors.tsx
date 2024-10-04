@@ -2,6 +2,7 @@ import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { PropsWithChildren } from "react";
 
 export const error32027_diagramTooManySides = (maxSides: number): PropsWithChildren<useLuiModalPrefabProps> => ({
+  style: { width: "480px", maxWidth: "480px" },
   level: "error",
   title: "Message: 32027",
   children:
@@ -10,18 +11,21 @@ export const error32027_diagramTooManySides = (maxSides: number): PropsWithChild
 });
 
 export const error32021_diagramNoArea: PropsWithChildren<useLuiModalPrefabProps> = {
+  style: { width: "480px", maxWidth: "480px" },
   level: "error",
   title: "Message: 32021",
   children: "Unable to create diagram, as the diagram you have defined has no area.",
 };
 
 export const error32103_newShapeMustOverlapDiagram: PropsWithChildren<useLuiModalPrefabProps> = {
+  style: { width: "480px", maxWidth: "480px" },
   level: "error",
   title: "Message: 32103",
   children: "The new shape must overlap part of the selected diagram.",
 };
 
 export const error32104_invalidDiagram: PropsWithChildren<useLuiModalPrefabProps> = {
+  style: { width: "480px", maxWidth: "480px" },
   level: "error",
   title: "Message: 32104",
   children: "The altered diagram is invalid and cannot be saved.",

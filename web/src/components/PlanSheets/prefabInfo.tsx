@@ -2,6 +2,7 @@ import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { PropsWithChildren } from "react";
 
 export const info126026_planGenCompileSuccess: PropsWithChildren<useLuiModalPrefabProps> = {
+  style: { width: "480px", maxWidth: "480px" },
   level: "info",
   title: "Plan Generation Completed!",
   children:
@@ -17,6 +18,7 @@ export const info126026_planGenCompileSuccess: PropsWithChildren<useLuiModalPref
 };
 
 export const info126026_planGenCompileProgress = (batchRunTime: string): PropsWithChildren<useLuiModalPrefabProps> => ({
+  style: { width: "480px", maxWidth: "480px" },
   level: "info",
   title: "Plan Generation Completed!",
   children:

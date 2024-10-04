@@ -6,6 +6,7 @@ import { PrepareDatasetError } from "@/queries/prepareDataset";
 export const prepareDatasetErrorModal = (
   prepareDatasetError: PrepareDatasetError,
 ): PropsWithChildren<useLuiModalPrefabProps<boolean>> => ({
+  style: { width: "480px", maxWidth: "480px" },
   level: "error",
   title: "Error preparing dataset",
   children: (

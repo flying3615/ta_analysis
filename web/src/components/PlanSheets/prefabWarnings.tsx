@@ -2,6 +2,7 @@ import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { PropsWithChildren } from "react";
 
 export const warning126024_planGenHasRunBefore: PropsWithChildren<useLuiModalPrefabProps> = {
+  style: { width: "480px", maxWidth: "480px" },
   level: "warning",
   title: "Complete Plan Generation",
   children:
