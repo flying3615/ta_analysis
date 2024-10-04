@@ -19,7 +19,7 @@ describe("PlanSheetsContextMenu", () => {
       "Cut",
       "Copy",
       "Paste",
-      "Move To Page...",
+      "Move to page...",
     ]);
   });
 
@@ -30,7 +30,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular);
 
     expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original Location",
+      "Original location",
       "Hide",
       "Properties",
       "Cut",
@@ -52,7 +52,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular);
 
     expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original Location",
+      "Original location",
       "Show",
       "Properties",
       "Cut",
@@ -68,7 +68,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular);
 
     expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original Location",
+      "Original location",
       "Show",
       "Properties",
       "Cut",
@@ -86,7 +86,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular);
 
     expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original Location",
+      "Original location",
       "Hide",
       "Properties",
       "Cut",

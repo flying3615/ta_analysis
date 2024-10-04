@@ -3,6 +3,7 @@ type Data = Record<string, number | string | boolean>;
 export const nodeSingular = (
   elementData: Record<string, number | string | boolean | Data>,
   position: { x: number; y: number } = { x: 0, y: 0 },
+  style?: Record<string, string>,
 ): cytoscape.NodeSingular => {
   return {
     group: () => "nodes",
@@ -10,6 +11,7 @@ export const nodeSingular = (
     isEdge: () => false,
     data: (dataAttribute?: string) => (dataAttribute ? elementData[dataAttribute] : elementData),
     position: () => position,
+    style: () => style,
   } as cytoscape.NodeSingular;
 };
 

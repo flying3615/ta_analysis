@@ -58,6 +58,7 @@ export const getNodeData = (
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): INodeData => {
   const cyData = node.data();
+  const cyStyle = node.style();
   const position = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(node.position(), cyData["diagramId"]);
 
   const { id, label, ...properties } = cyData;
@@ -70,8 +71,8 @@ export const getNodeData = (
 
   if (label) {
     data.label = label;
+    properties["textRotation"] = cyStyle["text-rotation"].replace("deg", "");
   }
-
   return data;
 };
 

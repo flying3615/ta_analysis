@@ -46,12 +46,13 @@ describe("getNodeData", () => {
     const node1 = nodeSingular(
       { id: "1", label: "Node 1", "font-family": "Tahoma", "font-size": 16, diagramId: 1 },
       { x: 100, y: -20 },
+      { "text-rotation": "60deg" },
     );
     const node1Data = getNodeData(node1, cytoscapeCoordinateMapper);
     expect(node1Data).toStrictEqual({
       id: "1",
       label: "Node 1",
-      properties: { diagramId: 1 },
+      properties: { diagramId: 1, textRotation: "60" },
       position: { x: 14.903, y: 1.355 },
     });
 

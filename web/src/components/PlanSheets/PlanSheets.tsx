@@ -30,11 +30,17 @@ import {
   selectActivePageEdgesAndNodes,
   selectPageConfigEdgesAndNodes,
 } from "@/modules/plan/selectGraphData.ts";
-import { updateDiagramsWithEdge, updateDiagramsWithNode } from "@/modules/plan/updatePlanData.ts";
+import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePagesWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { findMarkSymbol, getPlanMode, lookupSource, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
+import {
+  findMarkSymbol,
+  getPlanMode,
+  lookupSource,
+  replaceDiagrams,
+  replacePage,
+} from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
@@ -54,7 +60,7 @@ const PlanSheets = () => {
     edges: diagramEdgeData,
     nodes: diagramNodeData,
   } = useAppSelector(selectActiveDiagramsEdgesAndNodes);
-  const { edges: pageEdgeData, nodes: pageNodeData } = useAppSelector(selectActivePageEdgesAndNodes);
+  const { data: activePage, edges: pageEdgeData, nodes: pageNodeData } = useAppSelector(selectActivePageEdgesAndNodes);
   const { edges: pageConfigsEdgeData, nodes: pageConfigsNodeData } = useAppSelector(selectPageConfigEdgesAndNodes);
 
   const regeneratePlanMutationResult = useRegeneratePlanMutation(transactionId);
@@ -149,8 +155,15 @@ const PlanSheets = () => {
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
 
   const onNodeChange = (node: INodeData) => {
-    const updatedDiagrams = updateDiagramsWithNode(activeDiagrams, node);
-    dispatch(replaceDiagrams(updatedDiagrams));
+    if (node.properties["diagramId"]) {
+      const updatedDiagrams = updateDiagramsWithNode(activeDiagrams, node);
+      dispatch(replaceDiagrams(updatedDiagrams));
+    } else {
+      if (activePage) {
+        const updatedPage = updatePagesWithNode(activePage, node);
+        dispatch(replacePage(updatedPage));
+      }
+    }
   };
   const onEdgeChange = (edge: IEdgeData) => {
     const updatedDiagrams = updateDiagramsWithEdge(activeDiagrams, edge);

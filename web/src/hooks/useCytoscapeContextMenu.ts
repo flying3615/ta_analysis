@@ -33,7 +33,7 @@ export const useCytoscapeContextMenu = (
 
       const { clientX: x, clientY: y } = event.originalEvent as MouseEvent;
       const target = event.target === cy ? null : (event.target as SingularElementArgument);
-      const menuItems = getContextMenuItems(target as SingularElementArgument | cytoscape.Core);
+      const menuItems = target && getContextMenuItems(target as SingularElementArgument | cytoscape.Core);
       if (!menuItems || menuItems.length === 0) return;
 
       const menuWidth = 150;

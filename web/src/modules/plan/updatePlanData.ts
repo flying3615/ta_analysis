@@ -1,4 +1,5 @@
-import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
+import type { DisplayStateEnum } from "@linz/survey-plan-generation-api-client/src/models/DisplayStateEnum.ts";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 
@@ -13,6 +14,20 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
       };
     } else {
       const labelType = node.properties["elementType"] as "labels" | "coordinateLabels" | "lineLabels" | "parcelLabels";
+      if (labelType === "parcelLabels") {
+        return {
+          ...diagram,
+          parcelLabelGroups: diagram.parcelLabelGroups?.map((group) => {
+            return {
+              ...group,
+              labels: group.labels.map((label) =>
+                label.id === parseInt(node.id) ? mergeLabelData(label, node) : label,
+              ),
+            };
+          }),
+        };
+      }
+
       return {
         ...diagram,
         [labelType]: diagram[labelType].map((label) =>
@@ -21,6 +36,22 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
       };
     }
   });
+};
+
+export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {
+  if (node.properties["elementType"] === "coordinates") {
+    return {
+      ...page,
+      coordinates: page.coordinates?.map((coordinate) =>
+        coordinate.id === parseInt(node.id) ? mergeCoordinateData(coordinate, node) : coordinate,
+      ),
+    };
+  } else {
+    return {
+      ...page,
+      labels: page.labels?.map((label) => (label.id === parseInt(node.id) ? mergeLabelData(label, node) : label)),
+    };
+  }
 };
 
 export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData): DiagramDTO[] => {
@@ -33,10 +64,27 @@ export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData):
 };
 
 const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
+  function getUpdatedProperty<T>(property: string, defaultValue: T): T {
+    const value = updatedNode.properties[property] as T;
+    if (value === undefined) return defaultValue;
+    return value;
+  }
+
+  const rotationAngle = getUpdatedProperty("textRotation", label.rotationAngle);
+  const anchorAngle = getUpdatedProperty("anchorAngle", label.anchorAngle);
+  const pointOffset = getUpdatedProperty("pointOffset", label.pointOffset);
+  const textAlignment = getUpdatedProperty("textAlignment", label.textAlignment);
+  const displayState = getUpdatedProperty("displayState", label.displayState) as DisplayStateEnum;
+
   return {
     ...label,
+    displayText: updatedNode.label ?? label.displayText,
     position: updatedNode.position,
-    // TODO: Handle updating label node data
+    rotationAngle: rotationAngle ? -rotationAngle : 0,
+    anchorAngle,
+    pointOffset,
+    textAlignment,
+    displayState,
   };
 };
 

@@ -1,22 +1,13 @@
 import "./LabelRotationMenuItem.scss";
 
 import { NodeSingular } from "cytoscape";
-import { useCallback, useRef, useState } from "react";
-
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { lookupSource } from "@/redux/planSheets/planSheetsSlice.ts";
+import { useCallback, useState } from "react";
 
 const ANTI_CLOCKWISE_MAX = -90;
 const CLOCKWISE_MAX = 90;
 
 export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
-  const lookupSourceSelector = useAppSelector(lookupSource);
-
-  const labelInRedux = useRef(
-    lookupSourceSelector(props.targetLabel.data("elementType") as PlanElementType, props.targetLabel.data("id")),
-  ).current;
-
+  const currentAngle = props.targetLabel.style("text-rotation");
   const degConverter = useCallback((input: string) => {
     let value = parseFloat(input);
     if (input.includes("rad")) {
@@ -27,7 +18,7 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
     return Math.round(value);
   }, []);
 
-  const [labelAngle, setLabelAngle] = useState<number>(degConverter(props.targetLabel.style("text-rotation")));
+  const [labelAngle, setLabelAngle] = useState<number>(degConverter(currentAngle));
 
   return (
     <div className="rotate-slider-menu">
@@ -45,9 +36,10 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
             const angle = Number(e.target.value);
             setLabelAngle(angle);
             props.targetLabel.style("text-rotation", `${angle}deg`);
-            if (labelInRedux) {
-              // TODO: dispatch(updateLabel({ id: props.targetLabel.data("id"), rotationAngle: angle }));
-              console.log(labelInRedux?.result);
+          }}
+          onBlur={() => {
+            if (currentAngle !== labelAngle) {
+              props.targetLabel.emit("element:changed");
             }
           }}
         />

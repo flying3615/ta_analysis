@@ -63,6 +63,12 @@ const planSheetsSlice = createSlice({
       state.lookupGraphData = new LookupGraphData({ diagrams: state.diagrams, pages: state.pages, configs: [] });
       state.hasChanges = true;
     },
+    replacePage: (state, action: PayloadAction<PageDTO>) => {
+      const index = state.pages.findIndex((page) => page.id === action.payload.id);
+      state.pages[index] = action.payload;
+      state.lookupGraphData = new LookupGraphData({ diagrams: state.diagrams, pages: state.pages, configs: [] });
+      state.hasChanges = true;
+    },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;
     },
@@ -194,6 +200,7 @@ const planSheetsSlice = createSlice({
 export const {
   setPlanData,
   replaceDiagrams,
+  replacePage,
   setActiveSheet,
   setActivePageNumber,
   removeDiagramPageRef,

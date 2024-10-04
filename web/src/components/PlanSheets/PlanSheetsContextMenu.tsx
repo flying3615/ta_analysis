@@ -54,7 +54,7 @@ function getAllMenuItemsForElement(
     { title: "Cut", disabled: true },
     { title: "Copy", disabled: true },
     { title: "Paste", disabled: true },
-    { title: "Move To Page...", callback: movetoPage },
+    { title: "Move to page...", callback: movetoPage },
   ];
 
   const lineShouldBeDisplayed = (element: NodeSingular | EdgeSingular | cytoscape.Core) => {
@@ -65,7 +65,7 @@ function getAllMenuItemsForElement(
   };
 
   const lineMenus: MenuItem[] = [
-    { title: "Original Location", callback: getProperties },
+    { title: "Original location", callback: getProperties },
     {
       title: "Show",
       disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
@@ -103,7 +103,7 @@ function getAllMenuItemsForElement(
 
   const buildLabelMenus = (targetLabel: NodeSingular): MenuItem[] => {
     return [
-      { title: "Original Location", callback: getProperties },
+      { title: "Original location", callback: getProperties },
       { title: "Show", hideWhen: symbolShouldBeDisplayed },
       { title: "Properties", callback: getProperties },
       {
@@ -117,10 +117,10 @@ function getAllMenuItemsForElement(
         ],
       },
       {
-        title: "Rotate Label",
+        title: "Rotate label",
         submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }],
       },
-      { title: "Move To Page...", callback: movetoPage },
+      { title: "Move to page...", callback: movetoPage },
       { title: "Cut", divider: true },
       { title: "Copy" },
       { title: "Paste" },
@@ -129,7 +129,7 @@ function getAllMenuItemsForElement(
   };
 
   const nodeMenus: MenuItem[] = [
-    { title: "Original Location", callback: getProperties },
+    { title: "Original location", callback: getProperties },
     {
       title: "Show",
       hideWhen: symbolShouldBeDisplayed,
