@@ -149,7 +149,6 @@ export const PlanSheetsHeaderButtons = () => {
         iconName="ic_add_label"
         onClick={() => {
           handleHeaderButtonClick(PlanMode.AddLabel);
-          alert("Not Yet Implemented");
         }}
         selectedButtonLabel={planMode}
       />

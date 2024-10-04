@@ -68,7 +68,6 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.Delete],
     [PlanMode.View],
     [PlanMode.SelectPolygon],
-    [PlanMode.AddLabel],
     [PlanMode.AddLine],
     [PlanMode.FormatLinesText],
     [PlanMode.SelectRectangle],
