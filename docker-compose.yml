@@ -190,7 +190,9 @@ services:
       DB_CONNECTION_STRING: jdbc:informix-sqli://host.docker.internal:9088/landonline_dev:INFORMIXSERVER=informix;OPTOFC=1;IFX_LOCK_MODE_WAIT=5;IFX_ISOLATION_LEVEL=5
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      OIDC_ISSUER_URL: http://keycloak:8080/realms/landonline
+      OIDC_ISSUER_URL: http://localhost:8083/realms/landonline
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: "http://keycloak:8080/realms/landonline/protocol/openid-connect/certs"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_LANDONLINE_TOKEN-URI: "http://keycloak:8080/realms/landonline/protocol/openid-connect/token"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
