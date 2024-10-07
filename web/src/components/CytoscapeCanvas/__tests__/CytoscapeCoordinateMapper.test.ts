@@ -26,7 +26,7 @@ describe("CytoscapeCoordinateMapper", () => {
     expect(bottomRight.y).toBeCloseTo(892.4, 1);
   });
 
-  test("cytoscapeToGroundCoord maps cytoscape pixels onto ground coordinates", () => {
+  test("cytoscapeToGroundCoord maps cytoscape pixels onto ground coordinates for diagram label", () => {
     expect(cytoscapeCoordinateMapper.cytoscapeToGroundCoord({ x: 0, y: 5.5 }, 1)).toStrictEqual({
       x: 1.108,
       y: -1.718,

@@ -61,7 +61,11 @@ export const getNodeData = (
 ): INodeData => {
   const cyData = node.data();
   const cyStyle = node.style();
-  const position = cytoscapeCoordinateMapper.cytoscapeToGroundCoord(node.position(), cyData["diagramId"]);
+  const diagramId = cyData["diagramId"];
+
+  const position = diagramId
+    ? cytoscapeCoordinateMapper.cytoscapeToGroundCoord(node.position(), diagramId)
+    : cytoscapeCoordinateMapper.pageLabelCytoscapeToCoord(node.position());
 
   const { id, label, ...properties } = cyData;
 
