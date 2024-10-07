@@ -123,7 +123,7 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
 
     renderCompWithReduxAndRoute(
       <Route
@@ -160,7 +160,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
           _bodyText: JSON.stringify({
             diagrams: [
               {
@@ -201,7 +201,7 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan$/, async () => {
+      http.put(/\/123\/plan-update$/, async () => {
         await delay(20000);
         HttpResponse.text(null, { status: 200 });
       }),
@@ -229,7 +229,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
         }),
       }),
     );
@@ -241,7 +241,7 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 500 })));
+    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 500 })));
 
     renderCompWithReduxAndRoute(
       <Route
@@ -267,7 +267,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
         }),
       }),
     );
@@ -281,7 +281,7 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
 
     renderCompWithReduxAndRoute(
       <Route
@@ -320,7 +320,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
         }),
       }),
     );
@@ -492,7 +492,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
         }),
       }),
     );
@@ -679,7 +679,7 @@ describe("PlanSheetsFooter", () => {
     const menuItemName = addPage as string;
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
-    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
 
     renderCompWithReduxAndRoute(
       <Route
@@ -728,7 +728,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
+          url: "http://localhost/api/v1/generate-plans/123/plan-update",
           _bodyText: JSON.stringify({
             diagrams: [],
             pages: expected,

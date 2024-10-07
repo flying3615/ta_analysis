@@ -3,6 +3,7 @@ import {
   PlanControllerApi,
   PlanGraphicsControllerApi,
   PlanResponseDTO,
+  PlanTempControllerApi,
   PreCompilePlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 import type { CompilePlanResponseDTO } from "@linz/survey-plan-generation-api-client/src/models";
@@ -52,7 +53,8 @@ export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ..
   return useMutation({
     ...params,
     mutationKey: updatePlanQueryKey(transactionId),
-    mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequestDTO: planData }),
+    mutationFn: () =>
+      new PlanTempControllerApi(apiConfig()).updatePlanTemp({ transactionId, updatePlanRequestDTO: planData }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
     },

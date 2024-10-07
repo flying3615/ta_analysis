@@ -85,7 +85,7 @@ describe("usePlanGenCompilation hook", () => {
   });
 
   it("usePlanGenCompilation saves unsaved changes, runs a pre plan check, continues with compile and displays confirmation", async () => {
-    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
     renderCompWithReduxAndRoute(
       <Route element={<MockComponentWithHook />} path={Paths.defineDiagrams} />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),

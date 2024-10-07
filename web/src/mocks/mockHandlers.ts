@@ -57,7 +57,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.put(/\/123\/plan$/, async () => {
+  http.put(/\/123\/plan-update$/, async () => {
     await delay(2000);
     return HttpResponse.json(undefined, { status: 200 });
   }),
@@ -76,7 +76,7 @@ export const handlers: HttpHandler[] = [
 
   // Survey 124 = diagrams with context, regular plan
   http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.put(/\/124\/plan$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
+  http.put(/\/124\/plan-update$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
   http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.get(/\/124\/survey-features$/, () =>
     HttpResponse.json(
