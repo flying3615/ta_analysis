@@ -7,6 +7,7 @@ export interface IGraphData {
   id: string;
   label?: string;
   properties: Record<string, string | number | boolean | undefined>;
+  classes?: string | string[];
 }
 
 export interface GroundMetresPosition {
@@ -48,6 +49,7 @@ export const nodeDefinitionsFromData = (
         // Note that we need a position here also in order to lock the node position
         locked: isUserDefined,
         position: nodePositionPixels,
+        classes: nodeDataEntry.classes,
       };
     }),
   ];
@@ -67,7 +69,7 @@ export const getNodeData = (
   delete properties["font-family"];
   delete properties["font-size"];
 
-  const data = { id, position, properties } as INodeData;
+  const data = { id, position, properties, classes: node.classes() } as INodeData;
 
   if (label) {
     data.label = label;
@@ -88,6 +90,7 @@ export const edgeDefinitionsFromData = (data: IEdgeData[]): cytoscape.EdgeDefini
         textRotation: "autorotate",
         ...edgeDataEntry.properties,
       },
+      classes: edgeDataEntry.classes,
     };
   });
 };
@@ -100,6 +103,7 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
     sourceNodeId: source,
     destNodeId: target,
     ...properties,
+    classes: edge.classes(),
   } as IEdgeData;
 };
 

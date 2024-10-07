@@ -525,5 +525,43 @@ export const SelectDiagram: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle("Select diagram"));
     await sleep(500);
+
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
+    fireEvent.mouseUp(target, { clientX: 300, clientY: 100 });
   },
 };
+
+export const MoveDiagram: Story = {
+  ...Default,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select diagram"));
+    await sleep(500);
+
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
+    fireEvent.mouseUp(target, { clientX: 300, clientY: 100 });
+    await sleep(500);
+    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
+    for (let step = 0; step < 5; step++) {
+      fireEvent.mouseMove(target, { clientX: 300 + step * 50, clientY: 100 + step * 50 });
+    }
+    fireEvent.mouseUp(target, { clientX: 550, clientY: 350 });
+  },
+};
+
+function getCytoCanvas(element: Element): HTMLCanvasElement {
+  // eslint-disable-next-line testing-library/no-node-access
+  const cytoCanvas = element.querySelector("canvas");
+  if (!cytoCanvas) {
+    throw "no canvas to click";
+  }
+  return cytoCanvas;
+}

@@ -62,7 +62,7 @@ describe("updatePlanData", () => {
       id: "2",
       label: "Label 2",
       properties: {
-        diagramId: 1,
+        diagramId: 2,
         elementType: "coordinateLabels",
         labelType: "display",
         featureId: 10001,

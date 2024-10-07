@@ -2,15 +2,31 @@ import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PageDTO } from "@linz/sur
 import type { DisplayStateEnum } from "@linz/survey-plan-generation-api-client/src/models/DisplayStateEnum.ts";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { DiagramData } from "@/components/PlanSheets/interactions/SelectedDiagram";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
+    if (diagram.id !== node.properties["diagramId"]) {
+      return diagram;
+    }
+
     if (node.properties["elementType"] === "coordinates") {
       return {
         ...diagram,
         coordinates: diagram.coordinates.map((coordinate) =>
           coordinate.id === parseInt(node.id) ? mergeCoordinateData(coordinate, node) : coordinate,
         ),
+      };
+    } else if (node.properties["elementType"] === PlanElementType.DIAGRAM) {
+      const data = node.properties as unknown as DiagramData;
+      return {
+        ...diagram,
+        originPageOffset: {
+          x: data.originPageX,
+          y: data.originPageY,
+        },
+        zoomScale: data.zoomScale,
       };
     } else {
       const labelType = node.properties["elementType"] as "labels" | "coordinateLabels" | "lineLabels" | "parcelLabels";

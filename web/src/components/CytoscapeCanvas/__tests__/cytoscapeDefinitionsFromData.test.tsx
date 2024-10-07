@@ -54,14 +54,21 @@ describe("getNodeData", () => {
       label: "Node 1",
       properties: { diagramId: 1, textRotation: "60" },
       position: { x: 14.903, y: 1.355 },
+      classes: undefined,
     });
 
-    const node2 = nodeSingular({ id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 }, { x: 10, y: -50 });
+    const node2 = nodeSingular(
+      { id: "2", "font-family": "Arial", "font-size": 12, diagramId: 1 },
+      { x: 10, y: -50 },
+      undefined,
+      ["class1"],
+    );
     const node2Data = getNodeData(node2, cytoscapeCoordinateMapper);
     expect(node2Data).toStrictEqual({
       id: "2",
       properties: { diagramId: 1 },
       position: { x: 2.71, y: 5.419 },
+      classes: ["class1"],
     });
   });
 });
@@ -97,6 +104,7 @@ describe("getEdgeData", () => {
       properties: { a: 1, diagramId: 1 },
       sourceNodeId: "node1",
       destNodeId: "node2",
+      classes: undefined,
     });
   });
 });

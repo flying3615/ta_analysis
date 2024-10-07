@@ -228,9 +228,7 @@ const CytoscapeCanvas = ({
   useEffect(() => {
     // customized event listeners
     cy?.addListener("element:changed", emitChange);
-    // builtin event listeners
-    cy?.addListener(["add", "remove", "data"].join(" "), emitChange); // For multiple events they must be space seperated
-    cy?.addListener("position", debounce(emitChange, 1000)); // 1s debounce since lots of position events are fired very quickly
+    cy?.addListener("data", emitChange);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
     cy?.addListener("select", "node", onSelected);

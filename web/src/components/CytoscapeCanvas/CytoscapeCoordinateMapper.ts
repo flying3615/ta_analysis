@@ -14,6 +14,7 @@ export class CytoscapeCoordinateMapper {
   public static readonly diagramLimitOriginX = 1.5;
   public static readonly diagramLimitOriginY = -1.5;
   public static readonly diagramLimitBottomRightX = 40.5;
+  public static readonly diagramLimitBottomRightY = -26.2;
   public static readonly borderBottomRightY = -28.2;
   private readonly pixelMargin: number;
 
@@ -74,7 +75,7 @@ export class CytoscapeCoordinateMapper {
     const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
     return {
       x: this.planCmToCytoscape(xPosCm) + this.pixelMargin,
-      y: -this.planCmToCytoscape(yPosCm) + this.pixelMargin,
+      y: this.pixelMargin - this.planCmToCytoscape(yPosCm),
     };
   }
 
@@ -91,10 +92,10 @@ export class CytoscapeCoordinateMapper {
     }
 
     const xPosCm = this.cytoscapeToPlanCm(position.x - this.pixelMargin);
-    const yPosCm = this.cytoscapeToPlanCm(-position.y + this.pixelMargin);
+    const yPosCm = this.cytoscapeToPlanCm(this.pixelMargin - position.y);
     return {
-      x: this.round(((xPosCm - diagram.originPageOffset.x) * diagram.zoomScale) / 100),
-      y: this.round(((yPosCm - diagram.originPageOffset.y) * diagram.zoomScale) / 100),
+      x: this.round((xPosCm / 100 - diagram.originPageOffset.x) * diagram.zoomScale),
+      y: this.round((yPosCm / 100 - diagram.originPageOffset.y) * diagram.zoomScale),
     };
   }
 
@@ -165,7 +166,7 @@ export class CytoscapeCoordinateMapper {
       x1: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitOriginX) - pixelMargin,
       x2: this.planCmToCytoscape(CytoscapeCoordinateMapper.diagramLimitBottomRightX) - pixelMargin,
       y1: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitOriginY)) - pixelMargin,
-      y2: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.borderBottomRightY)) - pixelMargin,
+      y2: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitBottomRightY)) - pixelMargin,
     };
   }
 

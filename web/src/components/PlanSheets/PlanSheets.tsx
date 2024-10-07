@@ -20,7 +20,7 @@ import {
 } from "@/components/modals/unhandledErrorModal.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.tsx";
-import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler.ts";
@@ -44,6 +44,8 @@ import {
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
+import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler.tsx";
+import { PlanElementType } from "./PlanElementType.ts";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
 
@@ -174,10 +176,7 @@ const PlanSheets = () => {
   let applyClasses;
   switch (planMode) {
     case PlanMode.SelectDiagram:
-      selectionSelector = "node";
-      applyClasses = {
-        ":parent": ["elem-selected", PlanStyleClassName.DiagramNode, PlanStyleClassName.DiagramHover],
-      };
+      selectionSelector = `node[elementType='${PlanElementType.DIAGRAM}']`;
       break;
     case PlanMode.SelectCoordinates:
       selectionSelector = "node[elementType='coordinates']";
@@ -213,8 +212,14 @@ const PlanSheets = () => {
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"
           />
-          <ElementHover />
-          <PageNumberTooltips />
+          {planMode === PlanMode.SelectDiagram ? (
+            <SelectDiagramHandler diagrams={activeDiagrams} />
+          ) : (
+            <>
+              <ElementHover />
+              <PageNumberTooltips />
+            </>
+          )}
         </div>
         <PlanSheetsFooter
           surveyInfo={surveyInfo}

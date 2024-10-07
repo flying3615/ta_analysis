@@ -8,3 +8,8 @@ export enum PlanElementType {
   LINES = "lines",
   DIAGRAM = "diagram",
 }
+
+export enum PlanElementSelector {
+  DiagramNode = `node[elementType='${PlanElementType.DIAGRAM}']`,
+  Labels = `node[elementType='${PlanElementType.LABELS}']`,
+}

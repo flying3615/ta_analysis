@@ -334,21 +334,29 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: ".diagram-nodes-hover.diagram-nodes",
+      selector: `edge.diagram-control`,
       style: {
-        "background-opacity": 0.1,
-        "background-color": "#0099FF",
-        "border-width": 1,
-        "border-color": "#0099FF",
+        "line-color": hotPink,
+        width: 1,
       },
     },
     {
-      selector: ".diagram-nodes:selected",
+      selector: `node.diagram-control`,
+      style: {
+        "background-color": hotPink,
+        "background-opacity": 1,
+        height: 8,
+        width: 8,
+      },
+    },
+    {
+      selector: `.selected-diagram`,
       style: {
         "background-opacity": 0.2,
-        "background-color": "#F81BEF",
-        "border-width": 1,
-        "border-color": "#F81BEF",
+        "background-color": hotPink,
+        height: "data(height)",
+        shape: "rectangle",
+        width: "data(width)",
       },
     },
     {

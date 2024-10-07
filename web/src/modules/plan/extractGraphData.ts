@@ -10,6 +10,7 @@ import {
 import { chunk, flatten, negate, zip } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { SYMBOLS_FONT } from "@/constants";
 import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
@@ -244,8 +245,19 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
     const parentNode = [
       {
         id: `D${diagram.id}`,
+        // as a parent node, position
         position: { x: 1, y: 1 },
-        properties: { coordType: "", diagramId: diagram.id, elementType: "diagram" },
+        properties: {
+          coordType: "",
+          diagramId: diagram.id,
+          elementType: PlanElementType.DIAGRAM,
+          // these data define relative coordinate system (even if user has edited diagram)
+          bottomRightX: diagram.bottomRightPoint.x,
+          bottomRightY: diagram.bottomRightPoint.y,
+          originPageX: diagram.originPageOffset.x,
+          originPageY: diagram.originPageOffset.y,
+          zoomScale: diagram.zoomScale,
+        },
       },
     ];
 

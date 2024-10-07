@@ -20,6 +20,7 @@ import {
 } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
 import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
+import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
@@ -894,8 +895,8 @@ RendersSelectedLabels.play = async () => {
   if (!cy) {
     throw new Error("Cytoscape instance is not available");
   }
-  cy.$("node").selectify();
-  cy.$("node").addClass("selectable-label");
+  cy.$(PlanElementSelector.Labels).selectify();
+  cy.$(PlanElementSelector.Labels).addClass("selectable-label");
   cy.$("node").select();
 };
 
