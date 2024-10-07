@@ -29,14 +29,7 @@ describe("PlanSheetsContextMenu", () => {
       data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
     } as unknown as NodeSingular);
 
-    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original location",
-      "Hide",
-      "Properties",
-      "Cut",
-      "Copy",
-      "Paste",
-    ]);
+    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
   });
 
   test("getMenuItemsForPlanMode for Select coordinate returns Show option when mark symbol hidden", () => {
@@ -51,14 +44,18 @@ describe("PlanSheetsContextMenu", () => {
       data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
     } as unknown as NodeSingular);
 
-    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original location",
-      "Show",
-      "Properties",
-      "Cut",
-      "Copy",
-      "Paste",
-    ]);
+    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+  });
+
+  test("getMenuItemsForPlanMode for Select coordinate disables Show option for user defined line end nodes", () => {
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+
+    const coordinateMenuItems = getMenuItemsForPlanElement(lookupGraphData, PlanMode.SelectCoordinates, {
+      data: (key: string) => ({ id: "10011", elementType: PlanElementType.COORDINATES })[key],
+    } as unknown as NodeSingular);
+
+    expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+    expect(coordinateMenuItems?.[1]?.disabled).toBeTruthy();
   });
 
   test("getMenuItemsForPlanMode for Select line returns line menu", () => {
@@ -67,15 +64,7 @@ describe("PlanSheetsContextMenu", () => {
       data: (key: string) => ({ id: "1001", elementType: PlanElementType.LINES })[key],
     } as unknown as NodeSingular);
 
-    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original location",
-      "Show",
-      "Properties",
-      "Cut",
-      "Copy",
-      "Paste",
-      "Select",
-    ]);
+    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show", "Properties"]);
   });
 
   test("getMenuItemsForPlanMode for Select line disables line menu when line is systemDisplay", () => {
@@ -85,15 +74,7 @@ describe("PlanSheetsContextMenu", () => {
         ({ id: "1001", elementType: PlanElementType.LINES, displayState: DisplayStateEnum.systemDisplay })[key],
     } as unknown as NodeSingular);
 
-    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
-      "Original location",
-      "Hide",
-      "Properties",
-      "Cut",
-      "Copy",
-      "Paste",
-      "Select",
-    ]);
+    expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide", "Properties"]);
     expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
   });
 });

@@ -193,7 +193,7 @@ export const DefineDiagramMenuButtons = () => {
         ]}
       />
       <ActionHeaderButton
-        title="Select diagram"
+        title="Select Diagrams"
         icon="ic_select_diagram"
         action="select_diagram"
         disabled={insertDiagramLoading || resizeDiagramLoading || removeDiagramLoading}

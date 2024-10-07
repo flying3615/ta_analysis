@@ -91,37 +91,37 @@ describe("PlanSheetsHeaderButtons", () => {
     expect(screen.getByRole("button", { name: PlanMode.ZoomCentre })).toBeEnabled();
   });
 
-  it("should handle Zoom in button click", async () => {
+  it("should handle Zoom in tool button click", async () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-    const button = screen.getByRole("button", { name: "Zoom in" });
+    const button = screen.getByRole("button", { name: "Zoom in tool" });
     await userEvent.click(button);
     expect(zoomByDeltaMock).toHaveBeenCalledWith(0.5);
   });
 
-  it("should handle Zoom out button click", async () => {
+  it("should handle Zoom out tool button click", async () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-    const button = screen.getByRole("button", { name: "Zoom out" });
+    const button = screen.getByRole("button", { name: "Zoom out tool" });
     await userEvent.click(button);
     expect(zoomByDeltaMock).toHaveBeenCalledWith(-0.5);
   });
 
-  it("should disable Zoom in button when at maximum", async () => {
+  it("should disable Zoom in tool button when at maximum", async () => {
     (useCytoscapeContext as jest.Mock).mockReturnValue({
       isMaxZoom: true,
     });
 
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-    const button = screen.getByRole("button", { name: "Zoom in" });
+    const button = screen.getByRole("button", { name: "Zoom in tool" });
     expect(button).not.toBeEnabled();
   });
 
-  it("should disable Zoom out button when at minimum", async () => {
+  it("should disable Zoom out tool button when at minimum", async () => {
     (useCytoscapeContext as jest.Mock).mockReturnValue({
       isMinZoom: true,
     });
 
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-    const button = screen.getByRole("button", { name: "Zoom out" });
+    const button = screen.getByRole("button", { name: "Zoom out tool" });
     expect(button).not.toBeEnabled();
   });
 
@@ -144,7 +144,7 @@ describe("PlanSheetsHeaderButtons", () => {
     });
 
     renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
-    const button = screen.getByRole("button", { name: "Select coordinates" });
+    const button = screen.getByRole("button", { name: "Select Coordinates" });
     await userEvent.click(button);
 
     await waitFor(() => expect(button).toHaveClass("selected"));
@@ -164,7 +164,7 @@ describe("PlanSheetsHeaderButtons", () => {
     });
 
     renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
-    const button = screen.getByRole("button", { name: "Select line" });
+    const button = screen.getByRole("button", { name: "Select Lines" });
     await userEvent.click(button);
 
     await expect(button).toHaveClass("selected");
@@ -174,7 +174,7 @@ describe("PlanSheetsHeaderButtons", () => {
 
   it("should handle select labels click", async () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
-    const button = screen.getByRole("button", { name: "Select label" });
+    const button = screen.getByRole("button", { name: "Select Labels" });
     await userEvent.click(button);
 
     await expect(button).toHaveClass("selected");

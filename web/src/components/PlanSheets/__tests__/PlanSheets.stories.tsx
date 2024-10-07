@@ -523,7 +523,7 @@ export const SelectDiagram: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select diagram"));
+    await userEvent.click(await canvas.findByTitle("Select Diagrams"));
     await sleep(500);
 
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
@@ -542,7 +542,7 @@ export const MoveDiagram: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select diagram"));
+    await userEvent.click(await canvas.findByTitle("Select Diagrams"));
     await sleep(500);
 
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));

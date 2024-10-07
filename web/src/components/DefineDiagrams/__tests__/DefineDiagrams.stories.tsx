@@ -396,7 +396,7 @@ export const DeleteDiagram: Story = {
 DeleteDiagram.play = async ({ step }) => {
   await step("GIVEN I've selected a diagram", async () => {
     await waitForInitialMapLoadsToComplete();
-    const selectDiagramButton = await screen.findByLabelText("Select diagram");
+    const selectDiagramButton = await screen.findByLabelText("Select Diagrams");
     await userEvent.click(selectDiagramButton);
     await sleep(100); // This sleep is needed for diagram selection
     const diagramCoordinates: Coordinate[] = [[19461406.541349366, -5058120.795760532]];
@@ -582,7 +582,7 @@ ReduceDiagramInvalidShapeError.play = async ({ step }) => {
 
 const selectDiagram = async (coordinatesToClick: Coordinate[]) => {
   await waitForInitialMapLoadsToComplete();
-  const selectDiagramButton = await screen.findByLabelText("Select diagram");
+  const selectDiagramButton = await screen.findByLabelText("Select Diagrams");
   await userEvent.click(selectDiagramButton);
   await sleep(500); // This sleep is needed for line selection
   await drawOnMap(coordinatesToClick);

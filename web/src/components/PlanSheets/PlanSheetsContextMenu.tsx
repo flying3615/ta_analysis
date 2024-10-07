@@ -79,32 +79,46 @@ function getAllMenuItemsForElement(
       hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
     },
     { title: "Properties", callback: getProperties },
-    { title: "Cut", disabled: true },
-    { title: "Copy", disabled: true },
-    { title: "Paste", disabled: true },
-    {
-      title: "Select",
-      submenu: [
-        { title: "Observation Distance", callback: getProperties },
-        { title: "All", callback: getProperties },
-      ],
-    },
+    // { title: "Cut", disabled: true },
+    // { title: "Copy", disabled: true },
+    // { title: "Paste", disabled: true },
+    // {
+    //   title: "Select",
+    //   submenu: [
+    //     { title: "Observation Distance", callback: getProperties },
+    //     { title: "All", callback: getProperties },
+    //   ],
+    // },
   ];
 
-  const symbolShouldBeDisplayed = (element: NodeSingular | EdgeSingular | cytoscape.Core) => {
+  // Which menu option to display for Show / Hide
+  // inverse of the state of the actual object
+  enum ShowHideMenuOptionState {
+    SHOW,
+    HIDE,
+    SHOW_DISABLED,
+    HIDE_DISABLED,
+  }
+  const getNodeShowState = (element: NodeSingular | EdgeSingular | cytoscape.Core): ShowHideMenuOptionState => {
     const markSymbol = lookupGraphData.findMarkSymbol(lookupElementSource(element as NodeSingular | EdgeSingular));
-    console.log(`Element ${element.data("id")} displayState of markSymbol: ${markSymbol?.displayState}`);
 
-    return (
+    // This covers the user defined line end node
+    if (!markSymbol) return ShowHideMenuOptionState.SHOW_DISABLED;
+
+    if (
       markSymbol?.displayState === DisplayStateEnum.display ||
       markSymbol?.displayState === DisplayStateEnum.systemDisplay
-    );
+    ) {
+      return ShowHideMenuOptionState.HIDE;
+    }
+
+    return ShowHideMenuOptionState.SHOW;
   };
 
   const buildLabelMenus = (targetLabel: NodeSingular): MenuItem[] => {
     return [
       { title: "Original location", callback: getProperties },
-      { title: "Show", hideWhen: symbolShouldBeDisplayed },
+      { title: "Show", hideWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE },
       { title: "Properties", callback: getProperties },
       {
         title: "Select",
@@ -132,13 +146,20 @@ function getAllMenuItemsForElement(
     { title: "Original location", callback: getProperties },
     {
       title: "Show",
-      hideWhen: symbolShouldBeDisplayed,
+      hideWhen: (e) =>
+        [ShowHideMenuOptionState.HIDE, ShowHideMenuOptionState.HIDE_DISABLED].includes(getNodeShowState(e)),
+      disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.SHOW_DISABLED,
     },
-    { title: "Hide", hideWhen: (element) => !symbolShouldBeDisplayed(element) },
-    { title: "Properties", callback: getProperties },
-    { title: "Cut", disabled: true },
-    { title: "Copy", disabled: true },
-    { title: "Paste", disabled: true },
+    {
+      title: "Hide",
+      hideWhen: (e) =>
+        [ShowHideMenuOptionState.SHOW, ShowHideMenuOptionState.SHOW_DISABLED].includes(getNodeShowState(e)),
+      disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE_DISABLED,
+    },
+    // { title: "Properties", callback: getProperties },
+    // { title: "Cut", disabled: true },
+    // { title: "Copy", disabled: true },
+    // { title: "Paste", disabled: true },
   ];
 
   if (lookupGraphData === undefined) return undefined;
