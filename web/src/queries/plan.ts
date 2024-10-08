@@ -10,6 +10,7 @@ import type { CompilePlanResponseDTO } from "@linz/survey-plan-generation-api-cl
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData.ts";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
@@ -22,7 +23,8 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
     queryKey: getPlanQueryKey(transactionId),
     queryFn: async () => {
       const response = await new PlanControllerApi(apiConfig()).getPlan({ transactionId });
-      dispatch(setPlanData(response));
+      const adjustedResponse = adjustLoadedPlanData(response);
+      dispatch(setPlanData(adjustedResponse));
       return response;
     },
     enabled,

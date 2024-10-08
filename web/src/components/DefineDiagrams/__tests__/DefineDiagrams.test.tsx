@@ -51,6 +51,15 @@ describe("DefineDiagrams", () => {
       1,
       expect.objectContaining({
         request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/api/v1/generate-plans/123/diagrams",
+        }),
+      }),
+    );
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        request: expect.objectContaining({
           method: "POST",
           url: "http://localhost/api/v1/generate-plans/123/prepare",
         }),
@@ -64,7 +73,9 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenCalledWith(
+    // Get diagrams again as `POST prepare` would have changed
+    expect(requestSpy).toHaveBeenNthCalledWith(
+      7,
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",

@@ -16,6 +16,7 @@ export const userDefinedDiagramTypes = ["UDFP", "UDFT", "UDFN"];
 
 export const getDiagramsQueryKey = (transactionId: number) => ["diagrams", transactionId];
 export const getDiagramCheckQueryKey = (transactionId: number) => ["diagramCheck", transactionId];
+export const getOpenlayersDiagramsQueryKey = (transactionId: number) => ["openlayersDiagrams", transactionId];
 
 export const useCheckDiagramsQuery: PlanGenQuery<DiagramValidationResponseDTO> = ({ transactionId }) => {
   return useQuery({
@@ -25,18 +26,19 @@ export const useCheckDiagramsQuery: PlanGenQuery<DiagramValidationResponseDTO> =
   });
 };
 
-export const useGetDiagramsQueryOLD: PlanGenQuery<DiagramsResponseDTO> = ({ transactionId, ...params }) =>
+export const useGetDiagramsQuery: PlanGenQuery<DiagramsResponseDTO> = ({ transactionId, ...params }) =>
   useQuery({
     ...params,
     queryKey: getDiagramsQueryKey(transactionId),
     queryFn: () => new DiagramsControllerApi(apiConfig()).diagrams({ transactionId }),
   });
 
-export const getQueryDiagram = (
+// This gets the `diagrams` from the response and filters by `id`
+export const getOpenlayersQueryDiagram = (
   queryClient: QueryClient,
   transactionId: number,
   diagramId: number,
 ): IFeatureSourceDiagram | undefined =>
   queryClient
-    .getQueryData<IFeatureSourceDiagram[]>(getDiagramsQueryKey(transactionId))
+    .getQueryData<IFeatureSourceDiagram[]>(getOpenlayersDiagramsQueryKey(transactionId))
     ?.filter((diagram) => diagram.id === diagramId)[0];

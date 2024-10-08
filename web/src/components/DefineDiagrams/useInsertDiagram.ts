@@ -5,12 +5,13 @@ import { useContext, useState } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors.tsx";
+import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
 import { useTransactionId } from "@/hooks/useTransactionId.ts";
+import { useGetDiagramsQuery } from "@/queries/diagrams.ts";
 import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { mapZoomScale } from "@/util/mapUtil.ts";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -34,6 +35,13 @@ export const useInsertDiagram = () => {
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
+  const {
+    data: diagrams,
+    isLoading: diagramsAreLoading,
+    error: diagramsLoadError,
+  } = useGetDiagramsQuery({
+    transactionId,
+  });
 
   const { mutateAsync: insertDiagram } = useInsertDiagramMutation(transactionId);
 
@@ -52,17 +60,18 @@ export const useInsertDiagram = () => {
       errorCallback: () => showPrefabModal(error32027_diagramTooManySides(maxSides)),
     },
     drawEnd: async ({ area, latLongCartesians }) => {
-      if (!map || !diagramType) return;
+      if (!map || !diagramType || diagramsAreLoading || diagramsLoadError) return;
 
-      const zoomScale = mapZoomScale(map);
+      if (area === 0) {
+        showPrefabModal(error32021_diagramNoArea);
+        return;
+      }
+
+      const scaleDiagram = diagrams && new ScaleDiagram(diagrams);
+      const zoomScale = scaleDiagram?.zoomScale(latLongCartesians) ?? 1;
 
       try {
         setLoading(true);
-
-        if (area === 0) {
-          showPrefabModal(error32021_diagramNoArea);
-          return;
-        }
 
         await insertDiagram({
           transactionId,
@@ -75,6 +84,11 @@ export const useInsertDiagram = () => {
     },
     drawAbort,
   });
+
+  if (diagramsLoadError) {
+    console.warn(`Could not load diagrams for useInsertDiagram ${diagramsLoadError}`);
+    // We don't want to throw here as it interferes with correct 404 handling
+  }
 
   return {
     loading,

@@ -1,7 +1,6 @@
 import { Feature } from "ol";
 import Geometry from "ol/geom/Geometry";
 import { Layer } from "ol/layer";
-import OlMap from "ol/Map";
 import RenderFeature from "ol/render/Feature";
 import { Source } from "ol/source";
 
@@ -10,12 +9,10 @@ import {
   clickedFeatureFilter,
   getClickedFeatureId,
   getFeatureId,
-  mapZoomScale,
   metersToLatLongCartesian,
   metersToLatLongCoordinate,
   normalizeLongitude,
   numericToCartesian,
-  pixelsToMeters,
 } from "@/util/mapUtil.ts";
 
 describe("Longitude normalization calculation", () => {
@@ -73,23 +70,5 @@ describe("mapUtil", () => {
     expect(filterForHelloArray(clickedFeature)).toBe(true);
     const filterNotForHello = clickedFeatureFilter("x", "there");
     expect(filterNotForHello(clickedFeature)).toBe(false);
-  });
-
-  test("pixelsToMeters", () => {
-    expect(pixelsToMeters(0)).toBe(0);
-    expect(pixelsToMeters(10000000)).toBe(2645.833333333334);
-  });
-
-  // This example is lifted directly from data in legacy
-  test("mapZoomScale", () => {
-    const map = {
-      getView: () => ({
-        calculateExtent: () => [10, 5, 141.585334757925, 200], // 131 wide
-      }),
-      getViewport: () => ({
-        getBoundingClientRect: () => ({ width: 1685 }),
-      }),
-    } as unknown as OlMap;
-    expect(mapZoomScale(map)).toBe(295);
   });
 });

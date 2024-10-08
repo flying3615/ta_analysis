@@ -19,7 +19,7 @@ import {
   DrawInteractionType,
   useOpenLayersDrawInteraction,
 } from "@/hooks/useOpenLayersDrawInteraction.ts";
-import { getQueryDiagram } from "@/queries/diagrams.ts";
+import { getOpenlayersQueryDiagram } from "@/queries/diagrams.ts";
 import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation.ts";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { numericToCartesian } from "@/util/mapUtil.ts";
@@ -57,7 +57,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
       const diagramId = selectedDiagramIds[0];
       if (diagramId == null) return;
 
-      const diagram = getQueryDiagram(queryClient, transactionId, diagramId);
+      const diagram = getOpenlayersQueryDiagram(queryClient, transactionId, diagramId);
       if (!diagram) return console.error(`Unable to find diagram with id ${diagramId} in queryData`); // This can't happen
 
       /**

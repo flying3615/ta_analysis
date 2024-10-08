@@ -20,7 +20,7 @@ import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
-import { useGetDiagramsQueryOLD } from "@/queries/diagrams";
+import { useGetDiagramsQuery } from "@/queries/diagrams";
 import { PrepareDatasetError, usePrepareDatasetMutation } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 
@@ -68,7 +68,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     data: diagrams,
     isLoading: diagramsIsLoading,
     error: diagramsError,
-  } = useGetDiagramsQueryOLD({
+  } = useGetDiagramsQuery({
     transactionId,
     enabled: prepareDatasetIsSuccess, // Don't fetch diagrams until the dataset is prepared
   });

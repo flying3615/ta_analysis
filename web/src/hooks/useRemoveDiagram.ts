@@ -6,7 +6,7 @@ import { useCallback, useState } from "react";
 
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { apiConfig } from "@/queries/apiConfig";
-import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
 import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
@@ -25,7 +25,7 @@ export const useRemoveDiagram = ({ transactionId, selectedDiagramIds: diagramIds
   const queryClient = useQueryClient();
 
   const { removeQueryData } = useQueryDataUpdate<IFeatureSource>({
-    queryKey: getDiagramsQueryKey(transactionId),
+    queryKey: getOpenlayersDiagramsQueryKey(transactionId),
   });
 
   const removeDiagrams = useCallback(async () => {

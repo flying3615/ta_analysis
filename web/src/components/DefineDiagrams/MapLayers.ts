@@ -26,7 +26,7 @@ import {
 } from "@/components/DefineDiagrams/lineStyles.ts";
 import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
 import { apiConfig } from "@/queries/apiConfig.ts";
-import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
 import { getExtinguishedLinesQuery, getExtinguishedLinesQueryKey } from "@/queries/extinguished-lines.ts";
 import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
 import { getLinesQuery, getLinesQueryKey } from "@/queries/lines.ts";
@@ -171,7 +171,7 @@ export const diagramsQueryLayer = (transactionId: number, maxZoom: number): LolO
     style: diagramStyles,
     source: {
       type: SourceType.FEATURES,
-      queryKey: getDiagramsQueryKey(transactionId),
+      queryKey: getOpenlayersDiagramsQueryKey(transactionId),
       queryFun: async () =>
         getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig()).diagrams({ transactionId })),
       maxZoom,
@@ -193,7 +193,7 @@ export const selectDiagramsLayer = (transactionId: number, maxZoom: number): Lol
     geometrySizeForClickDetection: 1,
     source: {
       type: SourceType.FEATURES,
-      queryKey: getDiagramsQueryKey(transactionId),
+      queryKey: getOpenlayersDiagramsQueryKey(transactionId),
       queryFun: async () =>
         getDiagramsForOpenLayers(await new DiagramsControllerApi(apiConfig()).diagrams({ transactionId })),
       maxZoom,

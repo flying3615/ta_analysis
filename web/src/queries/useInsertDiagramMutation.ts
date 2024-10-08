@@ -5,7 +5,7 @@ import { useRef } from "react";
 
 import { IFeatureSourceDiagram, sortByDiagramsByType } from "@/components/DefineDiagrams/featureMapper.ts";
 import { apiConfig } from "@/queries/apiConfig.ts";
-import { getDiagramsQueryKey } from "@/queries/diagrams.ts";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
 import { useDiagramLabelsHook } from "@/queries/labels.ts";
 import { cartesianToNumeric } from "@/util/mapUtil.ts";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
@@ -17,7 +17,7 @@ import { useShowToast } from "@/util/showToast.tsx";
 export const useInsertDiagramMutation = (transactionId: number) => {
   const diagramLabels = useDiagramLabelsHook(transactionId);
   const { appendQueryData, removeQueryData, updateQueryData } = useQueryDataUpdate<IFeatureSourceDiagram>({
-    queryKey: getDiagramsQueryKey(transactionId),
+    queryKey: getOpenlayersDiagramsQueryKey(transactionId),
     sortBy: sortByDiagramsByType,
   });
   const { showErrorToast } = useShowToast();
