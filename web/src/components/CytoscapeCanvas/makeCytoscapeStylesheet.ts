@@ -8,12 +8,9 @@ import {
   fontStyle,
   fontWeight,
   LABEL_PADDING_PX,
-  rotatedMargin,
   scaledFontSize,
-  textHAlign,
   textJustification,
   textRotationClockwiseFromH,
-  textVAlign,
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
@@ -79,8 +76,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "font-size": (ele: cytoscape.NodeSingular) => scaledFontSize(ele, cytoscapeCoordinateMapper),
     "font-style": fontStyle,
     "font-weight": fontWeight,
-    "text-halign": textHAlign,
-    "text-valign": textVAlign,
+    "text-halign": "center",
+    "text-valign": "center",
     "text-justification": textJustification,
     color: isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
     "z-index": "data(zIndex)",
@@ -92,8 +89,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-rotation": textRotationClockwiseFromH,
     "background-clip": "none",
     "bounds-expansion": 12, // ensure circles are visible
-    "text-margin-x": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).x,
-    "text-margin-y": (ele: cytoscape.NodeSingular) => rotatedMargin(ele, cytoscapeCoordinateMapper).y,
     "text-outline-color": "white",
     "text-outline-width": "0.5px",
     "text-outline-opacity": 0,
@@ -219,7 +214,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       // Node with label
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled]",
-
       style: {
         ...labelBaseStyle,
         ...noNodeMarker,
@@ -251,8 +245,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "node[label]",
       style: {
         ...noNodeMarker,
-        height: 1,
-        width: 1,
+        height: 5,
+        width: 5,
         // ...showNodeDebugStyle, // Uncomment it to show node debug style
       },
     },

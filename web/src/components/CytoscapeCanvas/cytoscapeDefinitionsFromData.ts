@@ -2,6 +2,9 @@ import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum } from "@linz/survey-
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { nodeSingular } from "@/test-utils/cytoscape-utils";
+
+import { calculateTextAlignmentPolar, rotatedMargin, textDimensions, textRotationMathRads } from "./styleNodeMethods";
 
 export interface IGraphData {
   id: string;
@@ -111,6 +114,30 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
   } as IEdgeData;
 };
 
+const diagramLabelNodePositioner = (
+  node: INodeData,
+  cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
+  nodePositionPixels: cytoscape.Position,
+) => {
+  const ele = nodeSingular({ ...node.properties, label: node.label! }, node.position);
+
+  //textAlignment adjustment
+  const textDim = textDimensions(ele, cytoscapeCoordinateMapper);
+  const { textRadiusDist, textThetaRads } = calculateTextAlignmentPolar(textDim, ele);
+
+  const horizontalAlignmentOffset = textRadiusDist * Math.cos(textRotationMathRads(ele) + textThetaRads);
+  const verticalAlignmentOffset = -(textRadiusDist * Math.sin(textRotationMathRads(ele) + textThetaRads));
+
+  nodePositionPixels.x -= horizontalAlignmentOffset;
+  nodePositionPixels.y -= verticalAlignmentOffset;
+
+  //anchorAngle/pointOffset adjustment
+  const offsetMargin = rotatedMargin(ele, cytoscapeCoordinateMapper);
+
+  nodePositionPixels.x += offsetMargin.x;
+  nodePositionPixels.y += offsetMargin.y;
+};
+
 export const nodePositionsFromData = (
   nodeData: INodeData[],
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
@@ -132,6 +159,10 @@ export const nodePositionsFromData = (
         throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
       }
       nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
+      //for diagram labels, we want the node to be positioned in the middle of the label
+      if (node.label && node.properties["textAlignment"]) {
+        diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
+      }
     }
 
     return {

@@ -7,12 +7,12 @@ import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
 import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 export const LABEL_PADDING_PX = 1;
-export const CIRCLE_FACTOR = 0.9;
+export const CIRCLE_FACTOR = 1.1;
 
 const radiusForSquare = Math.sqrt(2.0);
 
-export const textDimensions = (ele: cytoscape.NodeSingular) => {
-  const fontSize = ele.data("fontSize");
+export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
+  const fontSize = ele.data("fontSize") * cytoscapeCoordinateMapper.fontScaleFactor();
   const fontName = ele.data("font");
   const lines = ele.data("label").split("\n");
 
@@ -24,7 +24,6 @@ export const textDimensions = (ele: cytoscape.NodeSingular) => {
   if (cyContext) {
     cyContext.font = `${fontSize}px ${fontName}`; // order matters here
     const lineSizes = lines.map((l: string) => cyContext.measureText(l));
-
     const width = (max(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0) as number;
     const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
     return { height, width };
@@ -36,8 +35,8 @@ export const textDimensions = (ele: cytoscape.NodeSingular) => {
   return { height, width };
 };
 
-export const textDiameter = (ele: cytoscape.NodeSingular) => {
-  const { height, width } = textDimensions(ele);
+export const textDiameter = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
+  const { height, width } = textDimensions(ele, cytoscapeCoordinateMapper);
   const longestSide = max([height, width]) ?? 0;
 
   return 2 * (longestSide / radiusForSquare) * CIRCLE_FACTOR;
@@ -81,7 +80,7 @@ const signumHorizontal = (ele: cytoscape.NodeSingular) => {
 
 // Cytoscape pads our labels inside the border
 // but we also need to adjust the label location relative to the node
-const paddingOffsetHorizontal = (ele: cytoscape.NodeSingular) => signumHorizontal(ele) * LABEL_PADDING_PX;
+export const paddingOffsetHorizontal = (ele: cytoscape.NodeSingular) => signumHorizontal(ele) * LABEL_PADDING_PX;
 
 const signumVertical = (ele: cytoscape.NodeSingular) => {
   return (
@@ -93,7 +92,8 @@ const signumVertical = (ele: cytoscape.NodeSingular) => {
   );
 };
 
-const paddingOffsetVertical = (ele: cytoscape.NodeSingular) => ((signumVertical(ele) + 1) * LABEL_PADDING_PX) / 2;
+export const paddingOffsetVertical = (ele: cytoscape.NodeSingular) =>
+  ((signumVertical(ele) + 1) * LABEL_PADDING_PX) / 2;
 
 const dbAlignmentVertical = (ele: cytoscape.NodeSingular): "top" | "center" | "bottom" =>
   ele.data("textAlignment").match(/^([a-z]+)/)?.[1];
@@ -145,7 +145,10 @@ export const rotatedMargin = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMa
  * @param textSize the measured size of the text label
  * @param ele the element we are measuring
  */
-const calculateTextAlignmentPolar = (textSize: { width: number; height: number }, ele: cytoscape.NodeSingular) => {
+export const calculateTextAlignmentPolar = (
+  textSize: { width: number; height: number },
+  ele: cytoscape.NodeSingular,
+) => {
   const textSlope = Math.sqrt((textSize.height * textSize.height) / 4 + (textSize.width * textSize.width) / 4);
   const textAngle = (Math.atan2(textSize.height, textSize.width) * 180) / Math.PI;
   const textCenterDirection = ele.data("textAlignment").split(",")[0];
@@ -191,55 +194,29 @@ const calculateTextAlignmentPolar = (textSize: { width: number; height: number }
   return { textRadiusDist, textThetaRads };
 };
 
-export const calculateCircleSvgParams = (
-  textSize: {
-    width: number;
-    height: number;
-  },
-  ele: cytoscape.NodeSingular,
-  cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
-  circleSize: number,
-  offsetMargin: {
-    x: number;
-    y: number;
-  },
-) => {
+export const calculateCircleSvgParams = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, circleSize: number) => {
   const circleEdgePadding = 2; // pad to stop edge of SVG clipping circle
-  const { textRadiusDist, textThetaRads } = calculateTextAlignmentPolar(textSize, ele);
 
   // Conversion from measured pixels to cytoscape coordinates
   // Removes the effect of browser oom
   const measurePixelsToCytoscape = cytoscapeCoordinateMapper.fontScaleFactor();
 
-  // Calculate the offset from the text centre to the anchor point per text alignment
-  const horizontalAlignmentOffset = textRadiusDist * Math.cos(textRotationMathRads(ele) + textThetaRads);
-  const verticalAlignmentOffset = textRadiusDist * Math.sin(textRotationMathRads(ele) + textThetaRads);
-
   // Calculate the width and height of the SVG in measured pixels without text alignment
   // The SVG is centred on the node and has to have room for the circle, hence the *2
-  const unscaledWidth = circleEdgePadding * 2 + circleSize + Math.abs(horizontalAlignmentOffset) * 2;
-  const unscaledHeight = circleEdgePadding * 2 + circleSize + Math.abs(verticalAlignmentOffset) * 2;
+  const unscaledWidth = circleEdgePadding * 2 + circleSize;
+  const unscaledHeight = circleEdgePadding * 2 + circleSize;
 
   // Scale these into cytoscape coordinates
-  const scaledWidth = measurePixelsToCytoscape * unscaledWidth;
-  const scaledHeight = measurePixelsToCytoscape * unscaledHeight;
-
-  // Include the doubled offset to get our SVG width
-  const svgWidth = scaledWidth + Math.abs(offsetMargin.x) * 2;
-  const svgHeight = scaledHeight + Math.abs(offsetMargin.y) * 2;
+  const svgWidth = measurePixelsToCytoscape * unscaledWidth;
+  const svgHeight = measurePixelsToCytoscape * unscaledHeight;
 
   // Calculate the centre of the circle in measured pixels without text alignment
-  const unscaledTextCentreX = unscaledWidth / 2 - horizontalAlignmentOffset;
-  const unscaledTextCentreY = unscaledHeight / 2 + verticalAlignmentOffset;
+  const unscaledTextCentreX = unscaledWidth / 2;
+  const unscaledTextCentreY = unscaledHeight / 2;
 
   // Scale the circle centre into cytoscape coordinates
-  // The offset margin has already been scaled
-  const scaledTextCentreX = measurePixelsToCytoscape * unscaledTextCentreX + Math.abs(offsetMargin.x);
-  const scaledTextCentreY = measurePixelsToCytoscape * unscaledTextCentreY + Math.abs(offsetMargin.y);
-
-  // Shift the circle centre by the offset margin (hence allowing for text alignment
-  const svgCentreX = scaledTextCentreX + offsetMargin.x;
-  const svgCentreY = scaledTextCentreY + offsetMargin.y;
+  const svgCentreX = measurePixelsToCytoscape * unscaledTextCentreX;
+  const svgCentreY = measurePixelsToCytoscape * unscaledTextCentreY;
 
   // Calculate the required circle radius with scale
   const unscaledSvgCircleRadius = circleSize / 2;
@@ -248,15 +225,10 @@ export const calculateCircleSvgParams = (
 };
 
 export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
-  const circleSize = textDiameter(ele);
-  const offsetMargin = rotatedMargin(ele, cytoscapeCoordinateMapper);
-  const textSize = textDimensions(ele);
+  const circleSize = textDiameter(ele, cytoscapeCoordinateMapper);
   const { svgWidth, svgHeight, svgCentreX, svgCentreY, scaledSvgCircleRadius } = calculateCircleSvgParams(
-    textSize,
-    ele,
     cytoscapeCoordinateMapper,
     circleSize,
-    offsetMargin,
   );
 
   return makeScaledSVG(

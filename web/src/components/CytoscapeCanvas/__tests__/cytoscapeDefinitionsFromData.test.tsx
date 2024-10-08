@@ -147,4 +147,37 @@ describe("nodePositionsFromData", () => {
     expect(cytoscapePositions["node2"]?.y).toBeCloseTo(137.61, 1);
     validateShapeNotDistorted(cytoscapePositions);
   });
+
+  test("creates cytoscape NodePositionMap from node positions for labels", () => {
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 500, clientHeight: 300 } as HTMLElement,
+      diagrams,
+    );
+    const labelNodes = [
+      {
+        id: "node1",
+        label: "Label",
+        properties: { diagramId: 1, textAlignment: "topCenter", fontSize: 12, font: "Arial" },
+        position: { x: 10, y: -50 },
+      },
+      {
+        id: "node2",
+        label: "Offset Label",
+        properties: {
+          diagramId: 1,
+          textAlignment: "rightCenter",
+          fontSize: 12,
+          font: "Arial",
+          pointOffset: 20,
+          anchorAngle: 270,
+        },
+        position: { x: 100, y: -20 },
+      },
+    ] as INodeData[];
+    const cytoscapePositions = nodePositionsFromData(labelNodes, cytoscapeCoordinateMapper);
+    expect(cytoscapePositions["node1"]?.x).toBeCloseTo(94.4, 1);
+    expect(cytoscapePositions["node1"]?.y).toBeCloseTo(513.5, 1);
+    expect(cytoscapePositions["node2"]?.x).toBeCloseTo(1033.8, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(206.6, 1);
+  });
 });

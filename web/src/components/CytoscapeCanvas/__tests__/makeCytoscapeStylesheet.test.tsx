@@ -56,11 +56,9 @@ describe("makeCytoscapeStylesheet", () => {
     const svg = styleEntry["background-image"]?.(ele);
     expect(svg).toBe("data:image/svg+xml;utf8,circle.svg");
     const height = styleEntry["height"]?.(ele);
-    expect(height).toBeCloseTo(1.8, 1);
+    expect(height).toBeCloseTo(1.9, 1);
     const width = styleEntry["width"]?.(ele);
-    expect(width).toBeCloseTo(2.8, 1);
-    const textMarginY = styleEntry["text-margin-y"]?.(ele);
-    expect(textMarginY).toBe(0.5); // Because `measureText` stub
+    expect(width).toBeCloseTo(1.9, 1);
   });
 
   test("Generates function to show north arrow on the appropriate special node", () => {

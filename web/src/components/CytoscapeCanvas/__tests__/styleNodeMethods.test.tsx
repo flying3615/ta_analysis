@@ -28,14 +28,16 @@ describe("styleNodeMethods", () => {
 
   test(`textDimensions should measure single line text`, () => {
     renderDummyCanvas();
-    const dimensions = textDimensions(testEle);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
+    const dimensions = textDimensions(testEle, cytoscapeCoordinateMapper);
     expect(dimensions.width).toBe(12); // jest-mock is not very good at measure
   });
 
   test("textDiameter should return calculated diameter", () => {
     renderDummyCanvas();
-    const diam = textDiameter(testEle);
-    expect(diam).toBeCloseTo(15.3, 1);
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
+    const diam = textDiameter(testEle, cytoscapeCoordinateMapper);
+    expect(diam).toBeCloseTo(18.7, 1);
   });
 
   test("circleLabel should return an SVG circle scaled around label", () => {
@@ -45,8 +47,8 @@ describe("styleNodeMethods", () => {
     // We don't get the actual SVG because of jest
     // this is covered in SB
     expect(circle.svg).toBe("data:image/svg+xml;utf8,circle.svg");
-    expect(circle.height).toBeCloseTo(0.27, 1);
-    expect(circle.width).toBeCloseTo(2.3, 1);
+    expect(circle.height).toBeCloseTo(0.14, 1);
+    expect(circle.width).toBeCloseTo(0.14, 1);
   });
 
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
@@ -81,18 +83,7 @@ describe("styleNodeMethods", () => {
         fontScaleFactor: () => 1.2,
       } as unknown as CytoscapeCoordinateMapper;
 
-      const ele = nodeSingular({
-        ...defaultTestNode,
-        textAlignment: "centerCenter",
-        textRotation: 0,
-        anchorAngle: 0,
-        pointOffset: 0,
-      });
-
-      const params = calculateCircleSvgParams({ width: 40, height: 20 }, ele, cytoscapeCoordinateMapper, 42, {
-        x: 0,
-        y: 0,
-      });
+      const params = calculateCircleSvgParams(cytoscapeCoordinateMapper, 42);
 
       expect(params.svgWidth).toBeCloseTo(55.2, 1);
       expect(params.svgHeight).toBeCloseTo(55.2, 1);
@@ -101,97 +92,17 @@ describe("styleNodeMethods", () => {
       expect(params.scaledSvgCircleRadius).toBeCloseTo(25.2, 1);
     });
 
-    test(`Centers circle on anchor point when text align not centre`, () => {
-      const cytoscapeCoordinateMapper = {
-        fontScaleFactor: () => 1.2,
-      } as unknown as CytoscapeCoordinateMapper;
-
-      const ele = nodeSingular({
-        ...defaultTestNode,
-        textAlignment: "topLeft",
-        textRotation: 0,
-        anchorAngle: 0,
-        pointOffset: 0,
-      });
-
-      const params = calculateCircleSvgParams({ width: 40, height: 20 }, ele, cytoscapeCoordinateMapper, 42, {
-        x: 0,
-        y: 0,
-      });
-      expect(params.svgWidth).toBeCloseTo(103.2, 1);
-      expect(params.svgHeight).toBeCloseTo(79.2, 1);
-      expect(params.svgCentreX).toBeCloseTo(75.6, 1);
-      expect(params.svgCentreY).toBeCloseTo(51.6, 1);
-      expect(params.scaledSvgCircleRadius).toBeCloseTo(25.2, 1);
-    });
-
-    test(`Applies offset at angle`, () => {
-      const cytoscapeCoordinateMapper = {
-        fontScaleFactor: () => 1.2,
-      } as unknown as CytoscapeCoordinateMapper;
-
-      const ele = nodeSingular({
-        ...defaultTestNode,
-        textAlignment: "centerCenter",
-        textRotation: 0,
-      });
-
-      const params = calculateCircleSvgParams({ width: 40, height: 20 }, ele, cytoscapeCoordinateMapper, 42, {
-        x: 10 * Math.cos((30 * 180) / Math.PI),
-        y: 10 * Math.sin((30 * 180) / Math.PI),
-      });
-
-      expect(params.svgWidth).toBeCloseTo(73.4, 1);
-      expect(params.svgHeight).toBeCloseTo(63.4, 1);
-      expect(params.svgCentreX).toBeCloseTo(27.6, 1);
-      expect(params.svgCentreY).toBeCloseTo(27.6, 1);
-      expect(params.scaledSvgCircleRadius).toBeCloseTo(25.2, 1);
-    });
-
-    test(`Slants circle when text rotated`, () => {
-      const cytoscapeCoordinateMapper = {
-        fontScaleFactor: () => 1.2,
-      } as unknown as CytoscapeCoordinateMapper;
-
-      const ele = nodeSingular({
-        ...defaultTestNode,
-        textAlignment: "centerRight",
-        textRotation: 30,
-      });
-
-      const params = calculateCircleSvgParams({ width: 40, height: 20 }, ele, cytoscapeCoordinateMapper, 42, {
-        x: 0,
-        y: 0,
-      });
-      expect(params.svgWidth).toBeCloseTo(96.8, 1);
-      expect(params.svgHeight).toBeCloseTo(79.2, 1);
-      expect(params.svgCentreX).toBeCloseTo(27.6, 1);
-      expect(params.svgCentreY).toBeCloseTo(51.6, 1);
-      expect(params.scaledSvgCircleRadius).toBeCloseTo(25.2, 1);
-    });
-
     test(`Corrects for changes to window or browser zoom`, () => {
       const cytoscapeCoordinateMapper = {
         fontScaleFactor: () => 2.4,
       } as unknown as CytoscapeCoordinateMapper;
 
-      const ele = nodeSingular({
-        ...defaultTestNode,
-        textAlignment: "topLeft",
-        textRotation: 0,
-        anchorAngle: 0,
-        pointOffset: 0,
-      });
+      const params = calculateCircleSvgParams(cytoscapeCoordinateMapper, 42);
 
-      const params = calculateCircleSvgParams({ width: 40, height: 20 }, ele, cytoscapeCoordinateMapper, 42, {
-        x: 0,
-        y: 0,
-      });
-
-      expect(params.svgWidth).toBeCloseTo(206.4, 1);
-      expect(params.svgHeight).toBeCloseTo(158.4, 1);
-      expect(params.svgCentreX).toBeCloseTo(151.2, 1);
-      expect(params.svgCentreY).toBeCloseTo(103.2, 1);
+      expect(params.svgWidth).toBeCloseTo(110.4, 1);
+      expect(params.svgHeight).toBeCloseTo(110.4, 1);
+      expect(params.svgCentreX).toBeCloseTo(55.2, 1);
+      expect(params.svgCentreY).toBeCloseTo(55.2, 1);
       expect(params.scaledSvgCircleRadius).toBeCloseTo(50.4, 1);
     });
   });

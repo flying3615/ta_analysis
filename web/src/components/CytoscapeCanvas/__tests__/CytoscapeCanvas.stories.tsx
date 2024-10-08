@@ -548,8 +548,8 @@ const addOffsetLabel = (
       x,
       y,
     },
-    "Arial",
-    50,
+    "Tahoma",
+    40,
     0,
     anchorAngle,
     pointOffset,
@@ -557,7 +557,7 @@ const addOffsetLabel = (
   );
   builder.addCooordinate(idBase * 100 + 2, { x, y });
   const anchorAngleRads = (anchorAngle * Math.PI) / 180;
-  const cmOffset = pointOffset / pointsPerCm;
+  const cmOffset = pointOffset / 2 / pointsPerCm;
   builder.addCooordinate(idBase * 100 + 3, {
     x: x + cmOffset * Math.cos(anchorAngleRads),
     y: y + cmOffset * Math.sin(anchorAngleRads),
@@ -607,8 +607,8 @@ const addRotatedLabel = (
       x,
       y,
     },
-    font: "Arial",
-    fontSize: 50,
+    font: "Tahoma",
+    fontSize: 40,
     rotationAngle,
     textAlignment,
     symbolType: circle ? "circle" : undefined,
