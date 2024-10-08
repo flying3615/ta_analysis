@@ -1,16 +1,18 @@
 import "./LandingPage.scss";
 
-import { LuiIcon, LuiShadow } from "@linzjs/lui";
+import { LuiButton, LuiIcon, LuiShadow } from "@linzjs/lui";
 import { PanelsContext } from "@linzjs/windows";
 import { useContext } from "react";
 import { generatePath, Link } from "react-router-dom";
 
+import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
 import { luiColors } from "@/constants.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+import { hostProtoForApplication } from "@/util/httpUtil";
 
 const LandingPage = () => {
   const transactionId = useTransactionId();
@@ -24,6 +26,18 @@ const LandingPage = () => {
 
   return (
     <>
+      <header className="Header">
+        <LuiButton
+          href={`${hostProtoForApplication(8080)}/survey/${transactionId}`}
+          level="tertiary"
+          className="lui-button-centre-icon"
+        >
+          <LuiIcon color="teal" size="sm" name="ic_arrow_back_ios" alt="Back to Survey Capture Icon" />
+          Back to Survey Capture
+        </LuiButton>
+        <div className="CommonButtons__fill" />
+        <ActionHeaderButton title="Help" icon="ic_help_outline" onClick={() => alert("Not implemented")} />
+      </header>
       <div className="LandingPage-background"></div>
       <div className="LandingPage">
         <div className="LandingPage-top"></div>
@@ -35,23 +49,13 @@ const LandingPage = () => {
           <div className="LandingPage-options">
             <Link className="LandingPage-option" to={generatePath(Paths.defineDiagrams, { transactionId })}>
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon
-                  name="ic_define_diagrams"
-                  className="LandingPage-optionIcon"
-                  alt="Define diagrams"
-                  color={luiColors.sea}
-                />
+                <LuiIcon name="ic_define_diagrams" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
                 <p>Define Diagrams</p>
               </LuiShadow>
             </Link>
             <Link className="LandingPage-option" to={generatePath(Paths.layoutPlanSheets, { transactionId })}>
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon
-                  name="ic_layout_plan_sheets"
-                  className="LandingPage-optionIcon"
-                  alt="Layout plan sheets"
-                  color={luiColors.sea}
-                />
+                <LuiIcon name="ic_layout_plan_sheets" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
                 <p>Layout Plan Sheets</p>
               </LuiShadow>
             </Link>
@@ -59,12 +63,7 @@ const LandingPage = () => {
           <div className="LandingPage-options">
             <Link className="LandingPage-option" onClick={() => alert("Coming soon!")} to="">
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon
-                  name="ic_layers"
-                  className="LandingPage-optionIcon"
-                  alt="Maintain diagram layers"
-                  color={luiColors.sea}
-                />
+                <LuiIcon name="ic_layers" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
                 <p>Maintain diagram layers</p>
               </LuiShadow>
             </Link>
@@ -81,12 +80,7 @@ const LandingPage = () => {
               to=""
             >
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon
-                  name="ic_label_settings"
-                  className="LandingPage-optionIcon"
-                  alt="Label preferences"
-                  color={luiColors.sea}
-                />
+                <LuiIcon name="ic_label_settings" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
                 <p>Label preferences</p>
               </LuiShadow>
             </Link>

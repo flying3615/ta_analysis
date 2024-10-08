@@ -89,6 +89,19 @@ $headerHeight: 56px;
       padding: 10px 20px;
     }
   }
+
+  .lui-button-centre-icon {
+    .LuiIcon {
+      margin: 0 8px -2px 0;
+    }
+  }
+
+  .szh-menu__item {
+    text-decoration: none;
+    &:hover {
+      color: lui.$sea;
+    }
+  }
 }
 
 // This should be outside the header, since the footer component also uses it.

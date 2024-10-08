@@ -36,3 +36,13 @@ export const addHeaders = async () => {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
+
+export const hostProtoForApplication = (applicationPort: number, alwaysAbsolute: boolean = false): string => {
+  const parts = location.host.split(":");
+  if (parts.length == 1) {
+    // default port, application will be on the same protocol and host
+    return alwaysAbsolute ? `${location.protocol}//${location.host}` : "";
+  }
+
+  return `${location.protocol}//${parts[0]}:${applicationPort}`;
+};

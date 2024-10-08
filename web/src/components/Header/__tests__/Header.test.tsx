@@ -36,6 +36,17 @@ describe("Header", () => {
     expect(screen.queryByText("Diagrams")).toBeNull();
   });
 
+  it("opens the dropdown menu on click and shows menu options", async () => {
+    renderWithReduxProvider(<Header view="Diagrams" />);
+
+    await userEvent.click(screen.getByText("Diagrams"));
+    await screen.findByText(/Switch mode/);
+
+    expect(screen.getByText("Define Diagrams")).toBeInTheDocument();
+    expect(screen.getByText("Layout Plan Sheets")).toBeInTheDocument();
+    expect(screen.getByText("Landing Page")).toBeInTheDocument();
+  });
+
   it("fires onNavigate when clicking Layout Plan Sheets", async () => {
     renderWithReduxProvider(<Header view="Diagrams" />);
 
@@ -56,5 +67,25 @@ describe("Header", () => {
     await userEvent.click(screen.getByText(/Define Diagrams/));
 
     expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/define-diagrams/123");
+  });
+
+  it("navigates to Landing Page when clicked", async () => {
+    renderWithReduxProvider(<Header view="Diagrams" />);
+
+    await userEvent.click(screen.getByText("Diagrams"));
+    await screen.findByText("Landing Page");
+    await userEvent.click(screen.getByText("Landing Page"));
+
+    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/123");
+  });
+
+  it("does not navigate when clicking the disabled view mode option", async () => {
+    renderWithReduxProvider(<Header view="Diagrams" />);
+
+    await userEvent.click(screen.getByText("Diagrams"));
+    await screen.findByText("Define Diagrams");
+    await userEvent.click(screen.getByText("Define Diagrams"));
+
+    expect(mockedUsedNavigate).not.toHaveBeenCalled();
   });
 });

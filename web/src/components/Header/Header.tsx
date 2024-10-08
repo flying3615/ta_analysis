@@ -25,6 +25,10 @@ const Header = ({ view, children }: PropsWithChildren<HeaderProps>) => {
         navigate(generatePath(Paths.defineDiagrams, { transactionId }));
         break;
 
+      case "LandingPage":
+        navigate(generatePath(Paths.root, { transactionId }));
+        break;
+
       case "Sheets":
         navigate(generatePath(Paths.layoutPlanSheets, { transactionId }));
         break;
