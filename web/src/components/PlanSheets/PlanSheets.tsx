@@ -76,7 +76,7 @@ const PlanSheets = () => {
 
   useEffect(() => {
     if (regenerationHasFailed) {
-      showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
+      void showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
         if (retry) {
           regeneratePlanMutate();
         } else {
@@ -88,7 +88,7 @@ const PlanSheets = () => {
   }, [regenerationHasFailed, navigate, showPrefabModal]);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (regenerateApiError) {
         newrelic.noticeError(regenerateApiError);
         const modalContent =
@@ -98,7 +98,7 @@ const PlanSheets = () => {
                 message: "Survey not found",
               })
             : unhandledErrorModal(regenerateApiError);
-        showPrefabModal(modalContent).then(() => navigate(`/plan-generation/${transactionId}`));
+        return showPrefabModal(modalContent).then(() => navigate(`/plan-generation/${transactionId}`));
       }
     })();
   }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
@@ -123,7 +123,9 @@ const PlanSheets = () => {
     if (planDataError) {
       const serializedError = errorFromSerializedError(planDataError);
       newrelic.noticeError(serializedError);
-      showPrefabModal(unhandledErrorModal(serializedError)).then(() => navigate(`/plan-generation/${transactionId}`));
+      void showPrefabModal(unhandledErrorModal(serializedError)).then(() =>
+        navigate(`/plan-generation/${transactionId}`),
+      );
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 

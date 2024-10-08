@@ -102,7 +102,7 @@ const RouteErrorBoundary = () => {
 
   useEffect(() => {
     errorHandler(error);
-    showPrefabModal(unhandledErrorModal(error));
+    void showPrefabModal(unhandledErrorModal(error));
   }, [showPrefabModal, error]);
 
   return <div ref={modalOwnerRef} />;
@@ -112,7 +112,7 @@ const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; reset
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   useEffect(() => {
-    showPrefabModal(unhandledErrorModal(error)).then(() => {
+    void showPrefabModal(unhandledErrorModal(error)).then(() => {
       resetErrorBoundary();
     });
   }, [showPrefabModal, error, resetErrorBoundary]);

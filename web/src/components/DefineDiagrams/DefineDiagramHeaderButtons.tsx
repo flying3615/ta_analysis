@@ -78,16 +78,18 @@ export const DefineDiagramMenuButtons = () => {
         disabled={!canRemoveRtLine && !canRemoveDiagram}
         title="Delete selected feature(s)"
         icon="ic_delete_forever"
-        onClick={async () => {
-          try {
-            if (canRemoveDiagram) {
-              await removeDiagrams();
-            } else {
-              await removeRtLines();
-            }
-          } catch (error) {
-            console.error("An error occurred:", error);
-          }
+        onClick={() => {
+          Promise.resolve()
+            .then(() => {
+              if (canRemoveDiagram) {
+                return removeDiagrams();
+              } else {
+                return removeRtLines();
+              }
+            })
+            .catch((error) => {
+              console.error("An error occurred:", error);
+            });
         }}
         loading={canRemoveDiagram ? removeDiagramLoading : loadingRemoveLines}
       />
@@ -102,7 +104,7 @@ export const DefineDiagramMenuButtons = () => {
         loading={convertRtLinesLoading}
         title="Add RT lines"
         icon="ic_add_rt_lines"
-        onClick={convertRtLines}
+        onClick={() => void convertRtLines()}
       />
       <ActionHeaderButton title="Draw RT line" icon="ic_draw_rt_bdry" disabled={true} />
       <ActionHeaderButton title="Draw abuttal" icon="ic_draw_abuttal" disabled={true} />
@@ -110,7 +112,8 @@ export const DefineDiagramMenuButtons = () => {
       <VerticalSpacer />
       <ActionHeaderMenu
         title={
-          disabledDiagramIds.includes("define_primary_diagram_rectangle" || "define_primary_diagram_polygon")
+          disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_primary_diagram_polygon")
             ? "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
             : "Define primary diagram"
         }
@@ -119,7 +122,8 @@ export const DefineDiagramMenuButtons = () => {
         loading={insertDiagramLoading}
         disabled={
           insertDiagramLoading ||
-          disabledDiagramIds.includes("define_primary_diagram_rectangle" || "define_primary_diagram_polygon")
+          disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_primary_diagram_polygon")
         }
         options={[
           {
@@ -138,7 +142,8 @@ export const DefineDiagramMenuButtons = () => {
       />
       <ActionHeaderMenu
         title={
-          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygon")
+          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_nonprimary_diagram_polygon")
             ? "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
             : "Define non-primary diagram"
         }
@@ -147,7 +152,8 @@ export const DefineDiagramMenuButtons = () => {
         className="DefineDiagram__Icon--non-primary"
         disabled={
           insertDiagramLoading ||
-          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle" || "define_nonprimary_diagram_polygon")
+          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_nonprimary_diagram_polygon")
         }
         options={[
           {
@@ -166,7 +172,8 @@ export const DefineDiagramMenuButtons = () => {
       />
       <ActionHeaderMenu
         title={
-          disabledDiagramIds.includes("define_survey_diagram_rectangle" || "define_survey_diagram_polygon")
+          disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_survey_diagram_polygon")
             ? "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey"
             : "Define survey diagram"
         }
@@ -175,7 +182,8 @@ export const DefineDiagramMenuButtons = () => {
         className="DefineDiagram__Icon--survey"
         disabled={
           insertDiagramLoading ||
-          disabledDiagramIds.includes("define_survey_diagram_rectangle" || "define_survey_diagram_polygon")
+          disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
+          disabledDiagramIds.includes("define_survey_diagram_polygon")
         }
         options={[
           {

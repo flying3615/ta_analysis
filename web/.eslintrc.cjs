@@ -1,45 +1,29 @@
-// eslint-disable-next-line no-undef
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
   extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
+    "./node_modules/@linzjs/style/.eslintrc.cjs",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
     "plugin:jest/recommended",
     "plugin:jest/style",
-    "plugin:testing-library/react",
-    "plugin:prettier/recommended",
-    "plugin:storybook/recommended",
     "plugin:jsx-a11y/recommended",
-    "plugin:@tanstack/eslint-plugin-query/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:react/recommended",
+    "plugin:storybook/recommended",
+    "plugin:testing-library/react",
   ],
-  parser: "@typescript-eslint/parser",
-  plugins: ["react", "react-refresh", "jsx-a11y", "simple-import-sort"],
-  ignorePatterns: [
-    "jest.config.js",
-    "config/",
-    "react-app-env.d.ts",
-    "node_modules/",
-    "**/node_modules/",
-    "/**/node_modules/*",
-    "out/",
-    "dist/",
-    "build/",
-    "allure-report/",
-    "allure-results/",
-  ],
-  settings: {
-    react: {
-      version: "detect",
-    },
+  parserOptions: {
+    ecmaVersion: "latest",
+    extraFileExtensions: [".json"],
+    // separate tsconfig that
+    // extends tsconfig.json
+    // _and_ references this configuration file
+    project: "./tsconfig.eslint.json",
+    sourceType: "module",
+    tsconfigRootDir: __dirname,
   },
+  plugins: ["react", "react-refresh", "jsx-a11y"],
   rules: {
-    // Default simple-import-sort rules
-    "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error",
-
     "react/react-in-jsx-scope": "off",
     "linebreak-style": ["error", "unix"],
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -59,14 +43,6 @@ module.exports = {
   overrides: [
     {
       files: ["**/*.ts", "**/*.tsx"],
-      plugins: ["@typescript-eslint"],
-      parser: "@typescript-eslint/parser",
-      parserOptions: {
-        project: "./tsconfig.json",
-        // eslint-disable-next-line no-undef
-        tsconfigRootDir: __dirname,
-      },
-      extends: ["plugin:@typescript-eslint/recommended"],
       rules: {
         "@typescript-eslint/no-unused-vars": [
           "warn",
@@ -74,6 +50,19 @@ module.exports = {
             argsIgnorePattern: "^_",
           },
         ],
+
+        // Tech Debt
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "@typescript-eslint/unbound-method": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        eqeqeq: "off",
+        "no-constant-binary-expression": "off",
       },
     },
     {
@@ -85,6 +74,7 @@ module.exports = {
           {
             patterns: [
               {
+                // __tests__ can use relative to first parent directory
                 group: ["**/../../*"],
                 message: "Please use an absolute import instead of a relative import - example: '@/path/to/component'",
               },
@@ -94,4 +84,9 @@ module.exports = {
       },
     },
   ],
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
 };

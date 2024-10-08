@@ -97,7 +97,7 @@ const PlanSheetsFooter = ({
     }
     const serializedError = errorFromSerializedError(updatePlanError);
     newrelic.noticeError(serializedError);
-    showPrefabModal(unhandledErrorModal(serializedError));
+    void showPrefabModal(unhandledErrorModal(serializedError));
   }, [updatePlanError, showPrefabModal, transactionId]);
 
   const handlePageChange = (pageNumber: number) => () => {
@@ -173,7 +173,7 @@ const PlanSheetsFooter = ({
         {isPreviewCompilationOn && (
           <LuiButton
             className="PlanSheetsFooter-preview-button lui-button-tertiary"
-            onClick={startPreview}
+            onClick={() => void startPreview()}
             disabled={previewing}
           >
             {previewing ? (
@@ -191,7 +191,7 @@ const PlanSheetsFooter = ({
           <LuiButton
             className="PlanSheetsFooter-compile-button lui-button-tertiary"
             onClick={() => {
-              startCompile(updatePlanMutateAsync).then();
+              void startCompile(updatePlanMutateAsync);
             }}
             disabled={compiling}
           >

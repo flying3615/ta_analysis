@@ -19,8 +19,6 @@ export const useRegeneratePlanMutation = (transactionId: number) => {
       }
       return response.value();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) }),
   });
 };

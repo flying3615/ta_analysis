@@ -65,7 +65,7 @@ export const unhandledErrorModal = (
   `;
 
   const handleCopyAction = () => {
-    navigator.clipboard.writeText(clipBoardMessage).then();
+    void navigator.clipboard.writeText(clipBoardMessage);
   };
 
   console.error(`Unexpected error: ${errorMessage}`);

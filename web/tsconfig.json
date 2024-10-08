@@ -16,21 +16,10 @@
     "noUnusedParameters": false,
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   },
-  "exclude": [
-    "allure-report",
-    "allure-results"
-  ],
-  "include": [
-    "config",
-    "src",
-    "test",
-    ".eslintrc.js",
-    "**/*.ts"
-  ],
+  "exclude": ["allure-report", "allure-results"],
+  "include": ["config", "src", "test", ".eslintrc.cjs", "**/*.ts", "tsconfig.eslint.json"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

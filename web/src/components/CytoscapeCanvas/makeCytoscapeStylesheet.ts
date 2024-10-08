@@ -35,10 +35,10 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     }
 
     const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg!.widthPlanPixels * pixelsPerPoint) / pointsPerCm,
+      (symbolSvg.widthPlanPixels * pixelsPerPoint) / pointsPerCm,
     );
     const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg!.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
+      (symbolSvg.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
     );
 
     const svgLineColor = ele.data("isHidden") ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR;

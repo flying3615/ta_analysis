@@ -68,7 +68,7 @@ describe("usePlanGenCompilation hook", () => {
         {compiling ? (
           <LuiMiniSpinner size={20} divProps={{ "data-testid": "compilation-loading-spinner" }} />
         ) : (
-          <button onClick={() => startCompile(jest.fn())} data-testid="start_compile">
+          <button onClick={() => void startCompile(jest.fn())} data-testid="start_compile">
             Start Export
           </button>
         )}

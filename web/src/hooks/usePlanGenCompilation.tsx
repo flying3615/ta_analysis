@@ -97,7 +97,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     }
     const serializedPreCompileError = errorFromSerializedError(preCompilePlanError);
     newrelic.noticeError(serializedPreCompileError);
-    showPrefabModal(unhandledErrorModal(serializedPreCompileError));
+    void showPrefabModal(unhandledErrorModal(serializedPreCompileError));
   }, [preCompilePlanError, showPrefabModal, transactionId]);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     }
     const serializedCompilePlanError = errorFromSerializedError(compilePlanError);
     newrelic.noticeError(serializedCompilePlanError);
-    showPrefabModal(unhandledErrorModal(serializedCompilePlanError));
+    void showPrefabModal(unhandledErrorModal(serializedCompilePlanError));
   }, [compilePlanError, showPrefabModal, transactionId]);
 
   useEffect(() => {
@@ -194,7 +194,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           );
 
           // filter out the mark name if the sheet type is title plan title
-          if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE.valueOf()) {
+          if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE) {
             diagramNodeData = diagramNodeData.filter(
               (node) => !node.properties["labelType"] || node.properties["labelType"] != "markName",
             );
@@ -284,9 +284,9 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
       const response = await compilePlan(planCompilationRequest);
       if (response.batchRunTime == null) {
-        showPrefabModal(info126026_planGenCompileSuccess);
+        void showPrefabModal(info126026_planGenCompileSuccess);
       } else {
-        showPrefabModal(info126026_planGenCompileProgress(response.batchRunTime));
+        void showPrefabModal(info126026_planGenCompileProgress(response.batchRunTime));
       }
     } catch (e) {
       console.error(e);

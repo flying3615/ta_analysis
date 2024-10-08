@@ -75,10 +75,10 @@ export const generateBlankJpegBlob = async (width: number, height: number): Prom
 
   // Convert the canvas to a Blob object
   if ("convertToBlob" in canvas) {
-    return await (canvas as OffscreenCanvas).convertToBlob({ type: "image/jpeg", quality: 1 });
+    return await canvas.convertToBlob({ type: "image/jpeg", quality: 1 });
   } else {
     return new Promise<Blob>((resolve, reject) => {
-      (canvas as HTMLCanvasElement).toBlob(
+      canvas.toBlob(
         (blob) => {
           if (blob) {
             resolve(blob);

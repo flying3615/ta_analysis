@@ -160,7 +160,7 @@ export class PlanDataBuilder {
     } else {
       this.planData.pages.push({
         ...defaults,
-        ...(optionsOrPageNumber as PageDTO),
+        ...optionsOrPageNumber,
       });
     }
     return this;
@@ -273,7 +273,7 @@ export class PlanDataBuilder {
             textAlignment: textAlignment || "centerCenter",
             borderWidth,
           }
-        : (idOrOptions as LabelDTO);
+        : idOrOptions;
 
     if (intoWhere === "parcelLabels") {
       last(this.planData.diagrams)?.parcelLabelGroups?.push({

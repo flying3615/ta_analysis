@@ -1,0 +1,13 @@
+{
+  "extends": ["./tsconfig.json"],
+  "include": [
+    "../**/*.json",
+    "../infra/**/*.ts",
+    "../playwright/**/*.ts",
+    "./config/**/*.js",
+    "./public-dev/**/*.js",
+    ".eslintrc.cjs",
+    "src",
+    "vite*.ts"
+  ]
+}

@@ -24,7 +24,8 @@ export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
   if (cyContext) {
     cyContext.font = `${fontSize}px ${fontName}`; // order matters here
     const lineSizes = lines.map((l: string) => cyContext.measureText(l));
-    const width = (max(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0) as number;
+
+    const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
     const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
     return { height, width };
   }

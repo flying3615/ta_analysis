@@ -57,13 +57,13 @@ export const useInsertDiagram = () => {
     options: { type },
     maxPoints: {
       count: maxSides + 1,
-      errorCallback: () => showPrefabModal(error32027_diagramTooManySides(maxSides)),
+      errorCallback: () => void showPrefabModal(error32027_diagramTooManySides(maxSides)),
     },
     drawEnd: async ({ area, latLongCartesians }) => {
       if (!map || !diagramType || diagramsAreLoading || diagramsLoadError) return;
 
       if (area === 0) {
-        showPrefabModal(error32021_diagramNoArea);
+        void showPrefabModal(error32021_diagramNoArea);
         return;
       }
 

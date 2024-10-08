@@ -167,7 +167,7 @@ describe("PlanSheetsHeaderButtons", () => {
     const button = screen.getByRole("button", { name: "Select Lines" });
     await userEvent.click(button);
 
-    await expect(button).toHaveClass("selected");
+    expect(button).toHaveClass("selected");
 
     expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
   });
@@ -177,7 +177,7 @@ describe("PlanSheetsHeaderButtons", () => {
     const button = screen.getByRole("button", { name: "Select Labels" });
     await userEvent.click(button);
 
-    await expect(button).toHaveClass("selected");
+    expect(button).toHaveClass("selected");
 
     expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLabel);
   });

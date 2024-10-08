@@ -20,7 +20,7 @@ const TestModalTemplate = (props: { defaultToOpen?: boolean }) => {
     //   sameSite: "strict",
     // });
 
-    showPrefabModal(
+    void showPrefabModal(
       unhandledErrorModal(
         {
           name: "Test error",
@@ -52,9 +52,9 @@ export const Default: Story = {
 };
 Default.play = async ({ canvasElement }) => {
   await sleep(2000);
-  await waitFor(() => {
+  await waitFor(async () => {
     // eslint-disable-next-line testing-library/no-node-access
-    expect(canvasElement.parentElement?.textContent?.includes("Unexpected error")).toBeTruthy();
+    await expect(canvasElement.parentElement?.textContent?.includes("Unexpected error")).toBeTruthy();
   });
 };
 
@@ -68,8 +68,8 @@ export const Expanded: Story = {
 
 Expanded.play = async ({ canvasElement }) => {
   await sleep(2000);
-  await waitFor(() => {
+  await waitFor(async () => {
     // eslint-disable-next-line testing-library/no-node-access
-    expect(canvasElement.parentElement?.textContent?.includes("Detailed error information")).toBeTruthy();
+    await expect(canvasElement.parentElement?.textContent?.includes("Detailed error information")).toBeTruthy();
   });
 };

@@ -18,7 +18,7 @@ describe("unhandledErrorModal", () => {
     const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
     useEffect(() => {
-      showPrefabModal(unhandledErrorModal(props.error));
+      void showPrefabModal(unhandledErrorModal(props.error));
     }, [props.error, showPrefabModal]);
 
     return <div ref={modalOwnerRef} />;

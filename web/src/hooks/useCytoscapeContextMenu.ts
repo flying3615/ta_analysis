@@ -31,7 +31,7 @@ export const useCytoscapeContextMenu = (
     (event: EventObject) => {
       if (!event.cy) return;
 
-      const { clientX: x, clientY: y } = event.originalEvent as MouseEvent;
+      const { clientX: x, clientY: y } = event.originalEvent;
       const target = event.target === cy ? null : (event.target as SingularElementArgument);
       event.cy?.$("node, edge")?.unselect();
       target?.select();

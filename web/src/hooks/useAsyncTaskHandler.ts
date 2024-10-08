@@ -48,9 +48,7 @@ export const useAsyncTaskHandler = <MutationRequestBody>(
     if (!triggerTaskIsSuccess || !taskIsPending) {
       return;
     }
-    const timeout = setTimeout(async () => {
-      refetchTask();
-    }, refetchIntervalMs);
+    const timeout = setTimeout(() => void refetchTask(), refetchIntervalMs);
     return () => clearTimeout(timeout);
   }, [taskIsPending, triggerTaskIsSuccess, refetchTask, refetchIntervalMs]);
 

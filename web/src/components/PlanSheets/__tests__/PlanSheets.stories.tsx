@@ -75,7 +75,7 @@ DiagramsPanelClosed.play = async ({ canvasElement }) => {
   // https://github.com/testing-library/user-event/issues/1075#issuecomment-1948093169
   fireEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
   await sleep(2000);
-  expect(canvas.queryByRole("heading", { name: "Survey sheet diagrams" })).toBeNull();
+  await expect(canvas.queryByRole("heading", { name: "Survey sheet diagrams" })).toBeNull();
 };
 
 export const TitlePage1: Story = {
@@ -492,7 +492,7 @@ export const ExportPdfAndDownload: Story = {
 
     await userEvent.click(await canvas.findByText("Preview layout"));
 
-    const modal = (await screen.findByRole("dialog")) as HTMLElement;
+    const modal = await screen.findByRole("dialog");
     const modalText = /Processing.*Preparing preview of Layout Plan/i;
     await expect(modal.textContent).toMatch(modalText);
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"), { timeout: 20000 });

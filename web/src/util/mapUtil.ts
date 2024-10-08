@@ -66,7 +66,7 @@ export const getFeatureId = (f: number | FeatureLike | RenderFeature): number =>
 
 export const getClickedFeatureId = (cf: ClickedFeature): number => getFeatureId(cf.feature);
 
-export const clickedFeatureFilter = (field: string, values: unknown | unknown[]) => (clicked: ClickedFeature) =>
+export const clickedFeatureFilter = (field: string, values: unknown) => (clicked: ClickedFeature) =>
   castArray(values).includes(clicked.feature.get(field));
 
 export const createNewNode = (

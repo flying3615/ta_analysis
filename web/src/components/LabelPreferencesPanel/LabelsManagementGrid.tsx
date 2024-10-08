@@ -35,7 +35,7 @@ export const LabelsManagementGrid = ({
   const [list, setList] = useState(labelPreferences);
 
   const close = () => {
-    queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) }).then();
+    void queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) });
     panelClose();
   };
 

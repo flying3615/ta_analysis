@@ -47,7 +47,7 @@ export const mockDefaultFeatures: { [id: string]: TREATMENTS } = {
 const mockFeatures = { ...mockDefaultFeatures };
 jest.mock("./split-functionality/UseFeatureFlags", () => ({
   default: function (feature: FEATUREFLAGS): IFeatureToggleResult {
-    return { result: mockFeatures[feature] == "on", error: false, loading: false };
+    return { result: mockFeatures[feature]?.valueOf() === "on", error: false, loading: false };
   },
   __esModule: true,
 }));

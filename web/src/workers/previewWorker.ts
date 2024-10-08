@@ -27,12 +27,12 @@ const generatePDF = async (ImageFiles: ImageFile[]): Promise<string> => {
     const imageBlob = file.blob;
 
     // Convert blob to data URL
-    const dataURL = (await new Promise((resolve, reject) => {
+    const dataURL = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(imageBlob);
-    })) as string;
+    });
 
     const { width, height } = await memoize(getImageDimensions)("size", imageBlob);
     const scaleX = (pageWidth - 10) / width; // give some margin

@@ -85,7 +85,7 @@ const arrowStyles = (line: LineDTO) => {
 };
 
 export const getEdgeStyling = (line: LineDTO) => {
-  let applyStyle = lineStyleValues[line.style as string];
+  let applyStyle = lineStyleValues[line.style];
   if (!applyStyle) {
     console.warn(`extractEdges: line ${line.id} has unsupported style ${line.style} - will use solid`);
     applyStyle = {};
@@ -101,7 +101,8 @@ export const getEdgeStyling = (line: LineDTO) => {
   };
 };
 
-export const getTextBackgroundOpacity = (label: LabelDTO): number => (label.effect === LabelEffect.HALO ? 1 : 0);
+export const getTextBackgroundOpacity = (label: LabelDTO): number =>
+  label.effect === LabelEffect.HALO.valueOf() ? 1 : 0;
 
 export const isHidden = (label: LabelDTO) =>
   [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(label.displayState);

@@ -127,14 +127,14 @@ export const usePlanGenPreview = (props: {
     const cyMapperCurrent = cyMapper.current;
 
     // Don't block the exporting process
-    showProcessingModal().then();
+    void showProcessingModal();
 
     setPreviewing(true);
 
     // find the max pageNumber for the given activeSheet type like survey or title
     const activePlanSheetPages = pages.filter((p) => p.pageType == activeSheet);
     const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
-    const isSurveySheet = activeSheet === PlanSheetType.SURVEY.valueOf();
+    const isSurveySheet = activeSheet === PlanSheetType.SURVEY;
     const sheetName = isSurveySheet
       ? PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY
       : PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE;
@@ -152,8 +152,9 @@ export const usePlanGenPreview = (props: {
 
         let nodeBgPromise: Promise<EventHandler | void>[] = [];
         let layoutPromise: Promise<EventHandler | void> = Promise.resolve();
-        cyRefCurrent?.one("add", async () => {
+        cyRefCurrent?.one("add", () => {
           layoutPromise = cyRefCurrent?.promiseOn("layoutstop").then(() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             nodeBgPromise = cyRefCurrent?.nodes().map((n, _) => {
               // :nonbackgrounding : Matches an element if its background image not currently loading;
               // i.e. there is no image or the image is already loaded.
@@ -182,7 +183,7 @@ export const usePlanGenPreview = (props: {
           ), // filter out hidden diagram nodes
         ];
 
-        const sheetType = activeSheet === PlanSheetType.TITLE.valueOf() ? "T" : "S";
+        const sheetType = activeSheet === PlanSheetType.TITLE ? "T" : "S";
         const secondaryBottomRightNode = sortedNodes && sortedNodes.length > 1 && sortedNodes[1];
         const pageInfoNode = secondaryBottomRightNode
           ? createNewNode(

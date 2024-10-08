@@ -63,4 +63,4 @@ async function renderApp() {
   );
 }
 
-renderApp();
+void renderApp();

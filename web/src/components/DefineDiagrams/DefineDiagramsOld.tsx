@@ -88,7 +88,7 @@ export const DefineDiagrams = ({ mock, children }: DefineDiagramsProps) => {
     }
     const serializedError = error instanceof PrepareDatasetError ? error : errorFromSerializedError(error);
     newrelic.noticeError(serializedError);
-    showPrefabModal(
+    void showPrefabModal(
       error instanceof PrepareDatasetError ? prepareDatasetErrorModal(error) : unhandledErrorModal(serializedError),
     ).then(() => navigate(generatePath(Paths.root, { transactionId })));
   }, [error, navigate, showPrefabModal, transactionId]);

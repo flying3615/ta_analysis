@@ -40,9 +40,7 @@ export const usePreCompilePlanCheck: PlanGenMutation<PreCompilePlanResponseDTO> 
     ...params,
     mutationKey: preCompilePlanQueryKey(transactionId),
     mutationFn: () => new PlanGraphicsControllerApi(apiConfig()).prePlanCompile({ transactionId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: preCompilePlanQueryKey(transactionId) });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: preCompilePlanQueryKey(transactionId) }),
   });
 };
 
@@ -57,9 +55,7 @@ export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ..
     mutationKey: updatePlanQueryKey(transactionId),
     mutationFn: () =>
       new PlanTempControllerApi(apiConfig()).updatePlanTemp({ transactionId, updatePlanRequestDTO: planData }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) }),
   });
 };
 
@@ -77,8 +73,6 @@ export const useCompilePlanMutation: PlanGenCompileMutation<CompilePlanResponseD
     mutationFn: async (planCompilationRequest: PlanCompileRequest) => {
       return await new PlanGraphicsControllerApi(apiConfig()).planCompile(planCompilationRequest);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) }),
   });
 };

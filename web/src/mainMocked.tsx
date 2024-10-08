@@ -35,4 +35,5 @@ async function renderApp() {
     </React.StrictMode>,
   );
 }
-renderApp();
+
+void renderApp();

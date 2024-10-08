@@ -20,7 +20,7 @@ const TestModalTemplate = (_: { defaultToOpen?: boolean }) => {
     //   sameSite: "strict",
     // });
 
-    showPrefabModal(
+    void showPrefabModal(
       errorWithResponseModal({
         name: "Test error",
         message: "Test error",
@@ -52,8 +52,8 @@ export const Default: Story = {
 };
 Default.play = async ({ canvasElement }) => {
   await sleep(2000);
-  await waitFor(() => {
+  await waitFor(async () => {
     // eslint-disable-next-line testing-library/no-node-access
-    expect(canvasElement.parentElement?.textContent?.includes("Test error")).toBeTruthy();
+    await expect(canvasElement.parentElement?.textContent?.includes("Test error")).toBeTruthy();
   });
 };

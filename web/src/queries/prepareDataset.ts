@@ -49,11 +49,12 @@ export const usePrepareDatasetMutation: PlanGenMutation<PostPrepareResponseDTO> 
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getSurveyFeaturesQueryKey(transactionId) });
-      queryClient.invalidateQueries({ queryKey: getDiagramsQueryKey(transactionId) });
-      queryClient.invalidateQueries({ queryKey: getDiagramCheckQueryKey(transactionId) });
-      queryClient.invalidateQueries({ queryKey: getOpenlayersDiagramsQueryKey(transactionId) });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: getSurveyFeaturesQueryKey(transactionId) }),
+        queryClient.invalidateQueries({ queryKey: getDiagramsQueryKey(transactionId) }),
+        queryClient.invalidateQueries({ queryKey: getDiagramCheckQueryKey(transactionId) }),
+        queryClient.invalidateQueries({ queryKey: getOpenlayersDiagramsQueryKey(transactionId) }),
+      ]),
   });
 };

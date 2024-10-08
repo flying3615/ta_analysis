@@ -10,8 +10,8 @@ describe("errorWithResponseModal", () => {
     const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
     useEffect(() => {
-      (async () => {
-        showPrefabModal(errorWithResponseModal(props.error));
+      (() => {
+        void showPrefabModal(errorWithResponseModal(props.error));
       })();
     }, [props.error, showPrefabModal]);
 

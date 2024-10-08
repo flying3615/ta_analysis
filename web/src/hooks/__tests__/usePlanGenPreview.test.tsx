@@ -33,7 +33,7 @@ describe("usePlanGenPreview hook", () => {
     return (
       <div>
         <PreviewExportCanvas />
-        <button onClick={() => startPreview()} data-testid="start_export">
+        <button onClick={() => void startPreview()} data-testid="start_export">
           Start Export
         </button>
         <button onClick={stopPreviewing} data-testid="stop_export">

@@ -12,7 +12,7 @@ describe("prepareDatasetErrorModal", () => {
     const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
     useEffect(() => {
-      showPrefabModal(prepareDatasetErrorModal(props.error));
+      void showPrefabModal(prepareDatasetErrorModal(props.error));
     }, [props.error, showPrefabModal]);
 
     return <div ref={modalOwnerRef} />;
