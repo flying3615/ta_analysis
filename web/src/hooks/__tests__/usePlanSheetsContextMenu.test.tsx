@@ -1,5 +1,5 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { NodeSingular } from "cytoscape";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import cytoscape, { CollectionReturnValue, NodeSingular } from "cytoscape";
 
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
@@ -26,13 +26,14 @@ describe("PlanSheetsContextMenu", () => {
   };
 
   interface PlanSheetsContextMenuWrapProps {
-    element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core;
+    targetElement: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core | undefined;
+    selectedCollection?: CollectionReturnValue;
     expectations: (menuItems: MenuItem[]) => void;
   }
 
   const PlanSheetsContextMenuWrapComponent = (props: PlanSheetsContextMenuWrapProps) => {
     const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
-    const menuItems = getMenuItemsForPlanElement(props.element);
+    const menuItems = getMenuItemsForPlanElement(props.targetElement, props.selectedCollection);
     props.expectations(menuItems);
     return <></>;
   };
@@ -44,7 +45,7 @@ describe("PlanSheetsContextMenu", () => {
 
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(diagramMenuItems) => {
           expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual([
             "Properties",
@@ -65,7 +66,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(coordinateMenuItems) => {
           expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
         }}
@@ -84,7 +85,7 @@ describe("PlanSheetsContextMenu", () => {
 
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(coordinateMenuItems) => {
           expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
         }}
@@ -100,7 +101,7 @@ describe("PlanSheetsContextMenu", () => {
 
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(coordinateMenuItems) => {
           expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
           expect(coordinateMenuItems?.[1]?.disabled).toBeTruthy();
@@ -116,7 +117,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(lineMenuItems) => {
           expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
         }}
@@ -132,7 +133,7 @@ describe("PlanSheetsContextMenu", () => {
     } as unknown as NodeSingular;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        element={mockNode}
+        targetElement={mockNode}
         expectations={(lineMenuItems) => {
           expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
           expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
@@ -140,5 +141,276 @@ describe("PlanSheetsContextMenu", () => {
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
     );
+  });
+
+  describe("getMenuItemsForPlanMode for Select Label", () => {
+    test("for single page label selection menu", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+      } as unknown as NodeSingular;
+
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={mockNode}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Rotate label",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+              "Align label to line",
+            ]);
+            expect(labelMenuItems?.[9]?.disabled).toBeFalsy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for multiple page label selection menu", (/**/) => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+      } as unknown as NodeSingular;
+
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+        } as NodeSingular,
+        {
+          data: (key: string) =>
+            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={mockNode}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.[8]?.disabled).toBeFalsy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for single diagram label selection menu", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+      } as unknown as NodeSingular;
+
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
+              key
+            ],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={mockNode}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Rotate label",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+              "Align label to line",
+            ]);
+            expect(labelMenuItems?.[9]?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for multiple diagram label selection menu", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+      } as unknown as NodeSingular;
+
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.markName })[key],
+        } as NodeSingular,
+        {
+          data: (key: string) =>
+            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
+              key
+            ],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={mockNode}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.[8]?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for combination label selection menu", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+      } as unknown as NodeSingular;
+
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+        } as NodeSingular,
+        {
+          data: (key: string) =>
+            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
+              key
+            ],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={mockNode}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.[8]?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for combination label selection menu while click elsewhere", () => {
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+        } as NodeSingular,
+        {
+          data: (key: string) =>
+            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
+              key
+            ],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={undefined}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select",
+              "Move to page...",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.[8]?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
   });
 });

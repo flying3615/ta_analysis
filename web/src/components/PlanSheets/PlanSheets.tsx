@@ -202,7 +202,9 @@ const PlanSheets = () => {
             diagrams={activeDiagrams}
             onNodeChange={onNodeChange}
             onEdgeChange={onEdgeChange}
-            getContextMenuItems={(element) => getMenuItemsForPlanElement(element)}
+            getContextMenuItems={(element, selectedCollection) =>
+              getMenuItemsForPlanElement(element, selectedCollection)
+            }
             selectionSelector={selectionSelector}
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"

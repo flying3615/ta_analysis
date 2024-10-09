@@ -1,7 +1,14 @@
-import cytoscape, { EdgeSingular, EventObject, NodeSingular, SingularElementArgument } from "cytoscape";
+import cytoscape, {
+  CollectionReturnValue,
+  EdgeSingular,
+  EventObject,
+  NodeSingular,
+  SingularElementArgument,
+} from "cytoscape";
 import { useCallback, useEffect, useState } from "react";
 
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
+import { useEscapeKey } from "@/hooks/useEscape.ts";
 
 export interface ContextMenuState {
   visible?: boolean;
@@ -13,8 +20,12 @@ export interface ContextMenuState {
 
 export const useCytoscapeContextMenu = (
   cy: cytoscape.Core | undefined,
-  getContextMenuItems: (element: NodeSingular | EdgeSingular | cytoscape.Core) => MenuItem[] | undefined,
+  getContextMenuItems: (
+    element: NodeSingular | EdgeSingular | cytoscape.Core,
+    selectedCollection: CollectionReturnValue,
+  ) => MenuItem[] | undefined,
 ) => {
+  useEscapeKey({ callback: () => hideMenu() });
   const [menuState, setMenuState] = useState<ContextMenuState>({
     items: [],
     position: { x: 0, y: 0 },
@@ -32,11 +43,21 @@ export const useCytoscapeContextMenu = (
       if (!event.cy) return;
 
       const { clientX: x, clientY: y } = event.originalEvent;
-      const target = event.target === cy ? null : (event.target as SingularElementArgument);
-      event.cy?.$("node, edge")?.unselect();
-      target?.select();
+      const target = event.target === event.cy ? null : (event.target as SingularElementArgument);
 
-      const menuItems = target && getContextMenuItems(target as SingularElementArgument | cytoscape.Core);
+      if (!target) {
+        if (event.cy.elements(":selected").length === 0) return;
+      } else {
+        if (!target.selected()) {
+          event.cy.elements().unselect();
+          target.select();
+        }
+      }
+
+      const menuItems = getContextMenuItems(
+        target as SingularElementArgument | cytoscape.Core,
+        event.cy.elements(":selected"),
+      );
       if (!menuItems || menuItems.length === 0) return;
 
       const menuWidth = 150;
@@ -55,7 +76,7 @@ export const useCytoscapeContextMenu = (
         leftMenu: isLeftMenu,
       });
     },
-    [cy, getContextMenuItems, showMenu],
+    [getContextMenuItems, showMenu],
   );
 
   const onTap = useCallback(() => {
@@ -64,13 +85,13 @@ export const useCytoscapeContextMenu = (
 
   useEffect(() => {
     cy?.on("cxttap", onCxtTap);
-    cy?.on("tap", onTap);
+    document.addEventListener("click", hideMenu);
 
     return () => {
       cy?.removeListener("cxttap", onCxtTap);
-      cy?.removeListener("tap", onTap);
+      document.removeEventListener("click", hideMenu);
     };
-  }, [cy, onCxtTap, onTap]);
+  }, [cy, hideMenu, onCxtTap, onTap]);
 
   return { menuState, hideMenu };
 };

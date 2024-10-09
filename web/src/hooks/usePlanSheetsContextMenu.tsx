@@ -1,5 +1,5 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
@@ -45,6 +45,7 @@ export const usePlanSheetsContextMenu = () => {
   function getAllMenuItemsForElement(
     element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
     planElementType: PlanElementType,
+    selectedCollection?: CollectionReturnValue,
   ) {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
       return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
@@ -116,7 +117,8 @@ export const usePlanSheetsContextMenu = () => {
       return ShowHideMenuOptionState.SHOW;
     };
 
-    const buildLabelMenus = (targetLabel: NodeSingular): MenuItem[] => {
+    const buildLabelMenus = (targetLabel: NodeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
+      const singleSelected = selectedCollection && selectedCollection?.size() === 1;
       return [
         { title: "Original location", callback: getProperties },
         { title: "Show", hideWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE },
@@ -131,15 +133,22 @@ export const usePlanSheetsContextMenu = () => {
             { title: "All" },
           ],
         },
-        {
-          title: "Rotate label",
-          submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }],
-        },
+        // Add the "Rotate label" menu item only if singleSelected is true
+        ...(singleSelected
+          ? [{ title: "Rotate label", submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }] }]
+          : []),
         { title: "Move to page...", callback: movetoPage },
-        { title: "Cut", divider: true },
-        { title: "Copy" },
-        { title: "Paste" },
-        { title: "Delete", className: "delete-item" },
+        { title: "Cut", divider: true, disabled: true },
+        { title: "Copy", disabled: true },
+        { title: "Paste", disabled: true },
+        {
+          title: "Delete",
+          className: "delete-item",
+          disableWhen: () =>
+            selectedCollection?.nodes().some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation) ??
+            true,
+        },
+        ...(singleSelected ? [{ title: "Align label to line" }] : []),
       ];
     };
 
@@ -185,17 +194,22 @@ export const usePlanSheetsContextMenu = () => {
           ].includes(planElementType)
         )
           return undefined;
-        return buildLabelMenus(element as NodeSingular);
+        return buildLabelMenus(element as NodeSingular, selectedCollection);
       default:
         return undefined;
     }
   }
 
-  return (element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core): MenuItem[] => {
+  return (
+    clickedElement: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core | undefined,
+    selectedCollection?: CollectionReturnValue,
+  ): MenuItem[] => {
+    const element = clickedElement ?? selectedCollection?.nodes()[0] ?? selectedCollection?.edges()[0] ?? undefined;
+    if (!element) return [];
     const planElementType = element.data("elementType") as PlanElementType;
 
     return (
-      getAllMenuItemsForElement(element, planElementType)
+      getAllMenuItemsForElement(element, planElementType, selectedCollection)
         ?.map((menuItem) => ({
           ...menuItem,
           disabled: menuItem.disabled || menuItem.disableWhen?.(element),

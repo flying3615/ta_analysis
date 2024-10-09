@@ -50,6 +50,7 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick }: ICyt
               }
             }}
             onMouseEnter={(e) => {
+              e.stopPropagation();
               if (!item.disabled) {
                 e.currentTarget.classList.add("hovered");
 
@@ -65,11 +66,10 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick }: ICyt
               }
             }}
             onMouseLeave={(e) => {
+              e.stopPropagation();
               e.currentTarget.classList.remove("hovered");
-              if (isSimpleClickMenuItem) {
-                e.currentTarget.style.background = "none";
-                e.currentTarget.style.cursor = "default";
-              }
+              e.currentTarget.style.background = "none";
+              e.currentTarget.style.cursor = "default";
             }}
           >
             <div className={clsx("menu-item-content", item.className)}>

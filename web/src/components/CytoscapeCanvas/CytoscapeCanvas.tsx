@@ -1,7 +1,7 @@
 import "./CytoscapeCanvas.scss";
 
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
+import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce, isArray } from "lodash-es";
 import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
@@ -45,7 +45,10 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   onCyInit?: (cy: cytoscape.Core) => void;
   applyClasses?: Record<string, string | string[]>;
   selectionSelector?: string;
-  getContextMenuItems: (element: NodeSingular | EdgeSingular | cytoscape.Core) => MenuItem[] | undefined;
+  getContextMenuItems: (
+    element: NodeSingular | EdgeSingular | cytoscape.Core,
+    selectedCollection: CollectionReturnValue,
+  ) => MenuItem[] | undefined;
   "data-testid"?: string;
 }
 
