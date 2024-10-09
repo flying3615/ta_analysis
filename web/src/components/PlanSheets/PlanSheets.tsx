@@ -20,11 +20,11 @@ import {
 } from "@/components/modals/unhandledErrorModal.tsx";
 import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
-import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler.ts";
+import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   selectActiveDiagramsEdgesAndNodes,
@@ -35,13 +35,7 @@ import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePagesWithNode } f
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import {
-  findMarkSymbol,
-  getPlanMode,
-  lookupSource,
-  replaceDiagrams,
-  replacePage,
-} from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
@@ -75,6 +69,8 @@ const PlanSheets = () => {
     error: regenerateApiError,
   } = useAsyncTaskHandler(regeneratePlanMutationResult, regeneratePlanMutate);
 
+  const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
+
   useEffect(() => {
     if (regenerationHasFailed) {
       void showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
@@ -106,10 +102,6 @@ const PlanSheets = () => {
 
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
   const planMode = useAppSelector(getPlanMode);
-  const lookupSelectors = {
-    lookupSource: useAppSelector(lookupSource),
-    findMarkSymbol: useAppSelector(findMarkSymbol),
-  };
 
   const {
     data: planData,
@@ -210,7 +202,7 @@ const PlanSheets = () => {
             diagrams={activeDiagrams}
             onNodeChange={onNodeChange}
             onEdgeChange={onEdgeChange}
-            getContextMenuItems={(element) => getMenuItemsForPlanElement(lookupSelectors, planMode, element)}
+            getContextMenuItems={(element) => getMenuItemsForPlanElement(element)}
             selectionSelector={selectionSelector}
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"

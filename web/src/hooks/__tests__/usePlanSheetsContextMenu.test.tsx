@@ -1,0 +1,152 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import cytoscape, { NodeSingular } from "cytoscape";
+
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
+import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
+import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { LookupGraphData } from "@/modules/plan/LookupGraphData.ts";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
+import { mockStore } from "@/test-utils/store-mock.ts";
+
+describe("PlanSheetsContextMenu", () => {
+  const mockedStateForPlanMode = (planMode: PlanMode) => {
+    const lookupGraphData = new LookupGraphData(mockPlanData);
+    return {
+      preloadedState: {
+        ...mockStore,
+        planSheets: {
+          ...mockStore.planSheets,
+          diagrams: mockPlanData.diagrams,
+          pages: mockPlanData.pages,
+          configs: [],
+          planMode: planMode,
+          lookupGraphData: lookupGraphData,
+        },
+      },
+    };
+  };
+
+  interface PlanSheetsContextMenuWrapProps {
+    element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core;
+    expectations: (menuItems: MenuItem[]) => void;
+  }
+
+  const PlanSheetsContextMenuWrapComponent = (props: PlanSheetsContextMenuWrapProps) => {
+    const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
+    const menuItems = getMenuItemsForPlanElement(props.element);
+    props.expectations(menuItems);
+    return <></>;
+  };
+
+  test("getMenuItemsForPlanMode for Select diagram returns diagram menu", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "D1", elementType: PlanElementType.DIAGRAM })[key],
+    } as unknown as NodeSingular;
+
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(diagramMenuItems) => {
+          expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual([
+            "Properties",
+            "Cut",
+            "Copy",
+            "Paste",
+            "Move to page...",
+          ]);
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectDiagram),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select coordinate returns coordinate menu", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(coordinateMenuItems) => {
+          expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectCoordinates),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select coordinate returns Show option when mark symbol hidden", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
+    } as unknown as NodeSingular;
+    const state = mockedStateForPlanMode(PlanMode.SelectCoordinates);
+    const coordinateLabel = state.preloadedState.planSheets.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
+    coordinateLabel!.displayState = DisplayStateEnum.hide;
+    state.preloadedState.planSheets.lookupGraphData = new LookupGraphData({
+      diagrams: state.preloadedState.planSheets.diagrams,
+      pages: state.preloadedState.planSheets.pages,
+      configs: [],
+    });
+
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(coordinateMenuItems) => {
+          expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+        }}
+      />,
+      state,
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select coordinate disables Show option for user defined line end nodes", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "10011", elementType: PlanElementType.COORDINATES })[key],
+    } as unknown as NodeSingular;
+
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(coordinateMenuItems) => {
+          expect(coordinateMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+          expect(coordinateMenuItems?.[1]?.disabled).toBeTruthy();
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectCoordinates),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select line returns line menu", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "1001", elementType: PlanElementType.LINES })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(lineMenuItems) => {
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectLine),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select line disables hide option when line is systemDisplay", () => {
+    const mockNode = {
+      data: (key: string) =>
+        ({ id: "1001", elementType: PlanElementType.LINES, displayState: DisplayStateEnum.systemDisplay })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        element={mockNode}
+        expectations={(lineMenuItems) => {
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
+          expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectLine),
+    );
+  });
+});
