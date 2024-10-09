@@ -32,7 +32,14 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   const queryClient = useQueryClient();
 
   const userDefinedDiagramTypes = useMemo(() => {
-    const validTypes: string[] = [CpgDiagramType.UDFP, CpgDiagramType.UDFN, CpgDiagramType.UDFT];
+    const validTypes: string[] = [
+      CpgDiagramType.SYSP,
+      CpgDiagramType.SYSN,
+      CpgDiagramType.SYST,
+      CpgDiagramType.UDFP,
+      CpgDiagramType.UDFN,
+      CpgDiagramType.UDFT,
+    ];
     return sortBy(
       CpgDiagramType.list().filter((d) => validTypes.includes(d.code)),
       (d) => validTypes.indexOf(d.code),
@@ -40,7 +47,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   }, []);
 
   const [saving, setSaving] = useState<boolean>();
-  const [diagramTypeCode, setDiagramTypeCode] = useState<string>(CpgDiagramType.UDFP);
+  const [diagramTypeCode, setDiagramTypeCode] = useState<string>(CpgDiagramType.SYSP);
   const [diagramsByType, setDiagramsByType] = useState<(DiagramLayerPreferenceDTO & { id: number })[]>([]);
 
   /**
