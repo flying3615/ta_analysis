@@ -186,10 +186,8 @@ function getDiagramDataAndExtent(
 ): DiagramData & BoundingBox12 {
   const data = diagram.data() as DiagramData;
   const { x: x1, y: y1 } = cytoCoordMapper.groundCoordToCytoscape(
-    {
-      x: data.originPageX,
-      y: data.originPageY,
-    },
+    // _diagram reference frame (0,0)_ <=> originPageX/originPageY
+    { x: 0, y: 0 },
     data.diagramId,
   );
   const { x: x2, y: y2 } = cytoCoordMapper.groundCoordToCytoscape(
@@ -213,7 +211,7 @@ function getNewDiagramOriginAndScale(
   const originDx = newOrigin.x / data.zoomScale;
   const originDy = newOrigin.y / data.zoomScale;
   // scale change same in either axis, since constrained
-  const relativeScale = (data.x2 - data.x1) / (newExtent.x2 - newExtent.x1);
+  const relativeScale = +((data.x2 - data.x1) / (newExtent.x2 - newExtent.x1)).toFixed(5);
   return {
     originPageX: data.originPageX + originDx,
     originPageY: data.originPageY + originDy,
