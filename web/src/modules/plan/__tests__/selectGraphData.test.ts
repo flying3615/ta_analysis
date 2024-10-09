@@ -1,13 +1,13 @@
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setupStore } from "@/redux/store";
 import { mockStore } from "@/test-utils/store-mock.ts";
 
-import { PlanSheetsState } from "../planSheetsSlice";
-import { populateLookupTblAsync } from "../planSheetsThunk";
+import { selectDiagramToPageLookupTable } from "../selectGraphData";
 
-describe("populateLookupTblAsync", () => {
-  it("should update lookup table from diagrams and pages", async () => {
+describe("selectDiagramToPageLookupTable", () => {
+  it("should derive lookup table from diagrams and pages", async () => {
     const { diagrams, pages } = new PlanDataBuilder()
       .addDiagram({
         bottomRightPoint: {
@@ -54,11 +54,7 @@ describe("populateLookupTblAsync", () => {
     };
 
     const store = setupStore({ planSheets: mockState });
-
-    const action = await store.dispatch(populateLookupTblAsync());
-    expect(action.payload).toEqual(expectedResult);
-
-    const diagPageLookupTbl = store.getState().planSheets.diagPageLookupTbl;
+    const diagPageLookupTbl = selectDiagramToPageLookupTable(store.getState());
     expect(diagPageLookupTbl).toEqual(expectedResult);
   });
 });

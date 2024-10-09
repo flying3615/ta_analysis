@@ -12,7 +12,6 @@ import {
   getPageNumberFromPageRef,
   setDiagramPageRef,
 } from "@/redux/planSheets/planSheetsSlice.ts";
-import { populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk.ts";
 
 interface IDiagramTileComponentProps {
   diagramDisplay: DiagramDisplay;
@@ -39,7 +38,6 @@ const useRemoveFromPage = (diagramId: number, pageNumber: number | null) => {
   return () => {
     if (pageNumber === activePageNumber) {
       dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
-      void dispatch(populateLookupTblAsync());
     }
   };
 };

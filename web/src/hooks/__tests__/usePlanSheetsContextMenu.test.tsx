@@ -6,13 +6,11 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { LookupGraphData } from "@/modules/plan/LookupGraphData.ts";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
 import { mockStore } from "@/test-utils/store-mock.ts";
 
 describe("PlanSheetsContextMenu", () => {
   const mockedStateForPlanMode = (planMode: PlanMode) => {
-    const lookupGraphData = new LookupGraphData(mockPlanData);
     return {
       preloadedState: {
         ...mockStore,
@@ -22,7 +20,6 @@ describe("PlanSheetsContextMenu", () => {
           pages: mockPlanData.pages,
           configs: [],
           planMode: planMode,
-          lookupGraphData: lookupGraphData,
         },
       },
     };
@@ -84,11 +81,6 @@ describe("PlanSheetsContextMenu", () => {
     const state = mockedStateForPlanMode(PlanMode.SelectCoordinates);
     const coordinateLabel = state.preloadedState.planSheets.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
     coordinateLabel!.displayState = DisplayStateEnum.hide;
-    state.preloadedState.planSheets.lookupGraphData = new LookupGraphData({
-      diagrams: state.preloadedState.planSheets.diagrams,
-      pages: state.preloadedState.planSheets.pages,
-      configs: [],
-    });
 
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent

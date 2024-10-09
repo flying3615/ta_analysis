@@ -3,15 +3,16 @@ import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
+
 import {
   extractDiagramEdges,
   extractDiagramNodes,
   extractPageEdges,
   extractPageNodes,
+  IDiagramToPage,
   lineToEdges,
-} from "@/modules/plan/extractGraphData.ts";
-import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling.ts";
-import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk";
+} from "../extractGraphData";
 
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {

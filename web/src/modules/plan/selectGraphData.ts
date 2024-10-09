@@ -3,13 +3,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { max } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-import {
-  getActivePage,
-  getDiagrams,
-  getDiagToPageLookupTbl,
-  getPageConfigs,
-  getPlanData,
-} from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, getDiagrams, getPageConfigs, getPlanData } from "@/redux/planSheets/planSheetsSlice";
 
 import {
   extractDiagramEdges,
@@ -18,7 +12,9 @@ import {
   extractPageConfigNodes,
   extractPageEdges,
   extractPageNodes,
+  IDiagramToPage,
 } from "./extractGraphData";
+import { LookupGraphData } from "./LookupGraphData";
 
 export interface INodeAndEdgeData<T> {
   data: T;
@@ -26,10 +22,24 @@ export interface INodeAndEdgeData<T> {
   nodes: INodeData[];
 }
 
+export const selectDiagramToPageLookupTable = createSelector(getPlanData, ({ diagrams, pages }) => {
+  const lookupTbl: IDiagramToPage = {};
+  diagrams.forEach((diagram) => {
+    const correspondingPage = pages.find((pageItem) => pageItem.id === diagram.pageRef);
+    if (correspondingPage) {
+      lookupTbl[diagram.id] = {
+        pageRef: diagram.pageRef,
+        page: correspondingPage,
+      };
+    }
+  });
+  return lookupTbl;
+});
+
 export const selectActiveDiagramsEdgesAndNodes = createSelector(
   getActivePage,
   getDiagrams,
-  getDiagToPageLookupTbl,
+  selectDiagramToPageLookupTable,
   (activePage, diagrams, lookupTbl): INodeAndEdgeData<DiagramDTO[]> => {
     const activeDiagrams = diagrams.filter((diagram) => diagram.pageRef === activePage?.id);
     return {
@@ -49,6 +59,11 @@ export const selectActivePageEdgesAndNodes = createSelector(
       nodes: activePage ? extractPageNodes([activePage]) : [],
     };
   },
+);
+
+export const selectLookupGraphData = createSelector(
+  getPlanData,
+  ({ diagrams, pages }) => new LookupGraphData({ diagrams, pages, configs: [] }),
 );
 
 /**

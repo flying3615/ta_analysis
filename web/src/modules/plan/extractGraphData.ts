@@ -12,7 +12,6 @@ import { chunk, flatten, negate, zip } from "lodash-es";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { SYMBOLS_FONT } from "@/constants";
-import { IDiagramToPage } from "@/redux/planSheets/planSheetsThunk.ts";
 import { createNewNode } from "@/util/mapUtil.ts";
 
 import {
@@ -170,6 +169,13 @@ export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[
     return pageLines;
   });
 };
+
+export interface IDiagramToPage {
+  [key: number]: {
+    pageRef: number | undefined;
+    page: PageDTO;
+  };
+}
 
 export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagramToPage | undefined): INodeData[] => {
   return diagrams.flatMap((diagram) => {

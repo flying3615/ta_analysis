@@ -6,12 +6,12 @@ import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { findMarkSymbol, getPlanMode, lookupSource } from "@/redux/planSheets/planSheetsSlice.ts";
+import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
+import { getPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const usePlanSheetsContextMenu = () => {
   const planMode = useAppSelector(getPlanMode);
-  const lookupSourceInRedux = useAppSelector(lookupSource);
-  const findMarkSymbolInRedux = useAppSelector(findMarkSymbol);
+  const lookupGraphData = useAppSelector(selectLookupGraphData);
 
   const getProperties = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
     const { target } = event;
@@ -47,7 +47,7 @@ export const usePlanSheetsContextMenu = () => {
     planElementType: PlanElementType,
   ) {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
-      return lookupSourceInRedux(element.data("elementType") as PlanElementType, element.data("id"));
+      return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
     };
 
     const diagramMenus: MenuItem[] = [
@@ -101,7 +101,7 @@ export const usePlanSheetsContextMenu = () => {
       HIDE_DISABLED,
     }
     const getNodeShowState = (element: NodeSingular | EdgeSingular | cytoscape.Core): ShowHideMenuOptionState => {
-      const markSymbol = findMarkSymbolInRedux(lookupElementSource(element as NodeSingular | EdgeSingular));
+      const markSymbol = lookupGraphData.findMarkSymbol(lookupElementSource(element as NodeSingular | EdgeSingular));
 
       // This covers the user defined line end node
       if (!markSymbol) return ShowHideMenuOptionState.SHOW_DISABLED;

@@ -2,7 +2,6 @@ import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
-import { populateLookupTblAsync } from "@/redux/planSheets/planSheetsThunk";
 import { setupStore } from "@/redux/store";
 
 import planSheetsSlice, {
@@ -278,22 +277,6 @@ describe("planSheetsSlice", () => {
 
     store = setupStore({ planSheets: { ...initialState, hasChanges: true } });
     expect(hasChanges(store.getState())).toBe(true);
-  });
-
-  test("populateLookupTblAsync should update page lookup table", () => {
-    const payload = {
-      "1": { pageRef: 4, page: { id: 4, pageNumber: 1, pageType: "title" } },
-      "2": { pageRef: 5, page: { id: 5, pageNumber: 1, pageType: "survey" } },
-      "3": { pageRef: 6, page: { id: 6, pageNumber: 2, pageType: "survey" } },
-    };
-
-    const action = {
-      type: populateLookupTblAsync.fulfilled.type,
-      payload,
-    };
-
-    const newState = planSheetsSlice.reducer(initialState, action);
-    expect(newState.diagPageLookupTbl).toEqual(payload);
   });
 
   test("planMode should contain current plan mode", () => {
