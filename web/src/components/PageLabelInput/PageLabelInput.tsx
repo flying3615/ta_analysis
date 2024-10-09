@@ -7,22 +7,22 @@ import { useCallback, useEffect, useState } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useEscapeKey } from "@/hooks/useEscape";
-import { addPageLabel, getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { selectMaxPlanId } from "@/modules/plan/selectGraphData";
+import { addPageLabel } from "@/modules/plan/updatePlanData";
+import { getActivePage, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil.ts";
 
-interface InputLabelProps {
-  cy: cytoscape.Core | undefined;
-  cytoCoordMapper: CytoscapeCoordinateMapper | undefined;
-}
+export const PageLabelInput = () => {
+  const { cyto } = useCytoscapeContext();
 
-export const PageLabelInput = ({ cy, cytoCoordMapper }: InputLabelProps) => {
+  const activePage = useAppSelector(getActivePage);
+  const maxPlanId = useAppSelector(selectMaxPlanId);
+
   const [inputPosition, setInputPosition] = useState<cytoscape.Position | null>(null);
   const [labelPosition, setLabelPosition] = useState<cytoscape.Position | null>(null);
   const [labelText, setLabelText] = useState("");
-  const planMode = useAppSelector(getPlanMode);
   const dispatch = useAppDispatch();
-  useEscapeKey({ callback: () => resetInput() });
 
   const inputWidth = 250;
   const textLengthLimit = 2048;
@@ -30,30 +30,28 @@ export const PageLabelInput = ({ cy, cytoCoordMapper }: InputLabelProps) => {
   const textLengthErrorMessage = `${labelText.length - textLengthLimit} characters over the limit`;
   const invalidCharactersErrorMessage = "Invalid character(s) entered";
 
-  const resetInput = () => {
-    setLabelText("");
-    setInputPosition(null);
-    setLabelPosition(null);
-  };
-
   const hasError = labelText.length > textLengthLimit || specialCharsRegex.test(labelText);
 
   const onClick = useCallback(
     (event: cytoscape.EventObject) => {
-      if (hasError || !cy || !cytoCoordMapper) {
+      const container = cyto?.container();
+      if (hasError || !cyto || !container) {
         return;
       }
+      const cytoCoordMapper = new CytoscapeCoordinateMapper(container, []);
+
       if (labelText && labelPosition && !hasError) {
+        if (!activePage) {
+          throw "no activePage";
+        }
         // add page label to global state
         const position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
-        dispatch(addPageLabel({ labelText, position }));
-
-        resetInput();
+        dispatch(replacePage(addPageLabel(activePage, { id: maxPlanId + 1, displayText: labelText, position })));
         dispatch(setPlanMode(PlanMode.View));
         return;
       }
-      const diagramAreasLimits = cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cy);
 
+      const diagramAreasLimits = cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto);
       if (!diagramAreasLimits?.diagramOuterLimitsPx) return;
       const diagramArea = diagramAreasLimits.diagramOuterLimitsPx;
 
@@ -75,15 +73,15 @@ export const PageLabelInput = ({ cy, cytoCoordMapper }: InputLabelProps) => {
       }
       setInputPosition(inputPosition);
     },
-    [cy, cytoCoordMapper, labelText, labelPosition, dispatch, hasError],
+    [activePage, cyto, dispatch, hasError, labelText, labelPosition, maxPlanId],
   );
 
   useEffect(() => {
-    planMode != PlanMode.AddLabel ? resetInput() : cy?.on("click", onClick);
+    cyto?.on("click", onClick);
     return () => {
-      cy?.removeListener("click", onClick);
+      cyto?.off("click", onClick);
     };
-  }, [cy, cytoCoordMapper, planMode, onClick]);
+  }, [cyto, onClick]);
 
   return (
     inputPosition && (

@@ -18,6 +18,7 @@ import {
   errorFromSerializedError,
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal.tsx";
+import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { getMenuItemsForPlanElement } from "@/components/PlanSheets/PlanSheetsContextMenu.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
@@ -214,14 +215,10 @@ const PlanSheets = () => {
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"
           />
-          {planMode === PlanMode.SelectDiagram ? (
-            <SelectDiagramHandler diagrams={activeDiagrams} />
-          ) : (
-            <>
-              <ElementHover />
-              <PageNumberTooltips />
-            </>
-          )}
+          {planMode === PlanMode.AddLabel && <PageLabelInput />}
+          {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler diagrams={activeDiagrams} />}
+          <ElementHover />
+          <PageNumberTooltips />
         </div>
         <PlanSheetsFooter
           surveyInfo={surveyInfo}

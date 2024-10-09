@@ -1,14 +1,14 @@
 import { DiagramDTO, PageConfigDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSelector } from "@reduxjs/toolkit";
+import { max } from "lodash-es";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import {
-  getActivePageNumber,
-  getActiveSheet,
+  getActivePage,
   getDiagrams,
   getDiagToPageLookupTbl,
   getPageConfigs,
-  getPages,
+  getPlanData,
 } from "@/redux/planSheets/planSheetsSlice";
 
 import {
@@ -26,16 +26,8 @@ export interface INodeAndEdgeData<T> {
   nodes: INodeData[];
 }
 
-const selectActivePage = createSelector(
-  getActivePageNumber,
-  getActiveSheet,
-  getPages,
-  (activePageNumber, activeSheet, pages): PageDTO | undefined =>
-    pages.find((page) => page.pageType == activeSheet && page.pageNumber == activePageNumber),
-);
-
 export const selectActiveDiagramsEdgesAndNodes = createSelector(
-  selectActivePage,
+  getActivePage,
   getDiagrams,
   getDiagToPageLookupTbl,
   (activePage, diagrams, lookupTbl): INodeAndEdgeData<DiagramDTO[]> => {
@@ -49,7 +41,7 @@ export const selectActiveDiagramsEdgesAndNodes = createSelector(
 );
 
 export const selectActivePageEdgesAndNodes = createSelector(
-  selectActivePage,
+  getActivePage,
   (activePage): INodeAndEdgeData<PageDTO | undefined> => {
     return {
       data: activePage,
@@ -58,6 +50,37 @@ export const selectActivePageEdgesAndNodes = createSelector(
     };
   },
 );
+
+/**
+ * Feature ids are unique plan-wide.
+ *
+ * @param planData current plan.
+ * @returns maximum feature id plus one.
+ */
+export const selectMaxPlanId = createSelector(getPlanData, ({ diagrams, pages }): number => {
+  const planIdFeatures = [
+    ...diagrams.flatMap((diagram) => [
+      diagram.childDiagrams?.flatMap((child) => child.labels),
+      diagram.coordinateLabels,
+      diagram.coordinates,
+      diagram.labels,
+      diagram.lineLabels,
+      diagram.lines,
+      diagram.parcelLabelGroups,
+    ]),
+    ...pages.flatMap((page) => [page.coordinates, page.labels, page.lines]),
+  ];
+
+  const maxPlanId = planIdFeatures.reduce((maxPlanId, features) => {
+    const maxId = max<number>(features?.map((data) => data.id));
+    if (!maxId) {
+      return maxPlanId;
+    }
+    return Math.max(maxPlanId, maxId);
+  }, 0);
+
+  return maxPlanId + 1;
+});
 
 export const selectPageConfigEdgesAndNodes = createSelector(
   getPageConfigs,

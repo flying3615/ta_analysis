@@ -118,10 +118,10 @@ describe("planSheetsSlice", () => {
       },
     ];
 
-    expect(getActivePage(store.getState())).toEqual([]);
+    expect(getActivePage(store.getState())).toBeUndefined();
 
     store.dispatch(planSheetsSlice.actions.updatePages(pages));
-    expect(getActivePage(store.getState())).toEqual([{ id: 0, pageNumber: 1, pageType: "title" }]);
+    expect(getActivePage(store.getState())).toEqual({ id: 0, pageNumber: 1, pageType: "title" });
   });
 
   test("getActivePageNumber should return active page number", () => {

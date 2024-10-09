@@ -1,5 +1,12 @@
-import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
-import type { DisplayStateEnum } from "@linz/survey-plan-generation-api-client/src/models/DisplayStateEnum.ts";
+import {
+  CoordinateDTO,
+  DiagramDTO,
+  DisplayStateEnum,
+  LabelDTO,
+  LabelDTOLabelTypeEnum,
+  LineDTO,
+  PageDTO,
+} from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { DiagramData } from "@/components/PlanSheets/interactions/SelectedDiagram";
@@ -52,6 +59,30 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
       };
     }
   });
+};
+
+export const addPageLabel = (
+  page: PageDTO,
+  labelProps: Pick<LabelDTO, "displayText" | "id" | "position"> & Partial<LabelDTO>,
+) => {
+  const label: LabelDTO = {
+    anchorAngle: 0,
+    displayState: DisplayStateEnum.display,
+    effect: "none",
+    font: "Tahoma",
+    fontSize: 14,
+    fontStyle: "italic",
+    labelType: LabelDTOLabelTypeEnum.userAnnotation,
+    pointOffset: 0,
+    rotationAngle: 0,
+    textAlignment: "centerCenter",
+    userEdited: false,
+    ...labelProps,
+  };
+  return {
+    ...page,
+    labels: [...(page.labels ?? []), label],
+  };
 };
 
 export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {
