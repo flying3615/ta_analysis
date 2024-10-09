@@ -20,7 +20,15 @@ import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import {
+  clickAtCoordinates,
+  getCytoCanvas,
+  ModalStoryWrapper,
+  RIGHT_MOUSE_BUTTON,
+  sleep,
+  StorybookRouter,
+  tabletLandscapeParameters,
+} from "@/test-utils/storybook-utils";
 import { downloadBlob } from "@/util/downloadHelper.ts";
 
 export default {
@@ -57,12 +65,7 @@ export const Default: Story = {
 
 export const SmallViewport: Story = {
   ...Default,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
+  ...tabletLandscapeParameters,
 };
 
 export const DiagramsPanelClosed: Story = {
@@ -481,12 +484,7 @@ const planData = () => {
 
 export const ExportPdfAndDownload: Story = {
   ...Default,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
+  ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -515,12 +513,7 @@ export const ExportPdfAndDownload: Story = {
 
 export const SelectDiagram: Story = {
   ...Default,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
+  ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle("Select Diagrams"));
@@ -557,11 +550,64 @@ export const MoveDiagram: Story = {
   },
 };
 
-function getCytoCanvas(element: Element): HTMLCanvasElement {
+const getCytoscapeOffsetInCanvas = async (canvasElement: HTMLElement, cytoscapeElement: HTMLElement) => {
+  const canvasRect = canvasElement.getBoundingClientRect();
+
+  const cytoscapeRect = cytoscapeElement.getBoundingClientRect();
+  console.log("canvasRect", canvasRect, "cytoscapeRect", cytoscapeRect);
+
+  const cyOffsetX = cytoscapeRect.left - canvasRect.left;
+  const cyOffsetY = cytoscapeRect.top - canvasRect.top;
+  console.log("cyOffset", cyOffsetX, cyOffsetY);
+
+  return { cyOffsetX, cyOffsetY };
+};
+
+const getCytoscapeNodeLayer = (cytoscapeElement: HTMLElement) => {
   // eslint-disable-next-line testing-library/no-node-access
-  const cytoCanvas = element.querySelector("canvas");
-  if (!cytoCanvas) {
-    throw "no canvas to click";
-  }
-  return cytoCanvas;
-}
+  return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
+};
+
+export const SelectCoordinates: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    const { cyOffsetX, cyOffsetY } = await getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    // Location of a mark in cytoscape pixels
+    const x = 411 - 280 + cyOffsetX;
+    const y = 136 - 56 + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, x, y);
+
+    await sleep(500);
+  },
+};
+
+export const ShowCoordinatesMenu: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = await getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    // Location of a mark in cytoscape pixels
+    const x = 411 - 280 + cyOffsetX;
+    const y = 136 - 56 + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+
+    await sleep(500);
+  },
+};

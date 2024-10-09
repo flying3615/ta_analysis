@@ -1,6 +1,6 @@
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
-import { waitFor } from "@storybook/testing-library";
+import { fireEvent, waitFor } from "@storybook/testing-library";
 import React, { useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { Provider } from "react-redux";
@@ -75,4 +75,36 @@ export const waitForInitialMapLoadsToComplete = async () => {
     // Need to wait long enough for prepare dataset error
     { timeout: 25000 },
   );
+};
+
+export const getCytoCanvas = (element: Element): HTMLCanvasElement => {
+  // eslint-disable-next-line testing-library/no-node-access
+  const cytoCanvas = element.querySelector("canvas");
+  if (!cytoCanvas) {
+    throw "no canvas to click";
+  }
+  return cytoCanvas;
+};
+
+export const tabletLandscapeParameters = {
+  viewport: {
+    defaultViewport: "tablet",
+    defaultOrientation: "landscape",
+  },
+};
+
+// For fireEvent.click, left mouse button is 0 (default), right mouse button is 2
+export const LEFT_MOUSE_BUTTON = 0; // default
+export const RIGHT_MOUSE_BUTTON = 2;
+
+export const clickAtCoordinates = (
+  cytoscapeNodeLayer: HTMLElement,
+  x: number,
+  y: number,
+  button: number | undefined = undefined,
+) => {
+  fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
+  fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
+  fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
+  fireEvent.click(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
 };
