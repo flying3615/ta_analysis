@@ -1,0 +1,40 @@
+@use "@linzjs/lui/dist/scss/Foundation/Variables/ColorVars.scss" as colours;
+
+.MaintainDiagramsPanel .LuiTabsPanel--active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.MaintainDiagramsPanel [col-id="revert"] path {
+  color: colours.$sea;
+  fill: colours.$sea;
+}
+
+.MaintainDiagramsPanel__Footer {
+  display: flex;
+  padding: 16px;
+}
+
+.MaintainDiagramsPanel__Footer button.lui-button {
+  width: 120px;
+}
+
+.MaintainDiagramsPanel__Spinner {
+  gap: 4px;
+  display: flex;
+  margin-left: 4px;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.MaintainDiagramsPanel__Saved {
+  gap: 4px;
+  display: flex;
+  margin-left: 4px;
+  font-weight: 400;
+
+  svg {
+    fill: colours.$success;
+  }
+}

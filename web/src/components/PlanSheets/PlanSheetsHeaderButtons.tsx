@@ -8,14 +8,12 @@ import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useEscapeKey } from "@/hooks/useEscape";
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
 
 import { PlanMode } from "./PlanSheetType";
 
 export const PlanSheetsHeaderButtons = () => {
-  const transactionId = useTransactionId();
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
   const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
   const dispatch = useAppDispatch();
@@ -180,8 +178,8 @@ export const PlanSheetsHeaderButtons = () => {
           alert("Not Yet Implemented");
         }}
       />
-
-      <CommonButtons transactionId={transactionId} lockLabelsForThisPlan={true} />
+      <div className="CommonButtons__fill" />
+      <CommonButtons />
     </>
   );
 };

@@ -12,10 +12,9 @@ const labelsForNewPlans = "labelsForNewPlans";
 
 export interface LabelPreferencesPanelProps {
   transactionId: number;
-  lockLabelsForThisPlan?: boolean;
 }
 
-export const LabelPreferencesPanel = ({ transactionId, lockLabelsForThisPlan }: LabelPreferencesPanelProps) => {
+export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelProps) => {
   const { data: queryData, isLoading } = useUserLabelPreferences({ transactionId });
 
   return !queryData || isLoading ? (
@@ -50,7 +49,6 @@ export const LabelPreferencesPanel = ({ transactionId, lockLabelsForThisPlan }: 
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
                   labelPreferences={queryData.surveyLabelPreferences}
-                  readOnly={lockLabelsForThisPlan}
                 />
               </GridContextProvider>
             </GridUpdatingContextProvider>

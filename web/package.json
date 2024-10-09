@@ -54,7 +54,7 @@
     "@linz/secure-file-upload": "^3.2.0",
     "@linz/survey-plan-generation-api-client": "^0.52.1",
     "@linzjs/landonline-openlayers-map": "^6.2.1",
-    "@linzjs/lui": "^21.44.3",
+    "@linzjs/lui": "^21.47.0",
     "@linzjs/step-ag-grid": "^22.2.2",
     "@linzjs/windows": "^3.3.0",
     "@reduxjs/toolkit": "^2.2.7",

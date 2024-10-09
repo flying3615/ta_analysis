@@ -7,6 +7,7 @@ import { generatePath, Link } from "react-router-dom";
 
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
+import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
 import { luiColors } from "@/constants.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths.ts";
@@ -18,11 +19,13 @@ const LandingPage = () => {
   const transactionId = useTransactionId();
   const { openPanel } = useContext(PanelsContext);
 
-  const { result: labelPreferencesAllowed, loading: splitLoading } = useFeatureFlags(
+  const { result: labelPreferencesAllowed, loading: labelPrefsSplitLoading } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,
   );
 
-  const labelPreferencesEnabled = labelPreferencesAllowed && !splitLoading;
+  const { result: maintainDiagramsAllowed, loading: maintainSplitLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS,
+  );
 
   return (
     <>
@@ -61,7 +64,19 @@ const LandingPage = () => {
             </Link>
           </div>
           <div className="LandingPage-options">
-            <Link className="LandingPage-option" onClick={() => alert("Coming soon!")} to="">
+            <Link
+              className="LandingPage-option"
+              onClick={() => {
+                if (maintainSplitLoading) return;
+                if (!maintainDiagramsAllowed) {
+                  alert("Coming soon!");
+                  return;
+                }
+                openPanel("Maintain diagram layers", () => <MaintainDiagramsPanel transactionId={transactionId} />);
+                return false;
+              }}
+              to=""
+            >
               <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
                 <LuiIcon name="ic_layers" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
                 <p>Maintain diagram layers</p>
@@ -70,7 +85,8 @@ const LandingPage = () => {
             <Link
               className="LandingPage-option"
               onClick={() => {
-                if (!labelPreferencesEnabled) {
+                if (labelPrefsSplitLoading) return;
+                if (!labelPreferencesAllowed) {
                   alert("Coming soon!");
                   return;
                 }

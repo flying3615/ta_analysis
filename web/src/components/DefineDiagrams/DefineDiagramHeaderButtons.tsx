@@ -1,13 +1,17 @@
 import "./DefineDiagramsHeaderButtons.scss";
 
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
+import { PanelsContext } from "@linzjs/windows";
 import { useContext } from "react";
 
+import { CommonButtons } from "@/components/CommonButtons.tsx";
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
 import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram.ts";
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton.tsx";
 import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
+import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useDefineDiagram } from "@/hooks/useDefineDiagram";
@@ -18,6 +22,8 @@ import { useResizeDiagram } from "@/hooks/useResizeDiagram.ts";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram.ts";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 
 const enlargeReduceDiagramActions: DefineDiagramsActionType[] = [
   "enlarge_diagram_rectangle",
@@ -33,6 +39,17 @@ export const DefineDiagramMenuButtons = () => {
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
+
+  const { openPanel } = useContext(PanelsContext);
+
+  const { result: labelPreferencesAllowed, loading: splitLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,
+  );
+  const { result: maintainDiagramsAllowed, loading: maintainSplitLoading } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS,
+  );
+
+  const labelPreferencesEnabled = labelPreferencesAllowed && !splitLoading;
 
   const { loading: insertDiagramLoading } = useInsertDiagram();
 
@@ -247,6 +264,35 @@ export const DefineDiagramMenuButtons = () => {
           },
         ]}
       />
+
+      <div className="CommonButtons__fill" />
+      <ActionHeaderButton
+        title="Maintain diagram layers"
+        icon="ic_layers"
+        onClick={() => {
+          if (maintainSplitLoading) return;
+          if (!maintainDiagramsAllowed) {
+            alert("Coming soon!");
+            return;
+          }
+          openPanel("Maintain diagram layers", () => (
+            <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
+          ));
+        }}
+      />
+      <ActionHeaderButton
+        title="Label preferences"
+        icon="ic_label_settings"
+        onClick={() => {
+          if (!labelPreferencesEnabled) {
+            alert("Coming soon!");
+            return;
+          }
+          openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
+          return false;
+        }}
+      />
+      <CommonButtons />
     </>
   );
 };

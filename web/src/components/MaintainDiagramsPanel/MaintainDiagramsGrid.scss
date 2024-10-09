@@ -1,0 +1,79 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.MaintainDiagramsGrid {
+  padding: lui.$unit-sm;
+}
+
+.MaintainDiagramsGrid__label {
+  display: flex;
+  gap: lui.$unit-xxs;
+  flex-direction: column;
+  margin-bottom: lui.$unit-xs;
+}
+
+.MaintainDiagramsGrid__labelLabel {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.MaintainDiagramsGrid__labelDescription {
+  font-weight: 400;
+  color: lui.$fuscous;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.MaintainDiagramsGrid__menuOption--name {
+  font-weight: 600;
+  color: lui.$charcoal;
+}
+
+.MaintainDiagramsGrid__menuOption--type {
+  font-weight: 400;
+  font-style: italic;
+  color: lui.$charcoal;
+}
+
+.MaintainDiagramsGrid__ButtonSelected svg path {
+  color: lui.$sea;
+  fill: lui.$sea;
+}
+
+.MaintainDiagramsGrid__BoundaryLines {
+  cursor: pointer;
+  display: flex;
+  margin: auto;
+
+  p {
+    font-weight: 600;
+    gap: 2px;
+    padding: lui.$unit-xxs lui.$unit-xs lui.$unit-xxs lui.$unit-xxs;
+  }
+}
+
+.MaintainDiagramsGrid__BoundaryLines--on {
+  @extend .MaintainDiagramsGrid__BoundaryLines;
+
+  p {
+    border-color: lui.$spray;
+    background-color: lui.$polar;
+    padding-right: 11px;
+  }
+  path {
+    color: lui.$sea;
+    fill: lui.$sea;
+  }
+}
+
+.MaintainDiagramsGrid__BoundaryLines--off {
+  @extend .MaintainDiagramsGrid__BoundaryLines;
+
+  p {
+    border-color: lui.$dew;
+    background-color: lui.$hint;
+  }
+  path {
+    color: lui.$fuscous;
+    fill: lui.$fuscous;
+  }
+}

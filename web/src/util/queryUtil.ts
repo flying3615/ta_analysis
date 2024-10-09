@@ -81,3 +81,9 @@ export const byId =
   (id: number[] | number) =>
   (obj: Partial<{ id: number | undefined }>): boolean =>
     id !== undefined && (obj.id === id || !!(Array.isArray(id) && obj.id && id.includes(obj.id)));
+
+/**
+ * Adds an id column to data list such that it can work with step-ag-grid
+ */
+export const withId = <T>(list: T[] | undefined, idField: keyof T): (T & { id: number })[] | undefined =>
+  list ? (list.map((r) => ({ ...r, id: r[idField] })) as (T & { id: number })[]) : undefined;
