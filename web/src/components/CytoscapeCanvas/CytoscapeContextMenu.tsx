@@ -2,7 +2,7 @@ import "./CytoscapeContextMenu.scss";
 
 import React, { useRef } from "react";
 
-import CytoscapeMenu from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
+import CytoscapeMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
 
 interface IContextMenu {
@@ -16,6 +16,12 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
 
   if (!visible) return null;
 
+  const onItemClick = (item: MenuItem) => {
+    const cyInstance = menuState.target?.cy?.();
+    cyInstance && item.callback?.({ target: menuState.target, cy: cyInstance, position: position });
+    hideMenu();
+  };
+
   return (
     <div
       ref={containerRef}
@@ -27,7 +33,7 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
         zIndex: 1000,
       }}
     >
-      <CytoscapeMenu items={items} leftMenu={leftMenu} onItemClick={hideMenu} />
+      <CytoscapeMenu items={items} leftMenu={leftMenu} onItemClick={onItemClick} />
     </div>
   );
 };

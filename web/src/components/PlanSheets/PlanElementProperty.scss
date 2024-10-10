@@ -1,0 +1,86 @@
+.LuiFloatingWindow-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.75);
+  z-index: 499;
+}
+
+.FloatingWindow-header {
+  .LuiFloatingWindow-buttons {
+    display: none;
+  }
+  .header-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.FloatingWindow-container {
+  flex-direction: column;
+  .plan-element-properties {
+    padding: 0 16px;
+
+    .property-wrap {
+      margin: 10px 0;
+    }
+
+    .LuiCheckboxInput,
+    .LuiTextInput {
+      margin-bottom: 0;
+    }
+
+    .svg-container {
+      width: 96%;
+      position: relative;
+      transform: translateY(-15%);
+    }
+
+    .svg-image {
+      width: 100%;
+    }
+
+    .LuiRadioInput {
+      .LuiRadioInput-fieldset {
+        .LuiRadioInput-label {
+          padding: 0.5rem 0 0.5rem 2.5rem;
+
+          &:before {
+            left: 10px;
+          }
+          &:after {
+            left: 15px;
+          }
+          &--isSelected {
+            background-color: #e2f3f7;
+            border-color: #007198;
+            border-radius: 5px;
+            color: #2a292c;
+            font-weight: 600;
+
+            &:before {
+              background-color: #ffffff;
+              border-color: #007198;
+            }
+            &:after {
+              background-color: #007198;
+            }
+          }
+        }
+      }
+    }
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 0;
+    border-top: 1px solid #dad7d6;
+    .lui-button {
+      flex: 1;
+    }
+  }
+}

@@ -20,6 +20,7 @@ import {
 } from "@/components/modals/unhandledErrorModal.tsx";
 import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
+import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
@@ -35,7 +36,7 @@ import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePagesWithNode } f
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { getPlanMode, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, getPlanProperty, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
@@ -69,8 +70,6 @@ const PlanSheets = () => {
     error: regenerateApiError,
   } = useAsyncTaskHandler(regeneratePlanMutationResult, regeneratePlanMutate);
 
-  const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
-
   useEffect(() => {
     if (regenerationHasFailed) {
       void showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
@@ -101,8 +100,9 @@ const PlanSheets = () => {
   }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
 
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
+  const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
-
+  const planProperty = useAppSelector(getPlanProperty);
   const {
     data: planData,
     isLoading: planDataIsLoading,
@@ -211,6 +211,7 @@ const PlanSheets = () => {
           />
           {planMode === PlanMode.AddLabel && <PageLabelInput />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler diagrams={activeDiagrams} />}
+          {planProperty && <PlanElementProperty type={planProperty} />}
           <ElementHover />
           <PageNumberTooltips />
         </div>

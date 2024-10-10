@@ -119,7 +119,7 @@ describe("PlanSheetsContextMenu", () => {
       <PlanSheetsContextMenuWrapComponent
         targetElement={mockNode}
         expectations={(lineMenuItems) => {
-          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show"]);
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Show", "Properties"]);
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
@@ -135,7 +135,7 @@ describe("PlanSheetsContextMenu", () => {
       <PlanSheetsContextMenuWrapComponent
         targetElement={mockNode}
         expectations={(lineMenuItems) => {
-          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide"]);
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide", "Properties"]);
           expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
         }}
       />,

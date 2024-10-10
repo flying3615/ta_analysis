@@ -25,7 +25,6 @@ import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu.ts";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown.ts";
 import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
 import { getActivePages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { isPlaywrightTest, isStorybookTest, saveCytoscapeState } from "@/test-utils/cytoscape-data-utils.ts";
 import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
@@ -184,9 +183,6 @@ const CytoscapeCanvas = ({
       }
     });
 
-    if (isPlaywrightTest() || isStorybookTest()) {
-      saveCytoscapeState(cyRef, testId);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData, edgeData, diagrams, initZoom]);
 

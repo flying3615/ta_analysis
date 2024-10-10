@@ -4,7 +4,11 @@ import React, { memo, ReactNode } from "react";
 
 export interface MenuItem {
   title: string | ReactNode;
-  callback?: (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => void;
+  callback?: (event: {
+    target: NodeSingular | EdgeSingular | null;
+    cy: cytoscape.Core | undefined;
+    position?: cytoscape.Position;
+  }) => void;
   submenu?: MenuItem[];
   divider?: boolean;
   disabled?: boolean;

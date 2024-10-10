@@ -3,22 +3,33 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
+import { PlanElementData, PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
-import { getPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const usePlanSheetsContextMenu = () => {
   const planMode = useAppSelector(getPlanMode);
   const lookupGraphData = useAppSelector(selectLookupGraphData);
+  const dispatch = useAppDispatch();
 
-  const getProperties = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    const { target } = event;
-    if (target) {
-      const selectedId = target.id();
-      console.log("Selected ID:", selectedId);
-      // Todo get properties
+  const getProperties = (event: {
+    target: NodeSingular | EdgeSingular | null;
+    cy: cytoscape.Core | undefined;
+    position?: cytoscape.Position;
+  }) => {
+    const { target, position } = event;
+    const elementTypes = [PlanElementType.LINES, PlanElementType.LABELS, PlanElementType.LINE_LABELS];
+    if (target && position && elementTypes.includes(target.data().elementType)) {
+      dispatch(
+        setPlanProperty({
+          mode: planMode as PlanElementPropertyMode,
+          data: target.data() as PlanElementData,
+          position: position,
+        }),
+      );
     }
   };
 
@@ -80,7 +91,7 @@ export const usePlanSheetsContextMenu = () => {
           element.data("displayState") === DisplayStateEnum.systemDisplay,
         hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
       },
-      // { title: "Properties", callback: getProperties },
+      { title: "Properties", callback: getProperties },
       // { title: "Cut", disabled: true },
       // { title: "Copy", disabled: true },
       // { title: "Paste", disabled: true },

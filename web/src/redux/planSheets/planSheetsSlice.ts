@@ -1,6 +1,7 @@
 import { ConfigDataDTO, DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 
 export interface PlanSheetsState {
@@ -11,6 +12,7 @@ export interface PlanSheetsState {
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
   planMode: PlanMode;
+  planProperty?: PlanPropertyPayload | undefined;
 }
 
 const initialState: PlanSheetsState = {
@@ -82,6 +84,9 @@ const planSheetsSlice = createSlice({
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
     },
+    setPlanProperty: (state, action: PayloadAction<PlanPropertyPayload | undefined>) => {
+      state.planProperty = action.payload;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -130,6 +135,7 @@ const planSheetsSlice = createSlice({
     },
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
+    getPlanProperty: (state) => state.planProperty,
   },
 });
 
@@ -143,6 +149,7 @@ export const {
   setDiagramPageRef,
   updatePages,
   setPlanMode,
+  setPlanProperty,
 } = planSheetsSlice.actions;
 
 export const {
@@ -161,6 +168,7 @@ export const {
   getFilteredPages,
   hasChanges,
   getPlanMode,
+  getPlanProperty,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;
