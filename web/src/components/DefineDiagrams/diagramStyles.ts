@@ -8,6 +8,7 @@ import { MapColors, MapFillColors } from "@/components/DefineDiagrams/mapColors.
 import { userDefinedDiagramTypes } from "@/queries/diagrams.ts";
 
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
+
 const lineColourMap = {
   [CpgDiagramType.SYSP]: "#009F00",
   [CpgDiagramType.SYSN]: "#FF8000",

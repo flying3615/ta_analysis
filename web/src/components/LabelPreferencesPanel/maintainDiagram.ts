@@ -6,15 +6,16 @@ import {
 import {
   GetDiagramLayerPreferencesByDiagramTypeRequest,
   GetDiagramNamesRequest,
+  GetDiagramTypesRequest,
 } from "@linz/survey-plan-generation-api-client/src/apis/MaintainDiagramsControllerApi.ts";
 import type {
   DiagramLayerDefinitionPreferencesDTO,
   GetDiagramNamesResponseDTO,
+  GetDiagramTypesResponseDTO,
 } from "@linz/survey-plan-generation-api-client/src/models";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig.ts";
-import { usePrepareDatasetQuery } from "@/queries/prepareDataset.ts";
 
 export const diagramNamesQueryKey = (transactionId: number) => ["diagramNames", transactionId];
 
@@ -27,7 +28,19 @@ export const useDiagramNamesQuery = ({
       new MaintainDiagramsControllerApi(apiConfig()).getDiagramNames({
         transactionId,
       }),
-    enabled: usePrepareDatasetQuery({ transactionId }).isSuccess,
+  });
+
+export const diagramTypesQueryKey = (transactionId: number) => ["diagramTypes", transactionId];
+
+export const useDiagramTypesQuery = ({
+  transactionId,
+}: GetDiagramTypesRequest): UseQueryResult<GetDiagramTypesResponseDTO> =>
+  useQuery({
+    queryKey: diagramTypesQueryKey(transactionId),
+    queryFn: () =>
+      new MaintainDiagramsControllerApi(apiConfig()).getDiagramTypes({
+        transactionId,
+      }),
   });
 
 export const allDiagramLayerPreferencesQueryKey = (transactionId: number) => ["diagramLayerPreferences", transactionId];
@@ -58,10 +71,10 @@ export const diagramLayerPreferencesByDiagramTypeQueryKey = (transactionId: numb
   diagramTypeCode,
 ];
 
-export const useDiagramLayerPreferencesByDiagramTypeQuery = ({
-  transactionId,
-  diagramTypeCode,
-}: GetDiagramLayerPreferencesByDiagramTypeRequest): UseQueryResult<DiagramLayerDefinitionPreferencesDTO> =>
+export const useDiagramLayerPreferencesByDiagramTypeQuery = (
+  { transactionId, diagramTypeCode }: GetDiagramLayerPreferencesByDiagramTypeRequest,
+  options: { enabled: boolean },
+): UseQueryResult<DiagramLayerDefinitionPreferencesDTO> =>
   useQuery({
     queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
     queryFn: () =>
@@ -69,4 +82,5 @@ export const useDiagramLayerPreferencesByDiagramTypeQuery = ({
         transactionId,
         diagramTypeCode,
       }),
+    enabled: options.enabled,
   });

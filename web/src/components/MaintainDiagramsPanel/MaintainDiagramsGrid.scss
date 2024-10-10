@@ -4,6 +4,12 @@
   padding: lui.$unit-sm;
 }
 
+.MaintainDiagramsGrid_NoDiagrams {
+  font-weight: 400;
+  color: lui.$charcoal;
+  margin: auto auto;
+}
+
 .MaintainDiagramsGrid__label {
   display: flex;
   gap: lui.$unit-xxs;

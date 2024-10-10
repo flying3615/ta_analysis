@@ -1,22 +1,23 @@
 import "./MaintainDiagramsGrid.scss";
 
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
-import type { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
-import { LuiSelectInput } from "@linzjs/lui";
+import { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
+import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
 import { Grid, wait } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext, useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
-import { isEmpty, isEqual, sortBy } from "lodash-es";
+import { isEmpty, isEqual } from "lodash-es";
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useState } from "react";
 
 import {
   allDiagramLayerPreferencesQueryKey,
   useDiagramLayerPreferencesByDiagramTypeQuery,
+  useDiagramTypesQuery,
 } from "@/components/LabelPreferencesPanel/maintainDiagram.ts";
-import { layerChangesWillOverwriteModal } from "@/components/MaintainDiagramsPanel/LayerChangesWillOverwriteModal.tsx";
+import { layerChangesWillOverwriteModal } from "@/components/MaintainDiagramsPanel/LayerChangesWillOverwriteModal";
 import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridColDefs";
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
-import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter.tsx";
+import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter";
 import { unsavedChangesModal } from "@/components/MaintainDiagramsPanel/UnsavedChangesModal";
 import { withId } from "@/util/queryUtil";
 
@@ -31,20 +32,11 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   const { showPrefabModal } = useLuiModalPrefab();
   const queryClient = useQueryClient();
 
+  const { data: diagramTypes, isLoading: diagramTypesLoading } = useDiagramTypesQuery({ transactionId });
+
   const userDefinedDiagramTypes = useMemo(() => {
-    const validTypes: string[] = [
-      CpgDiagramType.SYSP,
-      CpgDiagramType.SYSN,
-      CpgDiagramType.SYST,
-      CpgDiagramType.UDFP,
-      CpgDiagramType.UDFN,
-      CpgDiagramType.UDFT,
-    ];
-    return sortBy(
-      CpgDiagramType.list().filter((d) => validTypes.includes(d.code)),
-      (d) => validTypes.indexOf(d.code),
-    );
-  }, []);
+    return diagramTypes?.diagramTypes;
+  }, [diagramTypes]);
 
   const [saving, setSaving] = useState<boolean>();
   const [diagramTypeCode, setDiagramTypeCode] = useState<string>(CpgDiagramType.SYSP);
@@ -53,10 +45,14 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   /**
    * Load diagram preferences
    */
-  const { data: diagramLayerByType, isLoading: diagramByTypeLoading } = useDiagramLayerPreferencesByDiagramTypeQuery({
-    transactionId,
-    diagramTypeCode,
-  });
+  const { data: diagramLayerByType, isLoading: diagramByTypeLoading } = useDiagramLayerPreferencesByDiagramTypeQuery(
+    {
+      transactionId,
+      diagramTypeCode,
+    },
+    // Only enabled once a diagram is selected
+    { enabled: diagramTypeCode != null },
+  );
 
   /**
    * Copy the initial preferences state for change detection and initialisation.
@@ -120,7 +116,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   const { panelClose } = useContext(PanelInstanceContext);
 
   const cancel = async (): Promise<void> => {
-    await queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
+    void queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
     panelClose();
   };
 
@@ -130,7 +126,9 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
 
   const columnDefs = useMaintainDiagramsGridColDefs({ refreshGrid, rows: diagramsByType });
 
-  return (
+  return diagramTypesLoading ? (
+    <LuiLoadingSpinner />
+  ) : (
     <>
       <div className="MaintainDiagramsGrid">
         <div className="MaintainDiagramsGrid__label">
@@ -141,7 +139,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
         </div>
         <LuiSelectInput
           label=""
-          options={userDefinedDiagramTypes.map((r) => ({ value: r.code, label: r.description }))}
+          options={userDefinedDiagramTypes?.map((r) => ({ value: r.type, label: r.name })) ?? []}
           value={diagramTypeCode}
           onChange={(e) => {
             void (async () => {

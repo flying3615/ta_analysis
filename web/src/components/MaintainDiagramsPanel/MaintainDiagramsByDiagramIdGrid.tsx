@@ -2,7 +2,7 @@ import "./MaintainDiagramsGrid.scss";
 
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import type { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
-import { LuiSelectInput } from "@linzjs/lui";
+import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
 import { Grid, wait } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext, useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
@@ -128,8 +128,8 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
   }, [hasChanged]);
 
   const cancel = async () => {
-    await queryClient.invalidateQueries({ queryKey: diagramNamesQueryKey(transactionId) });
-    await queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
+    void queryClient.invalidateQueries({ queryKey: diagramNamesQueryKey(transactionId) });
+    void queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
     panelClose();
   };
 
@@ -138,6 +138,19 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
   }, [diagramsById]);
 
   const columnDefs = useMaintainDiagramsGridColDefs({ refreshGrid, rows: diagramsById });
+
+  if (diagramNamesLoading) {
+    return <LuiLoadingSpinner />;
+  }
+
+  if (isEmpty(filteredDiagramNames)) {
+    return (
+      <>
+        <div className="MaintainDiagramsGrid_NoDiagrams">No individual user defined diagrams found</div>
+        <MaintainDiagramsPanelFooter hasChanged={hasChanged} saving={saving} save={save} cancel={cancel} />
+      </>
+    );
+  }
 
   return (
     <>
