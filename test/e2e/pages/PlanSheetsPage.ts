@@ -16,14 +16,18 @@ export class PlanSheetsPage {
   }
 
   public async fetchCytoscapeData(): Promise<this> {
-    const { localStorage } = (await this.page.context().storageState()).origins.find(
-      ({ origin }) => origin === this.baseURL,
-    );
-    const cytoscapeJson = localStorage.find(({ name }) => name === `${this.canvasTestId}-cytoscapeData`);
-    if (!cytoscapeJson) {
-      throw new Error(`${this.canvasTestId}-cytoscapeData not found in localStorage`);
+    const cyCanvasId = this.canvasTestId;
+    const cyData = await this.page.evaluate(() => {
+      /* eslint-disable-next-line */
+      const cyData = (window as any).cytoscapeData;
+      // eslint-disable-next-line
+      return cyData as Record<string, string>;
+    });
+    if (!cyData.hasOwnProperty(cyCanvasId)) {
+      throw new Error(`${cyCanvasId} not found in window object`);
     }
-    this.cytoscapeData = JSON.parse(cytoscapeJson.value) as CytoscapeData;
+
+    this.cytoscapeData = JSON.parse(cyData[cyCanvasId]) as CytoscapeData;
     return this;
   }
 
