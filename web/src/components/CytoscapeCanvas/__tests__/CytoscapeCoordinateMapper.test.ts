@@ -72,4 +72,12 @@ describe("CytoscapeCoordinateMapper", () => {
   test("planCmToCytoscape scales plan cm into cytoscape pixels", () => {
     expect(cytoscapeCoordinateMapper.planCmToCytoscape(1.0)).toBeCloseTo(9.0, 1);
   });
+
+  test("getDiagramOuterLimitsPx returns the diagram outer limits in pixels", () => {
+    const outerLimits = cytoscapeCoordinateMapper.getDiagramOuterLimitsPx();
+    expect(outerLimits.x1).toBeCloseTo(3.535, 2);
+    expect(outerLimits.x2).toBeCloseTo(355.454, 2);
+    expect(outerLimits.y1).toBeCloseTo(3.535, 2);
+    expect(outerLimits.y2).toBeCloseTo(226.417, 2);
+  });
 });

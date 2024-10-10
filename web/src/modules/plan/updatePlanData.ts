@@ -85,6 +85,16 @@ export const addPageLabel = (
   };
 };
 
+export const updatePageLabel = (
+  page: PageDTO,
+  labelProps: Pick<LabelDTO, "displayText" | "id"> & Partial<LabelDTO>,
+) => {
+  return {
+    ...page,
+    labels: page.labels?.map((label) => (label.id === labelProps.id ? { ...label, ...labelProps } : label)),
+  };
+};
+
 export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {
   if (node.properties["elementType"] === "coordinates") {
     return {

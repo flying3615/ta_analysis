@@ -1,6 +1,6 @@
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
-import { fireEvent, waitFor } from "@storybook/testing-library";
+import { fireEvent, userEvent, waitFor } from "@storybook/testing-library";
 import React, { useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { Provider } from "react-redux";
@@ -84,6 +84,18 @@ export const getCytoCanvas = (element: Element): HTMLCanvasElement => {
     throw "no canvas to click";
   }
   return cytoCanvas;
+};
+
+export const click = async (
+  canvas: HTMLCanvasElement,
+  clientCoord: { clientX: number; clientY: number },
+  button: "MouseLeft" | "MouseRight" = "MouseLeft",
+) => {
+  await userEvent.pointer({
+    keys: `[${button}]`,
+    target: canvas,
+    coords: clientCoord,
+  });
 };
 
 export const tabletLandscapeParameters = {

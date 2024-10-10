@@ -1,6 +1,6 @@
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
-const { zoomByDelta, zoomToFit } = cytoscapeUtils;
+const { zoomByDelta, zoomToFit, isPositionWithinAreaLimits } = cytoscapeUtils;
 
 describe("cytoscapeUtil", () => {
   const mockCy = {
@@ -26,5 +26,16 @@ describe("cytoscapeUtil", () => {
   test("should decrease zoom on Zoom out", () => {
     zoomByDelta(-1, mockCy);
     expect(mockCy.zoom).toHaveBeenCalledWith(0.75);
+  });
+
+  test("isPositionWithinAreaLimits returns correct value", () => {
+    expect(isPositionWithinAreaLimits({ x: 10, y: 10 }, [{ x1: 20, x2: 30, y1: 20, y2: 30 }])).toBeFalsy();
+    expect(isPositionWithinAreaLimits({ x: 10, y: 10 }, [{ x1: 10, x2: 30, y1: 10, y2: 30 }])).toBeTruthy();
+    expect(
+      isPositionWithinAreaLimits({ x: 10, y: 10 }, [
+        { x1: 20, x2: 30, y1: 20, y2: 30 },
+        { x1: 10, x2: 30, y1: 10, y2: 30 },
+      ]),
+    ).toBeTruthy();
   });
 });

@@ -209,7 +209,7 @@ const PlanSheets = () => {
             applyClasses={applyClasses}
             data-testid="MainCytoscapeCanvas"
           />
-          {planMode === PlanMode.AddLabel && <PageLabelInput />}
+          {[PlanMode.AddLabel, PlanMode.SelectLabel].includes(planMode) && <PageLabelInput />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler diagrams={activeDiagrams} />}
           {planProperty && <PlanElementProperty type={planProperty} />}
           <ElementHover />
