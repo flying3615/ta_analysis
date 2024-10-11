@@ -1,23 +1,26 @@
 import "./PlanSheetsFooter.scss";
 
-import { LuiButton, LuiIcon, LuiMiniSpinner, useToast } from "@linzjs/lui";
+import { LuiButton, LuiIcon, LuiMiniSpinner, LuiModalV2, useToast } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import FooterPagination from "@/components/Footer/FooterPagination";
 import PageManager from "@/components/Footer/PageManager";
+import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { luiColors } from "@/constants.tsx";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
 import { usePlanGenPreview } from "@/hooks/usePlanGenPreview.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { useUpdatePlanMutation } from "@/queries/plan";
+import { getPlanQueryKey, useUpdatePlanMutation } from "@/queries/plan";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import {
   getActivePageNumber,
@@ -47,6 +50,7 @@ const PlanSheetsFooter = ({
   pageConfigsEdgeData,
 }: FooterProps) => {
   const transactionId = useTransactionId();
+  const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
   const { success: successToast } = useToast();
@@ -69,27 +73,32 @@ const PlanSheetsFooter = ({
 
   const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation();
 
+  const updatePlanMutation = useUpdatePlanMutation(transactionId);
   const {
-    mutateAsync: updatePlanMutateAsync,
-    mutate: updatePlanMutate,
     isSuccess: updatePlanIsSuccess,
     isPending: updatePlanIsPending,
+    isError: updatePlanHasFailed,
     error: updatePlanError,
-  } = useUpdatePlanMutation({ transactionId });
-  const { result: saveEnabled, loading: saveEnabledLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT,
-  );
-
-  const updatePlan = () => !updatePlanIsPending && updatePlanMutate();
+  } = useAsyncTaskHandler(updatePlanMutation);
+  const updatePlan = () => !updatePlanMutation.isPending && !updatePlanIsPending && updatePlanMutation.mutate();
 
   // Save upon pressing Ctrl+S
   useOnKeyDown(({ key, ctrlKey }) => ctrlKey && key === "s", updatePlan);
 
   useEffect(() => {
     if (updatePlanIsSuccess) {
+      void queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
       successToast("Layout saved successfully");
     }
-  }, [updatePlanIsSuccess, successToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatePlanIsSuccess]);
+
+  useEffect(() => {
+    if (updatePlanHasFailed) {
+      void showPrefabModal(asyncTaskFailedErrorModal("Failed to save plan")).then((retry) => retry && updatePlan());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatePlanHasFailed]);
 
   useEffect(() => {
     if (!updatePlanError) {
@@ -156,11 +165,7 @@ const PlanSheetsFooter = ({
       <PageManager />
 
       <div className="PlanSheetsFooter-right">
-        <LuiButton
-          className="PlanSheetsFooter-save-button lui-button-tertiary"
-          onClick={updatePlan}
-          disabled={!saveEnabled || saveEnabledLoading}
-        >
+        <LuiButton className="PlanSheetsFooter-save-button lui-button-tertiary" onClick={updatePlan}>
           {updatePlanIsPending ? (
             <LuiMiniSpinner size={20} divProps={{ "data-testid": "update-plan-loading-spinner" }} />
           ) : (
@@ -191,7 +196,7 @@ const PlanSheetsFooter = ({
           <LuiButton
             className="PlanSheetsFooter-compile-button lui-button-tertiary"
             onClick={() => {
-              void startCompile(updatePlanMutateAsync);
+              void startCompile();
             }}
             disabled={compiling}
           >
@@ -211,6 +216,16 @@ const PlanSheetsFooter = ({
           updatePlanIsPending={updatePlanIsPending}
           updatePlanIsSuccess={updatePlanIsSuccess}
         />
+        {updatePlanIsPending && (
+          <LuiModalV2
+            headingText="Layout saving..."
+            isLoading={true}
+            shouldCloseOnOverlayClick={false}
+            shouldCloseOnEsc={false}
+          >
+            Please wait for this to finish saving, as it may take a little bit longer than expected.
+          </LuiModalV2>
+        )}
       </div>
     </footer>
   );

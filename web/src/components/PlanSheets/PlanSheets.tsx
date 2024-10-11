@@ -61,20 +61,24 @@ const PlanSheets = () => {
   const { data: activePage, edges: pageEdgeData, nodes: pageNodeData } = useAppSelector(selectActivePageEdgesAndNodes);
   const { edges: pageConfigsEdgeData, nodes: pageConfigsNodeData } = useAppSelector(selectPageConfigEdgesAndNodes);
 
-  const regeneratePlanMutationResult = useRegeneratePlanMutation(transactionId);
-  const regeneratePlanMutate = () => regeneratePlanMutationResult.mutate();
+  const regeneratePlanMutation = useRegeneratePlanMutation(transactionId);
   const {
     isPending: isRegenerating,
     isSuccess: regenerateDoneOrNotNeeded,
     isError: regenerationHasFailed,
     error: regenerateApiError,
-  } = useAsyncTaskHandler(regeneratePlanMutationResult, regeneratePlanMutate);
+  } = useAsyncTaskHandler(regeneratePlanMutation);
+
+  useEffect(() => {
+    regeneratePlanMutation.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (regenerationHasFailed) {
       void showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
         if (retry) {
-          regeneratePlanMutate();
+          regeneratePlanMutation.mutate();
         } else {
           navigate(`/plan-generation/${transactionId}`);
         }

@@ -10,23 +10,16 @@ import { useTransactionId } from "./useTransactionId";
  * Wrapper around querying of async task status.
  *
  * @param triggerTaskMutation react-query mutation that triggers the async task
- * @param mutate the actual mutate function - required for retrying the async task if it fails
  * @param refetchIntervalMs How often to refetch the async task status
  * @returns
  */
 export const useAsyncTaskHandler = <MutationRequestBody>(
   triggerTaskMutation: UseMutationResult<AsyncTaskDTO | null, Error, MutationRequestBody, unknown>,
-  mutate: () => void,
   refetchIntervalMs = 5000,
 ) => {
   const transactionId = useTransactionId();
   const taskId = triggerTaskMutation.data?.taskId;
   const triggerTaskIsSuccess = triggerTaskMutation.isSuccess;
-
-  useEffect(() => {
-    mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const {
     data: task,
@@ -48,8 +41,8 @@ export const useAsyncTaskHandler = <MutationRequestBody>(
     if (!triggerTaskIsSuccess || !taskIsPending) {
       return;
     }
-    const timeout = setInterval(() => void refetchTask(), refetchIntervalMs);
-    return () => clearTimeout(timeout);
+    const interval = setInterval(() => void refetchTask(), refetchIntervalMs);
+    return () => clearInterval(interval);
   }, [taskIsPending, triggerTaskIsSuccess, refetchTask, refetchIntervalMs]);
 
   return {

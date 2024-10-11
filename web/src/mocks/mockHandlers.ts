@@ -1,11 +1,11 @@
-import { delay, http, HttpHandler, HttpResponse } from "msw";
+import { AsyncTaskDTOTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { http, HttpHandler, HttpResponse } from "msw";
 
-import { AsyncTaskBuilder, failedTaskId, successfulTaskId } from "@/mocks/builders/AsyncTaskBuilder";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder.ts";
 import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
-import { mockInternalServerError } from "@/mocks/data/mockError";
 import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences.ts";
 import { mockLabels } from "@/mocks/data/mockLabels.ts";
 import { mockLines } from "@/mocks/data/mockLines.ts";
@@ -14,6 +14,13 @@ import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
+import {
+  failedRegeneratePlanTaskId,
+  failedUpdatePlanTaskId,
+  mockAsyncTaskGeneratorHandler,
+  successfulRegeneratePlanTaskId,
+  successfulUpdatePlanTaskId,
+} from "@/mocks/mockAsyncTaskHandler";
 
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features
@@ -57,10 +64,19 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.put(/\/123\/plan-update$/, async () => {
-    await delay(2000);
-    return HttpResponse.json(undefined, { status: 200 });
-  }),
+  http.put(/\/123\/plan$/, () =>
+    HttpResponse.json(
+      new AsyncTaskBuilder()
+        .withType(AsyncTaskDTOTypeEnum.UPDATE_PLAN)
+        .withTaskId(successfulUpdatePlanTaskId)
+        .withQueuedStatus()
+        .build(),
+      {
+        status: 202,
+        statusText: "ACCEPTED",
+      },
+    ),
+  ),
   http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
   http.post(/\/123\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.get(/\/123\/diagrams$/, () =>
@@ -74,9 +90,8 @@ export const handlers: HttpHandler[] = [
   ),
   http.patch(/\/123\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
-  // Survey 124 = diagrams with context, regular plan
+  // Survey 124 = diagrams with context, regular plan, regeneration task takes longer
   http.get(/\/124\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
-  http.put(/\/124\/plan-update$/, async () => HttpResponse.json(mockInternalServerError, { status: 500 })),
   http.post(/\/124\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.get(/\/124\/survey-features$/, () =>
     HttpResponse.json(
@@ -90,10 +105,17 @@ export const handlers: HttpHandler[] = [
     ),
   ),
   http.post(/\/124\/plan-regenerate$/, () =>
-    HttpResponse.json(new AsyncTaskBuilder().withRegeneratePlanType().withTaskId(successfulTaskId).withQueuedStatus(), {
-      status: 202,
-      statusText: "ACCEPTED",
-    }),
+    HttpResponse.json(
+      new AsyncTaskBuilder()
+        .withType(AsyncTaskDTOTypeEnum.REGENERATE_PLAN)
+        .withTaskId(successfulRegeneratePlanTaskId)
+        .withQueuedStatus()
+        .build(),
+      {
+        status: 202,
+        statusText: "ACCEPTED",
+      },
+    ),
   ),
 
   // Get diagrams
@@ -161,6 +183,18 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json(new LabelsBuilder().build(), { status: 200, statusText: "OK" }),
   ),
   http.patch(/\/125\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
+  http.get(/\/125\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+  http.put(/\/125\/plan$/, () =>
+    HttpResponse.json(
+      new AsyncTaskBuilder()
+        .withTaskId(failedUpdatePlanTaskId)
+        .withType(AsyncTaskDTOTypeEnum.UPDATE_PLAN)
+        .withInProgressStatus()
+        .build(),
+      { status: 202, statusText: "ACCEPTED" },
+    ),
+  ),
+  http.post(/\/125\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
 
   //Survey 126
   http.post(/\/126\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
@@ -192,7 +226,11 @@ export const handlers: HttpHandler[] = [
   // Survey 127: Regenerate Plan async task fails
   http.post(/\/127\/plan-regenerate$/, () =>
     HttpResponse.json(
-      new AsyncTaskBuilder().withTaskId(failedTaskId).withRegeneratePlanType().withFailedStatus().build(),
+      new AsyncTaskBuilder()
+        .withTaskId(failedRegeneratePlanTaskId)
+        .withType(AsyncTaskDTOTypeEnum.REGENERATE_PLAN)
+        .withFailedStatus()
+        .build(),
       { status: 202, statusText: "ACCEPTED" },
     ),
   ),
@@ -261,21 +299,7 @@ export const handlers: HttpHandler[] = [
   http.patch(/\/666\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
 
   // Async task handler
-  http.get(/\/async-task/, function* ({ request }) {
-    const response = new AsyncTaskBuilder().withRegeneratePlanType();
-
-    // On first call return in progress status, then subsequent calls will return complete/failed
-    yield HttpResponse.json(response.withInProgressStatus().build(), { status: 200, statusText: "OK" });
-
-    const taskId = new URL(request.url).searchParams.get("taskId");
-    if (taskId === successfulTaskId) {
-      response.withCompleteStatus();
-    } else {
-      response.withFailedStatus();
-    }
-
-    return HttpResponse.json(response.build(), { status: 200, statusText: "OK" });
-  }),
+  http.get(/\/async-task/, mockAsyncTaskGeneratorHandler),
 
   // Geotiles - URL in the format of /v1/generate-plans/tiles/{layerName}/{zoom}/{x}/{y}
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint

@@ -4,7 +4,6 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION = "survey-plan-generation",
   SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS = "survey-plan-generation-define-diagrams",
   SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION = "survey-plan-generation-preview-compilation",
-  SURVEY_PLAN_GENERATION_SAVE_LAYOUT = "survey-plan-generation-save-layout",
   SURVEY_PLAN_GENERATION_LABEL_PREFERENCES = "survey-plan-generation-label-preferences",
   SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS = "survey-plan-generation-maintain-diagram-layers",
 }

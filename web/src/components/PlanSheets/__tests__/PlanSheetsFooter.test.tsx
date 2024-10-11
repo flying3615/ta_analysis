@@ -3,18 +3,17 @@ import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { delay, http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 import { generatePath, Link, Route } from "react-router-dom";
 
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { server } from "@/mocks/mockServer.ts";
 import { Paths } from "@/Paths.ts";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
-import { setMockedSplitFeatures } from "@/setupTests.ts";
-import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
 import { mockStore } from "@/test-utils/store-mock.ts";
 
@@ -123,7 +122,14 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
 
     renderCompWithReduxAndRoute(
       <Route
@@ -155,12 +161,18 @@ describe("PlanSheetsFooter", () => {
 
     await userEvent.click(await screen.findByText("Save layout"));
 
-    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const successToast = await screen.findByTestId("lui-msg-toast-show");
+    expect(await within(successToast).findByText("Layout saved successfully")).toBeInTheDocument();
+    expect(successToast).toBeVisible();
+    expect(successToast).toHaveClass("LuiBannerV2");
+    expect(successToast).toHaveClass("success");
+
+    expect(requestSpy).toHaveBeenCalledTimes(2);
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
           _bodyText: JSON.stringify({
             diagrams: [
               {
@@ -187,12 +199,6 @@ describe("PlanSheetsFooter", () => {
       }),
     );
 
-    const successToast = await screen.findByTestId("lui-msg-toast-show");
-    expect(await within(successToast).findByText("Layout saved successfully")).toBeInTheDocument();
-    expect(successToast).toBeVisible();
-    expect(successToast).toHaveClass("LuiBannerV2");
-    expect(successToast).toHaveClass("success");
-
     expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
   });
 
@@ -201,10 +207,12 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan-update$/, async () => {
-        await delay(20000);
-        HttpResponse.text(null, { status: 200 });
-      }),
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), { status: 200, statusText: "OK" }),
+      ),
     );
 
     renderCompWithReduxAndRoute(
@@ -229,19 +237,75 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
         }),
       }),
     );
 
+    expect(await screen.findByText("Layout saving...")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Please wait for this to finish saving, as it may take a little bit longer than expected.",
+      ),
+    ).toBeInTheDocument();
     expect(await screen.findByTestId("update-plan-loading-spinner")).toBeInTheDocument();
   });
 
-  it("failing to save results in showing an error message", async () => {
+  it("error within update plan async task results in showing a specific error message", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 500 })));
+    server.use(
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
+
+    renderCompWithReduxAndRoute(
+      <Route
+        element={
+          <LuiModalAsyncContextProvider>
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
+          </LuiModalAsyncContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
+
+    await userEvent.click(await screen.findByText("Save layout"));
+
+    expect(requestSpy).toHaveBeenCalledTimes(2);
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
+        }),
+      }),
+    );
+
+    expect(await screen.findByText(/Failed to save plan/)).not.toBeNull();
+    expect(await screen.findByText(/Retry, or call us on/)).not.toBeNull();
+    expect(await screen.findByText(/if it continues failing./)).not.toBeNull();
+    expect(screen.getByText("Retry")).toBeInTheDocument();
+    expect(screen.getByText("Dismiss")).toBeInTheDocument();
+    expect(screen.queryByText("Layout saved successfully")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
+  });
+
+  it("server error in save request shows unhandled exception message", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    server.use(http.put(/\/123\/plan$/, () => HttpResponse.text(null, { status: 500 })));
 
     renderCompWithReduxAndRoute(
       <Route
@@ -267,7 +331,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
         }),
       }),
     );
@@ -281,7 +345,14 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
 
     renderCompWithReduxAndRoute(
       <Route
@@ -315,12 +386,12 @@ describe("PlanSheetsFooter", () => {
     fireEvent.keyDown(element, { key: "s", ctrlKey: true });
 
     expect(await screen.findByText("Layout saved successfully")).toBeVisible();
-    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(requestSpy).toHaveBeenCalledTimes(2);
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
         }),
       }),
     );
@@ -445,6 +516,14 @@ describe("PlanSheetsFooter", () => {
   it("shows confirmation dialog and can save and leave when attempting to navigate away with unsaved changes", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
+    server.use(
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
 
     renderCompWithReduxAndRoute(
       <>
@@ -487,12 +566,12 @@ describe("PlanSheetsFooter", () => {
 
     expect(await screen.findByText("Layout saved successfully")).toBeVisible();
     expect(await screen.findByText("Dummy Page")).toBeInTheDocument();
-    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(requestSpy).toHaveBeenCalledTimes(2);
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
         }),
       }),
     );
@@ -679,7 +758,14 @@ describe("PlanSheetsFooter", () => {
     const menuItemName = addPage as string;
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
-    server.use(http.put(/\/123\/plan-update$/, () => HttpResponse.text(null, { status: 200 })));
+    server.use(
+      http.put(/\/123\/plan$/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, async () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
 
     renderCompWithReduxAndRoute(
       <Route
@@ -728,7 +814,7 @@ describe("PlanSheetsFooter", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan-update",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
           _bodyText: JSON.stringify({
             diagrams: [],
             pages: expected,
@@ -758,25 +844,5 @@ describe("PlanSheetsFooter", () => {
       return element?.textContent === expected;
     });
     expect(paginationElement).toBeInTheDocument();
-  });
-
-  it("Show the save layout button as disabled when SURVEY_PLAN_GENERATION_SAVE_LAYOUT is off", () => {
-    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_SAVE_LAYOUT]: TREATMENTS.OFF });
-    renderCompWithReduxAndRoute(
-      <Route
-        element={
-          <PlanSheetsFooter
-            setDiagramsPanelOpen={jest.fn()}
-            diagramsPanelOpen={true}
-            surveyInfo={{} as ExternalSurveyInfoDto}
-          />
-        }
-        path={Paths.layoutPlanSheets}
-      />,
-      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
-    );
-    const saveButton = screen.getByRole("button", { name: /save layout/i });
-    expect(saveButton).toBeInTheDocument();
-    expect(saveButton).toBeDisabled();
   });
 });

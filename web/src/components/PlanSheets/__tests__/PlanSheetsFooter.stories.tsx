@@ -3,17 +3,19 @@ import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http, HttpResponse } from "msw";
 import { useState } from "react";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
 import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
 import { Paths } from "@/Paths.ts";
 import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { StorybookRouter } from "@/test-utils/storybook-utils";
+import { sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/PlanSheetsFooter",
@@ -88,5 +90,58 @@ export const SelectSurveySheetView: Story = {
 
     await expect(await canvas.findByText("Title sheet")).not.toHaveAttribute("aria-disabled");
     await expect(await canvas.findByText("Survey sheet")).toHaveAttribute("aria-disabled", "true");
+  },
+};
+
+export const PlanSaveInProgressModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
+        http.put(/\/123\/plan$/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().build(), {
+            status: 202,
+            statusText: "ACCEPTED",
+          }),
+        ),
+        http.get(/\/123\/async-task/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByText("Save layout"));
+    await sleep(1000);
+  },
+};
+
+export const PlanSaveFailedModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
+        http.put(/\/123\/plan$/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+        ),
+        http.get(/\/123\/async-task/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByText("Save layout"));
+    await sleep(1000);
   },
 };

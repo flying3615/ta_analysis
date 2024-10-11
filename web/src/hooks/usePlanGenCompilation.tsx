@@ -34,7 +34,7 @@ import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil.ts";
 
 export interface PlanGenCompilation {
-  startCompile: (savePlan: () => Promise<void>) => Promise<void>;
+  startCompile: () => Promise<void>;
   CompilationExportCanvas: React.FC;
   compiling: boolean;
 }
@@ -142,8 +142,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     );
   };
 
-  const startCompile = async (savePlan: () => Promise<void>) => {
-    await savePlan();
+  const startCompile = async () => {
     const preCheckPassed = await preCheckResult();
     if (preCheckPassed) {
       if (preCheckPassed.hasPlanGenRanBefore) {

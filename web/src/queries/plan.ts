@@ -3,7 +3,6 @@ import {
   PlanControllerApi,
   PlanGraphicsControllerApi,
   PlanResponseDTO,
-  PlanTempControllerApi,
   PreCompilePlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 import type { CompilePlanResponseDTO } from "@linz/survey-plan-generation-api-client/src/models";
@@ -46,16 +45,13 @@ export const usePreCompilePlanCheck: PlanGenMutation<PreCompilePlanResponseDTO> 
 
 export const updatePlanQueryKey = (transactionId: number) => ["updatePlan", transactionId];
 
-export const useUpdatePlanMutation: PlanGenMutation<void> = ({ transactionId, ...params }) => {
+export const useUpdatePlanMutation = (transactionId: number) => {
   const planData = useAppSelector(getPlanData);
-  const queryClient = useQueryClient();
 
   return useMutation({
-    ...params,
     mutationKey: updatePlanQueryKey(transactionId),
-    mutationFn: () =>
-      new PlanTempControllerApi(apiConfig()).updatePlanTemp({ transactionId, updatePlanRequestDTO: planData }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) }),
+    mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequestDTO: planData }),
+    // Explicitly don't invalidate the plan data here, as the async task won't have completed yet
   });
 };
 

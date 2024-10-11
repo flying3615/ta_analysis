@@ -1,4 +1,4 @@
-import { LuiAlertModalV2, LuiButton, LuiMiniSpinner, LuiModalV2 } from "@linzjs/lui";
+import { LuiAlertModalV2, LuiButton, LuiModalV2 } from "@linzjs/lui";
 import { useCallback, useEffect } from "react";
 import { useBeforeUnload, useBlocker } from "react-router-dom";
 
@@ -11,7 +11,7 @@ export const UnsavedChangesModal = ({
   updatePlanIsSuccess,
 }: {
   updatePlan: () => void;
-  updatePlanIsPending: boolean;
+  updatePlanIsPending: boolean | undefined;
   updatePlanIsSuccess: boolean;
 }) => {
   const hasUnsavedChanges = useAppSelector(hasChanges);
@@ -41,6 +41,10 @@ export const UnsavedChangesModal = ({
     return null;
   }
 
+  if (updatePlanIsPending) {
+    return null;
+  }
+
   return (
     <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={blocker.reset}>
       <p>If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes</p>
@@ -51,12 +55,8 @@ export const UnsavedChangesModal = ({
         <LuiButton level="tertiary" onClick={blocker.proceed}>
           Leave
         </LuiButton>
-        <LuiButton
-          level="tertiary"
-          style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-          onClick={updatePlan}
-        >
-          {updatePlanIsPending ? <LuiMiniSpinner size={16} /> : <>Save & leave</>}
+        <LuiButton level="tertiary" onClick={updatePlan}>
+          Save & leave
         </LuiButton>
       </LuiModalV2.Buttons>
     </LuiAlertModalV2>
