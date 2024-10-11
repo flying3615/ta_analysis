@@ -118,5 +118,4 @@ export const clickAtCoordinates = (
   fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
   fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
   fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
-  fireEvent.click(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
 };

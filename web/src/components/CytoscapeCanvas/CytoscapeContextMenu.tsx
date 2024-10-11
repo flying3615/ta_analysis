@@ -25,6 +25,7 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
   return (
     <div
       ref={containerRef}
+      data-testid="cytoscapeContextMenu"
       className="cytoscape-context-menu-container"
       style={{
         position: "absolute",

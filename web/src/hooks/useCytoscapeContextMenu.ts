@@ -88,8 +88,8 @@ export const useCytoscapeContextMenu = (
     document.addEventListener("click", hideMenu);
 
     return () => {
-      cy?.removeListener("cxttap", onCxtTap);
       document.removeEventListener("click", hideMenu);
+      cy?.removeListener("cxttap", onCxtTap);
     };
   }, [cy, hideMenu, onCxtTap, onTap]);
 

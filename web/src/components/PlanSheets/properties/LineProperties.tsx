@@ -14,7 +14,8 @@ const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
 
   // render an SVG for a specific line type
   function renderLabelFor() {
-    const svg = "data:image/svg+xml;utf8," + encodeURIComponent(lineSymbolSvgs[originalStyle] ?? "");
+    const svgContent = lineSymbolSvgs[originalStyle] || lineSymbolSvgs["solid"] || "";
+    const svg = "data:image/svg+xml;utf8," + encodeURIComponent(svgContent);
 
     return (
       <div className="svg-container">

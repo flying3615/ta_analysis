@@ -607,7 +607,39 @@ export const ShowCoordinatesMenu: Story = {
     const x = 411 - 280 + cyOffsetX;
     const y = 136 - 56 + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
-
     await sleep(500);
+  },
+};
+
+export const ShowLineMenu: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+
+export const ShowLineMenuProperties: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
+    await userEvent.click(propertiesMenuItem);
   },
 };
