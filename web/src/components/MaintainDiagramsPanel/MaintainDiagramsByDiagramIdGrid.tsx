@@ -1,6 +1,5 @@
 import "./MaintainDiagramsGrid.scss";
 
-import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import type { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
 import { Grid, wait } from "@linzjs/step-ag-grid";
@@ -166,7 +165,7 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
           options={
             filteredDiagramNames?.map((r) => ({
               value: r.id.toString(),
-              label: `${r.name} - ${CpgDiagramType.lookup(r.type as CpgDiagramType).description}`,
+              label: r.name,
             })) ?? []
           }
           value={diagramId?.toString() ?? ""}
