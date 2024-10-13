@@ -55,6 +55,8 @@ export const PageLabelInput = () => {
       if (hasError || !activePage || !cyto || !cytoCoordMapper) return;
 
       if (planMode === PlanMode.SelectLabel) {
+        if (event.originalEvent.ctrlKey) return; // prevent from showing input when ctrl is pressed
+
         const { id, label, elementType } = event.target.data();
         if (elementType === PlanElementType.LABELS && event.target.selected()) {
           labelRef.current = { id, label };
