@@ -147,8 +147,20 @@ export const EditLabel: Story = {
     await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
     const selectLabelButton = (await canvas.findByTitle("Select Labels")).parentElement;
     await expect(selectLabelButton).toHaveClass("selected");
+    // click on a page label, edit the page label and save
+    await click(target, pageLabelPosition); // click to select
+    await click(target, pageLabelPosition); // click to edit
+    const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+    void fireEvent.input(addLabelTextBox, { target: { value: "Edited my page label" } });
+    await click(target, { clientX: 800, clientY: 500 });
+    await sleep(500);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+    target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     // click on a page label does show the input (final screenshot)
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
+    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Edited my page label");
   },
 };
