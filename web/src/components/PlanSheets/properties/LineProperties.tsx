@@ -24,6 +24,22 @@ const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
     );
   }
 
+  // get the display name for the line type
+  function getLineTypeDisplayName(type: string) {
+    switch (type) {
+      case "observation":
+        return "Observation from the survey";
+      case "parcelBoundary":
+        return "Parcel boundary not observed as part of this survey";
+      case "ctAbuttal":
+        return "CT boundary or abuttal";
+      case "userDefined":
+        return "User";
+      default:
+        return "Unknown line type";
+    }
+  }
+
   return (
     <div className="plan-element-properties">
       <div className="property-wrap">
@@ -32,7 +48,12 @@ const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Type</span>
-        <LuiTextInput label="" value={lineType} inputProps={{ disabled: true }} onChange={() => false} />
+        <LuiTextInput
+          label=""
+          value={getLineTypeDisplayName(lineType)}
+          inputProps={{ disabled: true }}
+          onChange={() => false}
+        />
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Line style</span>

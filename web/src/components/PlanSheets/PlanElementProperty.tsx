@@ -47,6 +47,19 @@ const PlanElementProperty = ({ type }: PlanElementPropertyProps) => {
   const { component, headerContent } = planModeConfig[type.mode](type.data);
   const dispatch = useAppDispatch();
 
+  const adjustPosition = (pos: { x: number; y: number }) => {
+    const minSize = 600;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    return {
+      x: pos.x + minSize > windowWidth ? windowWidth - minSize : pos.x,
+      y: pos.y + minSize > windowHeight ? windowHeight - minSize : pos.y,
+    };
+  };
+
+  const initialPosition = adjustPosition(type.position);
+
   const closeFloatingWindow = () => {
     dispatch(setPlanProperty(undefined));
   };
@@ -56,7 +69,7 @@ const PlanElementProperty = ({ type }: PlanElementPropertyProps) => {
       <div className="LuiFloatingWindow-overlay" />
       <LuiFloatingWindow
         leftSideHeader={headerContent}
-        initialPosition={type.position}
+        initialPosition={initialPosition}
         startWidth={200}
         startHeight={430}
         startDisplayed={true}
