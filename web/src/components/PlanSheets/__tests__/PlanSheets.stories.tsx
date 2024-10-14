@@ -23,6 +23,8 @@ import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.ts
 import {
   clickAtCoordinates,
   getCytoCanvas,
+  getCytoscapeNodeLayer,
+  getCytoscapeOffsetInCanvas,
   ModalStoryWrapper,
   RIGHT_MOUSE_BUTTON,
   sleep,
@@ -36,7 +38,7 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-type Story = StoryObj<typeof PlanSheets>;
+export type Story = StoryObj<typeof PlanSheets>;
 
 const queryClient = new QueryClient();
 
@@ -550,24 +552,6 @@ export const MoveDiagram: Story = {
   },
 };
 
-const getCytoscapeOffsetInCanvas = async (canvasElement: HTMLElement, cytoscapeElement: HTMLElement) => {
-  const canvasRect = canvasElement.getBoundingClientRect();
-
-  const cytoscapeRect = cytoscapeElement.getBoundingClientRect();
-  console.log("canvasRect", canvasRect, "cytoscapeRect", cytoscapeRect);
-
-  const cyOffsetX = cytoscapeRect.left - canvasRect.left;
-  const cyOffsetY = cytoscapeRect.top - canvasRect.top;
-  console.log("cyOffset", cyOffsetX, cyOffsetY);
-
-  return { cyOffsetX, cyOffsetY };
-};
-
-const getCytoscapeNodeLayer = (cytoscapeElement: HTMLElement) => {
-  // eslint-disable-next-line testing-library/no-node-access
-  return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
-};
-
 export const SelectCoordinates: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -578,7 +562,7 @@ export const SelectCoordinates: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
 
-    const { cyOffsetX, cyOffsetY } = await getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
 
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
@@ -600,7 +584,7 @@ export const ShowCoordinatesMenu: Story = {
     await sleep(500);
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const { cyOffsetX, cyOffsetY } = await getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
     // Location of a mark in cytoscape pixels

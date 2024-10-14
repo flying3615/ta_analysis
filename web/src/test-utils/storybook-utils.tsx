@@ -119,3 +119,24 @@ export const clickAtCoordinates = (
   fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
   fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
 };
+
+export function getCytoscapeOffsetInCanvas(
+  canvasElement: HTMLElement,
+  cytoscapeElement: HTMLElement,
+): { cyOffsetX: number; cyOffsetY: number } {
+  const canvasRect = canvasElement.getBoundingClientRect();
+
+  const cytoscapeRect = cytoscapeElement.getBoundingClientRect();
+  console.log("canvasRect", canvasRect, "cytoscapeRect", cytoscapeRect);
+
+  const cyOffsetX = cytoscapeRect.left - canvasRect.left;
+  const cyOffsetY = cytoscapeRect.top - canvasRect.top;
+  console.log("cyOffset", cyOffsetX, cyOffsetY);
+
+  return { cyOffsetX, cyOffsetY };
+}
+
+export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement): HTMLElement {
+  // eslint-disable-next-line testing-library/no-node-access
+  return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
+}

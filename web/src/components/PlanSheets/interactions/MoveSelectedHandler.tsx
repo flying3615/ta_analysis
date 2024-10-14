@@ -172,7 +172,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     };
 
     addContainerClass();
-    selectedElements.addClass(ELEMENT_CLASS_MOVE_CONTROL).ungrabify().style("events", "yes");
+    selectedElements.addClass(ELEMENT_CLASS_MOVE_CONTROL).ungrabify();
 
     cyto.on("mousedown", ELEMENT_SELECTOR_MOVE_CONTROL, beginMove);
     cyto.on("mouseout", ELEMENT_SELECTOR_MOVE_CONTROL, removeContainerClass);
@@ -185,7 +185,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       cyto.off("mouseout", ELEMENT_SELECTOR_MOVE_CONTROL, removeContainerClass);
       cyto.off("mouseover", ELEMENT_SELECTOR_MOVE_CONTROL, addContainerClass);
 
-      selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).grabify().style("events", "no");
+      selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).grabify();
       removeContainerClass();
     };
   }, [cyto, cytoCanvas, cytoCoordMapper, selectedElements, updateActiveDiagramsAndPageFromCytoData]);
