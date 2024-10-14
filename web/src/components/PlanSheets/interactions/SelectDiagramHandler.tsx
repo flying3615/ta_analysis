@@ -1,4 +1,3 @@
-import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { EventObjectNode, NodeSingular } from "cytoscape";
 import { useEffect, useState } from "react";
 
@@ -7,11 +6,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 
 import { SelectedDiagram } from "./SelectedDiagram";
 
-export interface SelectDiagramHandlerProps {
-  diagrams: DiagramDTO[];
-}
-
-export function SelectDiagramHandler({ diagrams }: SelectDiagramHandlerProps) {
+export function SelectDiagramHandler() {
   const { cyto } = useCytoscapeContext();
   // TODO: store selected diagram id in redux, so selection preserved after re-render
   const [selectedDiagram, setSelectedDiagram] = useState<NodeSingular | undefined>();
@@ -39,5 +34,5 @@ export function SelectDiagramHandler({ diagrams }: SelectDiagramHandlerProps) {
   }, [cyto]);
 
   // add controls for move/resize when selected
-  return <>{selectedDiagram && <SelectedDiagram diagram={selectedDiagram} diagrams={diagrams} />}</>;
+  return <>{selectedDiagram && <SelectedDiagram diagram={selectedDiagram} />}</>;
 }

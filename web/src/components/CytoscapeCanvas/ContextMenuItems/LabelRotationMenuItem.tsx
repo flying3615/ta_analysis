@@ -3,10 +3,14 @@ import "./LabelRotationMenuItem.scss";
 import { NodeSingular } from "cytoscape";
 import { useCallback, useState } from "react";
 
+import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
+
 const ANTI_CLOCKWISE_MAX = -90;
 const CLOCKWISE_MAX = 90;
 
 export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
+  const { updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
+
   const currentAngle = props.targetLabel.style("text-rotation");
   const degConverter = useCallback((input: string) => {
     let value = parseFloat(input);
@@ -39,7 +43,7 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
           }}
           onBlur={() => {
             if (currentAngle !== labelAngle) {
-              props.targetLabel.emit("element:changed");
+              updateActiveDiagramsAndPageFromCytoData(props.targetLabel);
             }
           }}
         />

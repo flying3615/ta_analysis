@@ -1,6 +1,5 @@
 import "./MoveSelectedHandler.scss";
 
-import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import {
   BoundingBox12,
   CollectionReturnValue,
@@ -15,14 +14,13 @@ import {
 } from "cytoscape";
 import { useEffect } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 
 import { moveExtent } from "./moveAndResizeUtil";
 import { getRelatedLabels } from "./selectUtil";
 
 export interface SelectedElementProps {
-  diagrams: DiagramDTO[];
   selectedElements: CollectionReturnValue;
 }
 
@@ -69,15 +67,14 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  *   selected elements that when clicked can start the move.
  *
  */
-export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElementProps) {
+export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) {
+  const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
+
   useEffect(() => {
-    const cyto = selectedElements.cy();
-    const container = cyto.container();
-    if (!container) {
+    if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
     }
 
-    const cytoCoordMapper = new CytoscapeCoordinateMapper(container, diagrams);
     const diagramAreaLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
     // move selected, connected nodes, and related labels
     const movingElements = selectedElements.union(selectedElements.connectedNodes());
@@ -91,7 +88,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
     let moveLocation: SingularElementReturnValue | undefined;
 
     const addContainerClass = () => {
-      container.classList.add(CONTAINER_CLASS_MOVABLE);
+      cytoCanvas.classList.add(CONTAINER_CLASS_MOVABLE);
     };
 
     const beginMove = (event: EventObjectNode | EventObjectEdge) => {
@@ -103,7 +100,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
       moveStartPositions = getPositions(movingElements.union(adjacentEdges));
 
       adjacentEdges.addClass(ELEMENT_CLASS_MOVE_HIDE);
-      container.classList.add(CONTAINER_CLASS_MOVING);
+      cytoCanvas.classList.add(CONTAINER_CLASS_MOVING);
       cyto.boxSelectionEnabled(false);
       cyto.userPanningEnabled(false);
       cyto.on("mousemove", updateMove);
@@ -112,7 +109,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
 
     const cleanupMove = () => {
       adjacentEdges.removeClass(ELEMENT_CLASS_MOVE_HIDE);
-      container.classList.remove(CONTAINER_CLASS_MOVING);
+      cytoCanvas.classList.remove(CONTAINER_CLASS_MOVING);
       cyto.boxSelectionEnabled(true);
       cyto.userPanningEnabled(true);
       cyto.off("mousemove", updateMove);
@@ -135,7 +132,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
           movedElements = updateMovedElements(movedElements, adjacentEdges, moveStartPositions);
           // TODO: ensure elements within bounds
         }
-        cyto.emit("collection:changed", [movedElements]);
+        updateActiveDiagramsAndPageFromCytoData(movedElements);
       }
       cleanupMove();
     };
@@ -144,7 +141,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
       if (moveStart) {
         return;
       }
-      container.classList.remove(CONTAINER_CLASS_MOVABLE);
+      cytoCanvas.classList.remove(CONTAINER_CLASS_MOVABLE);
     };
 
     /**
@@ -191,7 +188,7 @@ export function MoveSelectedHandler({ diagrams, selectedElements }: SelectedElem
       selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).grabify().style("events", "no");
       removeContainerClass();
     };
-  });
+  }, [cyto, cytoCanvas, cytoCoordMapper, selectedElements, updateActiveDiagramsAndPageFromCytoData]);
 
   return <></>;
 }

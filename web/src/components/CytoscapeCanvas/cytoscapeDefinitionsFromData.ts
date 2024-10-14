@@ -28,8 +28,7 @@ export interface IEdgeData extends IGraphData {
   destNodeId: string;
 }
 
-export interface INodeAndEdgeData<T> {
-  data: T;
+export interface INodeAndEdgeData {
   edges: IEdgeData[];
   nodes: INodeData[];
 }

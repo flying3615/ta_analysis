@@ -108,14 +108,6 @@ const planSheetsSlice = createSlice({
       const page = state.pages.find((page) => page.pageType === state.activeSheet && page.pageNumber === pageNumber);
       return page?.id ?? null;
     },
-    getActiveDiagrams: (state) => {
-      // Return diagrams on active page
-      const activePageNumber = state.activePageNumbers[state.activeSheet];
-      const activePage = state.pages.find(
-        (page) => page.pageType === state.activeSheet && page.pageNumber === activePageNumber,
-      );
-      return state.diagrams.filter((diagram) => diagram.pageRef === activePage?.id);
-    },
     getActivePages: (state) => {
       return state.pages.filter((page) => state.activeSheet === page.pageType);
     },
@@ -163,7 +155,6 @@ export const {
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,
   getActivePageRefFromPageNumber,
-  getActiveDiagrams,
   getActivePageNumber,
   getFilteredPages,
   hasChanges,

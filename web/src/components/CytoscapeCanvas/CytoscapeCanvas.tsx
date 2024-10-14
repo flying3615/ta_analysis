@@ -8,24 +8,17 @@ import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "rea
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
 import {
   edgeDefinitionsFromData,
-  getEdgeData,
-  getNodeData,
   IEdgeData,
-  INodeAndEdgeData,
   INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
-import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
 import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu.ts";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown.ts";
-import { useThrowAsyncError } from "@/hooks/useThrowAsyncError";
-import { getActivePages } from "@/redux/planSheets/planSheetsSlice.ts";
 import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
@@ -40,7 +33,6 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   edgeData: IEdgeData[];
   diagrams: DiagramDTO[];
   initZoom?: IInitZoom;
-  onNodeAndEdgeDataChange: (change: Partial<INodeAndEdgeData<string>>) => void;
   onCyInit?: (cy: cytoscape.Core) => void;
   applyClasses?: Record<string, string | string[]>;
   selectionSelector?: string;
@@ -57,16 +49,12 @@ const CytoscapeCanvas = ({
   edgeData,
   diagrams,
   initZoom,
-  onNodeAndEdgeDataChange,
   onCyInit,
   applyClasses,
   selectionSelector,
   getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
-  const throwAsyncError = useThrowAsyncError();
-  const activePages = useAppSelector(getActivePages);
-
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
@@ -120,39 +108,6 @@ const CytoscapeCanvas = ({
   const enableZoomToArea = () => {
     zoomEnabledRef.current = true;
     cy?.userPanningEnabled(false);
-  };
-
-  const emitChanges = (event: cytoscape.EventObject, collection?: CollectionReturnValue) => {
-    try {
-      if (!canvasRef.current) {
-        throw Error("CytoscapeCanvas::emitChange listener - no viewport");
-      }
-      const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
-
-      const changes: INodeAndEdgeData<string> = {
-        data: event.type,
-        edges: [],
-        nodes: [],
-      };
-      if (event.target === cy) {
-        collection?.forEach((ele) => {
-          if (ele.isNode()) {
-            changes.nodes.push(getNodeData(ele, cytoscapeCoordinateMapper));
-          } else {
-            changes.edges.push(getEdgeData(ele));
-          }
-        });
-      } else if (event.target.isNode()) {
-        const node = event.target as cytoscape.NodeSingular;
-        changes.nodes.push(getNodeData(node, cytoscapeCoordinateMapper));
-      } else if (event.target.isEdge()) {
-        const edge = event.target as cytoscape.EdgeSingular;
-        changes.edges.push(getEdgeData(edge));
-      }
-      onNodeAndEdgeDataChange(changes);
-    } catch (error) {
-      throwAsyncError(error as Error);
-    }
   };
 
   const initCytoscape = useCallback(() => {
@@ -220,10 +175,6 @@ const CytoscapeCanvas = ({
 
   // Handle viewport resizing
   useEffect(() => {
-    if (!activePages.length) {
-      return; // Exit if there are no pages
-    }
-
     if (!canvasRef.current) {
       throw Error("CytoscapeCanvas::resize observer - no viewport");
     }
@@ -237,16 +188,10 @@ const CytoscapeCanvas = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [activePages.length, initCytoscape]);
+  }, [initCytoscape]);
 
   // Listen and handle cytoscape events
   useEffect(() => {
-    // customized event listeners
-    cy?.addListener("collection:changed", (event, ...extraParams) => {
-      emitChanges(event, extraParams[0] as CollectionReturnValue);
-    });
-    cy?.addListener("element:changed", emitChanges);
-    cy?.addListener("data", emitChanges);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
     cy?.addListener("select", "node", onSelected);
@@ -261,7 +206,7 @@ const CytoscapeCanvas = ({
       cy?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, onNodeAndEdgeDataChange, canvasRef.current]);
+  }, [cy, canvasRef.current]);
 
   // Shift + left-click to zoom into an area
   useOnKeyDownAndMouseDown(
@@ -274,15 +219,9 @@ const CytoscapeCanvas = ({
 
   return (
     <>
-      {activePages.length ? (
-        <>
-          <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
-          <CytoscapeContextMenu menuState={menuState} hideMenu={hideMenu} />
-          {children}
-        </>
-      ) : (
-        <NoPageMessage />
-      )}
+      <div className="CytoscapeCanvas" data-testid={testId} ref={canvasRef} />
+      <CytoscapeContextMenu menuState={menuState} hideMenu={hideMenu} />
+      {children}
     </>
   );
 };

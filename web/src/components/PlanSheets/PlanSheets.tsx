@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas.tsx";
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
 import Header from "@/components/Header/Header";
 import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal.tsx";
 import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
@@ -23,7 +23,7 @@ import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler.ts";
 import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -32,11 +32,10 @@ import {
   selectActivePageEdgesAndNodes,
   selectPageConfigEdgesAndNodes,
 } from "@/modules/plan/selectGraphData.ts";
-import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePagesWithNode } from "@/modules/plan/updatePlanData.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { getPlanMode, getPlanProperty, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, getPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
@@ -49,7 +48,6 @@ import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
 const PlanSheets = () => {
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
@@ -156,33 +154,6 @@ const PlanSheets = () => {
   const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
 
-  const onNodeAndEdgeDataChange = (elements: Partial<INodeAndEdgeData<string>>) => {
-    let updatedDiagrams = activeDiagrams;
-    let updatedPage = activePage;
-
-    elements.edges?.forEach((edge) => {
-      if (edge.properties["diagramId"]) {
-        updatedDiagrams = updateDiagramsWithEdge(updatedDiagrams, edge);
-      } else {
-        console.warn("update page edge not implemented");
-      }
-    });
-    elements.nodes?.forEach((node) => {
-      if (node.properties["diagramId"]) {
-        updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
-      } else if (updatedPage) {
-        updatedPage = updatePagesWithNode(updatedPage, node);
-      }
-    });
-
-    if (updatedDiagrams !== activeDiagrams) {
-      dispatch(replaceDiagrams(updatedDiagrams));
-    }
-    if (updatedPage && updatedPage !== activePage) {
-      dispatch(replacePage(updatedPage));
-    }
-  };
-
   let selectionSelector = "";
   let applyClasses;
   switch (planMode) {
@@ -205,22 +176,25 @@ const PlanSheets = () => {
           <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
             <DiagramSelector />
           </SidePanel>
-          <CytoscapeCanvas
-            nodeData={nodeData}
-            edgeData={edgeData}
-            diagrams={activeDiagrams}
-            onNodeAndEdgeDataChange={onNodeAndEdgeDataChange}
-            getContextMenuItems={(element, selectedCollection) =>
-              getMenuItemsForPlanElement(element, selectedCollection)
-            }
-            selectionSelector={selectionSelector}
-            applyClasses={applyClasses}
-            data-testid="MainCytoscapeCanvas"
-          />
+          {activePage ? (
+            <CytoscapeCanvas
+              nodeData={nodeData}
+              edgeData={edgeData}
+              diagrams={activeDiagrams}
+              getContextMenuItems={(element, selectedCollection) =>
+                getMenuItemsForPlanElement(element, selectedCollection)
+              }
+              selectionSelector={selectionSelector}
+              applyClasses={applyClasses}
+              data-testid="MainCytoscapeCanvas"
+            />
+          ) : (
+            <NoPageMessage />
+          )}
           {[PlanMode.AddLabel, PlanMode.SelectLabel].includes(planMode) && <PageLabelInput />}
-          {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler diagrams={activeDiagrams} />}
+          {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
           {(planMode === PlanMode.SelectCoordinates || planMode === PlanMode.SelectLine) && (
-            <SelectElementHandler diagrams={activeDiagrams} mode={planMode} />
+            <SelectElementHandler mode={planMode} />
           )}
           {planProperty && <PlanElementProperty type={planProperty} />}
           <ElementHover />

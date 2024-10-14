@@ -48,7 +48,6 @@ const CytoscapeTemplate = () => {
         nodeData={markNodes}
         edgeData={lineEdges}
         diagrams={diagrams}
-        onNodeAndEdgeDataChange={(changes) => console.info("Cytoscape data changed", changes)}
         getContextMenuItems={() => undefined}
       />
     </div>
@@ -96,7 +95,6 @@ const CanvasFromMockData = (props: {
           cyRef = cy;
         }}
         initZoom={props.initZoom}
-        onNodeAndEdgeDataChange={(changes) => console.info("Cytoscape data changed", changes)}
         getContextMenuItems={() => undefined}
       />
     </div>
@@ -116,7 +114,6 @@ export const PageConfigBorder: Story = () => {
         onCyInit={(cy) => {
           cyRef = cy;
         }}
-        onNodeAndEdgeDataChange={(changes) => console.info("Cytoscape data changed", changes)}
         getContextMenuItems={() => undefined}
       />
     </div>

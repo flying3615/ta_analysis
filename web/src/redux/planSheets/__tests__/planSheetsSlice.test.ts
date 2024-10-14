@@ -2,10 +2,10 @@ import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { setupStore } from "@/redux/store";
 
 import planSheetsSlice, {
-  getActiveDiagrams,
   getActivePage,
   getActivePageNumber,
   getActivePages,
@@ -161,7 +161,7 @@ describe("planSheetsSlice", () => {
     expect(getFilteredPages(store.getState())).toEqual({ totalPages: 1 });
   });
 
-  test("getActiveDiagrams should return active diagrams on current page", () => {
+  test("selectActiveDiagrams should return active diagrams on current page", () => {
     store = setupStore({
       planSheets: {
         ...initialState,
@@ -170,19 +170,19 @@ describe("planSheetsSlice", () => {
       },
     });
 
-    let activeDiagrams = getActiveDiagrams(store.getState());
+    let activeDiagrams = selectActiveDiagrams(store.getState());
     expect(activeDiagrams).toHaveLength(1);
     expect(activeDiagrams[0]?.id).toBe(1);
     expect(activeDiagrams[0]?.diagramType).toBe("sysGenPrimaryDiag");
 
     store.dispatch(setActiveSheet(PlanSheetType.SURVEY));
-    activeDiagrams = getActiveDiagrams(store.getState());
+    activeDiagrams = selectActiveDiagrams(store.getState());
     expect(activeDiagrams).toHaveLength(1);
     expect(activeDiagrams[0]?.id).toBe(2);
     expect(activeDiagrams[0]?.diagramType).toBe("sysGenTraverseDiag");
   });
 
-  test("getActiveDiagrams should return active diagrams when page changed", () => {
+  test("selectActiveDiagrams should return active diagrams when page changed", () => {
     store = setupStore({
       planSheets: {
         ...initialState,
@@ -193,7 +193,7 @@ describe("planSheetsSlice", () => {
 
     store.dispatch(setActiveSheet(PlanSheetType.SURVEY));
     store.dispatch(setActivePageNumber({ pageType: PlanSheetType.SURVEY, pageNumber: 2 }));
-    const activeDiagrams = getActiveDiagrams(store.getState());
+    const activeDiagrams = selectActiveDiagrams(store.getState());
     expect(activeDiagrams).toHaveLength(1);
     expect(activeDiagrams[0]?.id).toBe(3);
     expect(activeDiagrams[0]?.diagramType).toBe("userDefnPrimaryDiag");

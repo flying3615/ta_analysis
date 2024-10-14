@@ -16,6 +16,10 @@ import {
 } from "./extractGraphData";
 import { LookupGraphData } from "./LookupGraphData";
 
+export interface INodeAndEdgeAndData<T> extends INodeAndEdgeData {
+  data: T;
+}
+
 export const selectDiagramToPageLookupTable = createSelector(getPlanData, ({ diagrams, pages }) => {
   const lookupTbl: IDiagramToPage = {};
   diagrams.forEach((diagram) => {
@@ -30,12 +34,14 @@ export const selectDiagramToPageLookupTable = createSelector(getPlanData, ({ dia
   return lookupTbl;
 });
 
+export const selectActiveDiagrams = createSelector(getActivePage, getDiagrams, (activePage, diagrams): DiagramDTO[] =>
+  diagrams.filter((diagram) => diagram.pageRef === activePage?.id),
+);
+
 export const selectActiveDiagramsEdgesAndNodes = createSelector(
-  getActivePage,
-  getDiagrams,
+  selectActiveDiagrams,
   selectDiagramToPageLookupTable,
-  (activePage, diagrams, lookupTbl): INodeAndEdgeData<DiagramDTO[]> => {
-    const activeDiagrams = diagrams.filter((diagram) => diagram.pageRef === activePage?.id);
+  (activeDiagrams, lookupTbl): INodeAndEdgeAndData<DiagramDTO[]> => {
     return {
       data: activeDiagrams,
       edges: extractDiagramEdges(activeDiagrams),
@@ -46,7 +52,7 @@ export const selectActiveDiagramsEdgesAndNodes = createSelector(
 
 export const selectActivePageEdgesAndNodes = createSelector(
   getActivePage,
-  (activePage): INodeAndEdgeData<PageDTO | undefined> => {
+  (activePage): INodeAndEdgeAndData<PageDTO | undefined> => {
     return {
       data: activePage,
       edges: activePage ? extractPageEdges([activePage]) : [],
@@ -93,7 +99,7 @@ export const selectMaxPlanId = createSelector(getPlanData, ({ diagrams, pages })
 
 export const selectPageConfigEdgesAndNodes = createSelector(
   getPageConfigs,
-  (pageConfigs: PageConfigDTO[]): INodeAndEdgeData<PageConfigDTO[]> => ({
+  (pageConfigs: PageConfigDTO[]): INodeAndEdgeAndData<PageConfigDTO[]> => ({
     data: pageConfigs,
     edges: extractPageConfigEdges(pageConfigs),
     nodes: extractPageConfigNodes(pageConfigs),

@@ -1,6 +1,5 @@
 import "./SelectedDiagram.scss";
 
-import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import {
   BoundingBox12,
   CollectionReturnValue,
@@ -15,12 +14,12 @@ import { useEffect } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 
 import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
 
 export interface SelectedDiagramProps {
   diagram: NodeSingular;
-  diagrams: DiagramDTO[];
 }
 
 const DIAGRAM_CLASS_MOVABLE = "diagram-movable";
@@ -40,15 +39,13 @@ const SELECTED_DIAGRAM = "selected-diagram";
  * - "diagramLimits" defines the page area where diagrams can move.
  * - "resizeLimits" are calculated when a resize begins based on diagram extent and limits.
  */
-export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
+export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
+  const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
+
   useEffect(() => {
-    const cyto = diagram.cy();
-    const container = cyto.container();
-    if (!container) {
+    if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
     }
-
-    const cytoCoordMapper = new CytoscapeCoordinateMapper(container, diagrams);
     const diagramExtent = getDiagramDataAndExtent(cytoCoordMapper, diagram);
     const diagramLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
 
@@ -67,7 +64,7 @@ export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
     const addControlClass = (event: EventObjectNode | EventObjectEdge | InputEventObject) => {
       const id = moveId ?? event.target.id();
       const className = isResizeControl(id) ? id : moveId === id ? DIAGRAM_CLASS_MOVING : DIAGRAM_CLASS_MOVABLE;
-      container.classList.add(className);
+      cytoCanvas.classList.add(className);
     };
 
     const beginMoveOrResize = (event: EventObjectNode | EventObjectEdge) => {
@@ -94,9 +91,10 @@ export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
       if (newExtent) {
         const updatedOriginAndScale = getNewDiagramOriginAndScale(cytoCoordMapper, diagram, newExtent);
         diagram.data(updatedOriginAndScale);
+        updateActiveDiagramsAndPageFromCytoData(diagram);
       }
 
-      container.classList.remove(DIAGRAM_CLASS_MOVING);
+      cytoCanvas.classList.remove(DIAGRAM_CLASS_MOVING);
       cyto.off("mousemove", updateMoveOrResize);
       cyto.off("mouseup", endMoveOrResize);
       moveId = undefined;
@@ -109,7 +107,7 @@ export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
       if (moveId) {
         return;
       }
-      [...container.classList.values()].forEach((className) => {
+      [...cytoCanvas.classList.values()].forEach((className) => {
         if (isResizeControl(className) || className === DIAGRAM_CLASS_MOVABLE) {
           if (
             className === DIAGRAM_CLASS_MOVABLE &&
@@ -118,7 +116,7 @@ export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
           ) {
             return;
           }
-          container.classList.remove(className);
+          cytoCanvas.classList.remove(className);
         }
       });
     };
@@ -166,7 +164,7 @@ export function SelectedDiagram({ diagram, diagrams }: SelectedDiagramProps) {
 
       removeControlClasses();
     };
-  }, [diagrams, diagram]);
+  }, [cyto, cytoCanvas, cytoCoordMapper, diagram, updateActiveDiagramsAndPageFromCytoData]);
 
   return <></>;
 }

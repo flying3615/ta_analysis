@@ -1,4 +1,3 @@
-import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { CollectionReturnValue, EventObjectEdge, EventObjectNode } from "cytoscape";
 import { ReactElement, useEffect, useState } from "react";
 
@@ -17,7 +16,6 @@ const SELECTOR_LABELS = `node[featureId][^invisible]`;
 const SELECTOR_LINES = `edge[lineId][^invisible][^pageConfig]`;
 
 export interface SelectElementHandlerProps {
-  diagrams: DiagramDTO[];
   // for generic select, make this optional and track selectMode in state after first feature selected.
   mode: SelectHandlerMode;
 }
@@ -31,7 +29,7 @@ export interface SelectElementHandlerProps {
  * @param param0
  * @returns
  */
-export function SelectElementHandler({ diagrams, mode }: SelectElementHandlerProps): ReactElement {
+export function SelectElementHandler({ mode }: SelectElementHandlerProps): ReactElement {
   const { cyto } = useCytoscapeContext();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
 
@@ -91,7 +89,7 @@ export function SelectElementHandler({ diagrams, mode }: SelectElementHandlerPro
     };
   }, [cyto, selected]);
 
-  return <>{selected && <MoveSelectedHandler diagrams={diagrams} selectedElements={selected} />}</>;
+  return <>{selected && <MoveSelectedHandler selectedElements={selected} />}</>;
 }
 
 function getSelector(mode?: SelectHandlerMode) {
