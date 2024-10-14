@@ -113,6 +113,10 @@ export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => 
 
 export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
+    if (diagram.id !== edge.properties["diagramId"]) {
+      return diagram;
+    }
+
     return {
       ...diagram,
       lines: diagram.lines.map((line) => (line.id === parseInt(edge.id) ? mergeLineData(line, edge) : line)),

@@ -109,6 +109,7 @@ describe("updatePlanData", () => {
   test("updateDiagramsWithEdge should return diagrams with updated line data", () => {
     const updatedEdge = {
       id: "1",
+      properties: {},
     } as IEdgeData;
 
     const result = updateDiagramsWithEdge(diagrams, updatedEdge);

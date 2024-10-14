@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas.tsx";
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import Header from "@/components/Header/Header";
 import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal.tsx";
 import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
@@ -41,6 +41,7 @@ import { getPlanMode, getPlanProperty, replaceDiagrams, replacePage } from "@/re
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
 import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler.tsx";
+import { SelectElementHandler } from "./interactions/SelectElementHandler.tsx";
 import { PlanElementType } from "./PlanElementType.ts";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
@@ -155,20 +156,31 @@ const PlanSheets = () => {
   const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
   const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
 
-  const onNodeChange = (node: INodeData) => {
-    if (node.properties["diagramId"]) {
-      const updatedDiagrams = updateDiagramsWithNode(activeDiagrams, node);
-      dispatch(replaceDiagrams(updatedDiagrams));
-    } else {
-      if (activePage) {
-        const updatedPage = updatePagesWithNode(activePage, node);
-        dispatch(replacePage(updatedPage));
+  const onNodeAndEdgeDataChange = (elements: Partial<INodeAndEdgeData<string>>) => {
+    let updatedDiagrams = activeDiagrams;
+    let updatedPage = activePage;
+
+    elements.edges?.forEach((edge) => {
+      if (edge.properties["diagramId"]) {
+        updatedDiagrams = updateDiagramsWithEdge(updatedDiagrams, edge);
+      } else {
+        console.warn("update page edge not implemented");
       }
+    });
+    elements.nodes?.forEach((node) => {
+      if (node.properties["diagramId"]) {
+        updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
+      } else if (updatedPage) {
+        updatedPage = updatePagesWithNode(updatedPage, node);
+      }
+    });
+
+    if (updatedDiagrams !== activeDiagrams) {
+      dispatch(replaceDiagrams(updatedDiagrams));
     }
-  };
-  const onEdgeChange = (edge: IEdgeData) => {
-    const updatedDiagrams = updateDiagramsWithEdge(activeDiagrams, edge);
-    dispatch(replaceDiagrams(updatedDiagrams));
+    if (updatedPage && updatedPage !== activePage) {
+      dispatch(replacePage(updatedPage));
+    }
   };
 
   let selectionSelector = "";
@@ -176,13 +188,6 @@ const PlanSheets = () => {
   switch (planMode) {
     case PlanMode.SelectDiagram:
       selectionSelector = `node[elementType='${PlanElementType.DIAGRAM}']`;
-      break;
-    case PlanMode.SelectCoordinates:
-      selectionSelector = "node[elementType='coordinates']";
-      applyClasses = { ":parent": [], node: "node-selected" };
-      break;
-    case PlanMode.SelectLine:
-      selectionSelector = "edge";
       break;
     case PlanMode.SelectLabel:
       selectionSelector = "node[label][^symbolId]";
@@ -204,8 +209,7 @@ const PlanSheets = () => {
             nodeData={nodeData}
             edgeData={edgeData}
             diagrams={activeDiagrams}
-            onNodeChange={onNodeChange}
-            onEdgeChange={onEdgeChange}
+            onNodeAndEdgeDataChange={onNodeAndEdgeDataChange}
             getContextMenuItems={(element, selectedCollection) =>
               getMenuItemsForPlanElement(element, selectedCollection)
             }
@@ -215,6 +219,9 @@ const PlanSheets = () => {
           />
           {[PlanMode.AddLabel, PlanMode.SelectLabel].includes(planMode) && <PageLabelInput />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler diagrams={activeDiagrams} />}
+          {(planMode === PlanMode.SelectCoordinates || planMode === PlanMode.SelectLine) && (
+            <SelectElementHandler diagrams={activeDiagrams} mode={planMode} />
+          )}
           {planProperty && <PlanElementProperty type={planProperty} />}
           <ElementHover />
           <PageNumberTooltips />

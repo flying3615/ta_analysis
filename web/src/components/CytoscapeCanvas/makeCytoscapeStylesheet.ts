@@ -18,6 +18,8 @@ import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } 
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
+  const cytoscapeMmWidth = Math.ceil(cytoscapeCoordinateMapper.planCmToCytoscape(0.1));
+
   const svgDataForSymbol = (ele: cytoscape.NodeSingular) => {
     // The symbolId is either a 2/3 digit ascii code or a character
     const symbolId = ele.data("symbolId");
@@ -139,7 +141,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "node:selected.node-selected, node.related-label-selected",
+      selector: "node:selected, node.related-label-selected",
       style: {
         "outline-width": 2,
         "outline-offset": 2,
@@ -227,7 +229,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     },
     {
       // Node with label selected
-      selector: "node:selected.selectable-label",
+      selector: "node:selected.selectable-label, node[label].related-element-selected",
       style: {
         "text-background-color": hotPink,
         "text-background-opacity": 0.5,
@@ -327,6 +329,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         label: "",
       },
     },
+
+    // select diagram
     {
       selector: `edge.diagram-control`,
       style: {
@@ -353,6 +357,36 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         width: "data(width)",
       },
     },
+
+    // move element
+    {
+      selector: "edge.element-move-vector",
+      style: {
+        "curve-style": "straight", // needed to render arrows
+        "line-cap": "butt",
+        "line-color": GREYED_FOREGROUND_COLOUR,
+        "line-dash-pattern": [2 * cytoscapeMmWidth, 2 * cytoscapeMmWidth],
+        "line-style": "dashed",
+        "target-arrow-color": GREYED_FOREGROUND_COLOUR,
+        "target-arrow-shape": "chevron",
+        width: 0.75,
+      },
+    },
+    {
+      selector: "edge#theMoveVector",
+      style: {
+        "line-color": hotPink,
+        "line-dash-pattern": [cytoscapeMmWidth, cytoscapeMmWidth],
+        "target-arrow-color": hotPink,
+      },
+    },
+    {
+      selector: ".transparent,[invisible]",
+      style: {
+        opacity: 0,
+      },
+    },
+
     {
       selector: "#root",
       style: {

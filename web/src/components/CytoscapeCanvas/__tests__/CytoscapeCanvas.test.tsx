@@ -17,8 +17,7 @@ describe("CytoscapeCanvas", () => {
         nodeData={markNodes}
         edgeData={lineEdges}
         diagrams={diagrams}
-        onNodeChange={jest.fn()}
-        onEdgeChange={jest.fn()}
+        onNodeAndEdgeDataChange={jest.fn()}
         getContextMenuItems={() => undefined}
       />,
       mockedState,

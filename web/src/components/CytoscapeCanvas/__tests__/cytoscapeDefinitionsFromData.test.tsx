@@ -95,7 +95,8 @@ describe("getEdgeData", () => {
       id: "1",
       source: "node1",
       target: "node2",
-      properties: { a: 1, diagramId: 1 },
+      a: 1,
+      diagramId: 1,
     });
     const edgeData = getEdgeData(edge);
     expect(edgeData).toStrictEqual({

@@ -2,7 +2,7 @@ import { DiagramDTO, PageConfigDTO, PageDTO } from "@linz/survey-plan-generation
 import { createSelector } from "@reduxjs/toolkit";
 import { max } from "lodash-es";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { getActivePage, getDiagrams, getPageConfigs, getPlanData } from "@/redux/planSheets/planSheetsSlice";
 
 import {
@@ -15,12 +15,6 @@ import {
   IDiagramToPage,
 } from "./extractGraphData";
 import { LookupGraphData } from "./LookupGraphData";
-
-export interface INodeAndEdgeData<T> {
-  data: T;
-  edges: IEdgeData[];
-  nodes: INodeData[];
-}
 
 export const selectDiagramToPageLookupTable = createSelector(getPlanData, ({ diagrams, pages }) => {
   const lookupTbl: IDiagramToPage = {};

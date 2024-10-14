@@ -147,6 +147,7 @@ export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[
             sourceNodeId: `border_${line.coordRefs?.[0]?.toString()}`,
             destNodeId: `border_${line.coordRefs?.[1]?.toString()}`,
             properties: {
+              locked: true,
               pointWidth: line.pointWidth ?? 1,
             },
           }) as IEdgeData,
@@ -157,6 +158,7 @@ export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[
       sourceNodeId,
       destNodeId,
       properties: {
+        locked: true,
         pointWidth: 1,
       },
     });
@@ -319,6 +321,7 @@ const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
         properties: {
           ...getEdgeStyling(line),
           elementType: "lines",
+          lineId: `${line.id}`,
           lineType: line.lineType,
           displayState: line.displayState,
           coordRefs: JSON.stringify(line.coordRefs),
@@ -326,6 +329,8 @@ const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
       }) as IEdgeData,
   );
 };
+
+export const BROKEN_LINE_COORD = "brokenLineCoord";
 
 /**
  * Break a line into two parts with a gap in the middle, requires synthetic coordinates
@@ -337,12 +342,14 @@ const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
 const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
   const brokenLine = {
     id: `${line.id}_S`,
-    sourceNodeId: line.coordRefs?.[0]?.toString(),
+    sourceNodeId: line.coordRefs[0]?.toString(),
     destNodeId: `${line.id}_M1`,
     properties: {
       ...getEdgeStyling(line),
       diagramId: diagram.id,
       elementType: "lines",
+      [BROKEN_LINE_COORD]: line.coordRefs[1]?.toString(),
+      lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
     },
@@ -351,11 +358,13 @@ const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
   const brokenLine2 = {
     id: `${line.id}_E`,
     sourceNodeId: `${line.id}_M2`,
-    destNodeId: line.coordRefs?.[1]?.toString(),
+    destNodeId: line.coordRefs[1]?.toString(),
     properties: {
       ...getEdgeStyling(line),
       diagramId: diagram.id,
       elementType: "lines",
+      [BROKEN_LINE_COORD]: line.coordRefs[0]?.toString(),
+      lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
     },
@@ -406,6 +415,8 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
         coordType: "",
         diagramId: diagramId,
         elementType: "coordinates",
+        invisible: true,
+        lineId: `${line.id}`,
         parent: `D${diagramId}`,
       },
     },
@@ -417,6 +428,8 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
         coordType: "",
         diagramId: diagramId,
         elementType: "coordinates",
+        invisible: true,
+        lineId: `${line.id}`,
         parent: `D${diagramId}`,
       },
     },

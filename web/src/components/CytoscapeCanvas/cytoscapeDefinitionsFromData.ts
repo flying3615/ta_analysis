@@ -28,6 +28,12 @@ export interface IEdgeData extends IGraphData {
   destNodeId: string;
 }
 
+export interface INodeAndEdgeData<T> {
+  data: T;
+  edges: IEdgeData[];
+  nodes: INodeData[];
+}
+
 export const nodeDefinitionsFromData = (
   data: INodeData[],
   cytoscapeCoordMapper: CytoscapeCoordinateMapper,
@@ -49,8 +55,6 @@ export const nodeDefinitionsFromData = (
           "font-size": nodeDataEntry.properties["fontSize"],
           ...nodeDataEntry.properties,
         },
-        // Note that we need a position here also in order to lock the node position
-        locked: isUserDefined,
         position: nodePositionPixels,
         classes: nodeDataEntry.classes,
       };
@@ -109,7 +113,7 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
     label,
     sourceNodeId: source,
     destNodeId: target,
-    ...properties,
+    properties,
     classes: edge.classes(),
   } as IEdgeData;
 };
@@ -120,13 +124,17 @@ const diagramLabelNodePositioner = (
   nodePositionPixels: cytoscape.Position,
 ) => {
   const ele = nodeSingular({ ...node.properties, label: node.label! }, node.position);
+  let rotationRads = textRotationMathRads(ele);
+  if (isNaN(rotationRads)) {
+    rotationRads = 0;
+  }
 
   //textAlignment adjustment
   const textDim = textDimensions(ele, cytoscapeCoordinateMapper);
   const { textRadiusDist, textThetaRads } = calculateTextAlignmentPolar(textDim, ele);
 
-  const horizontalAlignmentOffset = textRadiusDist * Math.cos(textRotationMathRads(ele) + textThetaRads);
-  const verticalAlignmentOffset = -(textRadiusDist * Math.sin(textRotationMathRads(ele) + textThetaRads));
+  const horizontalAlignmentOffset = textRadiusDist * Math.cos(rotationRads + textThetaRads);
+  const verticalAlignmentOffset = -(textRadiusDist * Math.sin(rotationRads + textThetaRads));
 
   nodePositionPixels.x -= horizontalAlignmentOffset;
   nodePositionPixels.y -= verticalAlignmentOffset;

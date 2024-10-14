@@ -11,6 +11,7 @@ import {
   getEdgeData,
   getNodeData,
   IEdgeData,
+  INodeAndEdgeData,
   INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
@@ -39,8 +40,7 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   edgeData: IEdgeData[];
   diagrams: DiagramDTO[];
   initZoom?: IInitZoom;
-  onNodeChange: (node: INodeData) => void;
-  onEdgeChange: (node: IEdgeData) => void;
+  onNodeAndEdgeDataChange: (change: Partial<INodeAndEdgeData<string>>) => void;
   onCyInit?: (cy: cytoscape.Core) => void;
   applyClasses?: Record<string, string | string[]>;
   selectionSelector?: string;
@@ -57,8 +57,7 @@ const CytoscapeCanvas = ({
   edgeData,
   diagrams,
   initZoom,
-  onNodeChange,
-  onEdgeChange,
+  onNodeAndEdgeDataChange,
   onCyInit,
   applyClasses,
   selectionSelector,
@@ -77,16 +76,20 @@ const CytoscapeCanvas = ({
   const { setCyto, zoomToSelectedRegion, scrollToZoom, keepPanWithinBoundaries, onViewportChange } =
     useCytoscapeContext();
 
+  const zoomEnabledRef = useRef(false);
   const startCoordsRef = useRef({ x1: 0, y1: 0 });
 
   const onMouseDown = (event: cytoscape.EventObject) => {
-    startCoordsRef.current.x1 = event.position.x;
-    startCoordsRef.current.y1 = event.position.y;
+    if (zoomEnabledRef.current) {
+      startCoordsRef.current.x1 = event.position.x;
+      startCoordsRef.current.y1 = event.position.y;
+    }
   };
   const onMouseUp = (event: cytoscape.EventObject) => {
-    if (!cy?.userPanningEnabled()) {
+    if (zoomEnabledRef.current) {
       zoomToSelectedRegion(startCoordsRef.current.x1, startCoordsRef.current.y1, event.position.x, event.position.y);
       cy?.userPanningEnabled(true);
+      zoomEnabledRef.current = false;
     }
   };
 
@@ -115,22 +118,38 @@ const CytoscapeCanvas = ({
   };
 
   const enableZoomToArea = () => {
+    zoomEnabledRef.current = true;
     cy?.userPanningEnabled(false);
   };
 
-  const emitChange = (event: cytoscape.EventObject) => {
+  const emitChanges = (event: cytoscape.EventObject, collection?: CollectionReturnValue) => {
     try {
-      if (event.target.isNode()) {
-        const node = event.target as cytoscape.NodeSingular;
-        if (!canvasRef.current) {
-          throw Error("CytoscapeCanvas::emitChange listener - no viewport");
-        }
-        const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
-        onNodeChange(getNodeData(node, cytoscapeCoordinateMapper));
-      } else {
-        const edge = event.target as cytoscape.EdgeSingular;
-        onEdgeChange(getEdgeData(edge));
+      if (!canvasRef.current) {
+        throw Error("CytoscapeCanvas::emitChange listener - no viewport");
       }
+      const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(canvasRef.current, diagrams);
+
+      const changes: INodeAndEdgeData<string> = {
+        data: event.type,
+        edges: [],
+        nodes: [],
+      };
+      if (event.target === cy) {
+        collection?.forEach((ele) => {
+          if (ele.isNode()) {
+            changes.nodes.push(getNodeData(ele, cytoscapeCoordinateMapper));
+          } else {
+            changes.edges.push(getEdgeData(ele));
+          }
+        });
+      } else if (event.target.isNode()) {
+        const node = event.target as cytoscape.NodeSingular;
+        changes.nodes.push(getNodeData(node, cytoscapeCoordinateMapper));
+      } else if (event.target.isEdge()) {
+        const edge = event.target as cytoscape.EdgeSingular;
+        changes.edges.push(getEdgeData(edge));
+      }
+      onNodeAndEdgeDataChange(changes);
     } catch (error) {
       throwAsyncError(error as Error);
     }
@@ -223,8 +242,11 @@ const CytoscapeCanvas = ({
   // Listen and handle cytoscape events
   useEffect(() => {
     // customized event listeners
-    cy?.addListener("element:changed", emitChange);
-    cy?.addListener("data", emitChange);
+    cy?.addListener("collection:changed", (event, ...extraParams) => {
+      emitChanges(event, extraParams[0] as CollectionReturnValue);
+    });
+    cy?.addListener("element:changed", emitChanges);
+    cy?.addListener("data", emitChanges);
     cy?.addListener("mousedown", onMouseDown);
     cy?.addListener("mouseup", onMouseUp);
     cy?.addListener("select", "node", onSelected);
@@ -239,7 +261,7 @@ const CytoscapeCanvas = ({
       cy?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, onNodeChange, onEdgeChange, canvasRef.current]);
+  }, [cy, onNodeAndEdgeDataChange, canvasRef.current]);
 
   // Shift + left-click to zoom into an area
   useOnKeyDownAndMouseDown(
