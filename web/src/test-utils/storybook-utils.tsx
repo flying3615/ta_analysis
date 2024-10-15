@@ -1,7 +1,9 @@
+import { PanelInstanceContext } from "@linzjs/windows";
+import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext.ts";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
 import { fireEvent, userEvent, waitFor } from "@storybook/testing-library";
-import React, { useEffect, useState } from "react";
+import React, { PropsWithChildren, useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
@@ -118,6 +120,37 @@ export const clickAtCoordinates = (
   fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
   fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
   fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
+};
+
+export const PanelInstanceContextMock = ({
+  children,
+  ...props
+}: PropsWithChildren<Partial<PanelInstanceContextType>>) => {
+  const [title, setTitle] = useState<string>("");
+  return (
+    <PanelInstanceContext.Provider
+      value={{
+        title,
+        setTitle,
+        dockId: undefined,
+        zIndex: 100,
+        panelClose: () => {},
+        dock: () => {},
+        docked: false,
+        panelName: "panelName",
+        setPanelWindow: () => {},
+        bounds: undefined,
+        bringPanelToFront: () => {},
+        panelPoppedOut: false,
+        panelTogglePopout: () => {},
+        undock: () => {},
+        uniqueId: "uniqueId",
+        ...props,
+      }}
+    >
+      {children}
+    </PanelInstanceContext.Provider>
+  );
 };
 
 export function getCytoscapeOffsetInCanvas(

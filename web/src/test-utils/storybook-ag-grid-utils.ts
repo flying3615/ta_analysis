@@ -7,8 +7,7 @@ import {
   queryQuick,
 } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { expect } from "@storybook/jest";
-import { waitFor, within } from "@storybook/testing-library";
-import { userEvent } from "@storybook/testing-library";
+import { userEvent, waitFor, within } from "@storybook/testing-library";
 import { isEqual } from "lodash-es";
 
 export const countRows = async (within?: HTMLElement): Promise<number> => {
@@ -135,8 +134,13 @@ export const findCellContains = async (
 };
 
 export const selectCell = async (rowId: string | number, colId: string, within?: HTMLElement): Promise<void> => {
-  const cell = await findCell(rowId, colId, within);
-  await userEvent.click(cell);
+  await waitFor(
+    async () => {
+      const cell = await findCell(rowId, colId, within);
+      await userEvent.click(cell);
+    },
+    { timeout: 10000 },
+  );
 };
 
 export const editCell = async (rowId: number | string, colId: string, within?: HTMLElement): Promise<void> => {
@@ -187,6 +191,17 @@ export const validateMenuOptions = async (
   const openMenu = await findOpenPopover();
   const actualOptions = (await within(openMenu).findAllByRole("menuitem")).map((menuItem) => menuItem.textContent);
   return isEqual(actualOptions, expectedMenuOptions);
+};
+
+export const getLayerSelectedState = async (
+  rowId: number | string,
+  container?: HTMLElement,
+): Promise<string | null> => {
+  const cell = await findCell(rowId, "selected", container);
+  const button = await findQuick({ tagName: "button" }, cell);
+  const actualSelectedSpan = await findQuick({ tagName: "span" }, button);
+  const actualSelectedState = actualSelectedSpan.ariaLabel;
+  return actualSelectedState;
 };
 
 export const clickMenuOption = async (menuOptionText: string | RegExp): Promise<void> => {
@@ -281,6 +296,12 @@ export const findActionButton = (text: string, container?: HTMLElement): Promise
 
 export const clickActionButton = async (text: string, container?: HTMLElement): Promise<void> => {
   const button = await findActionButton(text, container);
+  await userEvent.click(button);
+};
+
+export const clickLayersSelectButton = async (rowId: number | string, within?: HTMLElement): Promise<void> => {
+  const cell = await findCell(rowId, "selected", within);
+  const button = await findQuick({ tagName: "button" }, cell);
   await userEvent.click(button);
 };
 

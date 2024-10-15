@@ -1,12 +1,10 @@
 import "@/components/LabelPreferencesPanel/LabelPreferencesPanel.scss";
 
 import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick.ts";
-import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
-import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext.ts";
+import { PanelsContextProvider } from "@linzjs/windows";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PropsWithChildren, useState } from "react";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
@@ -15,7 +13,7 @@ import { handlers } from "@/mocks/mockHandlers.ts";
 import { Paths } from "@/Paths.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import { findCell, findCellContains, openAndClickMenuOption } from "@/test-utils/storybook-ag-grid-utils.ts";
-import { StorybookRouter } from "@/test-utils/storybook-utils.tsx";
+import { PanelInstanceContextMock, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
 
 const queryClient = new QueryClient();
 export default {
@@ -27,34 +25,6 @@ export default {
     },
   },
 } as Meta<typeof LabelPreferencesPanel>;
-
-const PanelInstanceContextMock = ({ children, ...props }: PropsWithChildren<Partial<PanelInstanceContextType>>) => {
-  const [title, setTitle] = useState<string>("");
-  return (
-    <PanelInstanceContext.Provider
-      value={{
-        title,
-        setTitle,
-        dockId: undefined,
-        zIndex: 100,
-        panelClose: () => {},
-        dock: () => {},
-        docked: false,
-        panelName: "panelName",
-        setPanelWindow: () => {},
-        bounds: undefined,
-        bringPanelToFront: () => {},
-        panelPoppedOut: false,
-        panelTogglePopout: () => {},
-        undock: () => {},
-        uniqueId: "uniqueId",
-        ...props,
-      }}
-    >
-      {children}
-    </PanelInstanceContext.Provider>
-  );
-};
 
 const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) => (
   <QueryClientProvider client={queryClient}>

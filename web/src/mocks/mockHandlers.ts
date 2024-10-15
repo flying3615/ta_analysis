@@ -5,10 +5,14 @@ import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
 import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder.ts";
 import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
+import { mockDiagramLayerNames } from "@/mocks/data/mockDiagramLayerNames.ts";
+import { mockDiagramLayerTypes } from "@/mocks/data/mockDiagramLayerTypes.ts";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
 import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences.ts";
 import { mockLabels } from "@/mocks/data/mockLabels.ts";
 import { mockLines } from "@/mocks/data/mockLines.ts";
+import { mockMaintainDiagramLayersByDiagram } from "@/mocks/data/mockMaintainDiagramLayersByDiagram.ts";
+import { mockMaintainDiagramLayersByDiagramType } from "@/mocks/data/mockMaintainDiagramLayersByDiagramType.ts";
 import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
 import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels.ts";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
@@ -258,6 +262,45 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
+  http.get(/\/diagram-layers-by-diagram-type/, async () =>
+    HttpResponse.json(
+      {
+        ok: mockMaintainDiagramLayersByDiagramType.ok,
+        diagramLayerByTypePreferences: mockMaintainDiagramLayersByDiagramType.diagramLayerByTypePreferences,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.get(/\/diagram-layers-by-diagram/, async () =>
+    HttpResponse.json(
+      {
+        ok: mockMaintainDiagramLayersByDiagram.ok,
+        diagramLayerPreferences: mockMaintainDiagramLayersByDiagram.diagramLayerPreferences,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.get(/\/diagram-layer-types/, async () =>
+    HttpResponse.json(
+      {
+        ok: mockDiagramLayerTypes.ok,
+        diagramTypes: mockDiagramLayerTypes.diagramTypes,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.get(/\/diagram-layer-names/, async () =>
+    HttpResponse.json(
+      {
+        ok: mockDiagramLayerNames.ok,
+        diagrams: mockDiagramLayerNames.diagrams,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
   http.get(/\/123\/pre-compile-plans$/, async () => {
     return HttpResponse.json(
       {
