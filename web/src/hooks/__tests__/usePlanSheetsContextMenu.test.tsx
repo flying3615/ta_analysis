@@ -6,11 +6,15 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
 import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
 import { mockStore } from "@/test-utils/store-mock.ts";
 
 describe("PlanSheetsContextMenu", () => {
-  const mockedStateForPlanMode = (planMode: PlanMode) => {
+  const mockedStateForPlanMode = (
+    planMode: PlanMode,
+    previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes> = {},
+  ) => {
     return {
       preloadedState: {
         ...mockStore,
@@ -20,6 +24,7 @@ describe("PlanSheetsContextMenu", () => {
           pages: mockPlanData.pages,
           configs: [],
           planMode: planMode,
+          previousDiagramAttributesMap: previousDiagramAttributesMap,
         },
       },
     };
@@ -140,6 +145,62 @@ describe("PlanSheetsContextMenu", () => {
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected lines", () => {
+    const id = "10001";
+    const mockNode = {
+      data: (key: string) =>
+        ({ id: `${id}`, elementType: PlanElementType.DIAGRAM, displayState: DisplayStateEnum.systemDisplay })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        targetElement={mockNode}
+        expectations={(diagramMenuItems) => {
+          const menuItemTitles = diagramMenuItems?.map((m) => m.title);
+          expect(menuItemTitles).toContain("Select Lines Affected By Last Diagram Shift");
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectDiagram, {
+        [id]: {
+          id: id,
+          linesAffectedByLastMove: [
+            {
+              id: `${1001}`,
+            },
+          ],
+          labelsAffectedByLastMove: [],
+        },
+      }),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected labels", () => {
+    const id = "10001";
+    const mockNode = {
+      data: (key: string) =>
+        ({ id: `${id}`, elementType: PlanElementType.DIAGRAM, displayState: DisplayStateEnum.systemDisplay })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        targetElement={mockNode}
+        expectations={(diagramMenuItems) => {
+          const menuItemTitles = diagramMenuItems?.map((m) => m.title);
+          expect(menuItemTitles).toContain("Select Text Affected By Last Diagram Shift");
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectDiagram, {
+        [id]: {
+          id: id,
+          labelsAffectedByLastMove: [
+            {
+              id: `1001`,
+            },
+          ],
+          linesAffectedByLastMove: [],
+        },
+      }),
     );
   });
 

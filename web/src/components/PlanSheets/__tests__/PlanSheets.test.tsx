@@ -24,7 +24,7 @@ const renderWithState = (state: PlanSheetsState) => {
   );
 };
 
-const planSheetsState = {
+const planSheetsState: PlanSheetsState = {
   diagrams: [],
   activeSheet: PlanSheetType.TITLE,
   pages: [
@@ -37,6 +37,7 @@ const planSheetsState = {
   },
   hasChanges: false,
   planMode: PlanMode.View,
+  previousDiagramAttributesMap: {},
 };
 
 const mockGetPlanResponse = {
@@ -120,7 +121,7 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 1 to 5)", async () => {
-    const mockState = {
+    const mockState: PlanSheetsState = {
       diagrams: [],
       activeSheet: PlanSheetType.TITLE,
       pages: [],
@@ -130,6 +131,7 @@ describe("PlanSheets", () => {
       },
       hasChanges: false,
       planMode: PlanMode.View,
+      previousDiagramAttributesMap: {},
     };
 
     server.use(
@@ -184,7 +186,7 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 4 to 2)", async () => {
-    const mockState = {
+    const mockState: PlanSheetsState = {
       diagrams: [],
       activeSheet: PlanSheetType.TITLE,
       pages: [],
@@ -194,6 +196,7 @@ describe("PlanSheets", () => {
       },
       hasChanges: false,
       planMode: PlanMode.View,
+      previousDiagramAttributesMap: {},
     };
 
     server.use(

@@ -37,6 +37,7 @@ describe("planSheetsSlice", () => {
     },
     hasChanges: false,
     planMode: PlanMode.View,
+    previousDiagramAttributesMap: {},
   };
 
   let store = setupStore();

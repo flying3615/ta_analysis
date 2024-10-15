@@ -8,8 +8,9 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useChangeNode } from "@/hooks/useChangeNode.ts";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
-import { getPlanMode, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getPlanMode, getPreviousAttributesForDiagram, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const usePlanSheetsContextMenu = () => {
   const planMode = useAppSelector(getPlanMode);
@@ -17,22 +18,23 @@ export const usePlanSheetsContextMenu = () => {
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const dispatch = useAppDispatch();
 
-  const getProperties = (event: {
-    target: NodeSingular | EdgeSingular | null;
-    cy: cytoscape.Core | undefined;
-    position?: cytoscape.Position;
-  }) => {
-    const { target, position } = event;
-    const elementTypes = [PlanElementType.LINES, PlanElementType.LABELS, PlanElementType.LINE_LABELS];
-    if (target && position && elementTypes.includes(target.data().elementType)) {
-      dispatch(
-        setPlanProperty({
-          mode: planMode as PlanElementPropertyMode,
-          data: target.data() as PlanElementData,
-          position: position,
-        }),
-      );
+  const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
+
+  const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
+    const diagramMenus: MenuItem[] = [
+      { title: "Properties", callback: getProperties },
+      { title: "Cut", disabled: true },
+      { title: "Copy", disabled: true },
+      { title: "Paste", disabled: true },
+      { title: "Move to page...", callback: movetoPage },
+    ];
+    if (previousDiagramAttributes && previousDiagramAttributes?.linesAffectedByLastMove?.length > 0) {
+      diagramMenus.push({ title: "Select Lines Affected By Last Diagram Shift", disabled: true });
     }
+    if (previousDiagramAttributes && previousDiagramAttributes?.labelsAffectedByLastMove?.length > 0) {
+      diagramMenus.push({ title: "Select Text Affected By Last Diagram Shift", disabled: true });
+    }
+    return diagramMenus;
   };
 
   const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
@@ -55,6 +57,23 @@ export const usePlanSheetsContextMenu = () => {
     }
   };
 
+  const getProperties = (event: {
+    target: NodeSingular | EdgeSingular | null;
+    cy: cytoscape.Core | undefined;
+    position?: cytoscape.Position;
+  }) => {
+    const { target, position } = event;
+    const elementTypes = [PlanElementType.LINES, PlanElementType.LABELS, PlanElementType.LINE_LABELS];
+    if (target && position && elementTypes.includes(target.data().elementType)) {
+      dispatch(
+        setPlanProperty({
+          mode: planMode as PlanElementPropertyMode,
+          data: target.data() as PlanElementData,
+          position: position,
+        }),
+      );
+    }
+  };
   function getAllMenuItemsForElement(
     element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
     planElementType: PlanElementType,
@@ -63,14 +82,6 @@ export const usePlanSheetsContextMenu = () => {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
       return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
     };
-
-    const diagramMenus: MenuItem[] = [
-      { title: "Properties", callback: getProperties },
-      { title: "Cut", disabled: true },
-      { title: "Copy", disabled: true },
-      { title: "Paste", disabled: true },
-      { title: "Move to page...", callback: movetoPage },
-    ];
 
     const lineShouldBeDisplayed = (element: NodeSingular | EdgeSingular | cytoscape.Core) => {
       return (
@@ -114,6 +125,7 @@ export const usePlanSheetsContextMenu = () => {
       SHOW_DISABLED,
       HIDE_DISABLED,
     }
+
     const getNodeShowState = (element: NodeSingular | EdgeSingular | cytoscape.Core): ShowHideMenuOptionState => {
       const markSymbol = lookupGraphData.findMarkSymbol(lookupElementSource(element as NodeSingular | EdgeSingular));
 
@@ -194,7 +206,7 @@ export const usePlanSheetsContextMenu = () => {
     switch (planMode) {
       case PlanMode.SelectDiagram:
         if (element.data("id") == null) return undefined;
-        return diagramMenus;
+        return buildDiagramMenu(findPreviousAttributesForDiagram(element.data("id")));
       case PlanMode.SelectLine:
         if (planElementType !== PlanElementType.LINES) return undefined;
         return lineMenus;

@@ -14,7 +14,14 @@ import { useEffect } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
+import {
+  calculatePreviousDiagramAttributes,
+  edgeSingularToEdgeData,
+  nodeSingularToNodeData,
+} from "@/modules/plan/calculatePreviousDiagramAttributes.ts";
+import { setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
 
@@ -33,7 +40,7 @@ const SELECTED_DIAGRAM = "selected-diagram";
  * and allows user to move or resize diagram.
  *
  * To update diagram after move/resize,
- * "data" are updated with with the new origin and zoomScale.
+ * "data" are updated with the new origin and zoomScale.
  *
  * To constrain diagram move/resize
  * - "diagramLimits" defines the page area where diagrams can move.
@@ -41,7 +48,7 @@ const SELECTED_DIAGRAM = "selected-diagram";
  */
 export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
   const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
@@ -87,11 +94,23 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
     };
 
     const endMoveOrResize = (event: InputEventObject) => {
+      const pageNodes = cyto.elements(`node[^diagramId][labelType = 'userAnnotation']`).map(nodeSingularToNodeData);
+      const pageEdges = cyto.elements(`edge[^diagramId][lineType = 'userDefined']`).map(edgeSingularToEdgeData);
+      const diagramAttributes = calculatePreviousDiagramAttributes(
+        diagram.id(),
+        {
+          ...diagramExtent,
+        },
+        pageEdges,
+        pageNodes,
+      );
+
       const newExtent = updateMoveOrResize(event);
       if (newExtent) {
         const updatedOriginAndScale = getNewDiagramOriginAndScale(cytoCoordMapper, diagram, newExtent);
         diagram.data(updatedOriginAndScale);
         updateActiveDiagramsAndPageFromCytoData(diagram);
+        dispatch(setPreviousDiagramAttributes(diagramAttributes));
       }
 
       cytoCanvas.classList.remove(DIAGRAM_CLASS_MOVING);
@@ -122,7 +141,7 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
     };
 
     /**
-     * @param active diagram move/resize position event.
+     * @param event active diagram move/resize position event.
      * @returns BoundingBox12 representing new (page-constrained) diagram position.
      */
     const updateMoveOrResize = (event: InputEventObject): BoundingBox12 | undefined => {
@@ -164,7 +183,7 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
 
       removeControlClasses();
     };
-  }, [cyto, cytoCanvas, cytoCoordMapper, diagram, updateActiveDiagramsAndPageFromCytoData]);
+  }, [cyto, cytoCanvas, cytoCoordMapper, diagram, updateActiveDiagramsAndPageFromCytoData, dispatch]);
 
   return <></>;
 }

@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
 
 export interface PlanSheetsState {
   configs?: ConfigDataDTO[];
@@ -13,6 +14,7 @@ export interface PlanSheetsState {
   hasChanges: boolean;
   planMode: PlanMode;
   planProperty?: PlanPropertyPayload | undefined;
+  previousDiagramAttributesMap: Record<string, PreviousDiagramAttributes>;
 }
 
 const initialState: PlanSheetsState = {
@@ -26,6 +28,7 @@ const initialState: PlanSheetsState = {
   },
   hasChanges: false,
   planMode: PlanMode.View,
+  previousDiagramAttributesMap: {},
 };
 
 const planSheetsSlice = createSlice({
@@ -98,6 +101,9 @@ const planSheetsSlice = createSlice({
       });
       state.hasChanges = true;
     },
+    setPreviousDiagramAttributes: (state, action: PayloadAction<PreviousDiagramAttributes>) => {
+      state.previousDiagramAttributesMap[action.payload.id] = action.payload;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -139,6 +145,11 @@ const planSheetsSlice = createSlice({
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
     getPlanProperty: (state) => state.planProperty,
+    getPreviousAttributesForDiagram:
+      (state) =>
+      (id: number): PreviousDiagramAttributes | undefined => {
+        return state.previousDiagramAttributesMap[id];
+      },
   },
 });
 
@@ -154,6 +165,7 @@ export const {
   setPlanMode,
   setPlanProperty,
   setSymbolHide,
+  setPreviousDiagramAttributes,
 } = planSheetsSlice.actions;
 
 export const {
@@ -172,6 +184,7 @@ export const {
   hasChanges,
   getPlanMode,
   getPlanProperty,
+  getPreviousAttributesForDiagram,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;
