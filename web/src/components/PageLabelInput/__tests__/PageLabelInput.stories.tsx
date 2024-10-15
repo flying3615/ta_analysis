@@ -168,3 +168,58 @@ export const EditLabel: Story = {
     await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Edited my page label");
   },
 };
+
+export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const user = userEvent.setup();
+    const canvas = within(canvasElement);
+    await user.click(await canvas.findByTitle("Add label"));
+    await sleep(500);
+    let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    const diagramLabelPosition = { clientX: 585, clientY: 296 };
+    const pageLabelPosition = { clientX: 900, clientY: 200 };
+    await addLabel(canvasElement, pageLabelPosition);
+    // click outside the textarea to save the label
+    await click(target, { clientX: 800, clientY: 500 });
+    await sleep(500);
+    await user.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+    target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    // press and hold control key to multi-select page label and diagram label
+    await user.keyboard("{Control>}"); // press and hold control key
+    await user.pointer({
+      keys: "[MouseLeft]",
+      target: target,
+      coords: diagramLabelPosition,
+    });
+    await user.pointer({
+      keys: "[MouseLeft]",
+      target: target,
+      coords: pageLabelPosition,
+    });
+    // When multiple labels selected and control key is pressed,
+    // selecting page label does not open Page label input
+    await user.pointer({
+      keys: "[MouseLeft]",
+      target: target,
+      coords: pageLabelPosition,
+    });
+    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    // select page label again to have multiple selected labels
+    await user.pointer({
+      keys: "[MouseLeft]",
+      target: target,
+      coords: pageLabelPosition,
+    });
+    await user.keyboard("{/Control}"); // release control key
+    // When multiple labels selected and control key not pressed,
+    // selecting page label opens Page label input and deselect other labels. Final screenshot
+    await user.pointer({
+      keys: "[MouseLeft]",
+      target: target,
+      coords: pageLabelPosition,
+    });
+    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+  },
+};
