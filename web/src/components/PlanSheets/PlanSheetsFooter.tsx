@@ -76,11 +76,12 @@ const PlanSheetsFooter = ({
   const updatePlanMutation = useUpdatePlanMutation(transactionId);
   const {
     isSuccess: updatePlanIsSuccess,
-    isPending: updatePlanIsPending,
+    isPending: updatePlanAsyncIsPending,
     isError: updatePlanHasFailed,
     error: updatePlanError,
   } = useAsyncTaskHandler(updatePlanMutation);
-  const updatePlan = () => !updatePlanMutation.isPending && !updatePlanIsPending && updatePlanMutation.mutate();
+  const updatePlanIsPending = updatePlanMutation.isPending || updatePlanAsyncIsPending;
+  const updatePlan = () => !updatePlanIsPending && updatePlanMutation.mutate();
 
   // Save upon pressing Ctrl+S
   useOnKeyDown(({ key, ctrlKey }) => ctrlKey && key === "s", updatePlan);

@@ -15,7 +15,7 @@ import { useTransactionId } from "./useTransactionId";
  */
 export const useAsyncTaskHandler = <MutationRequestBody>(
   triggerTaskMutation: UseMutationResult<AsyncTaskDTO | null, Error, MutationRequestBody, unknown>,
-  refetchIntervalMs = 5000,
+  refetchIntervalMs = 10_000,
 ) => {
   const transactionId = useTransactionId();
   const taskId = triggerTaskMutation.data?.taskId;
@@ -25,30 +25,31 @@ export const useAsyncTaskHandler = <MutationRequestBody>(
     data: task,
     refetch: refetchTask,
     error: taskError,
+    isPending: taskRequestIsPending,
   } = useGetAsyncTaskStatusQuery({
     transactionId,
     taskId: taskId ?? "",
     enabled: triggerTaskIsSuccess && !!taskId,
   });
   const taskStatus = task?.status;
-  const taskIsPending =
+  const taskIsInProgress =
     taskStatus &&
     ([AsyncTaskDTOStatusEnum.IN_PROGRESS, AsyncTaskDTOStatusEnum.QUEUED] as AsyncTaskDTOStatusEnum[]).includes(
       taskStatus,
     );
 
   useEffect(() => {
-    if (!triggerTaskIsSuccess || !taskIsPending) {
+    if (!triggerTaskIsSuccess || !taskIsInProgress) {
       return;
     }
     const interval = setInterval(() => void refetchTask(), refetchIntervalMs);
     return () => clearInterval(interval);
-  }, [taskIsPending, triggerTaskIsSuccess, refetchTask, refetchIntervalMs]);
+  }, [taskIsInProgress, triggerTaskIsSuccess, refetchTask, refetchIntervalMs]);
 
   return {
     isSuccess: triggerTaskIsSuccess && (!taskId || taskStatus === AsyncTaskDTOStatusEnum.COMPLETE),
     isError: taskStatus === AsyncTaskDTOStatusEnum.FAILED,
-    isPending: taskIsPending,
+    isPending: taskIsInProgress || (triggerTaskIsSuccess && taskRequestIsPending),
     error: triggerTaskMutation.error ?? taskError,
   };
 };
