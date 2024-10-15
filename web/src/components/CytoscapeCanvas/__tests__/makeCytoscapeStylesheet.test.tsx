@@ -42,7 +42,7 @@ describe("makeCytoscapeStylesheet", () => {
     render(<canvas data-id="layer2-node" />);
 
     const nodeWithLabelCircledEntry = stylesheet.find(
-      (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
+      (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]",
     ) as cytoscape.Stylesheet;
 
     const ele = nodeSingular({

@@ -117,6 +117,7 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
   } as IEdgeData;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const diagramLabelNodePositioner = (
   node: INodeData,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,

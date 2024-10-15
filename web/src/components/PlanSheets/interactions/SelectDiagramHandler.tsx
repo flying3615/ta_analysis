@@ -14,6 +14,7 @@ export function SelectDiagramHandler() {
   // select diagram
   useEffect(() => {
     const onSelect = (event: EventObjectNode) => {
+      console.log("select diagram", event.target, event.originalEvent?.clientX, event.originalEvent?.clientY);
       setSelectedDiagram(event.target);
     };
 

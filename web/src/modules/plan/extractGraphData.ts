@@ -14,15 +14,7 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { SYMBOLS_FONT } from "@/constants";
 import { createNewNode } from "@/util/mapUtil.ts";
 
-import {
-  getEdgeStyling,
-  getFontColor,
-  getIsCircled,
-  getTextBackgroundOpacity,
-  getZIndex,
-  isHidden,
-  LineStyle,
-} from "./styling";
+import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 
 const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
 const notSymbol = negate(isSymbol);
@@ -60,7 +52,6 @@ const labelToNode = (label: LabelDTO): INodeData => {
       featureId: label.featureId,
       featureType: label.featureType,
       ...(isSymbol(label) && { symbolId: label.displayText }),
-      isHidden: isHidden(label),
     },
   };
 };

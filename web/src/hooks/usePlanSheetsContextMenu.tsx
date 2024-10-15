@@ -7,11 +7,13 @@ import { PlanElementData, PlanElementPropertyMode } from "@/components/PlanSheet
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useChangeNode } from "@/hooks/useChangeNode.ts";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import { getPlanMode, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const usePlanSheetsContextMenu = () => {
   const planMode = useAppSelector(getPlanMode);
+  const setNodeHidden = useChangeNode();
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const dispatch = useAppDispatch();
 
@@ -170,12 +172,18 @@ export const usePlanSheetsContextMenu = () => {
         hideWhen: (e) =>
           [ShowHideMenuOptionState.HIDE, ShowHideMenuOptionState.HIDE_DISABLED].includes(getNodeShowState(e)),
         disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.SHOW_DISABLED,
+        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+          setNodeHidden(event.target, false);
+        },
       },
       {
         title: "Hide",
         hideWhen: (e) =>
           [ShowHideMenuOptionState.SHOW, ShowHideMenuOptionState.SHOW_DISABLED].includes(getNodeShowState(e)),
         disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE_DISABLED,
+        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+          setNodeHidden(event.target, true);
+        },
       },
       // { title: "Properties", callback: getProperties },
       // { title: "Cut", disabled: true },

@@ -1,5 +1,5 @@
 import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
-import { compact } from "lodash-es";
+import { cloneDeep, compact } from "lodash-es";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 
@@ -22,24 +22,30 @@ export class LookupGraphData {
 
   constructor(planData: PlanResponseDTO) {
     this.planData = planData;
-    this.diagramsById = Object.fromEntries(planData.diagrams.map((diagram) => [diagram.id, diagram]));
+    this.diagramsById = Object.fromEntries(planData.diagrams.map((diagram) => [diagram.id, cloneDeep(diagram)]));
 
     this.coordinatesById = {
       ...Object.fromEntries(
         this.planData.diagrams.flatMap((diagram) =>
-          diagram.coordinates.map((coordinate) => [coordinate.id, coordinate]),
+          diagram.coordinates.map((coordinate) => [coordinate.id, cloneDeep(coordinate)]),
         ),
       ),
       ...Object.fromEntries(
         compact(
-          this.planData.pages.flatMap((page) => page.coordinates?.map((coordinate) => [coordinate.id, coordinate])),
+          this.planData.pages.flatMap((page) =>
+            page.coordinates?.map((coordinate) => [coordinate.id, cloneDeep(coordinate)]),
+          ),
         ),
       ),
     };
 
     this.linesById = {
-      ...Object.fromEntries(this.planData.diagrams.flatMap((diagram) => diagram.lines.map((line) => [line.id, line]))),
-      ...Object.fromEntries(compact(this.planData.pages.flatMap((page) => page.lines?.map((line) => [line.id, line])))),
+      ...Object.fromEntries(
+        this.planData.diagrams.flatMap((diagram) => diagram.lines.map((line) => [line.id, cloneDeep(line)])),
+      ),
+      ...Object.fromEntries(
+        compact(this.planData.pages.flatMap((page) => page.lines?.map((line) => [line.id, cloneDeep(line)]))),
+      ),
     };
 
     const allDiagramLabels = this.planData.diagrams.flatMap((diagram) => [
@@ -49,14 +55,14 @@ export class LookupGraphData {
       ...(diagram.parcelLabelGroups ?? []).map((group) => group.labels).flat(),
     ]);
     this.labelsById = {
-      ...Object.fromEntries(allDiagramLabels.map((label) => [label.id, label])),
-      ...this.planData.pages.flatMap((page) => page.labels?.map((label) => [label.id, label]) ?? []),
+      ...Object.fromEntries(allDiagramLabels.map((label) => [label.id, cloneDeep(label)])),
+      ...this.planData.pages.flatMap((page) => page.labels?.map((label) => [label.id, cloneDeep(label)]) ?? []),
     };
 
     this.diagramLabelsByFeatureAndType = Object.fromEntries(
       allDiagramLabels
         .filter((label) => label.labelType)
-        .map((label) => [`${label.featureId}-${label.labelType}`, label]),
+        .map((label) => [`${label.featureId}-${label.labelType}`, cloneDeep(label)]),
     );
   }
 

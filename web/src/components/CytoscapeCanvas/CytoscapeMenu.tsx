@@ -23,9 +23,10 @@ interface ICytoscapeMenu {
   leftMenu?: boolean;
   divider?: boolean;
   onItemClick: (item: MenuItem) => void;
+  target: cytoscape.NodeSingular | cytoscape.EdgeSingular | null;
 }
 
-const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick }: ICytoscapeMenu) => {
+const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target }: ICytoscapeMenu) => {
   return (
     <ul className={clsx("cytoscape-context-menu", { submenu: isSubmenu })}>
       {items.map((item, index) => {
@@ -41,15 +42,17 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick }: ICyt
             tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
-              if (!item.submenu && !item.disabled && isSimpleClickMenuItem) {
+              if (item && !item.submenu && !item.disabled && isSimpleClickMenuItem) {
                 onItemClick(item);
+                item.callback?.(target ? { target, cy: target.cy() } : { target: null, cy: undefined });
               }
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.stopPropagation();
-                if (!item.submenu && !item.disabled) {
+                if (item && !item.submenu && !item.disabled) {
                   onItemClick(item);
+                  item.callback?.(target ? { target, cy: target.cy() } : { target: null, cy: undefined });
                 }
               }
             }}
@@ -82,7 +85,13 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick }: ICyt
             </div>
             {item.submenu && !item.disabled && (
               <div className={clsx("submenu-container", { "push-left": leftMenu })}>
-                <CytoscapeMenu items={item.submenu} isSubmenu={true} leftMenu={leftMenu} onItemClick={onItemClick} />
+                <CytoscapeMenu
+                  items={item.submenu}
+                  isSubmenu={true}
+                  leftMenu={leftMenu}
+                  onItemClick={onItemClick}
+                  target={target}
+                />
               </div>
             )}
           </li>

@@ -3,8 +3,10 @@ import { max, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
-import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
+import { FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
+import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 export const LABEL_PADDING_PX = 1;
 export const CIRCLE_FACTOR = 1.1;
@@ -44,7 +46,7 @@ export const textDiameter = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMap
 };
 
 export const textRotationClockwiseFromH = (ele: cytoscape.NodeSingular) => {
-  const clockwiseDegrees = 360 - ele.data("textRotation");
+  const clockwiseDegrees = 360 - ele.data("textRotation") ?? 0;
   const resDegrees = clockwiseDegrees >= 360 ? clockwiseDegrees - 360 : clockwiseDegrees;
 
   return (resDegrees * Math.PI) / 180;
@@ -248,3 +250,33 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
 export const scaledFontSize = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
   return ele.data("fontSize") * cytoscapeCoordinateMapper.fontScaleFactor();
 };
+
+export const svgDataForSymbolFun =
+  (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => (ele: cytoscape.NodeSingular) => {
+    // The symbolId is either a 2/3 digit ascii code or a character
+    const symbolId = ele.data("symbolId");
+    const symbolSvg = isNaN(parseInt(symbolId))
+      ? symbolSvgs[symbolId.charCodeAt(0).toString() as keyof typeof symbolSvgs]
+      : symbolSvgs[symbolId as keyof typeof symbolSvgs];
+    if (!symbolSvg) {
+      console.warn(`Symbol ${symbolId} not recognised`);
+      return {
+        svg: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>',
+        width: 0,
+        height: 0,
+        nodeShape: "ellipse",
+      };
+    }
+
+    const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
+      (symbolSvg.widthPlanPixels * pixelsPerPoint) / pointsPerCm,
+    );
+    const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
+      (symbolSvg.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
+    );
+
+    return {
+      ...makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, FOREGROUND_COLOUR),
+      nodeShape: symbolSvg.nodeShape,
+    };
+  };

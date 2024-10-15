@@ -51,7 +51,9 @@ module.exports = {
           },
         ],
 
-        // Tech Debt
+        "jest/no-disabled-tests": "off", // should add a story ref
+
+          // Tech Debt
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/restrict-template-expressions": "off",

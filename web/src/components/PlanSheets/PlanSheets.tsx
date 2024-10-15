@@ -160,6 +160,13 @@ const PlanSheets = () => {
     case PlanMode.SelectDiagram:
       selectionSelector = `node[elementType='${PlanElementType.DIAGRAM}']`;
       break;
+    case PlanMode.SelectCoordinates:
+      selectionSelector = "node[elementType='coordinates'],node[symbolId]";
+      applyClasses = { ":parent": [], node: "node-selected" };
+      break;
+    case PlanMode.SelectLine:
+      selectionSelector = "edge";
+      break;
     case PlanMode.SelectLabel:
       selectionSelector = "node[label][^symbolId]";
       applyClasses = { "node[label][^symbolId]": "selectable-label" };

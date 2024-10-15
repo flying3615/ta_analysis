@@ -7,6 +7,7 @@ import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, screen, userEvent, waitForElementToBeRemoved, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { cloneDeep } from "lodash-es";
 import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
@@ -47,7 +48,7 @@ const PlanSheetsTemplate = () => {
     <QueryClientProvider client={queryClient}>
       <LuiModalAsyncContextProvider>
         <FeatureFlagProvider>
-          <Provider store={store}>
+          <Provider store={cloneDeep(store)}>
             <ModalStoryWrapper>
               <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
                 <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
@@ -513,6 +514,8 @@ export const ExportPdfAndDownload: Story = {
   },
 };
 
+const CANVAS_CORNER_REL_X = 280;
+const CANVAS_CORNER_REL_Y = 56;
 export const SelectDiagram: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -521,20 +524,20 @@ export const SelectDiagram: Story = {
     await userEvent.click(await canvas.findByTitle("Select Diagrams"));
     await sleep(500);
 
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
-    fireEvent.mouseUp(target, { clientX: 300, clientY: 100 });
+    const cytoscapeElement = await canvas.findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, x, y);
+    await sleep(500);
   },
 };
 
 export const MoveDiagram: Story = {
   ...Default,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
+  ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle("Select Diagrams"));
@@ -549,6 +552,7 @@ export const MoveDiagram: Story = {
       fireEvent.mouseMove(target, { clientX: 300 + step * 50, clientY: 100 + step * 50 });
     }
     fireEvent.mouseUp(target, { clientX: 550, clientY: 350 });
+    await sleep(500);
   },
 };
 
@@ -567,8 +571,8 @@ export const SelectCoordinates: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
     // Location of a mark in cytoscape pixels
-    const x = 411 - 280 + cyOffsetX;
-    const y = 136 - 56 + cyOffsetY;
+    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y);
 
     await sleep(500);
@@ -588,9 +592,34 @@ export const ShowCoordinatesMenu: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
     // Location of a mark in cytoscape pixels
-    const x = 411 - 280 + cyOffsetX;
-    const y = 136 - 56 + cyOffsetY;
+    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+
+export const HideCoordinate: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    // Location of a mark in cytoscape pixels
+    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+
+    const menuHide = await canvas.findByText("Hide");
+    await userEvent.click(menuHide);
+    await sleep(500);
+    clickAtCoordinates(cytoscapeNodeLayer, 10 + cyOffsetX, 10 + cyOffsetY); // click off node to remove select
     await sleep(500);
   },
 };

@@ -1,3 +1,4 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { Stylesheet } from "cytoscape";
 
 import compassSvg from "@/assets/compass.svg";
@@ -9,47 +10,17 @@ import {
   fontWeight,
   LABEL_PADDING_PX,
   scaledFontSize,
+  svgDataForSymbolFun,
   textJustification,
   textRotationClockwiseFromH,
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
-import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
-import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
+  const svgDataForSymbol = svgDataForSymbolFun(cytoscapeCoordinateMapper);
+
   const cytoscapeMmWidth = Math.ceil(cytoscapeCoordinateMapper.planCmToCytoscape(0.1));
-
-  const svgDataForSymbol = (ele: cytoscape.NodeSingular) => {
-    // The symbolId is either a 2/3 digit ascii code or a character
-    const symbolId = ele.data("symbolId");
-    const symbolSvg = isNaN(parseInt(symbolId))
-      ? symbolSvgs[symbolId.charCodeAt(0).toString() as keyof typeof symbolSvgs]
-      : symbolSvgs[symbolId as keyof typeof symbolSvgs];
-    if (!symbolSvg) {
-      console.warn(`Symbol ${symbolId} not recognised`);
-      return {
-        svg: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"></svg>',
-        width: 0,
-        height: 0,
-        nodeShape: "ellipse",
-      };
-    }
-
-    const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg.widthPlanPixels * pixelsPerPoint) / pointsPerCm,
-    );
-    const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
-    );
-
-    const svgLineColor = ele.data("isHidden") ? GREYED_FOREGROUND_COLOUR : FOREGROUND_COLOUR;
-
-    return {
-      ...makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, svgLineColor),
-      nodeShape: symbolSvg.nodeShape,
-    };
-  };
 
   // Dimensions for the compass in plan units
   const compassPlanWidthCm = 50;
@@ -121,6 +92,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node shown as a symbol
       selector: "node[symbolId]",
       style: {
+        ...noNodeMarker,
         label: "",
         "background-image": (ele) => svgDataForSymbol(ele).svg,
         width: (ele: cytoscape.NodeSingular) => svgDataForSymbol(ele).width,
@@ -128,6 +100,10 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "background-clip": "none",
         "bounds-expansion": 12,
         shape: (ele) => svgDataForSymbol(ele).nodeShape,
+        "background-image-opacity": (ele) =>
+          [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState"))
+            ? 0.2
+            : 1,
       },
     },
 
@@ -204,7 +180,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   const labelStyles = [
     {
       // Node with label, circled
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled]",
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]",
       style: {
         ...labelBaseStyle,
         "background-image": (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
@@ -215,14 +191,15 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     },
     {
       // Node with label
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled]",
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]",
+
       style: {
         ...labelBaseStyle,
         ...noNodeMarker,
       },
     },
     {
-      selector: "node[label].selectable-label",
+      selector: "node[label][^symbolId].selectable-label",
       style: {
         "text-events": "yes",
       },
@@ -238,13 +215,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "node[label].selectable-label.hover",
+      selector: "node[label][^symbolId].selectable-label.hover",
       style: {
         color: "#0099FF",
       },
     },
     {
-      selector: "node[label]",
+      selector: "node[label][^symbolId]",
       style: {
         ...noNodeMarker,
         height: 5,

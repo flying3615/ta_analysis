@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { cloneDeep } from "lodash-es";
 import { delay, http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
@@ -19,7 +20,7 @@ const renderWithState = (state: PlanSheetsState) => {
   renderCompWithReduxAndRoute(
     <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
     generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
-    { preloadedState: { planSheets: state } },
+    { preloadedState: { planSheets: cloneDeep(state) } },
   );
 };
 

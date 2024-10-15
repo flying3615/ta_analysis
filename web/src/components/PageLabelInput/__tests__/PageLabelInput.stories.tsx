@@ -1,6 +1,7 @@
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
+import { waitFor } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
@@ -102,6 +103,7 @@ export const AddLabel: Story = {
     // press Escape to cancel the Add Label mode
     await userEvent.keyboard("{escape}");
     await sleep(500);
+    // eslint-disable-next-line testing-library/no-node-access
     let cursorButton = (await canvas.findByTitle("Cursor")).parentElement;
     await expect(cursorButton).toHaveClass("selected");
 
@@ -111,6 +113,7 @@ export const AddLabel: Story = {
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
     // plan mode changes to cursor after save
+    // eslint-disable-next-line testing-library/no-node-access
     cursorButton = (await canvas.findByTitle("Cursor")).parentElement;
     await expect(cursorButton).toHaveClass("selected");
   },
@@ -136,7 +139,7 @@ export const EditLabel: Story = {
     const diagramLabelPosition = { clientX: 585, clientY: 296 };
     await click(target, diagramLabelPosition); // click to select
     await click(target, diagramLabelPosition); // click to edit
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await waitFor(() => expect(canvas.queryByTestId("PageLabelInput-textarea")).toBeNull());
     // click on a page label does show the input
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
@@ -144,7 +147,8 @@ export const EditLabel: Story = {
     // press Escape to cancel the edit label (does not change the mode)
     await userEvent.keyboard("{escape}");
     await sleep(500);
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await waitFor(() => expect(canvas.queryByTestId("PageLabelInput-textarea")).toBeNull());
+    // eslint-disable-next-line testing-library/no-node-access
     const selectLabelButton = (await canvas.findByTitle("Select Labels")).parentElement;
     await expect(selectLabelButton).toHaveClass("selected");
     // click on a page label, edit the page label and save

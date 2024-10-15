@@ -1,4 +1,4 @@
-import { ConfigDataDTO, DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
+import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
@@ -87,6 +87,17 @@ const planSheetsSlice = createSlice({
     setPlanProperty: (state, action: PayloadAction<PlanPropertyPayload | undefined>) => {
       state.planProperty = action.payload;
     },
+    setSymbolHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
+      const { id, hide } = action.payload;
+      state.diagrams.forEach((diagram) => {
+        diagram.coordinateLabels.forEach((label) => {
+          if (label.id.toString() === id) {
+            label.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
+          }
+        });
+      });
+      state.hasChanges = true;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -142,6 +153,7 @@ export const {
   updatePages,
   setPlanMode,
   setPlanProperty,
+  setSymbolHide,
 } = planSheetsSlice.actions;
 
 export const {

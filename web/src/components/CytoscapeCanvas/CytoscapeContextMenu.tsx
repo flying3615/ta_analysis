@@ -12,13 +12,13 @@ interface IContextMenu {
 
 export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { visible, items, position, leftMenu } = menuState;
+  const { visible, items, position, leftMenu, target } = menuState;
 
   if (!visible) return null;
 
   const onItemClick = (item: MenuItem) => {
-    const cyInstance = menuState.target?.cy?.();
-    cyInstance && item.callback?.({ target: menuState.target, cy: cyInstance, position: position });
+    const cyInstance = target?.cy?.();
+    cyInstance && item.callback?.({ target: target, cy: cyInstance, position: position });
     hideMenu();
   };
 
@@ -34,7 +34,7 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
         zIndex: 1000,
       }}
     >
-      <CytoscapeMenu items={items} leftMenu={leftMenu} onItemClick={onItemClick} />
+      <CytoscapeMenu items={items} leftMenu={leftMenu} onItemClick={onItemClick} target={target} />
     </div>
   );
 };

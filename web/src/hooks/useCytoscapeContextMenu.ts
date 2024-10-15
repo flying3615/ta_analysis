@@ -40,10 +40,12 @@ export const useCytoscapeContextMenu = (
 
   const onCxtTap = useCallback(
     (event: EventObject) => {
+      event.stopPropagation();
       if (!event.cy) return;
 
       const { clientX: x, clientY: y } = event.originalEvent;
-      const target = event.target === event.cy ? null : (event.target as SingularElementArgument);
+      console.log(`cxtTap ${event.target.id?.()}, ${x}, ${y}`);
+      const target = event.target === cy ? null : (event.target as SingularElementArgument);
 
       if (!target) {
         if (event.cy.elements(":selected").length === 0) return;
@@ -76,12 +78,18 @@ export const useCytoscapeContextMenu = (
         leftMenu: isLeftMenu,
       });
     },
-    [getContextMenuItems, showMenu],
+    [getContextMenuItems, showMenu, cy],
   );
 
-  const onTap = useCallback(() => {
-    hideMenu();
-  }, [hideMenu]);
+  const onTap = useCallback(
+    (event: EventObject) => {
+      event.stopPropagation();
+
+      // console.log(`onTap ${x} ${y}`);
+      hideMenu();
+    },
+    [hideMenu],
+  );
 
   useEffect(() => {
     cy?.on("cxttap", onCxtTap);
