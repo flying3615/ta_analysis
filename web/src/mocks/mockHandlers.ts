@@ -319,13 +319,7 @@ export const handlers: HttpHandler[] = [
     );
   }),
 
-  http.post(/\/123\/compile-plans$/, () =>
-    HttpResponse.json({ batchRunTime: null }, { status: 200, statusText: "OK" }),
-  ),
-
-  http.post(/\/456\/compile-plans$/, () =>
-    HttpResponse.json({ batchRunTime: "11:30:00" }, { status: 200, statusText: "OK" }),
-  ),
+  http.post(/\/123\/compile-plans$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
 
   http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/666\/prepare$/, () =>

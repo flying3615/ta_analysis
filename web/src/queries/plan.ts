@@ -5,7 +5,7 @@ import {
   PlanResponseDTO,
   PreCompilePlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import type { CompilePlanResponseDTO } from "@linz/survey-plan-generation-api-client/src/models";
+import { useToast } from "@linzjs/lui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
@@ -57,11 +57,8 @@ export const useUpdatePlanMutation = (transactionId: number) => {
 
 export const updateCompilePlanQueryKey = (transactionId: number) => ["compilePlan", transactionId];
 
-export const useCompilePlanMutation: PlanGenCompileMutation<CompilePlanResponseDTO> = ({
-  transactionId,
-  ...params
-}) => {
-  const queryClient = useQueryClient();
+export const useCompilePlanMutation: PlanGenCompileMutation<void> = ({ transactionId, ...params }) => {
+  const { success: successToast } = useToast();
 
   return useMutation({
     ...params,
@@ -69,6 +66,8 @@ export const useCompilePlanMutation: PlanGenCompileMutation<CompilePlanResponseD
     mutationFn: async (planCompilationRequest: PlanCompileRequest) => {
       return await new PlanGraphicsControllerApi(apiConfig()).planCompile(planCompilationRequest);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) }),
+    onSuccess: () => {
+      successToast("Plan generation has been initiated successfully.");
+    },
   });
 };

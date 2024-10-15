@@ -46,6 +46,8 @@ export default defineConfig(
               configDir = "config/nonprod";
             } else if (mode === "local-preprod" && requestedFileName === "env.json") {
               configDir = "config/preprod";
+            } else if (mode === "nonprod-hybrid" && requestedFileName === "env.json") {
+              configDir = "config/nonprod-hybrid";
             }
             const localFilePath = path.join(__dirname, configDir, requestedFileName);
             console.log(`proxying ${req.url} to ${localFilePath}`);

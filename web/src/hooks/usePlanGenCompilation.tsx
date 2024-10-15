@@ -1,8 +1,10 @@
+import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
 import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails.ts";
 import { useToast } from "@linzjs/lui";
+import { wait } from "@linzjs/step-ag-grid";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
@@ -15,10 +17,6 @@ import {
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import {
-  info126026_planGenCompileProgress,
-  info126026_planGenCompileSuccess,
-} from "@/components/PlanSheets/prefabInfo.tsx";
 import { warning126024_planGenHasRunBefore } from "@/components/PlanSheets/prefabWarnings.tsx";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import {
@@ -72,6 +70,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     new FileUploaderClient({
       maxFileSizeHint: 1024 * 1024 * 100,
       allowableFileExtHint: [".jpg", ".jpeg"],
+      skipStatusPolling: true,
       errorNotifier: (error) => {
         console.log(error);
       },
@@ -146,8 +145,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     const preCheckPassed = await preCheckResult();
     if (preCheckPassed) {
       if (preCheckPassed.hasPlanGenRanBefore) {
-        const result = await showPrefabModal(warning126024_planGenHasRunBefore);
-        result === "continue" && (await continueCompile());
+        if (await showPrefabModal(warning126024_planGenHasRunBefore)) {
+          await wait(0);
+          await continueCompile();
+        }
       } else {
         await continueCompile();
       }
@@ -221,7 +222,12 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             })
             .run();
 
-          const jpg = cyRefCurrent?.jpg({ ...cyImageExportConfig, quality: 1 });
+          const jpg = cyRefCurrent?.jpg({
+            ...cyImageExportConfig,
+            maxWidth: 9202,
+            maxHeight: 5824,
+            quality: 1,
+          });
 
           // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
           // so here we just rerun the export for each pages
@@ -266,26 +272,25 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
       const sfuResponse = sfuCombinedResponse.map((response) => ({
         fileUlid: response.fileUlid,
-        encodedFileMetadata: response.encodedFileMetadata,
-        verifiedFileFormat: response.verifiedFileFormat,
-        verifiedFileSize: response.verifiedFileSize,
-        originalFileName: response.originalFileName,
       })) as unknown as FileUploadDetails[];
 
       const planGraphicsCompileRequest: PlanGraphicsCompileRequest = {
-        graphicFiles: sfuResponse,
+        filesUlids: sfuResponse,
       };
 
-      const planCompilationRequest: PlanCompileRequest = {
-        transactionId: transactionId,
-        planGraphicsCompileRequest: planGraphicsCompileRequest,
-      };
+      const token = await accessToken();
 
-      const response = await compilePlan(planCompilationRequest);
-      if (response.batchRunTime == null) {
-        void showPrefabModal(info126026_planGenCompileSuccess);
+      if (token) {
+        const planCompilationRequest: PlanCompileRequest = {
+          transactionId: transactionId,
+          authorization: `Bearer ${token}`,
+          planGraphicsCompileRequest: planGraphicsCompileRequest,
+        };
+
+        await compilePlan(planCompilationRequest);
       } else {
-        void showPrefabModal(info126026_planGenCompileProgress(response.batchRunTime));
+        setCompiling(false);
+        console.error("Failed to get access token");
       }
     } catch (e) {
       console.error(e);

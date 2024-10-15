@@ -4,7 +4,7 @@ import "@linzjs/lui/dist/fonts";
 import "@linzjs/lui/dist/scss/base.scss";
 
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
-import { OidcConfig, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
+import { OidcConfig, patchFetch, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
 import { LuiModalAsyncContextProvider, PanelsContextProvider, useLuiModalPrefab } from "@linzjs/windows";
@@ -30,6 +30,11 @@ import { mockUser } from "./mocks/mockAuthUser.ts";
 import { Paths } from "./Paths.ts";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
+  useEffect(() => {
+    // we only patch fetch for secure-file-upload as other places to use addHeaders to add the token
+    patchFetch((url) => url.includes("/v1/file-uploads"));
+  });
+
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION,
   );
