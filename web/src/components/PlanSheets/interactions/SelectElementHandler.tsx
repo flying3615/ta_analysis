@@ -11,8 +11,11 @@ import { getRelatedLabels } from "./selectUtil";
 export type SelectHandlerMode = PlanMode.SelectCoordinates | PlanMode.SelectLabel | PlanMode.SelectLine;
 
 const CLASS_RELATED_ELEMENT_SELECTED = "related-element-selected"; // select related label
-const SELECTOR_COORDINATES = `node[elementType='${PlanElementType.COORDINATES}'][^invisible]`;
-const SELECTOR_LABELS = `node[featureId][^invisible]`;
+
+// coordinates are both _coordinate elements_ and _symbol labels_
+const SELECTOR_COORDINATES = `node[elementType='${PlanElementType.COORDINATES}'][^invisible],node[symbolId]`;
+// labels are _all labels_ except _symbol labels_
+const SELECTOR_LABELS = `node[label][^invisible][^symbolId]`;
 const SELECTOR_LINES = `edge[lineId][^invisible][^pageConfig]`;
 
 export interface SelectElementHandlerProps {
@@ -51,6 +54,14 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
         const lineId = element.data("lineId");
         if (lineId) {
           selection.merge(cyto.$(`edge[lineId='${lineId}']`).select());
+        }
+      }
+
+      if (element.isNode() && element.data("symbolId")) {
+        // check for coordinate symbol, which is linked to coordinate
+        const featureId = element.data("featureId");
+        if (featureId) {
+          selection.merge(cyto.$id(featureId).select());
         }
       }
 

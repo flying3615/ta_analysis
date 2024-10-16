@@ -41,7 +41,6 @@ import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
 import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler.tsx";
 import { SelectElementHandler } from "./interactions/SelectElementHandler.tsx";
-import { PlanElementType } from "./PlanElementType.ts";
 import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
 
@@ -157,17 +156,8 @@ const PlanSheets = () => {
   let selectionSelector = "";
   let applyClasses;
   switch (planMode) {
-    case PlanMode.SelectDiagram:
-      selectionSelector = `node[elementType='${PlanElementType.DIAGRAM}']`;
-      break;
-    case PlanMode.SelectCoordinates:
-      selectionSelector = "node[elementType='coordinates'],node[symbolId]";
-      applyClasses = { ":parent": [], node: "node-selected" };
-      break;
-    case PlanMode.SelectLine:
-      selectionSelector = "edge";
-      break;
     case PlanMode.SelectLabel:
+      // TODO: remove this once SelectElementHandler updated for PlanMode.SelectLabel
       selectionSelector = "node[label][^symbolId]";
       applyClasses = { "node[label][^symbolId]": "selectable-label" };
       break;

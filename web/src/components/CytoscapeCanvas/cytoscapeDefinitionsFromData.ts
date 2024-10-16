@@ -168,7 +168,7 @@ export const nodePositionsFromData = (
       }
       nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
       //for diagram labels, we want the node to be positioned in the middle of the label
-      if (node.label && node.properties["textAlignment"]) {
+      if (node.label && node.properties["textAlignment"] && !node.properties["symbolId"]) {
         diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
       }
     }

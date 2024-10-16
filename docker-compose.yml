@@ -175,6 +175,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - "./split.yaml:/app/split.yaml:ro"
 
   stub-secure-file-upload:
     container_name: stub-secure-file-upload

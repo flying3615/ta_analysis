@@ -14,6 +14,7 @@ import {
   textJustification,
   textRotationClockwiseFromH,
 } from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
@@ -125,6 +126,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "outline-color": hotPink,
         "outline-opacity": 0.5,
         "background-image-containment": "over",
+      },
+    },
+    {
+      // SelectedDiagram displays controls instead of default :selected style
+      selector: `node[elementType='${PlanElementType.DIAGRAM}']:selected`,
+      style: {
+        "outline-opacity": 0,
       },
     },
   ] as Stylesheet[];

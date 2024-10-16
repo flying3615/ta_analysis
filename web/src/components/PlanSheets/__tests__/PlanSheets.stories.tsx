@@ -23,11 +23,11 @@ import { store } from "@/redux/store.ts";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
 import {
   clickAtCoordinates,
-  getCytoCanvas,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   ModalStoryWrapper,
   RIGHT_MOUSE_BUTTON,
+  selectAndDrag,
   sleep,
   StorybookRouter,
   tabletLandscapeParameters,
@@ -543,16 +543,12 @@ export const MoveDiagram: Story = {
     await userEvent.click(await canvas.findByTitle("Select Diagrams"));
     await sleep(500);
 
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
-    fireEvent.mouseUp(target, { clientX: 300, clientY: 100 });
-    await sleep(500);
-    fireEvent.mouseDown(target, { clientX: 300, clientY: 100 });
-    for (let step = 0; step < 5; step++) {
-      fireEvent.mouseMove(target, { clientX: 300 + step * 50, clientY: 100 + step * 50 });
-    }
-    fireEvent.mouseUp(target, { clientX: 550, clientY: 350 });
-    await sleep(500);
+    const cytoscapeElement = await canvas.findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoCanvas = getCytoscapeNodeLayer(cytoscapeElement);
+
+    const position = { clientX: 411 - CANVAS_CORNER_REL_X + cyOffsetX, clientY: 136 - CANVAS_CORNER_REL_Y + cyOffsetY };
+    await selectAndDrag(cytoCanvas, position, { clientX: position.clientX + 200, clientY: position.clientY + 150 });
   },
 };
 

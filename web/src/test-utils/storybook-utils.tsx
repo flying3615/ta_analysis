@@ -173,3 +173,33 @@ export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement): HTMLElemen
   // eslint-disable-next-line testing-library/no-node-access
   return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
 }
+
+export interface MousePosition {
+  clientX: number;
+  clientY: number;
+}
+
+export async function selectAndDrag(element: HTMLElement, from: MousePosition, to: MousePosition, numSteps = 2) {
+  const positions: MousePosition[] = [from];
+  const stepDx = (to.clientX - from.clientX) / numSteps;
+  const stepDy = (to.clientY - from.clientY) / numSteps;
+  for (let step = 1; step <= numSteps; step++) {
+    positions.push({
+      clientX: from.clientX + step * stepDx,
+      clientY: from.clientY + step * stepDy,
+    });
+  }
+
+  // click to select
+  fireEvent.mouseDown(element, positions[0]);
+  fireEvent.mouseUp(element, positions[0]);
+  await sleep(500);
+
+  // drag
+  fireEvent.mouseDown(element, positions[0]);
+  for (const position of positions) {
+    fireEvent.mouseMove(element, position);
+    await sleep(100);
+  }
+  fireEvent.mouseUp(element, positions[positions.length - 1]);
+}

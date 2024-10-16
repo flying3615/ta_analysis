@@ -1,5 +1,4 @@
 FROM 725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/enablement/nginx:latest
-RUN apk -U upgrade --no-cache
 
 ARG APP_NAME=plan-generation
 COPY container/nginx.conf  /etc/nginx/conf.d/default.conf

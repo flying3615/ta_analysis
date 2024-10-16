@@ -1,0 +1,22 @@
+- survey-plan-generation:
+    treatment: "on"
+- survey-plan-generation:
+    treatment: "off"
+    keys: [ "extsurv4" ]
+- survey-plan-generation-define-diagrams:
+    treatment: "on"
+- survey-plan-generation-define-diagrams:
+    treatment: "off"
+    keys: [ "extsurv4" ]
+- survey-plan-generation-label-preferences:
+    treatment: "on"
+- survey-plan-generation-label-preferences:
+    treatment: "off"
+    keys: [ "extsurv4" ]
+- survey-plan-generation-maintain-diagram-layers:
+    treatment: "on"
+- survey-plan-generation-maintain-diagram-layers:
+    treatment: "off"
+    keys: [ "extsurv4" ]
+- survey-plan-generation-maintain-locks:
+    treatment: "off"

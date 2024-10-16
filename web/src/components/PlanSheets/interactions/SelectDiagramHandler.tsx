@@ -1,10 +1,12 @@
 import { EventObjectNode, NodeSingular } from "cytoscape";
 import { useEffect, useState } from "react";
 
-import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 
 import { SelectedDiagram } from "./SelectedDiagram";
+
+const SELECTOR_DIAGRAM = `node[elementType='${PlanElementType.DIAGRAM}']`;
 
 export function SelectDiagramHandler() {
   const { cyto } = useCytoscapeContext();
@@ -22,15 +24,15 @@ export function SelectDiagramHandler() {
       setSelectedDiagram(undefined);
     };
 
-    cyto?.on("select", PlanElementSelector.DiagramNode, onSelect);
-    cyto?.on("unselect", PlanElementSelector.DiagramNode, onUnselect);
-    cyto?.elements(PlanElementSelector.DiagramNode).selectify();
+    cyto?.on("select", SELECTOR_DIAGRAM, onSelect);
+    cyto?.on("unselect", SELECTOR_DIAGRAM, onUnselect);
+    cyto?.elements(SELECTOR_DIAGRAM).selectify().style("events", "yes");
 
     return () => {
       onUnselect();
-      cyto?.off("select", PlanElementSelector.DiagramNode, onSelect);
-      cyto?.off("unselect", PlanElementSelector.DiagramNode, onUnselect);
-      cyto?.elements(PlanElementSelector.DiagramNode).unselectify();
+      cyto?.off("select", SELECTOR_DIAGRAM, onSelect);
+      cyto?.off("unselect", SELECTOR_DIAGRAM, onUnselect);
+      cyto?.elements(SELECTOR_DIAGRAM).unselectify().style("events", "no");
     };
   }, [cyto]);
 
