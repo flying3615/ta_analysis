@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import { click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
@@ -40,7 +41,7 @@ export const InputLabelValidation: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Add label"));
+    await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
@@ -80,7 +81,7 @@ export const InputLabelValidation: Story = {
 
 const addLabel = async (canvasElement: HTMLElement, labelPosition: { clientX: number; clientY: number }) => {
   const canvas = within(canvasElement);
-  await userEvent.click(await canvas.findByTitle("Add label"));
+  await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
   await sleep(500);
   const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
@@ -123,7 +124,7 @@ export const EditLabel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Add label"));
+    await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
     await sleep(500);
     let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
@@ -132,7 +133,7 @@ export const EditLabel: Story = {
     // click outside the textarea to save the label
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     // click on a diagram label does not show the input
@@ -149,7 +150,7 @@ export const EditLabel: Story = {
     await sleep(500);
     await waitFor(() => expect(canvas.queryByTestId("PageLabelInput-textarea")).toBeNull());
     // eslint-disable-next-line testing-library/no-node-access
-    const selectLabelButton = (await canvas.findByTitle("Select Labels")).parentElement;
+    const selectLabelButton = (await canvas.findByTitle(PlanMode.SelectLabel)).parentElement;
     await expect(selectLabelButton).toHaveClass("selected");
     // click on a page label, edit the page label and save
     await click(target, pageLabelPosition); // click to select
@@ -158,7 +159,7 @@ export const EditLabel: Story = {
     void fireEvent.input(addLabelTextBox, { target: { value: "Edited my page label" } });
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     // click on a page label does show the input (final screenshot)
@@ -174,7 +175,7 @@ export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
   play: async ({ canvasElement }) => {
     const user = userEvent.setup();
     const canvas = within(canvasElement);
-    await user.click(await canvas.findByTitle("Add label"));
+    await user.click(await canvas.findByTitle(PlanMode.AddLabel));
     await sleep(500);
     let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     const diagramLabelPosition = { clientX: 585, clientY: 296 };
@@ -183,7 +184,7 @@ export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
     // click outside the textarea to save the label
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
-    await user.click(await canvas.findByTitle("Select Labels"));
+    await user.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     // press and hold control key to multi-select page label and diagram label

@@ -193,7 +193,7 @@ const PlanSheets = () => {
           {(planMode === PlanMode.SelectCoordinates || planMode === PlanMode.SelectLine) && (
             <SelectElementHandler mode={planMode} />
           )}
-          {planProperty && <PlanElementProperty type={planProperty} />}
+          {planProperty && <PlanElementProperty {...planProperty} />}
           <ElementHover />
           <PageNumberTooltips />
         </div>

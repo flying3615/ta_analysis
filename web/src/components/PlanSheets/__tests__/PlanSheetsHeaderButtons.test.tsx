@@ -174,7 +174,7 @@ describe("PlanSheetsHeaderButtons", () => {
 
   it("should handle select labels click", async () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />, { store: mockStoreRedux });
-    const button = screen.getByRole("button", { name: "Select Labels" });
+    const button = screen.getByRole("button", { name: PlanMode.SelectLabel });
     await userEvent.click(button);
 
     expect(button).toHaveClass("selected");

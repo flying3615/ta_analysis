@@ -9,42 +9,49 @@ import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/pro
 import { useAppDispatch } from "@/hooks/reduxHooks.ts";
 import { setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
 
-export interface PlanElementData {
-  [key: string]: string | number | boolean | undefined;
-}
 export type PlanElementPropertyMode = Extract<PlanMode, PlanMode.SelectLabel | PlanMode.SelectLine>;
 
-export interface PlanPropertyPayload {
-  mode: PlanElementPropertyMode;
-  data: PlanElementData;
+interface PlanLabelProperty {
+  mode: PlanMode.SelectLabel;
+  data: LabelPropertiesProps;
   position: { x: number; y: number };
 }
 
-export type PlanElementPropertyProps = {
-  type: PlanPropertyPayload;
+interface PlanLineProperty {
+  mode: PlanMode.SelectLine;
+  data: LinePropertiesProps;
+  position: { x: number; y: number };
+}
+
+export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
+
+const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
+  switch (mode) {
+    case PlanMode.SelectLabel:
+      return {
+        component: <LabelProperties {...data} />,
+        headerContent: (
+          <div className="header-container">
+            <LuiIcon name="ic_format_lines_text" size="md" alt="Label properties" /> Label properties
+          </div>
+        ),
+        startHeight: 685,
+      };
+    default:
+      return {
+        component: <LineProperties data={data} />,
+        headerContent: (
+          <div className="header-container">
+            <LuiIcon name="ic_format_lines_text" size="md" alt="Line properties" /> Line properties
+          </div>
+        ),
+        startHeight: 430,
+      };
+  }
 };
 
-const planModeConfig = {
-  [PlanMode.SelectLabel]: (data: PlanElementData) => ({
-    component: <LabelProperties data={data as LabelPropertiesProps} />,
-    headerContent: (
-      <div className="header-container">
-        <LuiIcon name="ic_format_lines_text" size="md" alt="Label properties" /> Label properties
-      </div>
-    ),
-  }),
-  [PlanMode.SelectLine]: (data: PlanElementData) => ({
-    component: <LineProperties data={data as unknown as LinePropertiesProps} />,
-    headerContent: (
-      <div className="header-container">
-        <LuiIcon name="ic_format_lines_text" size="md" alt="Line properties" /> Line properties
-      </div>
-    ),
-  }),
-};
-
-const PlanElementProperty = ({ type }: PlanElementPropertyProps) => {
-  const { component, headerContent } = planModeConfig[type.mode](type.data);
+const PlanElementProperty = (planElementProperty: PlanPropertyPayload) => {
+  const { component, headerContent, startHeight } = planModeConfig(planElementProperty);
   const dispatch = useAppDispatch();
 
   const adjustPosition = (pos: { x: number; y: number }) => {
@@ -58,7 +65,7 @@ const PlanElementProperty = ({ type }: PlanElementPropertyProps) => {
     };
   };
 
-  const initialPosition = adjustPosition(type.position);
+  const initialPosition = adjustPosition(planElementProperty.position);
 
   const closeFloatingWindow = () => {
     dispatch(setPlanProperty(undefined));
@@ -71,7 +78,7 @@ const PlanElementProperty = ({ type }: PlanElementPropertyProps) => {
         leftSideHeader={headerContent}
         initialPosition={initialPosition}
         startWidth={200}
-        startHeight={430}
+        startHeight={startHeight}
         startDisplayed={true}
       >
         {component}

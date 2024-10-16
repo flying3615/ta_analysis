@@ -118,10 +118,10 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(3002, [10001, 30004], 0.75, "observation", "brokenPeck1")
   .addLine(3003, [30005, 30006], 0.75, "observation", "brokenDot2")
   .addLine(3004, [30007, 30008, 30009, 30010], 1.5, "observation", "peckDot1")
-  .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "display", "Times New Roman", 10)
+  .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "markName", "Times New Roman", 10)
   .addSymbolLabel(12, "96", { x: 20, y: -10 }, 10, 10001)
-  .addLabel("lineLabels", 13, "Label 13", { x: 52, y: -40 }, 1001, "line", "display", "Arial", 14)
-  .addLabel("parcelLabels", 14, "Label 14", { x: 35, y: -35 }, 1, "parcel", "display", "Tahoma", 16)
+  .addLabel("lineLabels", 13, "Label 13", { x: 52, y: -40 }, 1001, "line", "lineDescription", "Arial", 14)
+  .addLabel("parcelLabels", 14, "Label 14", { x: 35, y: -35 }, 1, "parcel", "parcelAppellation", "Tahoma", 16)
   .addLabel(
     "labels",
     1,

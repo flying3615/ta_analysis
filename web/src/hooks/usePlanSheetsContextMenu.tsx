@@ -3,7 +3,7 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import { PlanElementData, PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
+import { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
@@ -65,13 +65,20 @@ export const usePlanSheetsContextMenu = () => {
     position?: cytoscape.Position;
   }) => {
     const { target, position } = event;
-    const elementTypes = [PlanElementType.LINES, PlanElementType.LABELS, PlanElementType.LINE_LABELS];
+    const elementTypes = [
+      PlanElementType.LINES,
+      PlanElementType.LABELS,
+      PlanElementType.LINE_LABELS,
+      PlanElementType.COORDINATE_LABELS,
+      PlanElementType.CHILD_DIAGRAM_LABELS,
+      PlanElementType.PARCEL_LABELS,
+    ];
     if (target && position && elementTypes.includes(target.data().elementType)) {
       dispatch(
         setPlanProperty({
           mode: planMode as PlanElementPropertyMode,
-          data: target.data() as PlanElementData,
-          position: position,
+          data: target.data(),
+          position: { x: position.x, y: position.y - 50 },
         }),
       );
     }

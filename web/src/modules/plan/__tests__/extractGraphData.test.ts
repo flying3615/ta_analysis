@@ -64,7 +64,7 @@ describe("extractGraphData", () => {
     expect(labelNode11?.position).toStrictEqual({ x: 55, y: -10 });
     expect(labelNode11?.properties?.["diagramId"]).toBe(1);
     expect(labelNode11?.properties?.["elementType"]).toBe("coordinateLabels");
-    expect(labelNode11?.properties?.["labelType"]).toBe("display");
+    expect(labelNode11?.properties?.["labelType"]).toBe("markName");
     expect(labelNode11?.properties?.["featureId"]).toBe(10001);
     expect(labelNode11?.properties?.["featureType"]).toBe("mark");
     expect(labelNode11?.properties?.["font"]).toBe("Times New Roman");
@@ -91,7 +91,7 @@ describe("extractGraphData", () => {
     expect(labelNode13?.position).toStrictEqual({ x: 52, y: -40 });
     expect(labelNode13?.properties?.["diagramId"]).toBe(1);
     expect(labelNode13?.properties?.["elementType"]).toBe("lineLabels");
-    expect(labelNode13?.properties?.["labelType"]).toBe("display");
+    expect(labelNode13?.properties?.["labelType"]).toBe("lineDescription");
     expect(labelNode13?.properties?.["featureId"]).toBe(1001);
     expect(labelNode13?.properties?.["featureType"]).toBe("line");
     expect(labelNode13?.properties?.["font"]).toBe("Arial");
@@ -106,7 +106,7 @@ describe("extractGraphData", () => {
     expect(labelNode14?.position).toStrictEqual({ x: 35, y: -35 });
     expect(labelNode14?.properties?.["diagramId"]).toBe(1);
     expect(labelNode14?.properties?.["elementType"]).toBe("parcelLabels");
-    expect(labelNode14?.properties?.["labelType"]).toBe("display");
+    expect(labelNode14?.properties?.["labelType"]).toBe("parcelAppellation");
     expect(labelNode14?.properties?.["featureId"]).toBe(1);
     expect(labelNode14?.properties?.["featureType"]).toBe("parcel");
     expect(labelNode14?.properties?.["font"]).toBe("Tahoma");
