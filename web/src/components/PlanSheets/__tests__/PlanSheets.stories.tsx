@@ -624,6 +624,21 @@ export const HideCoordinate: Story = {
   },
 };
 
+export const SelectLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135);
+    await sleep(500);
+  },
+};
+
 export const ShowLineMenu: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -635,6 +650,27 @@ export const ShowLineMenu: Story = {
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
     clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+
+export const HideLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const menuHide = await canvas.findByText("Hide");
+    await userEvent.click(menuHide);
+    await sleep(500);
+    clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
     await sleep(500);
   },
 };

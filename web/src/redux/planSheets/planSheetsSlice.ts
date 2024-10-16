@@ -104,6 +104,18 @@ const planSheetsSlice = createSlice({
     setPreviousDiagramAttributes: (state, action: PayloadAction<PreviousDiagramAttributes>) => {
       state.previousDiagramAttributesMap[action.payload.id] = action.payload;
     },
+    setLineHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
+      const { id, hide } = action.payload;
+      state.diagrams.forEach((diagram) => {
+        diagram.lines.forEach((line) => {
+          if (line.id.toString() === id) {
+            console.log(` hide line ${JSON.stringify(line)}`);
+            line.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
+          }
+        });
+      });
+      state.hasChanges = true;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -166,6 +178,7 @@ export const {
   setPlanProperty,
   setSymbolHide,
   setPreviousDiagramAttributes,
+  setLineHide,
 } = planSheetsSlice.actions;
 
 export const {

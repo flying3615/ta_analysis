@@ -17,6 +17,9 @@ import {
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
 
+const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
+  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState")) ? 0.2 : 1;
+
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
   const svgDataForSymbol = svgDataForSymbolFun(cytoscapeCoordinateMapper);
 
@@ -70,6 +73,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
 
   const lineBaseStyle = {
     "line-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
+    opacity: opacityFromDisplayState,
     "z-index": 150,
     "z-index-compare": "manual",
     width: "data(pointWidth)",
@@ -100,10 +104,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "background-clip": "none",
         "bounds-expansion": 12,
         shape: (ele) => svgDataForSymbol(ele).nodeShape,
-        "background-image-opacity": (ele) =>
-          [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState"))
-            ? 0.2
-            : 1,
+        "background-image-opacity": opacityFromDisplayState,
       },
     },
 

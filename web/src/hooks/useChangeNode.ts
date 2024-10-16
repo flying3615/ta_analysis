@@ -17,15 +17,7 @@ export const useChangeNode = () => {
     const markSymbol = lookupGraphData.findMarkSymbol(lookupElementSource(target as NodeSingular | EdgeSingular));
 
     if (markSymbol) {
-      const node = target?.cy().getElementById(markSymbol.id.toString());
-
-      if (node) {
-        if (hidden) {
-          dispatch(setSymbolHide({ id: markSymbol.id.toString(), hide: true }));
-        } else {
-          dispatch(setSymbolHide({ id: markSymbol.id.toString(), hide: false }));
-        }
-      }
+      dispatch(setSymbolHide({ id: markSymbol.id.toString(), hide: hidden }));
     }
   };
 };

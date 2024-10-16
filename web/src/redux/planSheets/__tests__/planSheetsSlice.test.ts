@@ -21,7 +21,9 @@ import planSheetsSlice, {
   replaceDiagrams,
   setActivePageNumber,
   setActiveSheet,
+  setLineHide,
   setPlanData,
+  setSymbolHide,
   updatePages,
 } from "../planSheetsSlice";
 
@@ -42,36 +44,37 @@ describe("planSheetsSlice", () => {
 
   let store = setupStore();
 
-  const { configs, diagrams, pages } = new PlanDataBuilder()
-    .addConfigs()
-    .addDiagram({
-      bottomRightPoint: {
-        x: 80,
-        y: -90,
-      },
-      diagramType: "sysGenPrimaryDiag",
-      pageRef: 1,
-    })
-    .addDiagram({
-      bottomRightPoint: {
-        x: 80,
-        y: -90,
-      },
-      diagramType: "sysGenTraverseDiag",
-      pageRef: 2,
-    })
-    .addDiagram({
-      bottomRightPoint: {
-        x: 80,
-        y: -90,
-      },
-      diagramType: "userDefnPrimaryDiag",
-      pageRef: 3,
-    })
-    .addPage({ id: 1, pageNumber: 1, pageType: PlanSheetType.TITLE })
-    .addPage({ id: 2, pageNumber: 1, pageType: PlanSheetType.SURVEY })
-    .addPage({ id: 3, pageNumber: 2, pageType: PlanSheetType.SURVEY })
-    .build();
+  const emptyDiagramsBuilder = () =>
+    new PlanDataBuilder()
+      .addConfigs()
+      .addDiagram({
+        bottomRightPoint: {
+          x: 80,
+          y: -90,
+        },
+        diagramType: "sysGenPrimaryDiag",
+        pageRef: 1,
+      })
+      .addDiagram({
+        bottomRightPoint: {
+          x: 80,
+          y: -90,
+        },
+        diagramType: "sysGenTraverseDiag",
+        pageRef: 2,
+      })
+      .addDiagram({
+        bottomRightPoint: {
+          x: 80,
+          y: -90,
+        },
+        diagramType: "userDefnPrimaryDiag",
+        pageRef: 3,
+      })
+      .addPage({ id: 1, pageNumber: 1, pageType: PlanSheetType.TITLE })
+      .addPage({ id: 2, pageNumber: 1, pageType: PlanSheetType.SURVEY })
+      .addPage({ id: 3, pageNumber: 2, pageType: PlanSheetType.SURVEY });
+  const { configs, diagrams, pages } = emptyDiagramsBuilder().build();
 
   beforeEach(() => {
     store = setupStore({ planSheets: initialState });
@@ -285,5 +288,43 @@ describe("planSheetsSlice", () => {
 
     store = setupStore({ planSheets: { ...initialState, planMode: PlanMode.SelectDiagram } });
     expect(getPlanMode(store.getState())).toBe(PlanMode.SelectDiagram);
+  });
+
+  test("setSymbolHide should set the displayState on the coordinate in store", () => {
+    const diagramsWithMark = emptyDiagramsBuilder()
+      .addCooordinate(101, { x: 20, y: -10 })
+      .addSymbolLabel(1011, "*", { x: 20, y: -10 })
+      .build().diagrams;
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams: diagramsWithMark,
+      },
+    });
+    expect(store.getState().planSheets.diagrams[2]?.coordinateLabels[0]?.displayState).toBe("display");
+
+    store.dispatch(setSymbolHide({ id: "1011", hide: true }));
+
+    expect(store.getState().planSheets.diagrams[2]?.coordinateLabels[0]?.displayState).toBe("hide");
+  });
+
+  test("setLineHide should set the displayState on the line in store", () => {
+    const diagramsWithLine = emptyDiagramsBuilder()
+      .addCooordinate(101, { x: 20, y: -10 })
+      .addCooordinate(101, { x: 25, y: -10 })
+      .addCooordinate(103, { x: 15, y: -10 })
+      .addLine(1011, [101, 102, 103])
+      .build().diagrams;
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams: diagramsWithLine,
+      },
+    });
+    expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
+
+    store.dispatch(setLineHide({ id: "1011", hide: true }));
+
+    expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBe("hide");
   });
 });

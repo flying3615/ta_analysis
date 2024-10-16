@@ -7,6 +7,7 @@ import { PlanElementData, PlanElementPropertyMode } from "@/components/PlanSheet
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useChangeLine } from "@/hooks/useChangeLine.ts";
 import { useChangeNode } from "@/hooks/useChangeNode.ts";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
@@ -15,6 +16,7 @@ import { getPlanMode, getPreviousAttributesForDiagram, setPlanProperty } from "@
 export const usePlanSheetsContextMenu = () => {
   const planMode = useAppSelector(getPlanMode);
   const setNodeHidden = useChangeNode();
+  const setLineHidden = useChangeLine();
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const dispatch = useAppDispatch();
 
@@ -85,6 +87,7 @@ export const usePlanSheetsContextMenu = () => {
 
     const lineShouldBeDisplayed = (element: NodeSingular | EdgeSingular | cytoscape.Core) => {
       return (
+        !element.data("displayState") ||
         element.data("displayState") === DisplayStateEnum.display ||
         element?.data("displayState") === DisplayStateEnum.systemDisplay
       );
@@ -97,12 +100,18 @@ export const usePlanSheetsContextMenu = () => {
         disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
           element.data("displayState") === DisplayStateEnum.systemHide,
         hideWhen: lineShouldBeDisplayed,
+        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+          setLineHidden(event.target as EdgeSingular, false);
+        },
       },
       {
         title: "Hide",
         disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
           element.data("displayState") === DisplayStateEnum.systemDisplay,
         hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
+        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+          setLineHidden(event.target as EdgeSingular, true);
+        },
       },
       { title: "Properties", callback: getProperties },
       // { title: "Cut", disabled: true },

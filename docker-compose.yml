@@ -150,7 +150,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_POOL_SIZE_MAX: ${DB_POOL_SIZE_MAX:-30}
       USER_ID_SECRET_KEY: local
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: production,playwright
       SPLIT_ENV_API_KEY_SDK: localhost
       OIDC_ISSUER_URL: "http://localhost:8083/realms/landonline"
       AUTHZ_BASEURL: "http://host.docker.internal:8082"
@@ -160,6 +160,7 @@ services:
       CLIENT_ID: survey-plangen-service
       CLIENT_SECRET: localclientsecret
       GEOSERVER_URL: "http://host.docker.internal:14005/geoserver"
+      LOCALSTACK_URL: "http://host.docker.internal:4566"
       SPRING_APPLICATION_JSON: >
         { "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}} }
     ports:
