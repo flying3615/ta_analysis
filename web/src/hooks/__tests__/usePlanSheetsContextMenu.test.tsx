@@ -43,22 +43,23 @@ describe("PlanSheetsContextMenu", () => {
     return <></>;
   };
 
-  test("getMenuItemsForPlanMode for Select diagram returns diagram menu", () => {
-    const mockNode = {
-      data: (key: string) => ({ id: "D1", elementType: PlanElementType.DIAGRAM })[key],
-    } as unknown as NodeSingular;
+  const buildMockNode = (id: string, elementType: PlanElementType, extraData: Record<string, string> = {}) =>
+    ({
+      data: (key: string | undefined) => {
+        const element: Record<string, string> = { id, elementType, ...extraData };
+        if (key) {
+          return element[key];
+        }
+        return element;
+      },
+    }) as unknown as NodeSingular;
 
+  test("getMenuItemsForPlanMode for Select diagram returns diagram menu", () => {
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        targetElement={mockNode}
+        targetElement={buildMockNode("D1", PlanElementType.DIAGRAM)}
         expectations={(diagramMenuItems) => {
-          expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual([
-            "Properties",
-            "Cut",
-            "Copy",
-            "Paste",
-            "Move to page...",
-          ]);
+          expect(diagramMenuItems?.map((m) => m.title)).toStrictEqual(["Move to page..."]);
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectDiagram),
@@ -150,16 +151,13 @@ describe("PlanSheetsContextMenu", () => {
 
   test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected lines", () => {
     const id = "10001";
-    const mockNode = {
-      data: (key: string) =>
-        ({ id: `${id}`, elementType: PlanElementType.DIAGRAM, displayState: DisplayStateEnum.systemDisplay })[key],
-    } as unknown as NodeSingular;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        targetElement={mockNode}
+        targetElement={buildMockNode(id, PlanElementType.DIAGRAM)}
         expectations={(diagramMenuItems) => {
           const menuItemTitles = diagramMenuItems?.map((m) => m.title);
-          expect(menuItemTitles).toContain("Select Lines Affected By Last Diagram Shift");
+          expect(menuItemTitles).toContain("Select lines affected by last diagram shift");
+          expect(diagramMenuItems).toHaveLength(2);
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectDiagram, {
@@ -176,18 +174,45 @@ describe("PlanSheetsContextMenu", () => {
     );
   });
 
-  test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected labels", () => {
+  test("shows diagram menu if node id is selected-diagram", () => {
     const id = "10001";
-    const mockNode = {
-      data: (key: string) =>
-        ({ id: `${id}`, elementType: PlanElementType.DIAGRAM, displayState: DisplayStateEnum.systemDisplay })[key],
-    } as unknown as NodeSingular;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        targetElement={mockNode}
+        targetElement={buildMockNode("selected-diagram", PlanElementType.DIAGRAM, { diagramId: id })}
         expectations={(diagramMenuItems) => {
           const menuItemTitles = diagramMenuItems?.map((m) => m.title);
-          expect(menuItemTitles).toContain("Select Text Affected By Last Diagram Shift");
+          expect(menuItemTitles).toContain("Select lines affected by last diagram shift");
+          expect(menuItemTitles).toContain("Select text affected by last diagram shift");
+          expect(diagramMenuItems).toHaveLength(3);
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectDiagram, {
+        [id]: {
+          id: id,
+          linesAffectedByLastMove: [
+            {
+              id,
+            },
+          ],
+          labelsAffectedByLastMove: [
+            {
+              id,
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected labels", () => {
+    const id = "10001";
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        targetElement={buildMockNode(id, PlanElementType.DIAGRAM)}
+        expectations={(diagramMenuItems) => {
+          const menuItemTitles = diagramMenuItems?.map((m) => m.title);
+          expect(menuItemTitles).toContain("Select text affected by last diagram shift");
+          expect(diagramMenuItems).toHaveLength(2);
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectDiagram, {

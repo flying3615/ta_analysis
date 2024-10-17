@@ -3,6 +3,7 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
+import { SELECTED_DIAGRAM } from "@/components/PlanSheets/interactions/SelectedDiagram.tsx";
 import { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
@@ -23,20 +24,17 @@ export const usePlanSheetsContextMenu = () => {
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
-    const diagramMenus: MenuItem[] = [
-      { title: "Properties", callback: getProperties },
-      { title: "Cut", disabled: true },
-      { title: "Copy", disabled: true },
-      { title: "Paste", disabled: true },
-      { title: "Move to page...", callback: movetoPage },
-    ];
-    if (previousDiagramAttributes && previousDiagramAttributes?.linesAffectedByLastMove?.length > 0) {
-      diagramMenus.push({ title: "Select Lines Affected By Last Diagram Shift", disabled: true });
+    const baseDiagramMenu: MenuItem[] = [{ title: "Move to page...", callback: movetoPage }];
+    if (!previousDiagramAttributes) {
+      return baseDiagramMenu;
     }
-    if (previousDiagramAttributes && previousDiagramAttributes?.labelsAffectedByLastMove?.length > 0) {
-      diagramMenus.push({ title: "Select Text Affected By Last Diagram Shift", disabled: true });
+    if (previousDiagramAttributes?.linesAffectedByLastMove?.length > 0) {
+      baseDiagramMenu.push({ title: "Select lines affected by last diagram shift", disabled: true });
     }
-    return diagramMenus;
+    if (previousDiagramAttributes?.labelsAffectedByLastMove?.length > 0) {
+      baseDiagramMenu.push({ title: "Select text affected by last diagram shift", disabled: true });
+    }
+    return baseDiagramMenu;
   };
 
   const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
@@ -83,6 +81,7 @@ export const usePlanSheetsContextMenu = () => {
       );
     }
   };
+
   function getAllMenuItemsForElement(
     element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
     planElementType: PlanElementType,
@@ -222,7 +221,7 @@ export const usePlanSheetsContextMenu = () => {
     switch (planMode) {
       case PlanMode.SelectDiagram:
         if (element.data("id") == null) return undefined;
-        return buildDiagramMenu(findPreviousAttributesForDiagram(element.data("id")));
+        return buildDiagramMenu(findPreviousAttributesForDiagram(findDiagramId(element.data())));
       case PlanMode.SelectLine:
         if (planElementType !== PlanElementType.LINES) return undefined;
         return lineMenus;
@@ -254,7 +253,6 @@ export const usePlanSheetsContextMenu = () => {
     const element = clickedElement ?? selectedCollection?.nodes()[0] ?? selectedCollection?.edges()[0] ?? undefined;
     if (!element) return [];
     const planElementType = element.data("elementType") as PlanElementType;
-
     return (
       getAllMenuItemsForElement(element, planElementType, selectedCollection)
         ?.map((menuItem) => ({
@@ -266,4 +264,11 @@ export const usePlanSheetsContextMenu = () => {
         }) ?? []
     );
   };
+};
+
+const findDiagramId = (elementData: { id: string; diagramId: string }): string => {
+  if (elementData.id === SELECTED_DIAGRAM) {
+    return elementData.diagramId;
+  }
+  return elementData.id;
 };

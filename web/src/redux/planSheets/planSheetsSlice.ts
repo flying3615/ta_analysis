@@ -159,7 +159,7 @@ const planSheetsSlice = createSlice({
     getPlanProperty: (state) => state.planProperty,
     getPreviousAttributesForDiagram:
       (state) =>
-      (id: number): PreviousDiagramAttributes | undefined => {
+      (id: string): PreviousDiagramAttributes | undefined => {
         return state.previousDiagramAttributesMap[id];
       },
   },

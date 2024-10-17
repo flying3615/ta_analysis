@@ -33,7 +33,7 @@ const DIAGRAM_CLASS_MOVABLE = "diagram-movable";
 const DIAGRAM_CLASS_MOVING = "diagram-moving";
 const DIAGRAM_CONTROL_CLASS = "diagram-control";
 const DIAGRAM_CONTROL_SELECTOR = `.${DIAGRAM_CONTROL_CLASS}`;
-const SELECTED_DIAGRAM = "selected-diagram";
+export const SELECTED_DIAGRAM = "selected-diagram";
 
 /**
  * SelectedDiagram shows controls at diagram extents
@@ -61,7 +61,7 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
     let moveStart: Position | undefined;
     let resizeLimits: ResizeLimits | undefined;
 
-    const allControls = cyto.add(getSelectedDiagramElement(diagramExtent)).addClass(SELECTED_DIAGRAM);
+    const allControls = cyto.add(getSelectedDiagramElement(diagramExtent, diagram.id())).addClass(SELECTED_DIAGRAM);
     // only resize controls move
     const resizeControls = cyto.add(getResizeControlElements());
     setResizeControlPositions(resizeControls, diagramExtent);
@@ -264,10 +264,10 @@ function getResizeControlPosition(id: string, extent: BoundingBox12): Position {
   return { x: 0, y: 0 };
 }
 
-function getSelectedDiagramElement(extent: BoundingBox12): ElementDefinition {
+function getSelectedDiagramElement(extent: BoundingBox12, diagramId: string): ElementDefinition {
   return {
     group: "nodes",
-    data: { id: SELECTED_DIAGRAM, width: extent.x2 - extent.x1, height: extent.y2 - extent.y1 },
+    data: { id: SELECTED_DIAGRAM, width: extent.x2 - extent.x1, height: extent.y2 - extent.y1, diagramId },
     position: { x: (extent.x1 + extent.x2) / 2, y: (extent.y1 + extent.y2) / 2 },
   };
 }
