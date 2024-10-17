@@ -9,14 +9,17 @@ import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
 import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
 import { luiColors } from "@/constants.tsx";
-import { useTransactionId } from "@/hooks/useTransactionId";
+import { useTransactionId } from "@/hooks/useTransactionId.ts";
 import { Paths } from "@/Paths.ts";
+import { useCreateAndMaintainLockQuery } from "@/queries/lock.ts";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
 const LandingPage = () => {
   const transactionId = useTransactionId();
+  useCreateAndMaintainLockQuery();
+
   const { openPanel } = useContext(PanelsContext);
 
   const { result: labelPreferencesAllowed, loading: labelPrefsSplitLoading } = useFeatureFlags(

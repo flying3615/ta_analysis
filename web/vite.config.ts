@@ -55,6 +55,11 @@ export default defineConfig(
             res.end(data);
           },
         },
+        "/survey/api": {
+          target: "http://localhost:13020",
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
   }),

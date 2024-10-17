@@ -1,3 +1,4 @@
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { getMockMap, LayerType } from "@linzjs/landonline-openlayers-map";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -7,6 +8,7 @@ import { generatePath, Route } from "react-router-dom";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import LandingPage from "@/components/LandingPage/LandingPage";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
@@ -33,7 +35,17 @@ describe("DefineDiagrams", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
     renderCompWithReduxAndRoute(
-      <Route element={<DefineDiagrams mock={true} />} path={Paths.defineDiagrams} />,
+      <Route
+        element={
+          <MockUserContextProvider
+            user={singleFirmUserExtsurv1}
+            initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
+          >
+            <DefineDiagrams mock={true} />
+          </MockUserContextProvider>
+        }
+        path={Paths.defineDiagrams}
+      />,
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
     );
 
@@ -47,8 +59,25 @@ describe("DefineDiagrams", () => {
       expect(requestSpy).toHaveBeenCalled();
     });
 
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      1,
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: "http://localhost/v1/surveys/api/survey/123/locks",
+        }),
+      }),
+    );
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/v1/surveys/api/survey/123/locks/2100000/lastUsed",
+        }),
+      }),
+    );
+
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -56,8 +85,8 @@ describe("DefineDiagrams", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      2,
+
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
@@ -74,8 +103,7 @@ describe("DefineDiagrams", () => {
       }),
     );
     // Get diagrams again as `POST prepare` would have changed
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      7,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",

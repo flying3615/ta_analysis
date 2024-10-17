@@ -1,3 +1,4 @@
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
@@ -8,6 +9,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import { click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
@@ -26,7 +28,17 @@ const PlanSheetsTemplate = () => {
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
         <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-          <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+          <Route
+            path={Paths.layoutPlanSheets}
+            element={
+              <MockUserContextProvider
+                user={singleFirmUserExtsurv1}
+                initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
+              >
+                <PlanSheets />
+              </MockUserContextProvider>
+            }
+          />
         </StorybookRouter>
       </Provider>
     </QueryClientProvider>

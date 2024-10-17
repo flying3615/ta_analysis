@@ -34,7 +34,7 @@ export async function renderInit() {
   };
 
   // patch fetch requests to add authorization header to api gateway requests
-  patchFetch((url) => url.startsWith(window._env_.apiGatewayBaseUrl));
+  patchFetch((url) => url.startsWith(window._env_.apiGatewayBaseUrl) || url.startsWith(window._env_.surveyBaseUrl));
 
   // Add to window, so we can check in console the current build versions
   try {

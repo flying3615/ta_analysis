@@ -73,9 +73,11 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Expect extends CoordinateMatchers {}
+
     interface Matchers<R> extends CoordinateMatchers<R> {}
   }
 }
+
 class AnyBuilder extends CommonBuilder<AnyBuilder> {}
 
 const POS_TOLERANCE = APPROX_DEGREES_PER_METRE;

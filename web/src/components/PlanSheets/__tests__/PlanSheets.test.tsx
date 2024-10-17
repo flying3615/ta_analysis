@@ -1,3 +1,4 @@
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { cloneDeep } from "lodash-es";
@@ -9,6 +10,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
@@ -18,7 +20,17 @@ import { nestedTitlePlan } from "./data/plansheetDiagramData";
 
 const renderWithState = (state: PlanSheetsState) => {
   renderCompWithReduxAndRoute(
-    <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+    <Route
+      element={
+        <MockUserContextProvider
+          user={singleFirmUserExtsurv1}
+          initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
+        >
+          <PlanSheets />
+        </MockUserContextProvider>
+      }
+      path={Paths.layoutPlanSheets}
+    />,
     generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     { preloadedState: { planSheets: cloneDeep(state) } },
   );
@@ -371,9 +383,7 @@ describe("PlanSheets", () => {
     const retryButton = await screen.findByText("Retry");
     expect(retryButton).not.toBeNull();
 
-    expect(requestSpy).toHaveBeenCalledTimes(3);
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      2,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
@@ -381,8 +391,7 @@ describe("PlanSheets", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      3,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -400,9 +409,7 @@ describe("PlanSheets", () => {
     await userEvent.click(retryButton);
 
     expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
-    expect(requestSpy).toHaveBeenCalledTimes(3);
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      1,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
@@ -410,8 +417,7 @@ describe("PlanSheets", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      2,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
@@ -419,8 +425,7 @@ describe("PlanSheets", () => {
         }),
       }),
     );
-    expect(requestSpy).toHaveBeenNthCalledWith(
-      3,
+    expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",

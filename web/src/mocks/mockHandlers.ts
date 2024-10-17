@@ -67,6 +67,42 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" }),
   ),
 
+  http.get(/\/api\/survey\/([0-9]+)\/locks$/, async ({ params }) =>
+    HttpResponse.json(
+      {
+        transactionLock: {
+          locked: true,
+          lockedId: 2100000,
+          lockedEntityId: params[0],
+          sessionUser: "extsurv1",
+          type: null,
+          lockedBy: {
+            id: "extsurv1",
+            givenNames: "Survey B",
+            surname: "External",
+          },
+          lockedAt: new Date().toISOString(),
+          isNewAppLock: true,
+        },
+        taCertificationRequestLocks: [],
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
+  http.put(/\/api\/survey\/([0-9]+)\/locks\/([0-9]+)\/lastUsed$/, async ({ params }) =>
+    HttpResponse.json(
+      {
+        id: params[1],
+        lastUsedAt: new Date().toISOString(),
+        status: "IN_PROGRESS",
+        userId: "extsurv1",
+        newLock: true,
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
   http.put(/\/123\/plan$/, () =>
     HttpResponse.json(
