@@ -12,16 +12,20 @@ import { useChangeLine } from "@/hooks/useChangeLine.ts";
 import { useChangeNode } from "@/hooks/useChangeNode.ts";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
-import { getPlanMode, getPreviousAttributesForDiagram, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
+import {
+  getPlanMode,
+  getPreviousAttributesForDiagram,
+  setDiagramToMove,
+  setPlanProperty,
+} from "@/redux/planSheets/planSheetsSlice.ts";
 
 export const usePlanSheetsContextMenu = () => {
+  const dispatch = useAppDispatch();
+  const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
+  const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
-  const lookupGraphData = useAppSelector(selectLookupGraphData);
-  const dispatch = useAppDispatch();
-
-  const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page...", callback: movetoPage }];
@@ -35,26 +39,6 @@ export const usePlanSheetsContextMenu = () => {
       baseDiagramMenu.push({ title: "Select text affected by last diagram shift", disabled: true });
     }
     return baseDiagramMenu;
-  };
-
-  const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    const { cy } = event;
-    if (cy) {
-      const selectedNodes = cy.$("node:selected");
-      if (selectedNodes.length > 0) {
-        const selectedNodeIds = selectedNodes.map((node) => node.data("id"));
-        const parentNode = cy.getElementById(selectedNodeIds[0]);
-        if (parentNode.length > 0) {
-          const childNodes = parentNode.children();
-          childNodes.forEach((child) => {
-            console.log("Child Node ID:", child.id());
-          });
-          // Todo move to a page
-        }
-      } else {
-        console.log("No nodes selected");
-      }
-    }
   };
 
   const getProperties = (event: {
@@ -82,11 +66,11 @@ export const usePlanSheetsContextMenu = () => {
     }
   };
 
-  function getAllMenuItemsForElement(
+  const getAllMenuItemsForElement = (
     element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
     planElementType: PlanElementType,
     selectedCollection?: CollectionReturnValue,
-  ) {
+  ) => {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
       return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
     };
@@ -244,7 +228,14 @@ export const usePlanSheetsContextMenu = () => {
       default:
         return undefined;
     }
-  }
+  };
+
+  const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
+    const { target } = event;
+    if (target && target.data().diagramId) {
+      dispatch(setDiagramToMove({ diagramId: target.data().diagramId }));
+    }
+  };
 
   return (
     clickedElement: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core | undefined,

@@ -1,6 +1,7 @@
 import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { DiagramToMovePayload } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal.tsx";
 import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
@@ -14,6 +15,7 @@ export interface PlanSheetsState {
   hasChanges: boolean;
   planMode: PlanMode;
   planProperty?: PlanPropertyPayload | undefined;
+  diagramToMove?: DiagramToMovePayload | undefined;
   previousDiagramAttributesMap: Record<string, PreviousDiagramAttributes>;
 }
 
@@ -90,6 +92,9 @@ const planSheetsSlice = createSlice({
     setPlanProperty: (state, action: PayloadAction<PlanPropertyPayload | undefined>) => {
       state.planProperty = action.payload;
     },
+    setDiagramToMove: (state, action: PayloadAction<DiagramToMovePayload | undefined>) => {
+      state.diagramToMove = action.payload;
+    },
     setSymbolHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
       const { id, hide } = action.payload;
       state.diagrams.forEach((diagram) => {
@@ -157,6 +162,7 @@ const planSheetsSlice = createSlice({
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
     getPlanProperty: (state) => state.planProperty,
+    getDiagramToMove: (state) => state.diagramToMove,
     getPreviousAttributesForDiagram:
       (state) =>
       (id: string): PreviousDiagramAttributes | undefined => {
@@ -176,6 +182,7 @@ export const {
   updatePages,
   setPlanMode,
   setPlanProperty,
+  setDiagramToMove,
   setSymbolHide,
   setPreviousDiagramAttributes,
   setLineHide,
@@ -197,6 +204,7 @@ export const {
   hasChanges,
   getPlanMode,
   getPlanProperty,
+  getDiagramToMove,
   getPreviousAttributesForDiagram,
 } = planSheetsSlice.selectors;
 

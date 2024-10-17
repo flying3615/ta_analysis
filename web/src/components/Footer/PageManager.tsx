@@ -19,6 +19,7 @@ import {
   setActivePageNumber,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
+import { getMaxPageId } from "@/util/pageUtil.ts";
 
 export interface IPopupModal {
   closeModal: () => void;
@@ -39,15 +40,12 @@ const PageManager = () => {
   const onPageRefRemoved = (pageId: number) => dispatch(removeDiagramPageRef(pageId));
   const onPageUpdated = (pages: PageDTO[]) => dispatch(updatePages(pages));
 
-  const getMaxId = (pages: PageDTO[]) => {
-    return pages.reduce((maxId, page) => (page.id > maxId ? page.id : maxId), 0);
-  };
   const onActivePageNumberUpdated = (pageNumber: number) =>
     dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber }));
 
   const addNewLastPage = () => {
     const newPageNumber = activePages.length + 1;
-    const newPageId = getMaxId(getAllPages) + 1;
+    const newPageId = getMaxPageId(getAllPages) + 1;
     const newPage = {
       id: newPageId,
       pageType: activeSheet,
@@ -59,7 +57,7 @@ const PageManager = () => {
   };
   const addNewPageAfterCurrent = () => {
     const newPageNumber = activePageNumber + 1;
-    const newPageId = getMaxId(getAllPages) + 1;
+    const newPageId = getMaxPageId(getAllPages) + 1;
     const newPage = {
       id: newPageId,
       pageType: activeSheet,
@@ -83,7 +81,7 @@ const PageManager = () => {
     zoomToFit();
   };
   const addNewFirstPage = () => {
-    const newPageId = getMaxId(getAllPages) + 1;
+    const newPageId = getMaxPageId(getAllPages) + 1;
     const newPage = {
       id: newPageId,
       pageType: activeSheet,
