@@ -244,3 +244,12 @@ INSERT INTO crs_lw_rel_editor (id, usr_id_related, related_person_typ, related_c
 VALUES (52100052, 'extsurv1', 'PCNT', 'SURV', NULL, 5000058, 'firm4', NULL, 1);
 
 -- Note no cpg_xml_file rows
+
+-- lock transaction
+execute procedure cp_ccl_setSessionContext('extsurv1', '', 0);
+execute procedure cp_cdb_lock_rows_nosession(
+  cf_cdb_lock_start_nosession('SURV', 'test lock 5000058'),
+  'cpl_transaction',
+  'id=5000058'
+);
+execute procedure cp_ccl_setSessionContext('', '', 0);

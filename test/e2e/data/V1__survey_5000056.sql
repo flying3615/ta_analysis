@@ -122,3 +122,12 @@ VALUES (5000056, 5000056, null, ST_GeomFromText('LINESTRING (10.9908477667 -45.0
 
 INSERT INTO crs_dig_plan_line(ztrn_id, id, lin_id, shape, se_row_id, symbology)
 VALUES (5000056, 5100056, null, ST_GeomFromText('LINESTRING (10.9909477667 -45.0693894167, 10.9913594833 -45.0691421333)', 1), 5000056, 2 );
+
+-- lock transaction
+execute procedure cp_ccl_setSessionContext('extsurv1', '', 0);
+execute procedure cp_cdb_lock_rows_nosession(
+  cf_cdb_lock_start_nosession('SURV', 'test lock 5000056'),
+  'cpl_transaction',
+  'id=5000056'
+);
+execute procedure cp_ccl_setSessionContext('', '', 0);
