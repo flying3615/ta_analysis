@@ -1,9 +1,7 @@
-jest.config.js
 config/
 react-app-env.d.ts
 node_modules/
 **/node_modules/
-/**/node_modules/*
 out/
 dist/
 build/

@@ -19,8 +19,8 @@ module.exports = {
   ],
   coverageReporters: ["text", "cobertura"],
   moduleNameMapper: {
-    "^@/(.*)\\.svg\?(.*)": "<rootDir>/src/$1.svg",
+    "^@/(.*)\\.svg\\?(.*)": "<rootDir>/src/$1.svg",
     "^@/workers/previewWorker\\?worker$": "<rootDir>/src/workers/__mocks__/previewWorker.js",
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
 };

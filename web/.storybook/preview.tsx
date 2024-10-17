@@ -6,10 +6,10 @@ import "@szhsin/react-menu/dist/index.css";
 import "@linzjs/step-ag-grid/dist/GridTheme.scss";
 import "@linzjs/step-ag-grid/dist/index.css";
 
-import { initialize, mswLoader } from "msw-storybook-addon";
+import { mswDecorator, mswInitialize } from "./mswDecorator";
 import { handlers } from "../src/mocks/mockHandlers";
 
-initialize({
+mswInitialize({
   onUnhandledRequest: (req, print) => {
     if (req.url.startsWith("/plan-generation/v1/")) {
       print.warning();
@@ -19,6 +19,9 @@ initialize({
 });
 
 const preview: Preview = {
+  decorators: [
+    mswDecorator
+  ],
   parameters: {
     layout: "fullscreen",
     viewport: {
@@ -37,7 +40,6 @@ const preview: Preview = {
       handlers: [...handlers],
     },
   },
-  loaders: [mswLoader],
 };
 
 export default preview;

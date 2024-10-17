@@ -135,7 +135,7 @@ const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
   const anchorAngle = getUpdatedProperty("anchorAngle", label.anchorAngle);
   const pointOffset = getUpdatedProperty("pointOffset", label.pointOffset);
   const textAlignment = getUpdatedProperty("textAlignment", label.textAlignment);
-  const displayState = getUpdatedProperty("displayState", label.displayState) as DisplayStateEnum;
+  const displayState = getUpdatedProperty("displayState", label.displayState);
 
   return {
     ...label,

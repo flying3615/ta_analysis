@@ -46,7 +46,7 @@ export const textDiameter = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMap
 };
 
 export const textRotationClockwiseFromH = (ele: cytoscape.NodeSingular) => {
-  const clockwiseDegrees = 360 - ele.data("textRotation") ?? 0;
+  const clockwiseDegrees = 360 - (ele.data("textRotation") ?? 0);
   const resDegrees = clockwiseDegrees >= 360 ? clockwiseDegrees - 360 : clockwiseDegrees;
 
   return (resDegrees * Math.PI) / 180;

@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: { browser: true, es2021: true, node: true },
   extends: [
     "./node_modules/@linzjs/style/.eslintrc.cjs",
     "plugin:@tanstack/eslint-plugin-query/recommended",
@@ -53,7 +53,7 @@ module.exports = {
 
         "jest/no-disabled-tests": "off", // should add a story ref
 
-          // Tech Debt
+        // Tech Debt
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/restrict-template-expressions": "off",
