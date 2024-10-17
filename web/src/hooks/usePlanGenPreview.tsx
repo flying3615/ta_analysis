@@ -25,6 +25,7 @@ import { createNewNode } from "@/util/mapUtil.ts";
 import { promiseWithTimeout } from "@/util/promiseUtil.ts";
 import { wrapText } from "@/util/stringUtil.ts";
 import PreviewWorker from "@/workers/previewWorker?worker";
+
 export interface PlanGenPreview {
   startPreview: () => Promise<void>;
   PreviewExportCanvas: React.FC;
@@ -52,7 +53,7 @@ export enum PlanSheetTypeAbbreviation {
 }
 
 export const PlanSheetTypeObject = [
-  { typeAbbr: PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE, type: PageDTOPageTypeEnum.survey },
+  { typeAbbr: PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE, type: PageDTOPageTypeEnum.title },
   { typeAbbr: PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE, type: PageDTOPageTypeEnum.title },
   { typeAbbr: PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY, type: PageDTOPageTypeEnum.survey },
 ];
@@ -136,8 +137,8 @@ export const usePlanGenPreview = (props: {
     const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
     const isSurveySheet = activeSheet === PlanSheetType.SURVEY;
     const sheetName = isSurveySheet
-      ? PlanSheetTypeAbbreviation.SURVEY_PLAN_SURVEY
-      : PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE;
+      ? PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE
+      : PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE;
 
     try {
       const imageFiles: ImageFile[] = [];
@@ -249,9 +250,9 @@ export const usePlanGenPreview = (props: {
         cyRefCurrent?.removeAllListeners();
       }
       if (isPlaywrightTest()) {
-      /* eslint-disable */
-      // to download jpeg images in tests
-      (window as any).imageFiles = imageFiles;
+        /* eslint-disable */
+        // to download jpeg images in tests
+        (window as any).imageFiles = imageFiles;
       }
       await generatePreviewPDF(imageFiles);
     } catch (e) {
@@ -334,7 +335,7 @@ export const usePlanGenPreview = (props: {
     const SURVEYOR_NAME = `Surveyor: ${surveyInfo.givenNames} ${surveyInfo.surname}`;
     const FIRM_NAME = `Firm: ${surveyInfo.corporateName}`;
     const SURVEY_DATE = `Date of Survey: ${formattedSurveyDate}`;
-    const CSD_NUMBER_TITLE = `Record of ${surveyInfo.systemCodeDescription}`;
+    const CSD_NUMBER_TITLE = isSurveySheet ? "Record of Survey" : "Title Plan";
     const CSD_NUMBER = `${surveyInfo.datasetSeries} ${surveyInfo.datasetId}`;
 
     // Find the minimum y position

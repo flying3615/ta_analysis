@@ -75,7 +75,7 @@ describe("usePlanGenPreview hook", () => {
     const workerPostMessage = workerInstance.postMessage;
     expect(workerPostMessage).toHaveBeenCalledTimes(1);
     expect(postMessageSpy).toHaveBeenCalledWith({
-      ImageFiles: [{ blob: expect.any(Blob), name: "DSPT-1.jpg" }],
+      ImageFiles: [{ blob: expect.any(Blob), name: "DTPS-1.jpg" }],
       type: "PREVIEW",
     });
   });
