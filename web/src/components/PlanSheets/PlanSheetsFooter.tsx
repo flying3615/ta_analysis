@@ -1,6 +1,6 @@
 import "./PlanSheetsFooter.scss";
 
-import { LuiButton, LuiIcon, LuiMiniSpinner, LuiModalV2, useToast } from "@linzjs/lui";
+import { LuiButton, LuiIcon, LuiMiniSpinner, LuiModalV2, LuiTooltip, useToast } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ import {
   getActivePageNumber,
   getActiveSheet,
   getFilteredPages,
+  hasChanges,
   setActivePageNumber,
   setActiveSheet,
 } from "@/redux/planSheets/planSheetsSlice";
@@ -54,6 +55,7 @@ const PlanSheetsFooter = ({
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
   const { success: successToast } = useToast();
+  const hasUnsavedChanges = useAppSelector(hasChanges);
 
   const activeSheet = useAppSelector(getActiveSheet);
   const onChangeSheet = (sheet: PlanSheetType) => () => dispatch(setActiveSheet(sheet));
@@ -113,6 +115,35 @@ const PlanSheetsFooter = ({
   const handlePageChange = (pageNumber: number) => () => {
     dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber: pageNumber }));
     zoomToFit();
+  };
+
+  const CompileButton = () => {
+    const button = (
+      <LuiButton
+        className="PlanSheetsFooter-compile-button lui-button-tertiary"
+        onClick={() => {
+          void startCompile();
+        }}
+        disabled={compiling || hasUnsavedChanges}
+      >
+        {compiling ? (
+          <LuiMiniSpinner size={20} divProps={{ "data-testid": "compilation-loading-spinner" }} />
+        ) : (
+          <>
+            <LuiIcon alt="Compile" color={luiColors.sea} name="ic_double_tick" size="md" />
+            Compile plan(s)
+          </>
+        )}
+      </LuiButton>
+    );
+
+    return hasUnsavedChanges ? (
+      <LuiTooltip placement="top" message="You must save your changes before you can compile the plans">
+        <div>{button}</div>
+      </LuiTooltip>
+    ) : (
+      button
+    );
   };
 
   return (
@@ -193,24 +224,7 @@ const PlanSheetsFooter = ({
           </LuiButton>
         )}
 
-        {isPreviewCompilationOn && (
-          <LuiButton
-            className="PlanSheetsFooter-compile-button lui-button-tertiary"
-            onClick={() => {
-              void startCompile();
-            }}
-            disabled={compiling}
-          >
-            {compiling ? (
-              <LuiMiniSpinner size={20} divProps={{ "data-testid": "compilation-loading-spinner" }} />
-            ) : (
-              <>
-                <LuiIcon alt="Compile" color={luiColors.sea} name="ic_double_tick" size="md" />
-                Compile record of survey
-              </>
-            )}
-          </LuiButton>
-        )}
+        {isPreviewCompilationOn && <CompileButton />}
 
         <UnsavedChangesModal
           updatePlan={updatePlan}

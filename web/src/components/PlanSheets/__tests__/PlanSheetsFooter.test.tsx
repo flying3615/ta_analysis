@@ -73,6 +73,7 @@ describe("PlanSheetsFooter", () => {
     expect(await screen.findByTitle("Toggle diagrams panel")).toBeInTheDocument();
     expect(await screen.findByTitle("Change sheet view")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save layout/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Compile plan\(s\)/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /first/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /previous/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
@@ -823,6 +824,42 @@ describe("PlanSheetsFooter", () => {
       }),
     );
     expect(await screen.findByText("Layout saved successfully")).toBeInTheDocument();
+  });
+
+  it("disables compile plan button and displays a tool tip message if there are any unsaved changes", async () => {
+    renderCompWithReduxAndRoute(
+      <>
+        <Route
+          element={
+            <>
+              <Link to="/dummy">Navigate</Link>
+              <PlanSheetsFooter
+                diagramsPanelOpen={false}
+                setDiagramsPanelOpen={jest.fn()}
+                surveyInfo={{} as ExternalSurveyInfoDto}
+              />
+            </>
+          }
+          path={Paths.layoutPlanSheets}
+        />
+        <Route element={<span>Dummy Page</span>} path="/dummy" />
+      </>,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+      {
+        preloadedState: {
+          planSheets: {
+            ...planSheetsState,
+            hasChanges: true,
+          },
+        },
+      },
+    );
+
+    const compileButton = await screen.findByRole("button", { name: /Compile plan\(s\)/i });
+    expect(compileButton).toBeDisabled();
+    await userEvent.hover(compileButton);
+    const tooltip = await screen.findByText("You must save your changes before you can compile the plans");
+    expect(tooltip).toBeInTheDocument();
   });
 
   // Add new page test
