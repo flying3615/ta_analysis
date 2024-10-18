@@ -1,4 +1,4 @@
-import { CollectionReturnValue, EventObjectEdge, EventObjectNode } from "cytoscape";
+import { CollectionReturnValue, EdgeSingular, EventObjectEdge, EventObjectNode, NodeSingular } from "cytoscape";
 import { ReactElement, useEffect, useState } from "react";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -28,6 +28,7 @@ export interface SelectElementHandlerProps {
  *
  * When a mark/line is selected, select related element
  * - broken node coordinate -> select line
+ * - coordinate symbol -> select coordinate
  *
  * @param param0
  * @returns
@@ -42,34 +43,33 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       return;
     }
 
-    const onSelect = (event: EventObjectEdge | EventObjectNode) => {
-      const element = event.target;
+    const onSelect = () => {
+      const selection = cyto.$(":selected");
 
-      // TODO: expand selection instead of replace?
-      const selection = cyto.collection();
-      selection.merge(element);
-
-      if (element.isEdge()) {
-        // check for broken/irregular line made up of multiple elements
-        const lineId = element.data("lineId");
-        if (lineId) {
-          selection.merge(cyto.$(`edge[lineId='${lineId}']`).select());
+      selection.forEach((ele) => {
+        const related = getRelatedElements(ele);
+        if (related && !selection.contains(related)) {
+          selection.merge(related.select());
         }
-      }
-
-      if (element.isNode() && element.data("symbolId")) {
-        // check for coordinate symbol, which is linked to coordinate
-        const featureId = element.data("featureId");
-        if (featureId) {
-          selection.merge(cyto.$id(featureId).select());
-        }
-      }
+      });
 
       setSelected(selection);
     };
 
-    const onUnselect = () => {
-      setSelected(undefined);
+    const onUnselect = (event?: EventObjectEdge | EventObjectNode) => {
+      const selection = cyto.$(":selected");
+      const element = event?.target;
+      if (!element) {
+        selection.unselect();
+        setSelected(undefined);
+        return;
+      }
+
+      const related = getRelatedElements(element);
+      if (related && selection.contains(related)) {
+        selection.unmerge(related.unselect());
+      }
+      setSelected(selection.nonempty() ? selection : undefined);
     };
 
     const selector = getSelector(mode);
@@ -114,4 +114,20 @@ function getSelector(mode?: SelectHandlerMode) {
 
   // TODO: "generic" to allow all types for first, then restrict?
   throw new Error(`SelectElementHandler mode=${mode} not implemented yet`);
+}
+
+function getRelatedElements(ele: EdgeSingular | NodeSingular): CollectionReturnValue | undefined {
+  if (ele.isEdge() && ele.data("lineId")) {
+    // include related broken/irregular segments
+    const relatedSegments = ele.cy().$(`edge[lineId='${ele.data("lineId")}']`);
+    return relatedSegments;
+  }
+
+  if (ele.isNode() && ele.data("featureId") && ele.data("symbolId")) {
+    // include coordinate for symbol
+    const coordinate = ele.cy().$id(ele.data("featureId"));
+    return coordinate;
+  }
+
+  return;
 }

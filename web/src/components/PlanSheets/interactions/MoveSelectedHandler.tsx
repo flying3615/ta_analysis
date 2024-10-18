@@ -92,6 +92,10 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     };
 
     const beginMove = (event: EventObjectNode | EventObjectEdge) => {
+      if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
+        // only start move if ctrl/shift not pressed
+        return;
+      }
       moveControls = cyto.add(getMoveControlElements(event, movingElements, adjacentEdges));
       // set extent based on selection, not related
       moveElementsExtent = selectedElements.boundingBox();
