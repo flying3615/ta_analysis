@@ -14,13 +14,13 @@ export type PlanElementPropertyMode = Extract<PlanMode, PlanMode.SelectLabel | P
 
 interface PlanLabelProperty {
   mode: PlanMode.SelectLabel;
-  data: LabelPropertiesProps;
+  data: LabelPropertiesProps[];
   position: { x: number; y: number };
 }
 
 interface PlanLineProperty {
   mode: PlanMode.SelectLine;
-  data: LinePropertiesProps;
+  data: LinePropertiesProps[];
   position: { x: number; y: number };
 }
 
@@ -30,7 +30,7 @@ const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
   switch (mode) {
     case PlanMode.SelectLabel:
       return {
-        component: <LabelProperties {...data} />,
+        component: <LabelProperties data={data} />,
         headerContent: {
           icon: "ic_format_lines_text",
           title: "Label properties",

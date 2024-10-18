@@ -10,7 +10,7 @@ const mockProps: LinePropertiesProps = {
   originalStyle: "brokenSolid1",
 };
 
-const setup = () => render(<LineProperties data={mockProps} />);
+const setup = () => render(<LineProperties data={[mockProps]} />);
 
 describe("LineProperties", () => {
   it("renders correctly", () => {
@@ -36,7 +36,7 @@ describe("LineProperties", () => {
     "User",
   ];
   it.each(lineTypes)("displays Type property - %s", async (lineType: string) => {
-    render(<LineProperties data={{ ...mockProps, lineType: lineType }} />);
+    render(<LineProperties data={[{ ...mockProps, lineType: lineType }]} />);
     const expectedDisplayName = lineTypeDisplayNames[lineTypes.indexOf(lineType)] || "Unknown line type";
     const textInput = screen.getByDisplayValue(expectedDisplayName);
     expect(textInput).toBeInTheDocument();

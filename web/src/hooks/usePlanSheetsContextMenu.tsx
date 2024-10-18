@@ -49,7 +49,9 @@ export const usePlanSheetsContextMenu = () => {
     cy: cytoscape.Core | undefined;
     position?: cytoscape.Position;
   }) => {
-    const { target, position } = event;
+    const { target, position, cy } = event;
+    if (!cy) return;
+    const selectedFeatures = planMode === PlanMode.SelectLine ? cy.$("edge:selected") : cy.$("node:selected");
     const elementTypes = [
       PlanElementType.LINES,
       PlanElementType.LABELS,
@@ -62,7 +64,7 @@ export const usePlanSheetsContextMenu = () => {
       dispatch(
         setPlanProperty({
           mode: planMode as PlanElementPropertyMode,
-          data: target.data(),
+          data: selectedFeatures.map((feature) => feature.data()),
           position: { x: position.x, y: position.y - 50 },
         }),
       );

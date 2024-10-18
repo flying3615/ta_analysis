@@ -2,18 +2,20 @@ import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-gener
 import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
 import { SelectOptions } from "@linzjs/lui/dist/components/LuiFormElements/LuiSelectInput/LuiSelectInput";
 import clsx from "clsx";
+import { uniq } from "lodash-es";
 import React, { useState } from "react";
 
 export interface LabelPropertiesProps {
   displayState: string;
   labelType: LabelDTOLabelTypeEnum;
-  fontStyle: string;
+  fontStyle: string | undefined;
   label: string;
   font: string;
   fontSize: string;
   textRotation: string;
   borderWidth: string | undefined;
   textAlignment: string;
+  diagramId: string;
 }
 
 const labelTypeOptions: SelectOptions[] = [
@@ -57,17 +59,62 @@ const borderWidthOptions: SelectOptions[] = [
   { value: "2", label: "2" },
 ];
 
-const LabelProperties = (props: LabelPropertiesProps) => {
-  const [displayState, setDisplayState] = useState<string>(props.displayState);
-  const [fontStyle, setFontStyle] = useState<string>(props.fontStyle);
-  const [labelText, setLabelText] = useState<string>(props.label);
+const getCommonPropertyValue = <T extends keyof LabelPropertiesProps>(
+  arr: LabelPropertiesProps[],
+  property: T,
+): string | undefined => {
+  const values = arr.map((item) => item[property]);
+  const uniqueValues = uniq(values);
+  return uniqueValues.length === 1 ? uniqueValues[0] : undefined;
+};
+
+const someButNotAllHavePropertyValue = <T extends keyof LabelPropertiesProps>(
+  arr: LabelPropertiesProps[],
+  property: T,
+  value: string | undefined,
+  checkIncludes?: boolean,
+) => {
+  let hasValue = false;
+  let notAllHaveValue = false;
+  if (checkIncludes && value) {
+    hasValue = arr.some((obj) => obj[property]?.includes(value));
+    notAllHaveValue = !arr.every((obj) => obj[property]?.includes(value));
+  } else {
+    hasValue = arr.some((obj) => obj[property] === value);
+    notAllHaveValue = !arr.every((obj) => obj[property] === value);
+  }
+  return hasValue && notAllHaveValue;
+};
+
+const areAllPageLabels = (arr: LabelPropertiesProps[]) => {
+  return arr.every((item) => item.diagramId === undefined);
+};
+
+const allHave00 = (arr: LabelPropertiesProps[]) => {
+  return arr.every((item) => item.label.includes('00"'));
+};
+
+const anyHasDisplayState = (arr: LabelPropertiesProps[], displayStates: string[]) => {
+  return arr.some((item) => displayStates.includes(item.displayState));
+};
+
+const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
+  const labelType = getCommonPropertyValue(props.data, "labelType");
+  const [displayState, setDisplayState] = useState<string | undefined>(
+    getCommonPropertyValue(props.data, "displayState"),
+  );
+  const [isBold, setIsBold] = useState<boolean>();
+  const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(props.data, "label"));
   const [hide00, setHide00] = useState<boolean>(false);
-  const [font, setFont] = useState<string>(props.font);
-  const [fontSize, setFontSize] = useState<string>(props.fontSize);
-  const [textRotation, setTextRotation] = useState<string>(props.textRotation);
+  const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(props.data, "font"));
+  const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(props.data, "fontSize"));
+  const [textRotation, setTextRotation] = useState<string | undefined>(
+    getCommonPropertyValue(props.data, "textRotation"),
+  );
   const [textRotationError, setTextRotationError] = useState<string>();
-  const [selectJustify, setSelectJustify] = useState(1);
-  const [borderWidth, setBorderWidth] = useState<string | undefined>(props.borderWidth);
+  const [justify, setJustify] = useState(1);
+  const [hasBorder, setHasBorder] = useState<boolean>(props.data.some((item) => item.borderWidth !== undefined));
+  const [borderWidth, setBorderWidth] = useState<string | undefined>(getCommonPropertyValue(props.data, "borderWidth"));
 
   const validateTextRotationInput = (value: string) => {
     const regex = /^[0-9]*\.?[0-9]*$/; // allows only decimal numbers
@@ -83,32 +130,33 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         <div className="row">
           <span style={{ flex: "1 1 50%" }}>
             <LuiCheckboxInput
-              isDisabled={([DisplayStateEnum.systemHide, DisplayStateEnum.systemDisplay] as string[]).includes(
-                displayState,
-              )}
+              // if any of the elements has displayState as systemHide or systemDisplay, disable the checkbox
+              isDisabled={anyHasDisplayState(props.data, [DisplayStateEnum.systemHide, DisplayStateEnum.systemDisplay])}
               label="Hide"
               value=""
               onChange={(e) => {
                 e.target.checked ? setDisplayState(DisplayStateEnum.hide) : setDisplayState(DisplayStateEnum.display);
               }}
-              isChecked={([DisplayStateEnum.hide, DisplayStateEnum.systemHide] as string[]).includes(displayState)}
+              isIndeterminate={!displayState}
+              isChecked={
+                displayState === undefined
+                  ? anyHasDisplayState(props.data, [DisplayStateEnum.systemHide, DisplayStateEnum.hide])
+                  : displayState === DisplayStateEnum.hide
+              }
             />
           </span>
           <span style={{ flex: "1 1 50%" }}>
             <LuiCheckboxInput
+              // if any of the elements has the substring "bold" in fontStyle, but not all, show indeterminate state
+              isIndeterminate={
+                someButNotAllHavePropertyValue(props.data, "fontStyle", "bold", true) && isBold === undefined
+              }
               label="Bold"
               value=""
               onChange={(e) => {
-                const newFontStyle = e.target.checked
-                  ? props.fontStyle === "italic"
-                    ? "boldItalic"
-                    : "bold"
-                  : props.fontStyle === "boldItalic"
-                    ? "italic"
-                    : "regular";
-                setFontStyle(newFontStyle);
+                setIsBold(e.target.checked);
               }}
-              isChecked={["boldItalic", "bold"].includes(fontStyle)}
+              isChecked={isBold ?? props.data.some((item) => item.fontStyle?.includes("bold"))}
             />
           </span>
         </div>
@@ -119,7 +167,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         <LuiTextInput
           label=""
           hideLabel
-          value={labelTypeOptions.find((option) => option.value === props.labelType)?.label}
+          value={labelTypeOptions.find((option) => option.value === labelType)?.label}
           inputProps={{ disabled: true }}
         />
       </div>
@@ -129,6 +177,9 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         <div className="row">
           <span style={{ flex: "1 1 70%" }}>
             <LuiTextInput
+              inputProps={{
+                disabled: !labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation,
+              }}
               label=""
               hideLabel
               value={labelText}
@@ -145,6 +196,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                 setHide00(e.target.checked);
               }}
               isChecked={hide00}
+              isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(props.data)}
             />
           </span>
         </div>
@@ -157,8 +209,9 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             <LuiSelectInput
               label=""
               hideLabel
+              placeholderText=" "
               options={fontOptions}
-              value={font}
+              value={font ?? ""}
               onChange={(e) => {
                 setFont(e.target.value);
               }}
@@ -169,8 +222,9 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             <LuiSelectInput
               label=""
               hideLabel
+              placeholderText=" "
               options={fontSizeOptions}
-              value={fontSize}
+              value={fontSize ?? ""}
               onChange={(e) => {
                 setFontSize(e.target.value);
               }}
@@ -197,20 +251,23 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         <span className="LuiTextInput-label-text">Justify</span>
         <LuiButtonGroup>
           <LuiButton
-            onClick={() => setSelectJustify(1)}
-            className={clsx(`lui-button lui-button-secondary`, selectJustify === 1 ? `lui-button-active` : "")}
+            onClick={() => setJustify(1)}
+            className={clsx(`lui-button lui-button-secondary`, justify === 1 ? `lui-button-active` : "")}
+            disabled={!areAllPageLabels(props.data)}
           >
             Left
           </LuiButton>
           <LuiButton
-            onClick={() => setSelectJustify(2)}
-            className={clsx(`lui-button lui-button-secondary`, selectJustify === 2 ? `lui-button-active` : "")}
+            onClick={() => setJustify(2)}
+            className={clsx(`lui-button lui-button-secondary`, justify === 2 ? `lui-button-active` : "")}
+            disabled={!areAllPageLabels(props.data)}
           >
             Center
           </LuiButton>
           <LuiButton
-            onClick={() => setSelectJustify(3)}
-            className={clsx(`lui-button lui-button-secondary`, selectJustify === 3 ? `lui-button-active` : "")}
+            onClick={() => setJustify(3)}
+            className={clsx(`lui-button lui-button-secondary`, justify === 3 ? `lui-button-active` : "")}
+            disabled={!areAllPageLabels(props.data)}
           >
             Right
           </LuiButton>
@@ -222,23 +279,29 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         <div className="row">
           <span style={{ flex: "1 1 30%" }}>
             <LuiCheckboxInput
+              //if any of the elements has borderWidth undefined, but not all, show indeterminate state
+              isIndeterminate={
+                someButNotAllHavePropertyValue(props.data, "borderWidth", undefined) && borderWidth === undefined
+              }
               label="Border"
               value=""
               onChange={(e) => {
+                setHasBorder(e.target.checked);
                 e.target.checked ? setBorderWidth("0.7") : setBorderWidth(undefined);
               }}
-              isChecked={!!borderWidth}
+              isChecked={hasBorder}
             />
           </span>
           <span style={{ flex: "1 1 70%", marginLeft: "8px" }}>
             <LuiSelectInput
               label=""
               hideLabel
+              placeholderText=" "
               options={borderWidthOptions}
-              selectProps={{ disabled: !borderWidth }}
-              value={fontSize}
+              selectProps={{ disabled: !hasBorder }}
+              value={borderWidth ?? ""}
               onChange={(e) => {
-                setFontSize(e.target.value);
+                setBorderWidth(e.target.value);
               }}
             />
           </span>

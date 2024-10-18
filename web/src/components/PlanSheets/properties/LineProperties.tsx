@@ -11,13 +11,15 @@ export interface LinePropertiesProps {
   originalStyle: string;
 }
 
-const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
+const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
+  const elemt = data[0];
+  if (!elemt) return;
   const {
     displayState = DisplayStateEnum.display,
     lineType = "observation",
     pointWidth = 1.0,
     originalStyle = "brokenSolid1",
-  } = data;
+  } = elemt;
 
   // render an SVG for a specific line type
   function renderLabelFor() {
