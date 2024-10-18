@@ -11,7 +11,6 @@ import {
   IEdgeData,
   INodeData,
   nodeDefinitionsFromData,
-  nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
@@ -130,7 +129,6 @@ const CytoscapeCanvas = ({
       layout: {
         name: "preset",
         fit: false,
-        positions: nodePositionsFromData(nodeData, cytoscapeCoordinateMapper),
       },
       // the stylesheet for the graph
       style: makeCytoscapeStylesheet(cytoscapeCoordinateMapper),

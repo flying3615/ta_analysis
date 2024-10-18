@@ -42,8 +42,11 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
             props.targetLabel.style("text-rotation", `${angle}deg`);
           }}
           onBlur={() => {
-            if (currentAngle !== labelAngle) {
-              updateActiveDiagramsAndPageFromCytoData(props.targetLabel);
+            if (props.targetLabel.data("textRotation") !== labelAngle) {
+              updateActiveDiagramsAndPageFromCytoData(
+                // update a clone to avoid render flicker
+                props.targetLabel.clone().data({ textRotation: labelAngle }),
+              );
             }
           }}
         />

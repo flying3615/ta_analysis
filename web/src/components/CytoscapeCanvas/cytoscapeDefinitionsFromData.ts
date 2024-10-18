@@ -40,10 +40,7 @@ export const nodeDefinitionsFromData = (
   return [
     { data: { id: "root", label: "" } },
     ...data.map((nodeDataEntry) => {
-      const isUserDefined = nodeDataEntry.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined;
-      const nodePositionPixels = isUserDefined
-        ? cytoscapeCoordMapper.planCoordToCytoscape(nodeDataEntry.position)
-        : { x: 0, y: 0 };
+      const nodePositionPixels = nodePositionFromData(nodeDataEntry, cytoscapeCoordMapper);
 
       return {
         group: "nodes" as ElementGroup,
@@ -66,12 +63,17 @@ export const getNodeData = (
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): INodeData => {
   const cyData = node.data();
-  const cyStyle = node.style();
   const diagramId = cyData["diagramId"];
 
-  const position = diagramId
-    ? cytoscapeCoordinateMapper.cytoscapeToGroundCoord(node.position(), diagramId)
-    : cytoscapeCoordinateMapper.pageLabelCytoscapeToCoord(node.position());
+  let position = { ...node.position() };
+  if (cyData.offsetX || cyData.offsetY) {
+    // remove any offset made during nodePositionFromData
+    position.x -= cyData.offsetX;
+    position.y -= cyData.offsetY;
+  }
+  position = diagramId
+    ? cytoscapeCoordinateMapper.cytoscapeToGroundCoord(position, diagramId)
+    : cytoscapeCoordinateMapper.pageLabelCytoscapeToCoord(position);
 
   const { id, label, ...properties } = cyData;
 
@@ -83,7 +85,6 @@ export const getNodeData = (
 
   if (label) {
     data.label = label;
-    properties["textRotation"] = cyStyle["text-rotation"].replace("deg", "");
   }
   return data;
 };
@@ -146,33 +147,46 @@ const diagramLabelNodePositioner = (
   nodePositionPixels.y += offsetMargin.y;
 };
 
+export const nodePositionFromData = (
+  node: INodeData,
+  cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
+): cytoscape.Position => {
+  let nodePositionPixels;
+
+  if (node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined) {
+    nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
+  } else if (
+    node.properties["lineType"] === "userDefined" ||
+    node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
+  ) {
+    nodePositionPixels = cytoscapeCoordinateMapper.pageLabelCoordToCytoscape(node.position);
+  } else {
+    const diagramId = node.properties["diagramId"];
+    if (typeof diagramId !== "number") {
+      throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
+    }
+    nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
+    //for diagram labels, we want the node to be positioned in the middle of the label
+    if (node.label && node.properties["textAlignment"] && !node.properties["symbolId"]) {
+      const { x, y } = { ...nodePositionPixels };
+      diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
+      // TODO: which is better?
+      node.properties["initialX"] = x;
+      node.properties["initialY"] = y;
+      node.properties["offsetX"] = nodePositionPixels.x - x;
+      node.properties["offsetY"] = nodePositionPixels.y - y;
+    }
+  }
+
+  return nodePositionPixels;
+};
+
 export const nodePositionsFromData = (
   nodeData: INodeData[],
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): cytoscape.NodePositionMap => {
   return nodeData.reduce((acc, node) => {
-    let nodePositionPixels;
-
-    if (node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined) {
-      nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
-    } else if (
-      node.properties["lineType"] === "userDefined" ||
-      node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined ||
-      node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
-    ) {
-      nodePositionPixels = cytoscapeCoordinateMapper.pageLabelCoordToCytoscape(node.position);
-    } else {
-      const diagramId = node.properties["diagramId"];
-      if (typeof diagramId !== "number") {
-        throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
-      }
-      nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
-      //for diagram labels, we want the node to be positioned in the middle of the label
-      if (node.label && node.properties["textAlignment"] && !node.properties["symbolId"]) {
-        diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
-      }
-    }
-
+    const nodePositionPixels = nodePositionFromData(node, cytoscapeCoordinateMapper);
     return {
       ...acc,
       [node.id]: nodePositionPixels,

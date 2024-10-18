@@ -247,6 +247,11 @@ function getMoveControlElements(
     const controlId = `moveStart${id}`;
 
     if (ele.isNode()) {
+      // label nodes move with
+      if (ele.data("label")) {
+        return;
+      }
+
       // control nodes are re-positioned during move; original node is updated after move
       controlNodes.push({
         data: {
@@ -381,9 +386,10 @@ function setPositions(
 
 function updateMovedElements(
   movedElements: CollectionReturnValue,
-  adjacentEdges: CollectionReturnValue,
-  startPositions: Record<string, Position>,
+  _adjacentEdges: CollectionReturnValue,
+  _startPositions: Record<string, Position>,
 ): CollectionReturnValue {
+  /*
   adjacentEdges.forEach((edge) => {
     const id = edge.id();
     const startPosition = startPositions[id];
@@ -406,6 +412,7 @@ function updateMovedElements(
 
     movedElements.merge(labels);
   });
+  */
 
   return movedElements;
 }
