@@ -22,9 +22,9 @@ export const TEST_PASSWORD: string = process.env.TEST_PASSWORD;
 const pwConfig: PlaywrightTestConfig = defineConfig({
   testDir: "./tests",
   expect: {
-    timeout: 30000, // Maximum time expect() should wait for the condition to be met.
+    timeout: process.env.CI ? 20_000 : 60_000, // 20 second timeout in CI, 60 seconds locally
   },
-  timeout: process.env.CI ? 30000 : 180000, // 30s timeout in CI, 3 minutes locally
+  timeout: process.env.CI ? 60_000 : 180_000, // 1 minute timeout in CI, 3 minutes locally
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

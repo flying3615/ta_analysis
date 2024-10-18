@@ -56,12 +56,13 @@ services:
     container_name: localstack
     image: localstack/localstack:latest
     ports:
-      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "4566:4566" # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559" # external services port range
     environment:
-      - SERVICES=dynamodb
       - DEBUG=1
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - DYNAMODB_REMOVE_EXPIRED_ITEMS=1
+      - SERVICES=dynamodb
     volumes:
       - ./test/e2e/localstack:/etc/localstack/init/ready.d
       - /var/run/docker.sock:/var/run/docker.sock
@@ -159,8 +160,8 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: 'http://auth-keycloak:8080/realms/landonline/protocol/openid-connect/certs'
       CLIENT_ID: survey-plangen-service
       CLIENT_SECRET: localclientsecret
-      GEOSERVER_URL: "http://host.docker.internal:14005/geoserver"
-      LOCALSTACK_URL: "http://host.docker.internal:4566"
+      GEOSERVER_URL: "http://localhost:14005/geoserver"
+      LOCALSTACK_URL: "http://localstack:4566"
       SPRING_APPLICATION_JSON: >
         { "landonline":{"auth":{"cors-configs":[{"pattern":"/**","allowed-origin-patterns":["http://localhost:[*]"]}]}} }
     ports:
@@ -169,6 +170,14 @@ services:
       authz:
         condition: service_healthy
       geoserver:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      stub-secure-file-upload:
+        condition: service_started
+      locking:
+        condition: service_healthy
+      wiremock:
         condition: service_healthy
     healthcheck:
       test: wget --spider http://localhost:8080/plan-generation/api/health
@@ -184,6 +193,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
+
   locking:
     container_name: lock-service
     image: "725496895483.dkr.ecr.ap-southeast-2.amazonaws.com/step/survey/landonline-lock-service:latest"
@@ -207,5 +217,17 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+
+  wiremock:
+    container_name: wiremock
+    image: 'wiremock/wiremock:latest'
+    ports:
+      - '13020:8080'
+    command: [ '--global-response-templating', '--verbose', '--enable-stub-cors' ]
+    environment:
+      - WIREMOCK_HOSTNAME=localhost
+    volumes:
+      - ./test/e2e/wiremock:/home/wiremock
+
 volumes:
   informix-db-data:

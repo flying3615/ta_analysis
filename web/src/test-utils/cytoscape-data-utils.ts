@@ -6,10 +6,14 @@ export const isPlaywrightTest = () => localStorage.getItem("isPlaywrightTest") =
 export const isStorybookTest = () => (window as any).isStorybook === true;
 
 /**
- * We need to access cytoscape data such as positions of nodes in playwright tests
+ * Updates the cytoscape state in the window variable so we can access cytoscape data such as positions of nodes in tests
  */
-export const saveCytoscapeState = (cytoscape: cytoscape.Core, testId: string) => {
+export const updateCytoscapeStateForTesting = (cytoscape: cytoscape.Core, testId: string) => {
+  if (!isPlaywrightTest() && !isStorybookTest()) {
+    return;
+  }
   const cytoscapeData = JSON.stringify(cytoscape.json());
   /* eslint-disable-next-line */
   (window as any).cytoscapeData = { [testId]: cytoscapeData }
+  console.debug(`Updated ${testId} cytoscapeData`);
 };

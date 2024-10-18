@@ -1,0 +1,26 @@
+{
+  "scenarioName": "SurveyInfo",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/survey/api/survey/([a-zA-Z0-9/-]*)/survey-info"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "localityName": "Otago",
+      "officeCode": "CRCH",
+      "description": "Lots 1 & 2 being a subdivision of Lots 27-29 DP 7441",
+      "givenNames": "Michelle Ann",
+      "surname": "Bain",
+      "datasetSeries": "LT",
+      "datasetId": "4000149",
+      "corporateName": "Cato Bolam Consultants Ltd (Orewa)",
+      "systemCodeDescription": "Survey",
+      "surveyDate": "2024-07-10T00:00:00"
+    },
+    "fixedDelayMilliseconds": 100
+  }
+}

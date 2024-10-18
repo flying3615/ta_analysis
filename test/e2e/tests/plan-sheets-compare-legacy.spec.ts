@@ -1,17 +1,28 @@
-/* eslint-disable */
 import { expect, test } from "@playwright/test";
 import * as fs from "fs";
 import path from "path";
 import pdf2img from "pdf-img-convert";
 import { PNG } from "pngjs";
-// TODO: unskip it when this ticket is fixed and get updated pdf from legacy for layout plan sheets
-// https://toitutewhenua.atlassian.net/browse/SJ-1756
-test.describe.skip("Layout Plan Sheets compare", () => {
+
+test.describe("Layout Plan Sheets compare", () => {
+  const pdfDirectoryPath = path.normalize(`${__dirname}/../compare/planSheetPdfs/`);
+  const imageDirectoryPath = path.normalize(`${__dirname}/../compare/planSheetImages/`);
+
+  test.beforeAll(() => {
+    fs.mkdirSync(imageDirectoryPath, { recursive: true });
+  });
+
+  test.afterAll(() => {
+    if (process.env.CI) {
+      // Copy to output directory when running in CI so it is included in the build artifacts
+      fs.cpSync(imageDirectoryPath, path.normalize(`${__dirname}/../output/planSheetImages/`), { recursive: true });
+    }
+  });
+
   [{ transactionId: 5000059 }, { transactionId: 5000060 }].forEach(({ transactionId }) => {
-    test(`Compare layout plan sheet with legacy for ${transactionId}`, async ({ page }) => {
-      const pdfDirectoryPath = path.normalize(`${__dirname}/../compare/planSheetPdfs/`);
-      const imageDirectoryPath = path.normalize(`${__dirname}/../compare/planSheetImages/`);
-      fs.mkdirSync(imageDirectoryPath, { recursive: true });
+    // TODO: unskip it when this ticket is fixed and get updated pdf from legacy for layout plan sheets
+    // https://toitutewhenua.atlassian.net/browse/SJ-1756
+    test.skip(`Compare layout plan sheet with legacy for ${transactionId}`, async ({ page }) => {
       const diffPath = `${imageDirectoryPath}/${transactionId}-diff.png`;
       const downloadPath = `${pdfDirectoryPath}/${transactionId}-new-app.pdf`;
 

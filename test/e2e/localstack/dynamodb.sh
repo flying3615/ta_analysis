@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This file must be marked as executable in linux (i.e. `chmod +x`), and must have LF line endings,
+# otherwise localstack won't be able to load it.
+
 export AWS_DEFAULT_REGION=ap-southeast-2
 
 awslocal dynamodb create-table \

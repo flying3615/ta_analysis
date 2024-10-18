@@ -33,7 +33,7 @@ In landonline-survey-plan-generation root directory launch the following docker 
 ### Set up test data
 
 We use flyway for importing test survey data, the same as in the backend.
-To import the data, run the `./setupTestData` script located in this directory.
+To import the data, run the `./setupTestData.sh` script located in this directory.
 
 To add test data, add a file with the name **Vxx__some_description.sql** in the `data` directory and update [README.md](data/README.md) file
 
@@ -72,5 +72,6 @@ You can run only one test or a set of test with the following command :
 
 ## CI Infra
 
-The `E2E_SECRETS` repository variable must be set in Github Actions.
-See [template/e2e_secrets.json](./template/e2e_secrets.json) for what this value should be.
+The `E2E_SECRETS` and `GHA_SECRETS_ENV` repository variables must be set in Github Actions.
+See the [template](./template) directory for an example of what this value should be.
+The actual value can be found in the shared survey LastPass folder. Make sure to update the entry in LastPass when updating the secret values.

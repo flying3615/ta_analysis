@@ -19,6 +19,7 @@ import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu.ts";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown.ts";
+import { updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
 import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
@@ -157,6 +158,7 @@ const CytoscapeCanvas = ({
       }
     });
 
+    updateCytoscapeStateForTesting(cyRef, testId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData, edgeData, diagrams, initZoom]);
 
