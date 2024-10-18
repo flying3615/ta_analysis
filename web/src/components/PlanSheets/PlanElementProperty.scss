@@ -1,32 +1,18 @@
-.LuiFloatingWindow-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.75);
-  z-index: 499;
-}
-
-.FloatingWindow-header {
-  .LuiFloatingWindow-buttons {
-    display: none;
+.PlanElement-container {
+  .WindowPanel-content {
+    flex-direction: column;
   }
-  .header-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
-.FloatingWindow-container {
-  flex-direction: column;
   .plan-element-properties {
     padding: 0 16px;
     max-width: 400px;
 
     .property-wrap {
       margin: 10px 0;
+
+      .LuiTextInput-input {
+        max-width: 400px;
+        text-overflow: ellipsis;
+      }
       .row {
         display: flex;
         align-items: center;

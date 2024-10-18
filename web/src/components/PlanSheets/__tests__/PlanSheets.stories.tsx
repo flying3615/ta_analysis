@@ -45,9 +45,9 @@ const queryClient = new QueryClient();
 
 const PlanSheetsTemplate = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LuiModalAsyncContextProvider>
-        <FeatureFlagProvider>
+    <LuiModalAsyncContextProvider>
+      <FeatureFlagProvider>
+        <QueryClientProvider client={queryClient}>
           <Provider store={cloneDeep(store)}>
             <ModalStoryWrapper>
               <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
@@ -56,9 +56,9 @@ const PlanSheetsTemplate = () => {
               </StorybookRouter>
             </ModalStoryWrapper>
           </Provider>
-        </FeatureFlagProvider>
-      </LuiModalAsyncContextProvider>
-    </QueryClientProvider>
+        </QueryClientProvider>
+      </FeatureFlagProvider>
+    </LuiModalAsyncContextProvider>
   );
 };
 
@@ -635,21 +635,6 @@ export const SelectLine: Story = {
   },
 };
 
-export const ShowLineMenu: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-  },
-};
-
 export const HideLine: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -668,23 +653,5 @@ export const HideLine: Story = {
     await sleep(500);
     clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
     await sleep(500);
-  },
-};
-
-export const ShowLineMenuProperties: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
-    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
-    await userEvent.click(propertiesMenuItem);
   },
 };

@@ -1,10 +1,12 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import { useContext } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
 import { SELECTED_DIAGRAM } from "@/components/PlanSheets/interactions/SelectedDiagram.tsx";
-import { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
+import PlanElementProperty, { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
@@ -24,6 +26,7 @@ export const usePlanSheetsContextMenu = () => {
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
+  const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
 
@@ -63,6 +66,7 @@ export const usePlanSheetsContextMenu = () => {
           position: { x: position.x, y: position.y - 50 },
         }),
       );
+      openPanel("Plan element property", () => <PlanElementProperty />);
     }
   };
 

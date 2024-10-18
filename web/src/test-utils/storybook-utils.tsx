@@ -1,4 +1,4 @@
-import { PanelInstanceContext } from "@linzjs/windows";
+import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext.ts";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
@@ -55,7 +55,9 @@ export const ModalStoryWrapper = ({ children }: { children: React.ReactNode }) =
 
   return (
     <div id="root">
-      <InnerModalWrapper>{children}</InnerModalWrapper>
+      <PanelsContextProvider baseZIndex={500}>
+        <InnerModalWrapper>{children}</InnerModalWrapper>
+      </PanelsContextProvider>
     </div>
   );
 };

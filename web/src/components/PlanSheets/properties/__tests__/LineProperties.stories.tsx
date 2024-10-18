@@ -5,20 +5,20 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
   clickAtCoordinates,
-  getCytoCanvas,
+  getCytoscapeNodeLayer,
   ModalStoryWrapper,
   RIGHT_MOUSE_BUTTON,
   sleep,
   StorybookRouter,
+  tabletLandscapeParameters,
 } from "@/test-utils/storybook-utils";
 
 export default {
-  title: "PlanSheets/Properties/LabelPropertiesPanel",
+  title: "PlanSheets/Properties/LinePropertiesPanel",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
@@ -43,20 +43,33 @@ const PlanSheetsTemplate = () => {
 export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
 };
+export const ShowLineMenu: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
 
-export const ShowLabelPropertiesPanel: Story = {
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+export const ShowLineMenuProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
     await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
-    const labelPosition = { clientX: 484, clientY: 269 };
-    clickAtCoordinates(target, labelPosition.clientX, labelPosition.clientY, RIGHT_MOUSE_BUTTON);
-    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
-    const propertiesButton = await within(contextMenu).findByText("Properties");
-    await userEvent.click(propertiesButton);
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
     await sleep(500);
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
+    await userEvent.click(propertiesMenuItem);
   },
 };

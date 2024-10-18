@@ -1,16 +1,23 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiCheckboxInput, LuiRadioInput, LuiTextInput } from "@linzjs/lui";
 import React from "react";
 
 import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs.ts";
 
 export interface LinePropertiesProps {
+  displayState: DisplayStateEnum;
   lineType: string;
   pointWidth: number;
   originalStyle: string;
 }
 
 const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
-  const { lineType = "observation", pointWidth = 1.0, originalStyle = "brokenSolid1" } = data;
+  const {
+    displayState = DisplayStateEnum.display,
+    lineType = "observation",
+    pointWidth = 1.0,
+    originalStyle = "brokenSolid1",
+  } = data;
 
   // render an SVG for a specific line type
   function renderLabelFor() {
@@ -40,20 +47,24 @@ const LineProperties = ({ data }: { data: LinePropertiesProps }) => {
     }
   }
 
+  const invisible = displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay;
+
   return (
     <div className="plan-element-properties">
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Visibility</span>
-        <LuiCheckboxInput value="false" label="Hide" onChange={() => {}} isChecked={false} />
+        <LuiCheckboxInput value="false" label="Hide" onChange={() => {}} isDisabled={true} isChecked={invisible} />
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Type</span>
-        <LuiTextInput
-          label=""
-          value={getLineTypeDisplayName(lineType)}
-          inputProps={{ disabled: true }}
-          onChange={() => false}
-        />
+        <div title={getLineTypeDisplayName(lineType)}>
+          <LuiTextInput
+            label=""
+            value={getLineTypeDisplayName(lineType)}
+            inputProps={{ disabled: true }}
+            onChange={() => false}
+          />
+        </div>
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Line style</span>

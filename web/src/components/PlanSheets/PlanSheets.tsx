@@ -21,7 +21,6 @@ import {
 import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput.tsx";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
 import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal.tsx";
-import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty.tsx";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppSelector } from "@/hooks/reduxHooks.ts";
@@ -37,7 +36,7 @@ import { useCreateAndMaintainLockQuery } from "@/queries/lock.ts";
 import { useGetPlanQuery } from "@/queries/plan.ts";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
 import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { getDiagramToMove, getPlanMode, getPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getDiagramToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { ElementHover } from "./interactions/ElementHover.tsx";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
@@ -108,7 +107,6 @@ const PlanSheets = () => {
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
   const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
-  const planProperty = useAppSelector(getPlanProperty);
   const diagramToMove = useAppSelector(getDiagramToMove);
   const {
     data: planData,
@@ -199,7 +197,6 @@ const PlanSheets = () => {
             <SelectElementHandler mode={planMode} />
           )}
           {diagramToMove && <MoveDiagramToPageModal diagram={diagramToMove} />}
-          {planProperty && <PlanElementProperty {...planProperty} />}
           <ElementHover />
           <PageNumberTooltips />
         </div>
