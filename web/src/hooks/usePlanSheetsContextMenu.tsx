@@ -65,7 +65,7 @@ export const usePlanSheetsContextMenu = () => {
         setPlanProperty({
           mode: planMode as PlanElementPropertyMode,
           data: selectedFeatures.map((feature) => feature.data()),
-          position: { x: position.x, y: position.y - 50 },
+          position: { x: position.x, y: position.y },
         }),
       );
       openPanel("Plan element property", () => <PlanElementProperty />);

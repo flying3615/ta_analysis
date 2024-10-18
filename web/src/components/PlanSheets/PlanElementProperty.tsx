@@ -82,7 +82,7 @@ const PlanElementProperty = () => {
       className="PlanElement-container"
       modal={true}
     >
-      <PanelHeader icon={headerContent.icon} disablePopout={true} disableClose={true} />
+      <PanelHeader icon={headerContent.icon} disablePopout={true} />
       <PanelContent>
         {component}
         <div className="footer">
