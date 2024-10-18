@@ -17,7 +17,6 @@ import {
   clickLayersSelectButton,
   findCellContains,
   getLayerSelectedState,
-  selectCell,
 } from "@/test-utils/storybook-ag-grid-utils.ts";
 import { PanelInstanceContextMock, sleep, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
 
@@ -79,8 +78,8 @@ RequiredLayersAreAutomaticallyEnabled.play = async ({ step }) => {
   await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
     await sleep(1000);
   });
-  await step("WHEN I tick the Labels checkbox for a layer that has a required layer", async () => {
-    await selectCell("51", "hideLabels", table);
+  await step("WHEN I select a layer that has a required layer", async () => {
+    await clickLayersSelectButton("51", table);
   });
   await step("THEN the required layer is automatically selected", async () => {
     await sleep(1000);

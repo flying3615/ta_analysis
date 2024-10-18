@@ -83,3 +83,24 @@
     fill: lui.$fuscous;
   }
 }
+
+.ag-checkbox-input-wrapper {
+  background-color: lui.$white;
+  &::after {
+    color: lui.$sea;
+  }
+  &.ag-disabled {
+    opacity: 1;
+    &:not(.ag-checked) {
+      background-color: lui.$lily;
+    }
+    input {
+      :disabled {
+        cursor: not-allowed;
+      }
+    }
+    &::after {
+      color: lui.$gray;
+    }
+  }
+}

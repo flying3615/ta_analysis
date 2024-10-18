@@ -84,17 +84,20 @@ export const useMaintainDiagramsGridColDefs = ({ refreshGrid, rows }: useMaintai
       GridEditBoolean(
         {
           field: "hideLabels",
+          colId: "label",
+          valueGetter: ({ data }) => !data.hideLabels,
+          valueSetter: ({ data, newValue }) => (data.hideLabels = !newValue),
           headerName: "Labels",
           headerClass: "GridHeaderAlignCenter",
           cellClass: "GridCellAlignCenter",
           minWidth: 72,
           maxWidth: 72,
+          editable: ({ data }) => data.selected,
         },
         {
           onClick: async ({ selectedRows, checked }) => {
             selectedRows.forEach((row) => {
-              if (!row.selected) toggleRow(row);
-              row.hideLabels = checked;
+              row.hideLabels = !checked;
             });
             refreshGrid();
             return true;
