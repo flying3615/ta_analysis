@@ -12,7 +12,7 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
-import { click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { click, getCytoCanvas, sleep, StorybookRouter, TestCanvas } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PageLabelInput",
@@ -44,6 +44,10 @@ const PlanSheetsTemplate = () => {
     </QueryClientProvider>
   );
 };
+
+const diagramLabelPosition = { clientX: 585, clientY: 296 };
+const diagramLabel2Position = { clientX: 490, clientY: 270 };
+const whiteSpace = { clientX: 585, clientY: 296 + 30 };
 
 export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
@@ -234,5 +238,45 @@ export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
       coords: pageLabelPosition,
     });
     await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+  },
+};
+
+export const HoverLabel: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const target = getCytoCanvas(await within(canvasElement).findByTestId("MainCytoscapeCanvas"));
+    await userEvent.pointer({ target: target, coords: diagramLabelPosition }); // label turns blue
+  },
+};
+
+export const DeselectLabel: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement);
+    await test.click(diagramLabelPosition);
+    await test.click(whiteSpace); // label is deselected
+  },
+};
+
+export const SelectMultipleLabels: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement);
+    await test.withCtrl(async () => {
+      await test.click(diagramLabelPosition);
+      await test.click(diagramLabel2Position);
+    });
+  },
+};
+
+export const DeselectMultipleLabels: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement);
+    await test.withCtrl(async () => {
+      await test.click(diagramLabelPosition);
+      await test.click(diagramLabel2Position);
+    });
+    await test.click(whiteSpace); // label is deselected
   },
 };

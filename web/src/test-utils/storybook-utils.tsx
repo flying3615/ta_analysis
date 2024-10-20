@@ -2,7 +2,9 @@ import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext.ts";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
+import { within } from "@storybook/test";
 import { fireEvent, userEvent, waitFor } from "@storybook/testing-library";
+import { UserEvent } from "@testing-library/user-event";
 import React, { PropsWithChildren, useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { Provider } from "react-redux";
@@ -174,6 +176,41 @@ export function getCytoscapeOffsetInCanvas(
 export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement): HTMLElement {
   // eslint-disable-next-line testing-library/no-node-access
   return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
+}
+
+export class TestCanvas {
+  user: UserEvent;
+  canvas: HTMLCanvasElement;
+
+  public static Create = async (canvasElement: HTMLElement, firstSelect = "Select Labels") => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    await user.click(await canvas.findByTitle(firstSelect));
+    await sleep(500);
+    return new TestCanvas(user, getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas")));
+  };
+
+  constructor(user: UserEvent, canvas: HTMLCanvasElement) {
+    this.user = user;
+    this.canvas = canvas;
+  }
+
+  withCtrl = async (action: () => Promise<void>) => {
+    await this.user.keyboard("{Control>}"); // Press Ctrl (without releasing it)
+    await action();
+    await this.user.keyboard("{/Control}");
+  };
+
+  click = async (
+    clientCoord: { clientX: number; clientY: number },
+    button: "MouseLeft" | "MouseRight" = "MouseLeft",
+  ) => {
+    await this.user.pointer({
+      keys: `[${button}]`,
+      target: this.canvas,
+      coords: clientCoord,
+    });
+  };
 }
 
 export interface MousePosition {
