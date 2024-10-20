@@ -245,7 +245,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       {
         id: `D${diagram.id}`,
         // as a parent node, position
-        position: { x: 1, y: 1 },
+        position: { x: 1, y: -1 },
         properties: {
           coordType: "",
           diagramId: diagram.id,

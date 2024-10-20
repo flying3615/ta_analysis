@@ -2,7 +2,9 @@ import { EventObjectNode, NodeSingular } from "cytoscape";
 import { useEffect, useState } from "react";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
+import { useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { getActivePageNumber } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { SelectedDiagram } from "./SelectedDiagram";
 
@@ -11,12 +13,16 @@ const SELECTOR_DIAGRAM = `node[elementType='${PlanElementType.DIAGRAM}']`;
 export function SelectDiagramHandler() {
   const { cyto } = useCytoscapeContext();
   // TODO: store selected diagram id in redux, so selection preserved after re-render
+  const activePageNumber = useAppSelector(getActivePageNumber);
   const [selectedDiagram, setSelectedDiagram] = useState<NodeSingular | undefined>();
+
+  useEffect(() => {
+    setSelectedDiagram(undefined);
+  }, [activePageNumber, setSelectedDiagram]);
 
   // select diagram
   useEffect(() => {
     const onSelect = (event: EventObjectNode) => {
-      console.log("select diagram", event.target, event.originalEvent?.clientX, event.originalEvent?.clientY);
       setSelectedDiagram(event.target);
     };
 

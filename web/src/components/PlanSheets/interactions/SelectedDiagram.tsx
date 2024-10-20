@@ -14,14 +14,14 @@ import { useEffect } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import {
   calculatePreviousDiagramAttributes,
   edgeSingularToEdgeData,
   nodeSingularToNodeData,
 } from "@/modules/plan/calculatePreviousDiagramAttributes.ts";
-import { setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActivePageNumber, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
 
@@ -49,8 +49,12 @@ export const SELECTED_DIAGRAM = "selected-diagram";
 export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
   const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
   const dispatch = useAppDispatch();
+  const diagrams = useAppSelector(getDiagrams);
+  const diagramDto = diagrams.find((d) => d.id === diagram.data().diagramId);
+  const activePageNumber = useAppSelector(getActivePageNumber);
+  const diagramOnDifferentPage = diagramDto?.pageRef !== activePageNumber;
   useEffect(() => {
-    if (!cyto || !cytoCanvas || !cytoCoordMapper) {
+    if (!cyto || !cytoCanvas || !cytoCoordMapper || diagramOnDifferentPage) {
       return;
     }
     const diagramExtent = getDiagramDataAndExtent(cytoCoordMapper, diagram);
@@ -183,7 +187,15 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
 
       removeControlClasses();
     };
-  }, [cyto, cytoCanvas, cytoCoordMapper, diagram, updateActiveDiagramsAndPageFromCytoData, dispatch]);
+  }, [
+    cyto,
+    cytoCanvas,
+    cytoCoordMapper,
+    diagram,
+    updateActiveDiagramsAndPageFromCytoData,
+    dispatch,
+    diagramOnDifferentPage,
+  ]);
 
   return <></>;
 }
