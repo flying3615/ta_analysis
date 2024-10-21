@@ -21,7 +21,7 @@ import {
   edgeSingularToEdgeData,
   nodeSingularToNodeData,
 } from "@/modules/plan/calculatePreviousDiagramAttributes.ts";
-import { getActivePageNumber, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActivePage, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
 
 import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
 
@@ -51,8 +51,8 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
   const dispatch = useAppDispatch();
   const diagrams = useAppSelector(getDiagrams);
   const diagramDto = diagrams.find((d) => d.id === diagram.data().diagramId);
-  const activePageNumber = useAppSelector(getActivePageNumber);
-  const diagramOnDifferentPage = diagramDto?.pageRef !== activePageNumber;
+  const activePage = useAppSelector(getActivePage);
+  const diagramOnDifferentPage = diagramDto?.pageRef !== activePage?.id;
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper || diagramOnDifferentPage) {
       return;
