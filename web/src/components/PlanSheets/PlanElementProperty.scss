@@ -4,13 +4,11 @@
   }
   .plan-element-properties {
     padding: 0 16px;
-    max-width: 400px;
 
     .property-wrap {
       margin: 10px 0;
 
       .LuiTextInput-input {
-        max-width: 400px;
         text-overflow: ellipsis;
       }
       .row {
@@ -20,12 +18,24 @@
           display: flex;
           align-items: center;
         }
+        .labelTextarea {
+          display: flex;
+          height: 64px;
+          width: 100%;
+          resize: none;
+        }
       }
     }
 
     .LuiCheckboxInput,
     .LuiTextInput {
       margin-bottom: 0;
+    }
+
+    .LuiCheckboxInput {
+      span {
+        font-weight: 400;
+      }
     }
 
     .svg-container {

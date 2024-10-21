@@ -15,7 +15,7 @@ export interface LabelPropertiesProps {
   textRotation: string;
   borderWidth: string | undefined;
   textAlignment: string;
-  diagramId: string;
+  diagramId: string | undefined;
 }
 
 const labelTypeOptions: SelectOptions[] = [
@@ -175,30 +175,29 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Text</span>
         <div className="row">
-          <span style={{ flex: "1 1 70%" }}>
-            <LuiTextInput
-              inputProps={{
-                disabled: !labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation,
-              }}
-              label=""
-              hideLabel
-              value={labelText}
+          <span style={{ flex: `${labelType === LabelDTOLabelTypeEnum.obsBearing ? "1 1 65%" : "1 1 100%"}` }}>
+            <textarea
+              disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
+              value={props.data.length === 1 ? labelText : ""}
               onChange={(e) => {
                 setLabelText(e.target.value);
               }}
+              className={clsx("PageLabelInput labelTextarea", { error: false })}
             />
           </span>
-          <span style={{ flex: "1 1 30%", marginLeft: "8px" }}>
-            <LuiCheckboxInput
-              label="Hide 00"
-              value=""
-              onChange={(e) => {
-                setHide00(e.target.checked);
-              }}
-              isChecked={hide00}
-              isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(props.data)}
-            />
-          </span>
+          {labelType === LabelDTOLabelTypeEnum.obsBearing && (
+            <span style={{ flex: "1 1 35%", marginLeft: "8px" }}>
+              <LuiCheckboxInput
+                label="Hide 00"
+                value=""
+                onChange={(e) => {
+                  setHide00(e.target.checked);
+                }}
+                isChecked={hide00}
+                isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(props.data)}
+              />
+            </span>
+          )}
         </div>
       </div>
 

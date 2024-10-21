@@ -35,7 +35,7 @@ const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
           icon: "ic_format_lines_text",
           title: "Label properties",
         },
-        startHeight: 685,
+        startHeight: 705,
       };
     default:
       return {
@@ -53,7 +53,7 @@ const PlanElementProperty = () => {
   const dispatch = useAppDispatch();
   const planElementProperty = useAppSelector(getPlanProperty);
   const { component, headerContent, startHeight } = planModeConfig(planElementProperty as PlanPropertyPayload);
-  const maxPanelWidth: number = 400;
+  const maxPanelWidth: number = 320;
   const { panelClose } = useContext(PanelInstanceContext);
 
   if (!planElementProperty) return;
@@ -76,9 +76,10 @@ const PlanElementProperty = () => {
   return (
     <Panel
       title={headerContent.title}
-      size={{ width: 400, height: startHeight }}
+      size={{ width: maxPanelWidth, height: startHeight }}
       position={initialPosition}
       maxWidth={maxPanelWidth}
+      minWidth={maxPanelWidth}
       className="PlanElement-container"
       modal={true}
     >
