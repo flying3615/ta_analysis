@@ -359,14 +359,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "edge#theMoveVector",
-      style: {
-        "line-color": hotPink,
-        "line-dash-pattern": [cytoscapeMmWidth, cytoscapeMmWidth],
-        "target-arrow-color": hotPink,
-      },
-    },
-    {
       selector: ".transparent,[invisible]",
       style: {
         opacity: 0,

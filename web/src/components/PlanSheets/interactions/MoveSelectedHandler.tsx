@@ -10,7 +10,6 @@ import {
   InputEventObject,
   NodeDefinition,
   Position,
-  SingularElementReturnValue,
 } from "cytoscape";
 import { useEffect } from "react";
 
@@ -85,7 +84,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     let moveElementsExtent: BoundingBox12 | undefined;
     let moveStart: Position | undefined;
     let moveStartPositions: Record<string, Position> | undefined;
-    let moveLocation: SingularElementReturnValue | undefined;
 
     const addContainerClass = () => {
       cytoCanvas.classList.add(CONTAINER_CLASS_MOVABLE);
@@ -96,10 +94,9 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
         // only start move if ctrl/shift not pressed
         return;
       }
-      moveControls = cyto.add(getMoveControlElements(event, movingElements, adjacentEdges));
+      moveControls = cyto.add(getMoveControlElements(movingElements, adjacentEdges));
       // set extent based on selection, not related
       moveElementsExtent = selectedElements.boundingBox();
-      moveLocation = moveControls.$id("theMoveLocation");
       moveStart = event.position;
       moveStartPositions = getPositions(movingElements.union(adjacentEdges));
 
@@ -124,7 +121,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
 
       moveControls = undefined;
       moveElementsExtent = undefined;
-      moveLocation = undefined;
       moveStart = undefined;
       moveStartPositions = undefined;
     };
@@ -153,7 +149,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
      * @returns Position representing (page-constrained) dx/dy move vector.
      */
     const updateMove = (event: InputEventObject): Position | undefined => {
-      if (!moveElementsExtent || !moveLocation || !moveStart || !moveStartPositions) {
+      if (!moveElementsExtent || !moveStart || !moveStartPositions) {
         return;
       }
 
@@ -165,7 +161,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       );
       const dx = newExtent.x1 - moveElementsExtent.x1;
       const dy = newExtent.y1 - moveElementsExtent.y1;
-      moveLocation.position({ x: moveStart.x + dx, y: moveStart.y + dy });
       setPositions(movingElements, moveStartPositions, dx, dy);
 
       if (dx === 0 && dy === 0) {
@@ -213,33 +208,11 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
  *   collection of move controls.
  */
 function getMoveControlElements(
-  startEvent: EventObjectEdge | EventObjectNode,
   movingElements: CollectionReturnValue,
   adjacentEdges: CollectionReturnValue,
 ): ElementDefinition[] {
   const controlEdges: EdgeDefinition[] = [];
   const controlNodes: NodeDefinition[] = [];
-
-  // vector showing start/end of move
-  controlNodes.push(
-    {
-      group: "nodes",
-      data: { id: "theMoveStart" },
-      position: { ...startEvent.position },
-      classes: [ELEMENT_CLASS_MOVE_HIDE],
-    },
-    {
-      group: "nodes",
-      data: { id: "theMoveLocation" },
-      position: { ...startEvent.position },
-      classes: [ELEMENT_CLASS_MOVE_HIDE],
-    },
-  );
-  controlEdges.push({
-    group: "edges",
-    data: { id: "theMoveVector", source: "theMoveStart", target: "theMoveLocation" },
-    classes: [ELEMENT_CLASS_MOVE_VECTOR],
-  });
 
   // clone moving elements, adding move vectors to show change
   movingElements.forEach((ele) => {
@@ -262,24 +235,15 @@ function getMoveControlElements(
         position: { ...ele.position() },
       });
 
-      if (
-        // for primary node (already has "theMoveVector")
-        startEvent.target === ele ||
-        // for broken/invisible line nodes
-        ele.data("invisible") ||
-        // for label nodes
-        ele.data("label")
-      ) {
-        // do not add move vector
-        return;
+      // do not add move vector for broken/invisible line nodes
+      if (!ele.data("invisible")) {
+        // move vector from "control" node to moving node
+        controlEdges.push({
+          group: "edges",
+          data: { id: `moveVector${id}`, source: controlId, target: id },
+          classes: [ELEMENT_CLASS_MOVE_VECTOR],
+        });
       }
-
-      // move vector from "control" node to moving node
-      controlEdges.push({
-        group: "edges",
-        data: { id: `moveVector${id}`, source: controlId, target: id },
-        classes: [ELEMENT_CLASS_MOVE_VECTOR],
-      });
     }
 
     if (ele.isEdge()) {
