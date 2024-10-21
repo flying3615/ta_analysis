@@ -8,21 +8,17 @@ import { Feature, Polygon } from "geojson";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import {
   error32103_newShapeMustOverlapDiagram,
   error32104_invalidDiagram,
-} from "@/components/DefineDiagrams/prefabErrors.tsx";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import {
-  DrawEndProps,
-  DrawInteractionType,
-  useOpenLayersDrawInteraction,
-} from "@/hooks/useOpenLayersDrawInteraction.ts";
-import { getOpenlayersQueryDiagram } from "@/queries/diagrams.ts";
-import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation.ts";
-import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { numericToCartesian } from "@/util/mapUtil.ts";
+} from "@/components/DefineDiagrams/prefabErrors";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { DrawEndProps, DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
+import { getOpenlayersQueryDiagram } from "@/queries/diagrams";
+import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { numericToCartesian } from "@/util/mapUtil";
 
 export interface useRemoveRtLineProps {
   transactionId: number;

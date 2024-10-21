@@ -13,14 +13,14 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
-import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder.ts";
-import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
-import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
 import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
-import { store } from "@/redux/store.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { store } from "@/redux/store";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import {
   clickAtCoordinates,
   getCytoscapeNodeLayer,
@@ -32,7 +32,7 @@ import {
   StorybookRouter,
   tabletLandscapeParameters,
 } from "@/test-utils/storybook-utils";
-import { downloadBlob } from "@/util/downloadHelper.ts";
+import { downloadBlob } from "@/util/downloadHelper";
 
 export default {
   title: "PlanSheets",

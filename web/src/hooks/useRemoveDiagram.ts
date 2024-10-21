@@ -4,14 +4,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch } from "@/hooks/reduxHooks";
 import { apiConfig } from "@/queries/apiConfig";
-import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
-import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
-import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
-import { useShowToast } from "@/util/showToast.tsx";
-import { s } from "@/util/stringUtil.ts";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams";
+import { getDiagramLabelsQueryKey } from "@/queries/labels";
+import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { byId, useQueryDataUpdate } from "@/util/queryUtil";
+import { useShowToast } from "@/util/showToast";
+import { s } from "@/util/stringUtil";
 
 export interface useRemoveDiagramsProps {
   transactionId: number;

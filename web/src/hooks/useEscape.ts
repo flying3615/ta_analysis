@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useConstFunction } from "@/hooks/useConstFunction.ts";
+import { useConstFunction } from "@/hooks/useConstFunction";
 
 export interface useEscapeKeyProps {
   enabled?: boolean;

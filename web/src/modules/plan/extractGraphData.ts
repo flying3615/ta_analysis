@@ -12,7 +12,7 @@ import { chunk, flatten, negate, zip } from "lodash-es";
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { SYMBOLS_FONT } from "@/constants";
-import { createNewNode } from "@/util/mapUtil.ts";
+import { createNewNode } from "@/util/mapUtil";
 
 import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
 

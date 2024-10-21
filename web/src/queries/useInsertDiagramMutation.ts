@@ -1,15 +1,15 @@
 import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
-import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client/src/apis/DiagramsControllerApi.ts";
+import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client/src/apis/DiagramsControllerApi";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 
-import { IFeatureSourceDiagram, sortByDiagramsByType } from "@/components/DefineDiagrams/featureMapper.ts";
-import { apiConfig } from "@/queries/apiConfig.ts";
-import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
-import { useDiagramLabelsHook } from "@/queries/labels.ts";
-import { cartesianToNumeric } from "@/util/mapUtil.ts";
-import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
-import { useShowToast } from "@/util/showToast.tsx";
+import { IFeatureSourceDiagram, sortByDiagramsByType } from "@/components/DefineDiagrams/featureMapper";
+import { apiConfig } from "@/queries/apiConfig";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams";
+import { useDiagramLabelsHook } from "@/queries/labels";
+import { cartesianToNumeric } from "@/util/mapUtil";
+import { byId, useQueryDataUpdate } from "@/util/queryUtil";
+import { useShowToast } from "@/util/showToast";
 
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.

@@ -21,10 +21,10 @@ import {
   drawInteractionBoundaryBorderError,
   drawInteractionBoundaryFill,
   drawInteractionBoundaryFillError,
-} from "@/components/DefineDiagrams/diagramStyles.ts";
-import { useConstFunction } from "@/hooks/useConstFunction.ts";
-import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { geometryToLatLongCartesian, geometryToLatLongCoordinates } from "@/util/mapUtil.ts";
+} from "@/components/DefineDiagrams/diagramStyles";
+import { useConstFunction } from "@/hooks/useConstFunction";
+import { useHasChanged } from "@/hooks/useHasChanged";
+import { geometryToLatLongCartesian, geometryToLatLongCoordinates } from "@/util/mapUtil";
 
 type ExtendedDrawInteractionType = "Rectangle" | "Line";
 

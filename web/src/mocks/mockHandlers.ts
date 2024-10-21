@@ -2,22 +2,22 @@ import { AsyncTaskDTOTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { http, HttpHandler, HttpResponse } from "msw";
 
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
-import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder.ts";
-import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder.ts";
-import { LinesBuilder } from "@/mocks/builders/LinesBuilder.ts";
-import { mockDiagramLayerNames } from "@/mocks/data/mockDiagramLayerNames.ts";
-import { mockDiagramLayerTypes } from "@/mocks/data/mockDiagramLayerTypes.ts";
-import { mockDiagrams } from "@/mocks/data/mockDiagrams.ts";
-import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences.ts";
-import { mockLabels } from "@/mocks/data/mockLabels.ts";
-import { mockLines } from "@/mocks/data/mockLines.ts";
-import { mockMaintainDiagramLayersByDiagram } from "@/mocks/data/mockMaintainDiagramLayersByDiagram.ts";
-import { mockMaintainDiagramLayersByDiagramType } from "@/mocks/data/mockMaintainDiagramLayersByDiagramType.ts";
-import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
-import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels.ts";
-import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
-import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors.ts";
+import { DiagramsBuilder } from "@/mocks/builders/DiagramsBuilder";
+import { LabelsBuilder } from "@/mocks/builders/LabelsBuilder";
+import { LinesBuilder } from "@/mocks/builders/LinesBuilder";
+import { mockDiagramLayerNames } from "@/mocks/data/mockDiagramLayerNames";
+import { mockDiagramLayerTypes } from "@/mocks/data/mockDiagramLayerTypes";
+import { mockDiagrams } from "@/mocks/data/mockDiagrams";
+import { mockLabelPreferences } from "@/mocks/data/mockLabelPreferences";
+import { mockLabels } from "@/mocks/data/mockLabels";
+import { mockLines } from "@/mocks/data/mockLines";
+import { mockMaintainDiagramLayersByDiagram } from "@/mocks/data/mockMaintainDiagramLayersByDiagram";
+import { mockMaintainDiagramLayersByDiagramType } from "@/mocks/data/mockMaintainDiagramLayersByDiagramType";
+import { mockMarks, unmarkedPointBuilder } from "@/mocks/data/mockMarks";
+import { centreLineParcel, mockPrimaryParcels, nonPrimaryParcel } from "@/mocks/data/mockParcels";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors";
 import {
   failedRegeneratePlanTaskId,
   failedUpdatePlanTaskId,

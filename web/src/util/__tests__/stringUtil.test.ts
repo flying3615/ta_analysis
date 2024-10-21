@@ -1,4 +1,4 @@
-import { s, wrapText } from "@/util/stringUtil.ts";
+import { s, wrapText } from "@/util/stringUtil";
 
 describe("Pluralise", () => {
   test("s", () => {

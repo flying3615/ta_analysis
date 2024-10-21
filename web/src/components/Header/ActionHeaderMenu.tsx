@@ -3,10 +3,10 @@ import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import { MenuHeader, MenuItem, MenuState } from "@szhsin/react-menu";
 import { useEffect, useRef, useState } from "react";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import { ActionMenuButton } from "@/components/Header/ActionMenuButton";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { useConstFunction } from "@/hooks/useConstFunction.ts";
+import { useConstFunction } from "@/hooks/useConstFunction";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 
 interface ActionHeaderMenuItemProps {

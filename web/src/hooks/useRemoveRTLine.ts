@@ -4,15 +4,15 @@ import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
-import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook";
 import { apiConfig } from "@/queries/apiConfig";
-import { getLinesQueryKey } from "@/queries/lines.ts";
-import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { clickedFeatureFilter } from "@/util/mapUtil.ts";
-import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
-import { useShowToast } from "@/util/showToast.tsx";
-import { s } from "@/util/stringUtil.ts";
+import { getLinesQueryKey } from "@/queries/lines";
+import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { clickedFeatureFilter } from "@/util/mapUtil";
+import { byId, useQueryDataUpdate } from "@/util/queryUtil";
+import { useShowToast } from "@/util/showToast";
+import { s } from "@/util/stringUtil";
 
 export interface useRemoveRtLineProps {
   transactionId: number;

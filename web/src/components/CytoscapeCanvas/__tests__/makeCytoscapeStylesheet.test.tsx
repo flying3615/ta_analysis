@@ -1,9 +1,9 @@
 import { render } from "@testing-library/react";
 import cytoscape from "cytoscape";
 
-import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
+import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("makeCytoscapeStylesheet", () => {

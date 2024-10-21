@@ -6,17 +6,17 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Link, Route } from "react-router-dom";
 
-import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
-import { PlanSheetsHeaderButtons } from "@/components/PlanSheets/PlanSheetsHeaderButtons.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter";
+import { PlanSheetsHeaderButtons } from "@/components/PlanSheets/PlanSheetsHeaderButtons";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
-import { server } from "@/mocks/mockServer.ts";
-import { Paths } from "@/Paths.ts";
-import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
-import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { server } from "@/mocks/mockServer";
+import { Paths } from "@/Paths";
+import { ExternalSurveyInfoDto } from "@/queries/survey";
+import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {

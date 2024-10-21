@@ -1,7 +1,7 @@
 import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { cloneDeep, compact } from "lodash-es";
 
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 export interface LookupSourceResult {
   result: DiagramDTO | CoordinateDTO | LineDTO | LabelDTO;

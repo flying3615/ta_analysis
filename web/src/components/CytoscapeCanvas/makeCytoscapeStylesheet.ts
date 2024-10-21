@@ -2,8 +2,8 @@ import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { Stylesheet } from "cytoscape";
 
 import compassSvg from "@/assets/compass.svg";
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods";
 import {
   circleLabel,
   fontStyle,
@@ -13,10 +13,10 @@ import {
   svgDataForSymbolFun,
   textJustification,
   textRotationClockwiseFromH,
-} from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
+} from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
-import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
+import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling";
+import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
   [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState")) ? 0.2 : 1;

@@ -1,6 +1,6 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 
 describe("CytoscapeCoordinateMapper", () => {
   const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(

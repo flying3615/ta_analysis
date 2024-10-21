@@ -1,17 +1,17 @@
 import { LuiButton, LuiIcon, LuiTooltip } from "@linzjs/lui";
 import { right } from "@popperjs/core";
 
-import { DiagramDisplay } from "@/components/PlanSheets/DiagramList.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { DiagramDisplay } from "@/components/PlanSheets/DiagramList";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   getActivePageNumber,
   getActivePageRefFromPageNumber,
   getActiveSheet,
   getPageNumberFromPageRef,
   setDiagramPageRef,
-} from "@/redux/planSheets/planSheetsSlice.ts";
+} from "@/redux/planSheets/planSheetsSlice";
 
 interface IDiagramTileComponentProps {
   diagramDisplay: DiagramDisplay;

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReactElement, useState } from "react";
 
-import { useHasChanged } from "@/hooks/useHasChanged.ts";
+import { useHasChanged } from "@/hooks/useHasChanged";
 
 describe("useHasChanged", () => {
   let extHasChanged: boolean | undefined = undefined;

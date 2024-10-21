@@ -6,7 +6,7 @@ import {
   LinesResponseDTO,
   SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner.ts";
+import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { sortBy } from "lodash-es";
 

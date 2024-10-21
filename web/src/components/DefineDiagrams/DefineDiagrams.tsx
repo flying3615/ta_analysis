@@ -31,18 +31,18 @@ import {
   underlyingParcelsLayer,
   underlyingRoadCentreLine,
   vectorsLayer,
-} from "@/components/DefineDiagrams/MapLayers.ts";
+} from "@/components/DefineDiagrams/MapLayers";
 import Header from "@/components/Header/Header";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import PlanKey from "@/components/PlanKey/PlanKey";
-import { useHasChanged } from "@/hooks/useHasChanged.ts";
+import { useHasChanged } from "@/hooks/useHasChanged";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock.ts";
+import { useCreateAndMaintainLockQuery } from "@/queries/lock";
 import { PrepareDatasetError, usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
-import { metersToLatLongCoordinate } from "@/util/mapUtil.ts";
+import { metersToLatLongCoordinate } from "@/util/mapUtil";
 
 import { DefineDiagramMenuButtons } from "./DefineDiagramHeaderButtons";
 import { prepareDatasetErrorModal } from "./prepareDatasetErrorModal";

@@ -2,7 +2,7 @@ import { LinesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { useQuery } from "@tanstack/react-query";
 
-import { getLinesForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
+import { getLinesForOpenLayers } from "@/components/DefineDiagrams/featureMapper";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenQuery } from "@/queries/types";
 

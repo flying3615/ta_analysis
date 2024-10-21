@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 
-import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { diagrams, lineEdges, markNodes } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 import CytoscapeCanvas from "../CytoscapeCanvas";
 

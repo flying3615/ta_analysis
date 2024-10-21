@@ -1,6 +1,6 @@
 import { IMarks, PointGeoJSON, PointGeoJSONTypeEnum } from "@linz/survey-plan-generation-api-client";
 
-import { CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder.ts";
+import { CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder";
 
 export class MarksBuilder extends CommonBuilder<MarksBuilder> {
   private constructor(

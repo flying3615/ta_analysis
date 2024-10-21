@@ -7,8 +7,8 @@ import type {
 import { LabelPreferencesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { useQuery } from "@tanstack/react-query";
 
-import { apiConfig } from "@/queries/apiConfig.ts";
-import { usePrepareDatasetQuery } from "@/queries/prepareDataset.ts";
+import { apiConfig } from "@/queries/apiConfig";
+import { usePrepareDatasetQuery } from "@/queries/prepareDataset";
 
 export interface LabelPreferenceDTOWithId extends LabelPreferenceDTO {
   id: string;

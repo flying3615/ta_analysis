@@ -4,7 +4,6 @@
     "module": "ESNext",
     "outDir": "build",
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

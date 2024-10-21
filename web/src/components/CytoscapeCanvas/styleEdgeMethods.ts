@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import { getLineDashPattern, LineStyle } from "@/modules/plan/styling.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { getLineDashPattern, LineStyle } from "@/modules/plan/styling";
 
 export const getEdgeDashPattern = (
   ele: cytoscape.EdgeSingular,

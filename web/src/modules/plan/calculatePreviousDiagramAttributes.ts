@@ -1,7 +1,7 @@
 import { BoundingBox12, EdgeSingular, NodeSingular } from "cytoscape";
 import { compact, uniq } from "lodash-es";
 
-import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 
 export interface PageEdgeData {
   id: string;

@@ -1,6 +1,6 @@
 import { DisplayStateEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 
-import { BaseBuilder } from "@/mocks/builders/BaseBuilder.ts";
+import { BaseBuilder } from "@/mocks/builders/BaseBuilder";
 
 export class LabelDTOBuilder implements BaseBuilder<LabelDTO> {
   constructor(

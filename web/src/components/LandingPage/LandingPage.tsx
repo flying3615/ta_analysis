@@ -6,14 +6,14 @@ import { useContext } from "react";
 import { generatePath, Link } from "react-router-dom";
 
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
-import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
-import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
-import { luiColors } from "@/constants.tsx";
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { Paths } from "@/Paths.ts";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock.ts";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
+import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
+import { luiColors } from "@/constants";
+import { useTransactionId } from "@/hooks/useTransactionId";
+import { Paths } from "@/Paths";
+import { useCreateAndMaintainLockQuery } from "@/queries/lock";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
 const LandingPage = () => {

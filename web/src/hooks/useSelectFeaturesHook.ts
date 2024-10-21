@@ -7,9 +7,9 @@ import SimpleGeometry from "ol/geom/SimpleGeometry";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useContext, useEffect, useMemo, useRef } from "react";
 
-import { useConstFunction } from "@/hooks/useConstFunction.ts";
-import { useHasChanged } from "@/hooks/useHasChanged.ts";
-import { geometryToLatLongCoordinates, getClickedFeatureId, getFeatureId } from "@/util/mapUtil.ts";
+import { useConstFunction } from "@/hooks/useConstFunction";
+import { useHasChanged } from "@/hooks/useHasChanged";
+import { geometryToLatLongCoordinates, getClickedFeatureId, getFeatureId } from "@/util/mapUtil";
 
 export interface useSelectFeaturesProps {
   enabled: boolean;

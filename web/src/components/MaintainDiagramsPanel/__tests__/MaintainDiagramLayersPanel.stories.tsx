@@ -1,6 +1,6 @@
 import "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.scss";
 
-import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick.ts";
+import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { PanelsContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
@@ -9,16 +9,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
-import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
-import { handlers } from "@/mocks/mockHandlers.ts";
-import { Paths } from "@/Paths.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import {
-  clickLayersSelectButton,
-  findCellContains,
-  getLayerSelectedState,
-} from "@/test-utils/storybook-ag-grid-utils.ts";
-import { PanelInstanceContextMock, sleep, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
+import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
+import { handlers } from "@/mocks/mockHandlers";
+import { Paths } from "@/Paths";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { clickLayersSelectButton, findCellContains, getLayerSelectedState } from "@/test-utils/storybook-ag-grid-utils";
+import { PanelInstanceContextMock, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 const queryClient = new QueryClient();
 export default {

@@ -5,7 +5,7 @@ import PageManager from "@/components/Footer/PageManager";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { mockStore } from "@/test-utils/store-mock";
 
 describe("PageManager", () => {
   const mockReduxStore = setupStore({

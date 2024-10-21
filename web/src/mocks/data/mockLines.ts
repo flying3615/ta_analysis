@@ -1,6 +1,6 @@
 import { LinesResponseDTOLinesInnerSymbolTypeEnum as LinesSymbolType } from "@linz/survey-plan-generation-api-client";
 
-import { linesBuilderTestOrigin } from "@/mocks/builders/LinesBuilder.ts";
+import { linesBuilderTestOrigin } from "@/mocks/builders/LinesBuilder";
 
 export const mockLines = () =>
   linesBuilderTestOrigin()

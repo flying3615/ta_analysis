@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 
-import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   edgeDefinitionsFromData,
   getEdgeData,
@@ -10,7 +10,7 @@ import {
   INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
-} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { edgeSingular, nodeSingular } from "@/test-utils/cytoscape-utils";
 
 const inputNodes = [

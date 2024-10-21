@@ -15,21 +15,21 @@ import {
   diagramStyles,
   diagramStylesSelected,
   userDiagramStylesSelectable,
-} from "@/components/DefineDiagrams/diagramStyles.ts";
-import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper.ts";
-import { labelStyles, labelStylesSelected } from "@/components/DefineDiagrams/labelStyles.ts";
+} from "@/components/DefineDiagrams/diagramStyles";
+import { getDiagramsForOpenLayers, getLabelsForOpenLayers } from "@/components/DefineDiagrams/featureMapper";
+import { labelStyles, labelStylesSelected } from "@/components/DefineDiagrams/labelStyles";
 import {
   ctlineSelectableStyles,
   lineStyle_selectable,
   lineStyle_selected,
   lineStyles,
-} from "@/components/DefineDiagrams/lineStyles.ts";
-import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles.ts";
-import { apiConfig } from "@/queries/apiConfig.ts";
-import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
-import { getExtinguishedLinesQuery, getExtinguishedLinesQueryKey } from "@/queries/extinguished-lines.ts";
-import { getDiagramLabelsQueryKey } from "@/queries/labels.ts";
-import { getLinesQuery, getLinesQueryKey } from "@/queries/lines.ts";
+} from "@/components/DefineDiagrams/lineStyles";
+import { vectorStyles } from "@/components/DefineDiagrams/vectorStyles";
+import { apiConfig } from "@/queries/apiConfig";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams";
+import { getExtinguishedLinesQuery, getExtinguishedLinesQueryKey } from "@/queries/extinguished-lines";
+import { getDiagramLabelsQueryKey } from "@/queries/labels";
+import { getLinesQuery, getLinesQueryKey } from "@/queries/lines";
 
 import { markStyleFunction } from "./markStyles";
 import { parcelStyles } from "./parcelStyles";

@@ -4,26 +4,26 @@ import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { PanelsContext } from "@linzjs/windows";
 import { useContext } from "react";
 
-import { CommonButtons } from "@/components/CommonButtons.tsx";
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram.ts";
-import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton.tsx";
+import { CommonButtons } from "@/components/CommonButtons";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
+import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram";
+import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
-import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
-import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.tsx";
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
+import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useDefineDiagram } from "@/hooks/useDefineDiagram";
 import { useEscapeKey } from "@/hooks/useEscape";
-import { useRemoveDiagram } from "@/hooks/useRemoveDiagram.ts";
-import { useRemoveRtLine } from "@/hooks/useRemoveRTLine.ts";
-import { useResizeDiagram } from "@/hooks/useResizeDiagram.ts";
-import { useSelectDiagram } from "@/hooks/useSelectDiagram.ts";
+import { useRemoveDiagram } from "@/hooks/useRemoveDiagram";
+import { useRemoveRtLine } from "@/hooks/useRemoveRTLine";
+import { useResizeDiagram } from "@/hooks/useResizeDiagram";
+import { useSelectDiagram } from "@/hooks/useSelectDiagram";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 const enlargeReduceDiagramActions: DefineDiagramsActionType[] = [
   "enlarge_diagram_rectangle",

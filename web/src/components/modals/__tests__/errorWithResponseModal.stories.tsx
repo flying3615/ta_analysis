@@ -4,7 +4,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { waitFor } from "@storybook/testing-library";
 import { useEffect } from "react";
 
-import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
+import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal";
 import { sleep } from "@/test-utils/storybook-utils";
 
 const TestModalTemplate = (_: { defaultToOpen?: boolean }) => {

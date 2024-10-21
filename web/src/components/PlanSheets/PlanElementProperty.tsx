@@ -4,11 +4,11 @@ import { LuiButton } from "@linzjs/lui";
 import { Panel, PanelContent, PanelHeader, PanelInstanceContext } from "@linzjs/windows";
 import React, { useContext } from "react";
 
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
-import LabelProperties, { LabelPropertiesProps } from "@/components/PlanSheets/properties/LabelProperties.tsx";
-import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties.tsx";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { getPlanProperty, setPlanProperty } from "@/redux/planSheets/planSheetsSlice.ts";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import LabelProperties, { LabelPropertiesProps } from "@/components/PlanSheets/properties/LabelProperties";
+import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getPlanProperty, setPlanProperty } from "@/redux/planSheets/planSheetsSlice";
 
 export type PlanElementPropertyMode = Extract<PlanMode, PlanMode.SelectLabel | PlanMode.SelectLine>;
 

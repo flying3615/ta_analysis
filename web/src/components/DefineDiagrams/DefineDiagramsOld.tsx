@@ -15,9 +15,9 @@ import {
   parcelsLayer,
   underlyingParcelsLayer,
   vectorsLayer,
-} from "@/components/DefineDiagrams/MapLayers.ts";
+} from "@/components/DefineDiagrams/MapLayers";
 import Header from "@/components/Header/Header";
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetDiagramsQuery } from "@/queries/diagrams";

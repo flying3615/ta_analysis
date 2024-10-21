@@ -1,4 +1,4 @@
-import { byId } from "@/util/queryUtil.ts";
+import { byId } from "@/util/queryUtil";
 
 describe("queryUtil", () => {
   test("byId", () => {

@@ -1,9 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
-import LandingPage from "@/components/LandingPage/LandingPage.tsx";
-import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
+import LandingPage from "@/components/LandingPage/LandingPage";
+import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 

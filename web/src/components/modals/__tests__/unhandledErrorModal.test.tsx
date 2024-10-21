@@ -7,7 +7,7 @@ import {
   errorFromResponseError,
   errorFromSerializedError,
   unhandledErrorModal,
-} from "@/components/modals/unhandledErrorModal.tsx";
+} from "@/components/modals/unhandledErrorModal";
 
 jest.mock("@linz/survey-plan-generation-api-client", () => ({
   ResponseError: jest.fn(),

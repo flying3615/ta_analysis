@@ -6,11 +6,11 @@ import { screen } from "@testing-library/react";
 import React from "react";
 import { generatePath, Route } from "react-router-dom";
 
-import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
-import { Paths } from "@/Paths.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
+import { Paths } from "@/Paths";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 const mockUploadFile: jest.Mock = jest.fn().mockResolvedValue({} as IFileStatusResponse);
 

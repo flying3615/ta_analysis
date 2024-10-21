@@ -1,10 +1,10 @@
 import { screen } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
-import { nestedSurveyPlan, nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
-import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
-import { Paths } from "@/Paths.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { nestedSurveyPlan, nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
+import { DiagramList } from "@/components/PlanSheets/DiagramList";
+import { Paths } from "@/Paths";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 describe("The Diagram list tree", () => {
   it("displays all title diagram labels correctly", () => {

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 
 export function ElementHover() {

@@ -13,10 +13,10 @@ import {
   diagramNamesQueryKey,
   useDiagramLayerPreferencesByDiagramQuery,
   useDiagramNamesQuery,
-} from "@/components/LabelPreferencesPanel/maintainDiagram.ts";
+} from "@/components/LabelPreferencesPanel/maintainDiagram";
 import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridColDefs";
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
-import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter.tsx";
+import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter";
 import { unsavedChangesModal } from "@/components/MaintainDiagramsPanel/UnsavedChangesModal";
 import { withId } from "@/util/queryUtil";
 

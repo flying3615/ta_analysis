@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReactElement, useState } from "react";
 
-import { useConstFunction } from "@/hooks/useConstFunction.ts";
+import { useConstFunction } from "@/hooks/useConstFunction";
 
 const funcRefs = new Set<() => void>();
 

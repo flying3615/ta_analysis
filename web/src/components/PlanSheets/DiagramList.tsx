@@ -5,7 +5,7 @@ import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { isArray, isEmpty, isNil } from "lodash-es";
 import { useMemo, useState } from "react";
 
-import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent.tsx";
+import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import {
   getActivePageNumber,

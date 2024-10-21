@@ -1,5 +1,5 @@
-import { OffsetXY, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
-import { MarksBuilder } from "@/mocks/builders/MarksBuilder.ts";
+import { OffsetXY, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
+import { MarksBuilder } from "@/mocks/builders/MarksBuilder";
 
 const marksBuilderTestOrigin = () => MarksBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 

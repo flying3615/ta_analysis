@@ -2,7 +2,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setupStore } from "@/redux/store";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { mockStore } from "@/test-utils/store-mock";
 
 import { selectDiagramToPageLookupTable } from "../selectGraphData";
 

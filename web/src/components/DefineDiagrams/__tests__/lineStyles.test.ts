@@ -8,7 +8,7 @@ import {
   lineStyles,
   lineStyles_abb,
   lineStyles_ct,
-} from "@/components/DefineDiagrams/lineStyles.ts";
+} from "@/components/DefineDiagrams/lineStyles";
 
 const ctLineFeature = new Feature<Geometry>({
   symbolType: LinesSymbolType.CT,

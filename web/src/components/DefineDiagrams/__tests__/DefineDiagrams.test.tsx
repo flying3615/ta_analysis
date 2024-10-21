@@ -8,7 +8,7 @@ import { generatePath, Route } from "react-router-dom";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import LandingPage from "@/components/LandingPage/LandingPage";
-import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";

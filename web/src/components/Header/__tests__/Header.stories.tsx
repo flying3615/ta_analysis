@@ -9,7 +9,7 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import { Paths } from "@/Paths";
-import { store } from "@/redux/store.ts";
+import { store } from "@/redux/store";
 import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import Header from "../Header";

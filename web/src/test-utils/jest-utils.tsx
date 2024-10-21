@@ -7,8 +7,8 @@ import React, { PropsWithChildren, ReactNode } from "react";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
-import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { APPROX_DEGREES_PER_METRE, CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder.ts";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { APPROX_DEGREES_PER_METRE, CommonBuilder, LatLong, OffsetXY } from "@/mocks/builders/CommonBuilder";
 import { AppStore, RootState, setupStore } from "@/redux/store";
 
 // This type interface extends the default options for render from RTL, as well

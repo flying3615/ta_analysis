@@ -1,4 +1,4 @@
-import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 export const nestedTitlePlan = new PlanDataBuilder()
   .addDiagram(

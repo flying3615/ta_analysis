@@ -4,9 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { PlanSheetsHeaderButtons } from "@/components/PlanSheets/PlanSheetsHeaderButtons";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
-import { setupStore } from "@/redux/store.ts";
+import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { mockStore } from "@/test-utils/store-mock";
 
 jest.mock("@/hooks/useCytoscapeContext");
 

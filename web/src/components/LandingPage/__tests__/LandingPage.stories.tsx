@@ -5,7 +5,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import { StorybookRouter } from "@/test-utils/storybook-utils";
 
 import LandingPage from "../LandingPage";

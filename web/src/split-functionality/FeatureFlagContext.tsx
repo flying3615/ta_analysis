@@ -3,7 +3,7 @@ import { IBrowserSettings, MockedFeaturesMap } from "@splitsoftware/splitio/type
 import { SplitFactoryProvider } from "@splitsoftware/splitio-react";
 import { ReactElement, useMemo } from "react";
 
-import { mockedFeatureFlagsOn } from "@/split-functionality/FeatureFlags.ts";
+import { mockedFeatureFlagsOn } from "@/split-functionality/FeatureFlags";
 
 export function FeatureFlagProvider(props: {
   children: React.ReactNode;

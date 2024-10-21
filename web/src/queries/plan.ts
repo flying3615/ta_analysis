@@ -9,7 +9,7 @@ import { useToast } from "@linzjs/lui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData.ts";
+import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";

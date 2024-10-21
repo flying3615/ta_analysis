@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods";
 
 describe("Dash pattern for edges", () => {
   const peckStyles = ["peck1", "brokenPeck1"];

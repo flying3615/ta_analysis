@@ -1,4 +1,4 @@
-import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
+import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
 
 describe("makeScaledSvg", () => {
   test("Substitutes width and height", () => {

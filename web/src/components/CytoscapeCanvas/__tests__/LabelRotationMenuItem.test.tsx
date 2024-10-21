@@ -1,9 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { NodeSingular } from "cytoscape";
 
-import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
-import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 const mockedState = {
   preloadedState: { ...mockStore },

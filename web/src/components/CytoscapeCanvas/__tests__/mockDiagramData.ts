@@ -6,7 +6,7 @@ import {
   PageDTOPageTypeEnum,
 } from "@linz/survey-plan-generation-api-client";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 
 const diagramId = 1;
 

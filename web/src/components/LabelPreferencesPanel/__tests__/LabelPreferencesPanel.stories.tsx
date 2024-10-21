@@ -1,6 +1,6 @@
 import "@/components/LabelPreferencesPanel/LabelPreferencesPanel.scss";
 
-import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick.ts";
+import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { PanelsContextProvider } from "@linzjs/windows";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
@@ -8,12 +8,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
-import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel.tsx";
-import { handlers } from "@/mocks/mockHandlers.ts";
-import { Paths } from "@/Paths.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { findCell, findCellContains, openAndClickMenuOption } from "@/test-utils/storybook-ag-grid-utils.ts";
-import { PanelInstanceContextMock, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
+import { handlers } from "@/mocks/mockHandlers";
+import { Paths } from "@/Paths";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { findCell, findCellContains, openAndClickMenuOption } from "@/test-utils/storybook-ag-grid-utils";
+import { PanelInstanceContextMock, StorybookRouter } from "@/test-utils/storybook-utils";
 
 const queryClient = new QueryClient();
 export default {
@@ -30,9 +30,9 @@ const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) =
   <QueryClientProvider client={queryClient}>
     <FeatureFlagProvider>
       <PanelsContextProvider>
-        <StorybookRouter url={generatePath(Paths.labelPreferences, { transactionId })}>
+        <StorybookRouter url={generatePath(Paths.root, { transactionId })}>
           <Route
-            path={Paths.labelPreferences}
+            path={Paths.root}
             element={
               <PanelInstanceContextMock>
                 <LabelPreferencesPanel transactionId={123} />

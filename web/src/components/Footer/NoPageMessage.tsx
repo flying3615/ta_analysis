@@ -2,15 +2,15 @@ import { PageDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiButton, LuiIcon } from "@linzjs/lui";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useOnKeyDown } from "@/hooks/useOnKeyDown.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import {
   getActivePages,
   getActiveSheet,
   getPages,
   setActivePageNumber,
   updatePages,
-} from "@/redux/planSheets/planSheetsSlice.ts";
+} from "@/redux/planSheets/planSheetsSlice";
 
 export const NoPageMessage = () => {
   const getAllPages = useAppSelector(getPages);

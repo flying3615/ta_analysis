@@ -1,14 +1,14 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue, NodeSingular } from "cytoscape";
 
-import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
-import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
-import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
-import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 describe("PlanSheetsContextMenu", () => {
   const mockedStateForPlanMode = (

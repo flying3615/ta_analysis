@@ -6,7 +6,7 @@ import {
 } from "@linz/survey-plan-generation-api-client";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 
-import { IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper.ts";
+import { IFeatureSourceDiagram } from "@/components/DefineDiagrams/featureMapper";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenQuery } from "@/queries/types";
 

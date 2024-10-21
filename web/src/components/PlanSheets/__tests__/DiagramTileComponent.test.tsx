@@ -6,7 +6,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { mockStore } from "@/test-utils/store-mock";
 
 describe("Diagram Tile component", () => {
   const mockStoreRedux = setupStore({

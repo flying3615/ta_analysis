@@ -13,14 +13,14 @@ import { Provider } from "react-redux";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
-import { drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil.tsx";
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
-import { unmarkedPointBuilder } from "@/mocks/data/mockMarks.ts";
+import { drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
+import { unmarkedPointBuilder } from "@/mocks/data/mockMarks";
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
-import { DefineDiagramsState } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { DefineDiagramsState } from "@/redux/defineDiagrams/defineDiagramsSlice";
 import { setupStore } from "@/redux/store";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import { sleep, StorybookRouter, waitForInitialMapLoadsToComplete } from "@/test-utils/storybook-utils";
 
 export default {

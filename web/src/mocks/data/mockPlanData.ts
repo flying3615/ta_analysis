@@ -1,7 +1,7 @@
 import { CoordinateDTOCoordTypeEnum, LabelDTO } from "@linz/survey-plan-generation-api-client";
 
-import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder.ts";
-import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
+import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 export const mockPlanData = new PlanDataBuilder()
   .addDiagram({

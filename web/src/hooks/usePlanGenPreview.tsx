@@ -6,24 +6,24 @@ import { memoize } from "lodash-es";
 import { DateTime } from "luxon";
 import React, { useEffect, useRef, useState } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   edgeDefinitionsFromData,
   IEdgeData,
   INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
-} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
-import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
-import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
-import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils.ts";
-import { createNewNode } from "@/util/mapUtil.ts";
-import { promiseWithTimeout } from "@/util/promiseUtil.ts";
-import { wrapText } from "@/util/stringUtil.ts";
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
+import { ExternalSurveyInfoDto } from "@/queries/survey";
+import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
+import { createNewNode } from "@/util/mapUtil";
+import { promiseWithTimeout } from "@/util/promiseUtil";
+import { wrapText } from "@/util/stringUtil";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
 export interface PlanGenPreview {

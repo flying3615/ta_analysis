@@ -2,7 +2,7 @@ import { LuiModalAsyncContextProvider, useLuiModalPrefab } from "@linzjs/windows
 import { render, screen } from "@testing-library/react";
 import { useEffect } from "react";
 
-import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal.tsx";
+import { prepareDatasetErrorModal } from "@/components/DefineDiagrams/prepareDatasetErrorModal";
 import { PrepareDatasetError } from "@/queries/prepareDataset";
 
 describe("prepareDatasetErrorModal", () => {

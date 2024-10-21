@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 import React, { createContext, ReactElement, ReactNode, useState } from "react";
 
-import { cytoscapeUtils } from "@/util/cytoscapeUtil.ts";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export interface CytoscapeContextType {
   cyto?: cytoscape.Core;

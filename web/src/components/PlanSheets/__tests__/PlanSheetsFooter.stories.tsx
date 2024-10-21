@@ -8,13 +8,13 @@ import { useState } from "react";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
-import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
-import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
-import { Paths } from "@/Paths.ts";
-import { store } from "@/redux/store.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { Paths } from "@/Paths";
+import { store } from "@/redux/store";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import { sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {

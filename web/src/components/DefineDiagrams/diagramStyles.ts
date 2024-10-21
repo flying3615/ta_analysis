@@ -4,8 +4,8 @@ import RenderFeature from "ol/render/Feature";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 
-import { MapColors, MapFillColors } from "@/components/DefineDiagrams/mapColors.ts";
-import { userDefinedDiagramTypes } from "@/queries/diagrams.ts";
+import { MapColors, MapFillColors } from "@/components/DefineDiagrams/mapColors";
+import { userDefinedDiagramTypes } from "@/queries/diagrams";
 
 const systemGeneratedLineTypes = [CpgDiagramType.SYSN, CpgDiagramType.SYSP, CpgDiagramType.SYST];
 

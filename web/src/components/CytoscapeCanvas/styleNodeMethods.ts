@@ -2,11 +2,11 @@ import cytoscape from "cytoscape";
 import { max, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs.ts";
-import { makeScaledSVG } from "@/modules/plan/makeScaledSVG.ts";
-import { FOREGROUND_COLOUR } from "@/modules/plan/styling.ts";
-import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
+import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
+import { FOREGROUND_COLOUR } from "@/modules/plan/styling";
+import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 export const LABEL_PADDING_PX = 1;
 export const CIRCLE_FACTOR = 1.1;

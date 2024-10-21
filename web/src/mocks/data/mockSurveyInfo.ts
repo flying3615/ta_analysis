@@ -1,4 +1,4 @@
-import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
+import { ExternalSurveyInfoDto } from "@/queries/survey";
 
 export const mockSurveyInfo = {
   corporateName: "Test Corporate Name",

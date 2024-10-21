@@ -1,14 +1,14 @@
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useState } from "react";
 
-import { CommonButtons } from "@/components/CommonButtons.tsx";
+import { CommonButtons } from "@/components/CommonButtons";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
-import { canUndo, getPlanMode, setPlanMode, undo } from "@/redux/planSheets/planSheetsSlice.ts";
-import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { canUndo, getPlanMode, setPlanMode, undo } from "@/redux/planSheets/planSheetsSlice";
+import { ZOOM_DELTA } from "@/util/cytoscapeUtil";
 
 import { PlanMode } from "./PlanSheetType";
 

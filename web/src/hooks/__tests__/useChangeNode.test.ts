@@ -1,6 +1,6 @@
 import { EdgeSingular } from "cytoscape";
 
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 describe("useChangeNode", () => {
   test("should set node as hidden", () => {

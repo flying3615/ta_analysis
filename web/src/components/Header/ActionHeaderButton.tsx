@@ -3,9 +3,9 @@ import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import clsx from "clsx";
 import { useCallback } from "react";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 
 interface ActionHeaderButtonProps {
   title: string;

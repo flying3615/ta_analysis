@@ -4,8 +4,8 @@ import { LuiLoadingSpinner, LuiTabs, LuiTabsGroup, LuiTabsPanel, LuiTabsPanelSwi
 import { GridContextProvider, GridUpdatingContextProvider } from "@linzjs/step-ag-grid";
 import { Panel, PanelContent, PanelHeader } from "@linzjs/windows";
 
-import { useUserLabelPreferences } from "@/components/LabelPreferencesPanel/labelPreferences.ts";
-import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid.tsx";
+import { useUserLabelPreferences } from "@/components/LabelPreferencesPanel/labelPreferences";
+import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
 
 const labelsForThisPlan = "labelsForThisPlan";
 const labelsForNewPlans = "labelsForNewPlans";

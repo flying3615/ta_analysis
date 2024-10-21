@@ -8,7 +8,7 @@ import {
   PageDTO,
 } from "@linz/survey-plan-generation-api-client";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { DiagramData } from "@/components/PlanSheets/interactions/SelectedDiagram";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 

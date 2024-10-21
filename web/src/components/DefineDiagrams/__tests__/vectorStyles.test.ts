@@ -9,7 +9,7 @@ import {
   measStyle,
   reiStyle,
   vectorStyles,
-} from "@/components/DefineDiagrams/vectorStyles.ts";
+} from "@/components/DefineDiagrams/vectorStyles";
 
 import { MapColors } from "../mapColors";
 

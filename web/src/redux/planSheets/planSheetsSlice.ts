@@ -2,10 +2,10 @@ import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/surv
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
-import { DiagramToMovePayload } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal.tsx";
-import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
+import { DiagramToMovePayload } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";
+import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 
 export interface PlanSheetsState {
   configs?: ConfigDataDTO[];

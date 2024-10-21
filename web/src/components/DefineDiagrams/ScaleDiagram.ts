@@ -4,9 +4,9 @@ import {
   PostDiagramsRequestDTODiagramTypeEnum,
 } from "@linz/survey-plan-generation-api-client";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
-import { coordDimensions, flattenCoords } from "@/util/coordUtil.ts";
-import { sizeDegreesToMetresAtLat } from "@/util/mapUtil.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { coordDimensions, flattenCoords } from "@/util/coordUtil";
+import { sizeDegreesToMetresAtLat } from "@/util/mapUtil";
 
 export default class ScaleDiagram {
   private readonly planfaceSizeMetres: [number, number] = [

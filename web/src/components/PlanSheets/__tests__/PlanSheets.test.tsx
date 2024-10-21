@@ -5,16 +5,16 @@ import { cloneDeep } from "lodash-es";
 import { delay, http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
-import LandingPage from "@/components/LandingPage/LandingPage.tsx";
+import LandingPage from "@/components/LandingPage/LandingPage";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
-import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
-import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 import { nestedTitlePlan } from "./data/plansheetDiagramData";
 

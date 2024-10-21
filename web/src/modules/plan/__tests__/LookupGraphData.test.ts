@@ -1,8 +1,8 @@
 import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
 
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { mockPlanData } from "@/mocks/data/mockPlanData.ts";
-import { LookupGraphData } from "@/modules/plan/LookupGraphData.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { LookupGraphData } from "@/modules/plan/LookupGraphData";
 
 const lookupGraphData = new LookupGraphData(mockPlanData);
 

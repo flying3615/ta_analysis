@@ -1,8 +1,8 @@
 import { DiagramsResponseDTO, PolygonGeoJSON, PolygonGeoJSONTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner.ts";
+import { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner";
 import { last } from "lodash-es";
 
-import { CommonBuilder, LatLong, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
+import { CommonBuilder, LatLong, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 
 export const diagramsBuilderTestOrigin = () => DiagramsBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 

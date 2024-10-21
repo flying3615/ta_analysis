@@ -2,7 +2,7 @@ import { PostPrepareResponseDTO, PrepareControllerApi } from "@linz/survey-plan-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";
-import { getPlanQueryKey } from "@/queries/plan.ts";
+import { getPlanQueryKey } from "@/queries/plan";
 import { PlanGenMutation, PlanGenQuery } from "@/queries/types";
 
 import { getDiagramCheckQueryKey, getDiagramsQueryKey, getOpenlayersDiagramsQueryKey } from "./diagrams";

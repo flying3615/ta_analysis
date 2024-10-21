@@ -1,9 +1,9 @@
 import { LuiButton, LuiModalV2, LuiTextInput } from "@linzjs/lui";
 import { ChangeEvent, useState } from "react";
 
-import { IPopupModal } from "@/components/Footer/PageManager.tsx";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { getFilteredPages } from "@/redux/planSheets/planSheetsSlice.ts";
+import { IPopupModal } from "@/components/Footer/PageManager";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { getFilteredPages } from "@/redux/planSheets/planSheetsSlice";
 
 export const RenumberPageModal = ({ closeModal, pageInfo, callback }: IPopupModal) => {
   const { totalPages } = useAppSelector(getFilteredPages);

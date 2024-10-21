@@ -2,7 +2,7 @@ import { PlanRegenerateControllerApi } from "@linz/survey-plan-generation-api-cl
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";
-import { getPlanQueryKey } from "@/queries/plan.ts";
+import { getPlanQueryKey } from "@/queries/plan";
 
 export const regeneratePlanQueryKey = (transactionId: number) => ["regeneratePlan", transactionId];
 

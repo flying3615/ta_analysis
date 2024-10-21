@@ -1,6 +1,6 @@
 import { PageDTO } from "@linz/survey-plan-generation-api-client";
 
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 
 export const getMaxPageId = (pages: PageDTO[]) => {
   return pages.reduce((maxId, page) => (page.id > maxId ? page.id : maxId), 0);

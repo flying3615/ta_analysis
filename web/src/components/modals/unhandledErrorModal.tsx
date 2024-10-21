@@ -7,7 +7,7 @@ import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { SerializedError } from "@reduxjs/toolkit";
 import { PropsWithChildren } from "react";
 
-import { LINZ_CUSTOMER_SUPPORT_EMAIL, LINZ_CUSTOMER_SUPPORT_PHONE } from "@/constants.tsx";
+import { LINZ_CUSTOMER_SUPPORT_EMAIL, LINZ_CUSTOMER_SUPPORT_PHONE } from "@/constants";
 
 export interface ErrorWithResponse extends Error {
   timestamp?: Date;

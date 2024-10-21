@@ -4,7 +4,7 @@ import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-clie
 
 import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams";
-import { mockLabels } from "@/mocks/data/mockLabels.ts";
+import { mockLabels } from "@/mocks/data/mockLabels";
 import { mockMarks } from "@/mocks/data/mockMarks";
 import { centreLineParcel, nonPrimaryParcel, primaryParcel } from "@/mocks/data/mockParcels";
 import { mockNonBoundaryVectors, mockParcelDimensionVectors } from "@/mocks/data/mockVectors";

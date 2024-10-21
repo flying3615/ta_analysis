@@ -1,6 +1,6 @@
 import imageCompression from "browser-image-compression";
 
-import { ImageFile } from "@/hooks/usePlanGenPreview.tsx";
+import { ImageFile } from "@/hooks/usePlanGenPreview";
 
 /**
  *  Convert the image data to 1 bit

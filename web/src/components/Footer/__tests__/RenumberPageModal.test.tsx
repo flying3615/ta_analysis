@@ -6,7 +6,7 @@ import { RenumberPageModal } from "@/components/Footer/RenumberPageModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { mockStore } from "@/test-utils/store-mock";
 
 describe("RenumberPageModal", () => {
   const pageInfo = {

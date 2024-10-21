@@ -1,4 +1,4 @@
-import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 
 export const mockStore = {
   planSheets: {

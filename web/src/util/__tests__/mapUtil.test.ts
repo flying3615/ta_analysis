@@ -13,7 +13,7 @@ import {
   metersToLatLongCoordinate,
   normalizeLongitude,
   numericToCartesian,
-} from "@/util/mapUtil.ts";
+} from "@/util/mapUtil";
 
 describe("Longitude normalization calculation", () => {
   test("returns longitude which should be in the range of -180 to 180 when it crosses the dateline", () => {

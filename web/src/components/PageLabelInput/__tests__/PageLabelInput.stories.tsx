@@ -9,7 +9,7 @@ import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers.ts";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import { click, getCytoCanvas, sleep, StorybookRouter, TestCanvas } from "@/test-utils/storybook-utils";

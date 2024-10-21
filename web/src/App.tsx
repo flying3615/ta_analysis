@@ -15,19 +15,19 @@ import { Provider } from "react-redux";
 import { Route, useRouteError } from "react-router";
 import { createBrowserRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams.tsx";
-import { DefineDiagrams as DefineDiagramsOld } from "@/components/DefineDiagrams/DefineDiagramsOld.tsx";
+import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
+import { DefineDiagrams as DefineDiagramsOld } from "@/components/DefineDiagrams/DefineDiagramsOld";
 import LandingPage from "@/components/LandingPage/LandingPage";
-import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import PlanSheets from "@/components/PlanSheets/PlanSheets.tsx";
-import { store } from "@/redux/store.ts";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext.tsx";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
+import PlanSheets from "@/components/PlanSheets/PlanSheets";
+import { store } from "@/redux/store";
+import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
-import { appClientId } from "./constants.tsx";
-import { mockUser } from "./mocks/mockAuthUser.ts";
-import { Paths } from "./Paths.ts";
+import { appClientId } from "./constants";
+import { mockUser } from "./mocks/mockAuthUser";
+import { RoutePaths } from "./Paths";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   useEffect(() => {
@@ -61,22 +61,26 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route path={Paths.root} element={<LandingPage />} ErrorBoundary={RouteErrorBoundary} />
-        {isDefineDiagramsOn ? (
-          <Route
-            path={Paths.defineDiagrams}
-            element={<DefineDiagrams mock={props.mockMap} />}
-            ErrorBoundary={RouteErrorBoundary}
-          />
-        ) : (
-          <Route
-            path={Paths.defineDiagrams}
-            element={<DefineDiagramsOld mock={props.mockMap} />}
-            ErrorBoundary={RouteErrorBoundary}
-          />
-        )}
-        <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} ErrorBoundary={RouteErrorBoundary} />
-        <Route path="*" element={<NoMatchingRouteFound />} ErrorBoundary={RouteErrorBoundary} />
+        <Route>
+          <Route path={RoutePaths.root}>
+            <Route path="" element={<LandingPage />} ErrorBoundary={RouteErrorBoundary} />
+            {isDefineDiagramsOn ? (
+              <Route
+                path={RoutePaths.defineDiagrams}
+                element={<DefineDiagrams mock={props.mockMap} />}
+                ErrorBoundary={RouteErrorBoundary}
+              />
+            ) : (
+              <Route
+                path={RoutePaths.defineDiagrams}
+                element={<DefineDiagramsOld mock={props.mockMap} />}
+                ErrorBoundary={RouteErrorBoundary}
+              />
+            )}
+            <Route path={RoutePaths.layoutPlanSheets} element={<PlanSheets />} ErrorBoundary={RouteErrorBoundary} />
+          </Route>
+          <Route path="*" element={<NoMatchingRouteFound />} ErrorBoundary={RouteErrorBoundary} />
+        </Route>
       </>,
     ),
   );

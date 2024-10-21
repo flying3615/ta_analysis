@@ -3,7 +3,7 @@ import FeatureLike from "ol/Feature";
 import { Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 
-import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
+import { MapColors } from "@/components/DefineDiagrams/mapColors";
 
 // Constant styles
 

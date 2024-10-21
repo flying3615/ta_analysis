@@ -2,7 +2,7 @@ import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiCheckboxInput, LuiRadioInput, LuiTextInput } from "@linzjs/lui";
 import React from "react";
 
-import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs.ts";
+import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
 
 export interface LinePropertiesProps {
   displayState: DisplayStateEnum;

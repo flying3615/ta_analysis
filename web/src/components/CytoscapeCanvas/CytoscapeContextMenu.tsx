@@ -2,8 +2,8 @@ import "./CytoscapeContextMenu.scss";
 
 import React, { useRef } from "react";
 
-import CytoscapeMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
+import CytoscapeMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
 
 interface IContextMenu {
   menuState: ContextMenuState;

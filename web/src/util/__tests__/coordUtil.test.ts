@@ -1,4 +1,4 @@
-import { coordDimensions, flattenCoords } from "@/util/coordUtil.ts";
+import { coordDimensions, flattenCoords } from "@/util/coordUtil";
 
 describe("flattenCoords", () => {
   test("Wraps a single point", () => {

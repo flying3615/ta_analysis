@@ -17,16 +17,16 @@ import {
   markNodes,
   pageBorderEdges,
   pageBorderNodes,
-} from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
-import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
+} from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu";
+import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
 import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType";
-import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
-import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
+import { mockStore } from "@/test-utils/store-mock";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
-import { pointsPerCm } from "@/util/cytoscapeUtil.ts";
+import { pointsPerCm } from "@/util/cytoscapeUtil";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";

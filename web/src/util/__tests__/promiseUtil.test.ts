@@ -1,4 +1,4 @@
-import { promiseWithTimeout } from "@/util/promiseUtil.ts";
+import { promiseWithTimeout } from "@/util/promiseUtil";
 
 describe("promiseWithTimeout", () => {
   it("should resolve if the promise resolves before the timeout", async () => {

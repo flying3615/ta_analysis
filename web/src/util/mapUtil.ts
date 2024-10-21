@@ -8,7 +8,7 @@ import { register } from "ol/proj/proj4";
 import RenderFeature from "ol/render/Feature";
 import proj4 from "proj4";
 
-import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 
 // adding projection definitions to allow conversions between them
 // EPSG:1 is what the data from the DB comes in as

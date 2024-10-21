@@ -10,7 +10,7 @@ import { patchFetch } from "@linz/lol-auth-js";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import App from "@/App.tsx";
+import App from "@/App";
 
 export async function renderInit() {
   const {

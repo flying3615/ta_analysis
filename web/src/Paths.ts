@@ -1,7 +1,13 @@
-export const Paths = {
+export const RoutePaths = {
   root: "/plan-generation/:transactionId",
-  defineDiagrams: "/plan-generation/define-diagrams/:transactionId",
-  layoutPlanSheets: "/plan-generation/layout-plan-sheets/:transactionId",
-  maintainDiagramLayers: "/plan-generation/maintain-diagram-layers/:transactionId",
-  labelPreferences: "/plan-generation/label-preference/:transactionId",
+  defineDiagrams: "define-diagrams",
+  layoutPlanSheets: "layout-plan-sheets",
+  maintainDiagramLayers: "maintain-diagram-layers",
+};
+
+export const Paths = {
+  root: RoutePaths.root,
+  defineDiagrams: `${RoutePaths.root}/${RoutePaths.defineDiagrams}`,
+  layoutPlanSheets: `${RoutePaths.root}/${RoutePaths.layoutPlanSheets}`,
+  maintainDiagramLayers: `${RoutePaths.root}/${RoutePaths.maintainDiagramLayers}`,
 };

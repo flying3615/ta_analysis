@@ -1,7 +1,7 @@
 import { DiagramLabelsControllerApi } from "@linz/survey-plan-generation-api-client";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { apiConfig } from "@/queries/apiConfig.ts";
+import { apiConfig } from "@/queries/apiConfig";
 
 export const getDiagramLabelsQueryKey = (transactionId: number) => ["labels", transactionId];
 export interface DiagramLabelsHook {

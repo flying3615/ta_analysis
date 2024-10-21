@@ -6,19 +6,19 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
-import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
 import {
   nestedMiniTitlePlan,
   nestedSurveyPlan,
   nestedTitlePlan,
-} from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
-import { Default } from "@/components/PlanSheets/__tests__/PlanSheets.stories.tsx";
-import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
-import SidePanel from "@/components/SidePanel/SidePanel.tsx";
-import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
-import { Paths } from "@/Paths.ts";
-import { store } from "@/redux/store.ts";
-import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils.tsx";
+} from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
+import { Default } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
+import { DiagramList } from "@/components/PlanSheets/DiagramList";
+import SidePanel from "@/components/SidePanel/SidePanel";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { Paths } from "@/Paths";
+import { store } from "@/redux/store";
+import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/DiagramList",

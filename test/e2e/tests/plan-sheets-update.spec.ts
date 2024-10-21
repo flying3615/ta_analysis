@@ -5,7 +5,7 @@ test.describe("Layout Plan Sheets Updating", () => {
   test("Move a coordinate and save layout in title sheet diagram", async ({ page, baseURL }) => {
     const planSheetsPage = new PlanSheetsPage(page, baseURL);
 
-    await page.goto("/plan-generation/layout-plan-sheets/5000056");
+    await page.goto("/plan-generation/5000056/layout-plan-sheets");
     await expect(page.getByRole("heading", { name: "Title sheet diagrams" })).toBeVisible();
 
     const nodeLabelToMove = "XLI DP 7441";

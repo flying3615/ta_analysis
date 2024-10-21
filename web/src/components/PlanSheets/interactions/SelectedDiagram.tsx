@@ -14,14 +14,14 @@ import { useEffect } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import {
   calculatePreviousDiagramAttributes,
   edgeSingularToEdgeData,
   nodeSingularToNodeData,
-} from "@/modules/plan/calculatePreviousDiagramAttributes.ts";
-import { getActivePage, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice.ts";
+} from "@/modules/plan/calculatePreviousDiagramAttributes";
+import { getActivePage, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice";
 
 import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
 

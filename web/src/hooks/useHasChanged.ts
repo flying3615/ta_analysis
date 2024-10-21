@@ -1,4 +1,4 @@
-import { usePrevious } from "@/hooks/usePrevious.ts";
+import { usePrevious } from "@/hooks/usePrevious";
 
 /**
  * Returns true if value has changed since last update.

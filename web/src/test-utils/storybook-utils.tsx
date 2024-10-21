@@ -1,5 +1,5 @@
 import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
-import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext.ts";
+import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
 import { within } from "@storybook/test";
@@ -10,8 +10,8 @@ import ReactModal from "react-modal";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
-import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { setupStore } from "@/redux/store.ts";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { setupStore } from "@/redux/store";
 
 /* eslint-disable react-refresh/only-export-components */
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

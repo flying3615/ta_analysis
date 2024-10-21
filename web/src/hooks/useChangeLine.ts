@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
-import { setLineHide } from "@/redux/planSheets/planSheetsSlice.ts";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { setLineHide } from "@/redux/planSheets/planSheetsSlice";
 
 export const useChangeLine = () => {
   const dispatch = useAppDispatch();

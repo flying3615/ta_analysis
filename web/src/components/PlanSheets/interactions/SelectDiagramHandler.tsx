@@ -1,10 +1,10 @@
 import { EventObjectNode, NodeSingular } from "cytoscape";
 import { useEffect, useState } from "react";
 
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
-import { getActivePageNumber } from "@/redux/planSheets/planSheetsSlice.ts";
+import { getActivePageNumber } from "@/redux/planSheets/planSheetsSlice";
 
 import { SelectedDiagram } from "./SelectedDiagram";
 

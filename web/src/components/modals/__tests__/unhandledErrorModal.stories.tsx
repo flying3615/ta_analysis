@@ -4,7 +4,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { waitFor } from "@storybook/testing-library";
 import { useEffect } from "react";
 
-import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
+import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { sleep } from "@/test-utils/storybook-utils";
 
 const TestModalTemplate = (props: { defaultToOpen?: boolean }) => {

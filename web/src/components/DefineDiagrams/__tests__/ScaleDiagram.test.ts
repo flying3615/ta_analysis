@@ -1,7 +1,7 @@
 import { DiagramsResponseDTO } from "@linz/survey-plan-generation-api-client";
 
-import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram.ts";
-import { sizeDegreesToMetresAtLat } from "@/util/mapUtil.ts";
+import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram";
+import { sizeDegreesToMetresAtLat } from "@/util/mapUtil";
 
 const PAGE_WIDTH_METRES = 0.0001 + 0.39;
 const PAGE_HEIGHT_METRES = 0.0001 + (28.2 - 1.5) / 100.0;

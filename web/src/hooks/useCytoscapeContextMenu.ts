@@ -7,8 +7,8 @@ import cytoscape, {
 } from "cytoscape";
 import { useCallback, useEffect, useState } from "react";
 
-import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import { useEscapeKey } from "@/hooks/useEscape.ts";
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { useEscapeKey } from "@/hooks/useEscape";
 
 export interface ContextMenuState {
   visible?: boolean;

@@ -3,13 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { generatePath, Route } from "react-router-dom";
 
-import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData.ts";
-import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
-import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder.ts";
-import { server } from "@/mocks/mockServer.ts";
+import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
+import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
+import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 describe("Diagram Selector panel", () => {
   const planSheetsState = {

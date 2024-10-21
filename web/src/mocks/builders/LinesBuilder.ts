@@ -7,7 +7,7 @@ import {
 } from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
 
-import { CommonBuilder, LatLong, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder.ts";
+import { CommonBuilder, LatLong, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 
 export const linesBuilderTestOrigin = () => LinesBuilder.empty().withOrigin(TEST_LOCATION_LAT_LONG);
 

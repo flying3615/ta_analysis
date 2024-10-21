@@ -2,14 +2,14 @@ import { userEvent } from "@storybook/testing-library";
 import { screen } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
-import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
-import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo.ts";
-import { Paths } from "@/Paths.ts";
-import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils.tsx";
-import { mockStore } from "@/test-utils/store-mock.ts";
+import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { Paths } from "@/Paths";
+import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
-import { usePlanGenPreview } from "../usePlanGenPreview.tsx";
+import { usePlanGenPreview } from "../usePlanGenPreview";
 
 jest.mock("@/workers/previewWorker?worker");
 

@@ -2,7 +2,7 @@ import {
   calculatePreviousDiagramAttributes,
   PageEdgeData,
   PageNodeData,
-} from "@/modules/plan/calculatePreviousDiagramAttributes.ts";
+} from "@/modules/plan/calculatePreviousDiagramAttributes";
 
 describe("calculatePreviousDiagramAttributes labels", () => {
   it("should return the label id if its position is within the diagram bounding box", () => {

@@ -3,15 +3,15 @@ import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useContext, useState } from "react";
 
-import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType.ts";
-import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors.tsx";
-import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction.ts";
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { useGetDiagramsQuery } from "@/queries/diagrams.ts";
-import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation.ts";
-import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
+import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
+import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors";
+import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
+import { useTransactionId } from "@/hooks/useTransactionId";
+import { useGetDiagramsQuery } from "@/queries/diagrams";
+import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation";
+import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>

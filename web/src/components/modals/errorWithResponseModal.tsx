@@ -1,7 +1,7 @@
 import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { PropsWithChildren } from "react";
 
-import { ErrorWithResponse } from "@/components/modals/unhandledErrorModal.tsx";
+import { ErrorWithResponse } from "@/components/modals/unhandledErrorModal";
 
 export const errorWithResponseModal = (
   error: ErrorWithResponse,

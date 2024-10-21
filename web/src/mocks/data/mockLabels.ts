@@ -1,6 +1,6 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 
-import { labelsBuilderTestOrigin } from "@/mocks/builders/LabelsBuilder.ts";
+import { labelsBuilderTestOrigin } from "@/mocks/builders/LabelsBuilder";
 //the order of these labels are mixed up on purpose to test the sorting of the labels
 export const mockLabels = () =>
   labelsBuilderTestOrigin()

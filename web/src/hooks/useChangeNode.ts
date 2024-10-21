@@ -1,9 +1,9 @@
 import cytoscape, { EdgeSingular, NodeSingular } from "cytoscape";
 
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { selectLookupGraphData } from "@/modules/plan/selectGraphData.ts";
-import { setSymbolHide } from "@/redux/planSheets/planSheetsSlice.ts";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
+import { setSymbolHide } from "@/redux/planSheets/planSheetsSlice";
 
 export const useChangeNode = () => {
   const dispatch = useAppDispatch();

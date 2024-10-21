@@ -9,8 +9,8 @@ import "@szhsin/react-menu/dist/index.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import App from "@/App.tsx";
-import { renderInit } from "@/main.tsx";
+import App from "@/App";
+import { renderInit } from "@/main";
 const { worker } = await import("./mocks/mockBrowser");
 
 async function renderApp() {

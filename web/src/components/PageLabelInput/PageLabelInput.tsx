@@ -7,13 +7,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { selectMaxPlanId } from "@/modules/plan/selectGraphData";
 import { addPageLabel, updatePageLabel } from "@/modules/plan/updatePlanData";
-import { getActivePage, getPlanMode, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
-import { cytoscapeUtils } from "@/util/cytoscapeUtil.ts";
+import { getActivePage, getPlanMode, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export const PageLabelInput = () => {
   const { cyto } = useCytoscapeContext();

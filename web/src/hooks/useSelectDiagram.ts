@@ -1,7 +1,7 @@
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
-import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
-import { userDefinedDiagramTypes } from "@/queries/diagrams.ts";
-import { clickedFeatureFilter } from "@/util/mapUtil.ts";
+import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook";
+import { userDefinedDiagramTypes } from "@/queries/diagrams";
+import { clickedFeatureFilter } from "@/util/mapUtil";
 
 export interface useSelectDiagramProps {
   transactionId: number;

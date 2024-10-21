@@ -5,21 +5,21 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 import { debounce, isArray } from "lodash-es";
 import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   edgeDefinitionsFromData,
   IEdgeData,
   INodeData,
   nodeDefinitionsFromData,
-} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
-import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
-import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
-import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu.ts";
-import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown.ts";
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
+import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
+import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown";
 import { updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
-import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil.ts";
+import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
 

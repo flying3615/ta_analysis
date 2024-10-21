@@ -4,13 +4,13 @@ import { isEmpty } from "lodash-es";
 import { useCallback, useState } from "react";
 
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
-import { useAppDispatch } from "@/hooks/reduxHooks.ts";
-import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook.ts";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook";
 import { apiConfig } from "@/queries/apiConfig";
 import { getLinesQueryKey } from "@/queries/lines";
-import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice.ts";
-import { useShowToast } from "@/util/showToast.tsx";
-import { s } from "@/util/stringUtil.ts";
+import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { useShowToast } from "@/util/showToast";
+import { s } from "@/util/stringUtil";
 
 export interface useConvertToRTLineProps {
   transactionId: number;

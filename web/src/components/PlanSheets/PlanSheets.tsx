@@ -7,43 +7,43 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas.tsx";
-import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { NoPageMessage } from "@/components/Footer/NoPageMessage.tsx";
+import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { NoPageMessage } from "@/components/Footer/NoPageMessage";
 import Header from "@/components/Header/Header";
-import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal.tsx";
-import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal.tsx";
+import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal";
+import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal";
 import {
   errorFromResponseError,
   errorFromSerializedError,
   unhandledErrorModal,
-} from "@/components/modals/unhandledErrorModal.tsx";
-import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput.tsx";
-import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector.tsx";
-import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal.tsx";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
+} from "@/components/modals/unhandledErrorModal";
+import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput";
+import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
+import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import SidePanel from "@/components/SidePanel/SidePanel";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler.ts";
-import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu.tsx";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
+import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   selectActiveDiagramsEdgesAndNodes,
   selectActivePageEdgesAndNodes,
   selectPageConfigEdgesAndNodes,
-} from "@/modules/plan/selectGraphData.ts";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock.ts";
-import { useGetPlanQuery } from "@/queries/plan.ts";
-import { useRegeneratePlanMutation } from "@/queries/planRegenerate.ts";
-import { useSurveyInfoQuery } from "@/queries/survey.ts";
-import { getDiagramToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
+} from "@/modules/plan/selectGraphData";
+import { useCreateAndMaintainLockQuery } from "@/queries/lock";
+import { useGetPlanQuery } from "@/queries/plan";
+import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
+import { useSurveyInfoQuery } from "@/queries/survey";
+import { getDiagramToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
 
-import { ElementHover } from "./interactions/ElementHover.tsx";
-import { PageNumberTooltips } from "./interactions/PageNumberTooltips.tsx";
-import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler.tsx";
-import { SelectElementHandler } from "./interactions/SelectElementHandler.tsx";
-import PlanSheetsFooter from "./PlanSheetsFooter.tsx";
-import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons.tsx";
+import { ElementHover } from "./interactions/ElementHover";
+import { PageNumberTooltips } from "./interactions/PageNumberTooltips";
+import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler";
+import { SelectElementHandler } from "./interactions/SelectElementHandler";
+import PlanSheetsFooter from "./PlanSheetsFooter";
+import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();

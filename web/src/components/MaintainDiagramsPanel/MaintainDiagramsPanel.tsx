@@ -6,9 +6,9 @@ import { Panel, PanelContent, PanelHeader } from "@linzjs/windows";
 import { isEmpty } from "lodash-es";
 import { useRef, useState } from "react";
 
-import { MaintainDiagramsByDiagramIdGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramIdGrid.tsx";
-import { MaintainDiagramsByDiagramTypeGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramTypeGrid.tsx";
-import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef.tsx";
+import { MaintainDiagramsByDiagramIdGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramIdGrid";
+import { MaintainDiagramsByDiagramTypeGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramTypeGrid";
+import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
 
 const maintainDiagramsByType = "maintainDiagramsByType";
 const maintainDiagramsById = "maintainDiagramsById";

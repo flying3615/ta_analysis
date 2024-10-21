@@ -5,11 +5,11 @@ import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useState } from "react";
 
-import DeletePageModal from "@/components/Footer/DeletePageModal.tsx";
-import { RenumberPageModal } from "@/components/Footer/RenumberPageModal.tsx";
+import DeletePageModal from "@/components/Footer/DeletePageModal";
+import { RenumberPageModal } from "@/components/Footer/RenumberPageModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   getActivePageNumber,
   getActivePages,
@@ -19,7 +19,7 @@ import {
   setActivePageNumber,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
-import { getMaxPageId } from "@/util/pageUtil.ts";
+import { getMaxPageId } from "@/util/pageUtil";
 
 export interface IPopupModal {
   closeModal: () => void;

@@ -11,9 +11,9 @@ import { configure } from "@testing-library/react";
 import { setupJestCanvasMock } from "jest-canvas-mock";
 
 import { server } from "@/mocks/mockServer";
-import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags.ts";
-import { IFeatureToggleResult } from "@/split-functionality/UseFeatureFlags.ts";
-import { coordinateMatchers } from "@/test-utils/jest-utils.tsx";
+import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags";
+import { IFeatureToggleResult } from "@/split-functionality/UseFeatureFlags";
+import { coordinateMatchers } from "@/test-utils/jest-utils";
 
 // It is critical that asyncUtilTimeout be lower than jest.setTimeout, or all
 // the detail of an async assertion failure will be lost due to the test

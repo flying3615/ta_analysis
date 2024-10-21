@@ -2,12 +2,12 @@ import { DiagramDetailsControllerApi, UpdateUserDefinedDiagramRequest } from "@l
 import { useMutation } from "@tanstack/react-query";
 import { Geometry } from "geojson";
 
-import { IFeatureSourceDiagram, sortByDiagramsByType } from "@/components/DefineDiagrams/featureMapper.ts";
-import { apiConfig } from "@/queries/apiConfig.ts";
-import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams.ts";
-import { useDiagramLabelsHook } from "@/queries/labels.ts";
-import { byId, useQueryDataUpdate } from "@/util/queryUtil.ts";
-import { useShowToast } from "@/util/showToast.tsx";
+import { IFeatureSourceDiagram, sortByDiagramsByType } from "@/components/DefineDiagrams/featureMapper";
+import { apiConfig } from "@/queries/apiConfig";
+import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams";
+import { useDiagramLabelsHook } from "@/queries/labels";
+import { byId, useQueryDataUpdate } from "@/util/queryUtil";
+import { useShowToast } from "@/util/showToast";
 
 export interface useUpdateDiagramMutationProps {
   diagramType: string;

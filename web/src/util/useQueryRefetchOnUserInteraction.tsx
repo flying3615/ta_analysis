@@ -1,7 +1,7 @@
 import { QueryObserverOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 
-import { useWindowOpenHook } from "@/util/useWindowOpenHook.tsx";
+import { useWindowOpenHook } from "@/util/useWindowOpenHook";
 
 /**
  * Re-fetches queries if user interacts with the application, obeying original useQuery's options.

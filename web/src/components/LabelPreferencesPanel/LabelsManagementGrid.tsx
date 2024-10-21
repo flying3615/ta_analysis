@@ -13,7 +13,7 @@ import { useContext, useMemo, useState } from "react";
 import {
   LabelPreferenceDTOWithId,
   userLabelPreferencesQueryKey,
-} from "@/components/LabelPreferencesPanel/labelPreferences.ts";
+} from "@/components/LabelPreferencesPanel/labelPreferences";
 
 export interface LabelsForThisPlanProps {
   transactionId: number;

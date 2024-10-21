@@ -3,23 +3,23 @@ import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 import { useContext } from "react";
 
-import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem.tsx";
-import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu.tsx";
-import { SELECTED_DIAGRAM } from "@/components/PlanSheets/interactions/SelectedDiagram.tsx";
-import PlanElementProperty, { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty.tsx";
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType.ts";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType.ts";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useChangeLine } from "@/hooks/useChangeLine.ts";
-import { useChangeNode } from "@/hooks/useChangeNode.ts";
-import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes.ts";
+import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
+import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { SELECTED_DIAGRAM } from "@/components/PlanSheets/interactions/SelectedDiagram";
+import PlanElementProperty, { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useChangeLine } from "@/hooks/useChangeLine";
+import { useChangeNode } from "@/hooks/useChangeNode";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import {
   getPlanMode,
   getPreviousAttributesForDiagram,
   setDiagramToMove,
   setPlanProperty,
-} from "@/redux/planSheets/planSheetsSlice.ts";
+} from "@/redux/planSheets/planSheetsSlice";
 
 export const usePlanSheetsContextMenu = () => {
   const dispatch = useAppDispatch();

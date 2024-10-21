@@ -1,6 +1,6 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 
 export const adjustLoadedPlanData = (response: PlanResponseDTO): PlanResponseDTO => {
   return {

@@ -1,6 +1,6 @@
 import "./CommonButtons.scss";
 
-import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton.tsx";
+import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 
 export const CommonButtons = () => {
   return (

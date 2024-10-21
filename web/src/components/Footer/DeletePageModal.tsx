@@ -1,6 +1,6 @@
 import { LuiAlertModalV2, LuiButton, LuiModalV2 } from "@linzjs/lui";
 
-import { IPopupModal } from "@/components/Footer/PageManager.tsx";
+import { IPopupModal } from "@/components/Footer/PageManager";
 
 const DeletePageModal = ({ closeModal, pageInfo, callback }: IPopupModal) => (
   <LuiAlertModalV2

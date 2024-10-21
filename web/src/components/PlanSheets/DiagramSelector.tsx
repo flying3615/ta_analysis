@@ -3,11 +3,11 @@ import "./DiagramSelector.scss";
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiIcon } from "@linzjs/lui";
 
-import { DiagramList } from "@/components/PlanSheets/DiagramList.tsx";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { luiColors } from "@/constants.tsx";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
-import { getActiveSheet, getDiagrams } from "@/redux/planSheets/planSheetsSlice.ts";
+import { DiagramList } from "@/components/PlanSheets/DiagramList";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { luiColors } from "@/constants";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { getActiveSheet, getDiagrams } from "@/redux/planSheets/planSheetsSlice";
 
 export const DiagramSelector = () => {
   const view = useAppSelector(getActiveSheet);

@@ -7,7 +7,7 @@ import {
   GetDiagramLayerPreferencesByDiagramTypeRequest,
   GetDiagramNamesRequest,
   GetDiagramTypesRequest,
-} from "@linz/survey-plan-generation-api-client/src/apis/MaintainDiagramsControllerApi.ts";
+} from "@linz/survey-plan-generation-api-client/src/apis/MaintainDiagramsControllerApi";
 import type {
   DiagramLayerDefinitionPreferencesDTO,
   GetDiagramNamesResponseDTO,
@@ -15,7 +15,7 @@ import type {
 } from "@linz/survey-plan-generation-api-client/src/models";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
-import { apiConfig } from "@/queries/apiConfig.ts";
+import { apiConfig } from "@/queries/apiConfig";
 
 export const diagramNamesQueryKey = (transactionId: number) => ["diagramNames", transactionId];
 

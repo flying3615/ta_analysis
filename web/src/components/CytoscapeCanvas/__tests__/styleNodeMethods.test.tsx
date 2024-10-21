@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   calculateCircleSvgParams,
   circleLabel,
@@ -11,7 +11,7 @@ import {
   textJustification,
   textRotationClockwiseFromH,
   textVAlign,
-} from "@/components/CytoscapeCanvas/styleNodeMethods.ts";
+} from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("styleNodeMethods", () => {

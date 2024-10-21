@@ -5,7 +5,7 @@ import { Geometry } from "ol/geom";
 import { Fill, Stroke, Style } from "ol/style";
 import Text from "ol/style/Text";
 
-import { MapColors } from "@/components/DefineDiagrams/mapColors.ts";
+import { MapColors } from "@/components/DefineDiagrams/mapColors";
 /* Note: only the user defined diagrams (UD**) will have a label
          but there are a few old surveys in legacy with system gen diagrams that have labels
  */

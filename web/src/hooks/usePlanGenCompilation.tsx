@@ -2,34 +2,34 @@ import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
 import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
-import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails.ts";
+import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
 import { useToast } from "@linzjs/lui";
 import { wait } from "@linzjs/step-ag-grid";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper.ts";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   edgeDefinitionsFromData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
-} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
-import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet.ts";
-import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal.tsx";
-import { warning126024_planGenHasRunBefore } from "@/components/PlanSheets/prefabWarnings.tsx";
-import { useAppSelector } from "@/hooks/reduxHooks.ts";
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
+import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
+import { warning126024_planGenHasRunBefore } from "@/components/PlanSheets/prefabWarnings";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import {
   cyImageExportConfig,
   ImageFile,
   PlanSheetTypeAbbreviation,
   PlanSheetTypeObject,
-} from "@/hooks/usePlanGenPreview.tsx";
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData.ts";
-import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan.ts";
-import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice.ts";
-import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil.ts";
+} from "@/hooks/usePlanGenPreview";
+import { useTransactionId } from "@/hooks/useTransactionId";
+import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
+import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
+import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil";
 
 export interface PlanGenCompilation {
   startCompile: () => Promise<void>;

@@ -2,10 +2,10 @@ import { userEvent } from "@storybook/testing-library";
 import { screen, waitFor } from "@testing-library/react";
 import { useContext, useEffect } from "react";
 
-import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu.tsx";
-import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider.tsx";
-import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu.ts";
-import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
+import { CytoscapeContextMenu } from "@/components/CytoscapeCanvas/CytoscapeContextMenu";
+import { CytoscapeContext } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 
 const mockHideMenu = jest.fn();
 

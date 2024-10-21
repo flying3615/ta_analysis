@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { memoize } from "lodash-es";
 
-import { ImageFile } from "@/hooks/usePlanGenPreview.tsx";
+import { ImageFile } from "@/hooks/usePlanGenPreview";
 
 export interface INCOMING_EVENT {
   ImageFiles: ImageFile[];

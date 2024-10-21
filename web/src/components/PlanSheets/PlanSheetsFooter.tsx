@@ -6,22 +6,22 @@ import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData.ts";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import FooterPagination from "@/components/Footer/FooterPagination";
 import PageManager from "@/components/Footer/PageManager";
 import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal";
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
-import { luiColors } from "@/constants.tsx";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { luiColors } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
-import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation.tsx";
-import { usePlanGenPreview } from "@/hooks/usePlanGenPreview.tsx";
+import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
+import { usePlanGenPreview } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getPlanQueryKey, useUpdatePlanMutation } from "@/queries/plan";
-import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
+import { ExternalSurveyInfoDto } from "@/queries/survey";
 import {
   clearUndo,
   getActivePageNumber,
@@ -31,8 +31,8 @@ import {
   setActivePageNumber,
   setActiveSheet,
 } from "@/redux/planSheets/planSheetsSlice";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { UnsavedChangesModal } from "./UnsavedChangesModal";
 

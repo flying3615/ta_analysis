@@ -1,10 +1,10 @@
 import { useUserProfile } from "@linz/lol-auth-js";
 import { useMemo } from "react";
 
-import { useTransactionId } from "@/hooks/useTransactionId.ts";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags.ts";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags.ts";
-import { useQueryRefetchOnUserInteraction } from "@/util/useQueryRefetchOnUserInteraction.tsx";
+import { useTransactionId } from "@/hooks/useTransactionId";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
+import { useQueryRefetchOnUserInteraction } from "@/util/useQueryRefetchOnUserInteraction";
 
 import { surveyApiConfig } from "./apiConfig";
 

@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { renderWithReduxProvider } from "@/test-utils/jest-utils.tsx";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 
 import Header from "../Header";
 
@@ -55,7 +55,7 @@ describe("Header", () => {
     await waitFor(async () => expect(await screen.findByText(/Layout Plan Sheets/)).toBeInTheDocument());
     await userEvent.click(screen.getByText(/Layout Plan Sheets/));
 
-    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/layout-plan-sheets/123");
+    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/123/layout-plan-sheets");
   });
 
   it("fires onNavigate when clicking Define Diagrams", async () => {
@@ -66,7 +66,7 @@ describe("Header", () => {
     await waitFor(async () => expect(await screen.findByText(/Define Diagrams/)).toBeInTheDocument());
     await userEvent.click(screen.getByText(/Define Diagrams/));
 
-    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/define-diagrams/123");
+    expect(mockedUsedNavigate).toHaveBeenCalledWith("/plan-generation/123/define-diagrams");
   });
 
   it("navigates to Landing Page when clicked", async () => {

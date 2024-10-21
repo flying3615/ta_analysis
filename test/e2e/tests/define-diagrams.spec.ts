@@ -11,7 +11,7 @@ test.describe("Define diagrams", () => {
     const defineDiagramsPage = new DefineDiagramsPage(page);
     //If the test is being retried in the pipeline, use a different clean survey
     const surveyNumber = testInfo.retry ? "5000058" : "5000057";
-    await page.goto(`plan-generation/define-diagrams/${surveyNumber}`);
+    await page.goto(`plan-generation/${surveyNumber}/define-diagrams`);
     await defineDiagramsPage.waitForDiagramsCanvas();
     const originalDiagrams = await defineDiagramsPage.getDiagrams();
     const originalNumberOfDiagrams = originalDiagrams.length;

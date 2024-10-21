@@ -13,7 +13,7 @@ import {
   allDiagramLayerPreferencesQueryKey,
   useDiagramLayerPreferencesByDiagramTypeQuery,
   useDiagramTypesQuery,
-} from "@/components/LabelPreferencesPanel/maintainDiagram.ts";
+} from "@/components/LabelPreferencesPanel/maintainDiagram";
 import { layerChangesWillOverwriteModal } from "@/components/MaintainDiagramsPanel/LayerChangesWillOverwriteModal";
 import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridColDefs";
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";

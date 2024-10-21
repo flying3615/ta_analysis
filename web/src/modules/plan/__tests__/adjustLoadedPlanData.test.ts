@@ -1,6 +1,6 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 
-import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData.ts";
+import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData";
 
 describe("adjustLoadedPlanData", () => {
   it("leaves diagrams with an offset unchanged", () => {

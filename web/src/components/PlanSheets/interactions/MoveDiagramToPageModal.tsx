@@ -12,8 +12,8 @@ import {
 import clsx from "clsx";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
-import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   getActivePageNumber,
   getActivePages,
@@ -25,8 +25,8 @@ import {
   setDiagramPageRef,
   setDiagramToMove,
   updatePages,
-} from "@/redux/planSheets/planSheetsSlice.ts";
-import { newPageAfterCurrent, newPageAtTheEnd, newPageAtTheStart } from "@/util/pageUtil.ts";
+} from "@/redux/planSheets/planSheetsSlice";
+import { newPageAfterCurrent, newPageAtTheEnd, newPageAtTheStart } from "@/util/pageUtil";
 
 export interface DiagramToMovePayload {
   diagramId: number;
