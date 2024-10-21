@@ -7,7 +7,7 @@ import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks.ts";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext.ts";
-import { getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice.ts";
+import { canUndo, getPlanMode, setPlanMode, undo } from "@/redux/planSheets/planSheetsSlice.ts";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil.ts";
 
 import { PlanMode } from "./PlanSheetType";
@@ -17,6 +17,7 @@ export const PlanSheetsHeaderButtons = () => {
   const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
   const dispatch = useAppDispatch();
   const planMode = useAppSelector(getPlanMode);
+  const enableUndo = useAppSelector(canUndo);
 
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
@@ -29,13 +30,12 @@ export const PlanSheetsHeaderButtons = () => {
   return (
     <>
       <HeaderButton
-        headerMenuLabel={PlanMode.LineArcReverse}
+        headerMenuLabel={PlanMode.Undo}
         iconName="ic_line_arc_reverse"
+        disabled={!enableUndo}
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.LineArcReverse);
-          alert("Not Yet Implemented");
+          dispatch(undo());
         }}
-        selectedButtonLabel={planMode}
       />
       <HeaderButton
         headerMenuLabel={PlanMode.Delete}

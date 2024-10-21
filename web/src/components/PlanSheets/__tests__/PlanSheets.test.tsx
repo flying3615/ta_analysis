@@ -50,6 +50,8 @@ const planSheetsState: PlanSheetsState = {
   hasChanges: false,
   planMode: PlanMode.View,
   previousDiagramAttributesMap: {},
+  previousDiagrams: null,
+  previousPages: null,
 };
 
 const mockGetPlanResponse = {
@@ -144,6 +146,8 @@ describe("PlanSheets", () => {
       hasChanges: false,
       planMode: PlanMode.View,
       previousDiagramAttributesMap: {},
+      previousDiagrams: null,
+      previousPages: null,
     };
 
     server.use(
@@ -209,6 +213,8 @@ describe("PlanSheets", () => {
       hasChanges: false,
       planMode: PlanMode.View,
       previousDiagramAttributesMap: {},
+      previousDiagrams: null,
+      previousPages: null,
     };
 
     server.use(

@@ -25,6 +25,8 @@ describe("PlanSheetsContextMenu", () => {
           configs: [],
           planMode: planMode,
           previousDiagramAttributesMap: previousDiagramAttributesMap,
+          previousDiagrams: null,
+          previousPages: null,
         },
       },
     };

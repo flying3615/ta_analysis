@@ -5,7 +5,7 @@ import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, screen, userEvent, waitForElementToBeRemoved, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cloneDeep } from "lodash-es";
 import { http, HttpResponse } from "msw";
@@ -45,9 +45,9 @@ const queryClient = new QueryClient();
 
 const PlanSheetsTemplate = () => {
   return (
-    <LuiModalAsyncContextProvider>
-      <FeatureFlagProvider>
-        <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <LuiModalAsyncContextProvider>
+        <FeatureFlagProvider>
           <Provider store={cloneDeep(store)}>
             <ModalStoryWrapper>
               <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
@@ -56,9 +56,9 @@ const PlanSheetsTemplate = () => {
               </StorybookRouter>
             </ModalStoryWrapper>
           </Provider>
-        </QueryClientProvider>
-      </FeatureFlagProvider>
-    </LuiModalAsyncContextProvider>
+        </FeatureFlagProvider>
+      </LuiModalAsyncContextProvider>
+    </QueryClientProvider>
   );
 };
 
@@ -635,6 +635,21 @@ export const SelectLine: Story = {
   },
 };
 
+export const ShowLineMenu: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+
 export const HideLine: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -653,5 +668,58 @@ export const HideLine: Story = {
     await sleep(500);
     clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
     await sleep(500);
+  },
+};
+
+export const ShowLineMenuProperties: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
+    await userEvent.click(propertiesMenuItem);
+  },
+};
+
+export const UndoAfterHideLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const undoButton = await waitFor(async () => {
+      // eslint-disable-next-line testing-library/no-node-access
+      const undo = (await canvas.findByTitle("Undo")).parentElement;
+      await expect(undo).toBeInTheDocument();
+      await expect(undo).toBeDisabled();
+      return undo;
+    });
+    await sleep(500);
+
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const menuHide = await canvas.findByText("Hide");
+    await userEvent.click(menuHide);
+    await sleep(500);
+    clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
+    await sleep(500);
+    await expect(undoButton).toBeEnabled();
+    await userEvent.click(undoButton as HTMLElement);
+
+    await sleep(500);
+    // await expect(undoButton).toBeDisabled();
   },
 };

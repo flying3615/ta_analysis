@@ -28,7 +28,7 @@ const mockStoreRedux = setupStore({
 
 describe("PlanSheetsHeaderButtons", () => {
   const buttonLabels = [
-    [PlanMode.LineArcReverse],
+    [PlanMode.Undo],
     [PlanMode.Delete],
     [PlanMode.View],
     [PlanMode.Cursor],
@@ -64,7 +64,6 @@ describe("PlanSheetsHeaderButtons", () => {
   });
 
   it.each([
-    [PlanMode.LineArcReverse],
     [PlanMode.Delete],
     [PlanMode.View],
     [PlanMode.SelectPolygon],

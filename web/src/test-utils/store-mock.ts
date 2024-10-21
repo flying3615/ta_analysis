@@ -12,5 +12,7 @@ export const mockStore = {
     hasChanges: false,
     planMode: PlanMode.View,
     previousDiagramAttributesMap: {},
+    previousDiagrams: null,
+    previousPages: null,
   },
 };

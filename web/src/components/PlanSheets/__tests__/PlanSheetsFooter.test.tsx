@@ -8,6 +8,7 @@ import { generatePath, Link, Route } from "react-router-dom";
 
 import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData.ts";
 import PlanSheetsFooter from "@/components/PlanSheets/PlanSheetsFooter.tsx";
+import { PlanSheetsHeaderButtons } from "@/components/PlanSheets/PlanSheetsHeaderButtons.tsx";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType.ts";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { server } from "@/mocks/mockServer.ts";
@@ -359,6 +360,7 @@ describe("PlanSheetsFooter", () => {
       <Route
         element={
           <LuiMessagingContextProvider version="v2">
+            <PlanSheetsHeaderButtons />
             <PlanSheetsFooter
               setDiagramsPanelOpen={jest.fn()}
               diagramsPanelOpen={false}
@@ -387,6 +389,11 @@ describe("PlanSheetsFooter", () => {
     fireEvent.keyDown(element, { key: "s", ctrlKey: true });
 
     expect(await screen.findByText("Layout saved successfully")).toBeVisible();
+
+    // eslint-disable-next-line testing-library/no-node-access
+    const undo = screen.getByTitle("Undo").parentElement;
+    expect(undo).toBeDisabled();
+
     expect(requestSpy).toHaveBeenCalledTimes(2);
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({

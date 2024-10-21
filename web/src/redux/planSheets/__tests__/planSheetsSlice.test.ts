@@ -6,6 +6,8 @@ import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { setupStore } from "@/redux/store";
 
 import planSheetsSlice, {
+  canUndo,
+  clearUndo,
   getActivePage,
   getActivePageNumber,
   getActivePages,
@@ -24,6 +26,7 @@ import planSheetsSlice, {
   setLineHide,
   setPlanData,
   setSymbolHide,
+  undo,
   updatePages,
 } from "../planSheetsSlice";
 
@@ -40,6 +43,8 @@ describe("planSheetsSlice", () => {
     hasChanges: false,
     planMode: PlanMode.View,
     previousDiagramAttributesMap: {},
+    previousDiagrams: null,
+    previousPages: null,
   };
 
   let store = setupStore();
@@ -326,5 +331,159 @@ describe("planSheetsSlice", () => {
     store.dispatch(setLineHide({ id: "1011", hide: true }));
 
     expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBe("hide");
+  });
+
+  test("previousDiagrams reflects last change in store", () => {
+    const diagramsWithLine = emptyDiagramsBuilder()
+      .addCooordinate(101, { x: 20, y: -10 })
+      .addCooordinate(101, { x: 25, y: -10 })
+      .addLine(1011, [101, 102])
+      .build().diagrams;
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams: diagramsWithLine,
+      },
+    });
+    expect(canUndo(store.getState())).toBeFalsy();
+    expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
+
+    store.dispatch(setLineHide({ id: "1011", hide: true }));
+
+    expect(canUndo(store.getState())).toBeTruthy();
+    expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBe("hide");
+    expect(store.getState().planSheets.previousDiagrams?.[2]?.lines[0]?.displayState).toBeUndefined();
+  });
+
+  test("previousPages reflects last change in store", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+        pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
+      },
+    });
+
+    expect(hasChanges(store.getState())).toBe(false);
+    expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(1);
+
+    const replacementPages = [
+      {
+        id: 1,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 2,
+      },
+    ];
+
+    expect(canUndo(store.getState())).toBeFalsy();
+    store.dispatch(updatePages(replacementPages));
+
+    expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(2);
+    expect(hasChanges(store.getState())).toBe(true);
+    expect(store.getState().planSheets.previousPages?.[0]?.pageNumber).toBe(1);
+    expect(canUndo(store.getState())).toBeTruthy();
+  });
+
+  test("undo reverts to before change", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+        pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
+      },
+    });
+
+    const replacementPages = [
+      {
+        id: 1,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 2,
+      },
+    ];
+
+    expect(canUndo(store.getState())).toBeFalsy();
+
+    store.dispatch(updatePages(replacementPages));
+
+    expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(2);
+    expect(canUndo(store.getState())).toBeTruthy();
+
+    store.dispatch(undo());
+
+    expect(canUndo(store.getState())).toBeFalsy();
+    expect(hasChanges(store.getState())).toBeFalsy();
+    expect(store.getState().planSheets.previousPages).toBeNull();
+    expect(store.getState().planSheets.previousDiagrams).toBeNull();
+    expect(store.getState().planSheets.pages?.[0]?.pageNumber).toBe(1);
+  });
+
+  test("hasChanges remains true after undoing one of two changes", () => {
+    const initialPages = [
+      { id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 },
+      { id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 },
+    ];
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+        pages: initialPages,
+      },
+    });
+
+    const replacementPage1 = [
+      { id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 2 },
+      { id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 },
+    ];
+    store.dispatch(updatePages(replacementPage1));
+
+    const replacementPage2 = [
+      {
+        id: 1,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 2,
+      },
+      {
+        id: 2,
+        pageType: PageDTOPageTypeEnum.survey,
+        pageNumber: 2,
+      },
+    ];
+
+    store.dispatch(updatePages(replacementPage2));
+    store.dispatch(undo());
+
+    expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(2);
+    expect(getPlanData(store.getState()).pages[1]?.pageNumber).toBe(1);
+    expect(canUndo(store.getState())).toBeFalsy();
+
+    expect(hasChanges(store.getState())).toBeTruthy();
+  });
+
+  test("undo can be cleared with clearUndo", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+        pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
+      },
+    });
+
+    const replacementPages = [
+      {
+        id: 1,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 2,
+      },
+    ];
+
+    expect(canUndo(store.getState())).toBeFalsy();
+
+    store.dispatch(updatePages(replacementPages));
+
+    expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(2);
+    expect(canUndo(store.getState())).toBeTruthy();
+
+    store.dispatch(clearUndo());
+    expect(canUndo(store.getState())).toBeFalsy();
   });
 });

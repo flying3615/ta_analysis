@@ -1,5 +1,6 @@
 import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { cloneDeep } from "lodash-es";
 
 import { DiagramToMovePayload } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal.tsx";
 import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty.tsx";
@@ -17,6 +18,10 @@ export interface PlanSheetsState {
   planProperty?: PlanPropertyPayload | undefined;
   diagramToMove?: DiagramToMovePayload | undefined;
   previousDiagramAttributesMap: Record<string, PreviousDiagramAttributes>;
+  // undo buffer
+  previousHasChanges?: boolean;
+  previousDiagrams: DiagramDTO[] | null;
+  previousPages: PageDTO[] | null;
 }
 
 const initialState: PlanSheetsState = {
@@ -31,6 +36,24 @@ const initialState: PlanSheetsState = {
   hasChanges: false,
   planMode: PlanMode.View,
   previousDiagramAttributesMap: {},
+  previousDiagrams: null,
+  previousPages: null,
+};
+
+/**
+ * Call this *before* any action changes diagrams or pages
+ * Include here anything we want to update based on the old
+ * state
+ *
+ * NOTE: in React dev mode, the Redux actions can be called twice.
+ * You need to determine based on state if you are making
+ * the substantive change - see `setLineHide` etc.
+ */
+const onDataChanging = (state: PlanSheetsState) => {
+  state.previousHasChanges = state.hasChanges;
+  state.previousDiagrams = cloneDeep(state.diagrams);
+  state.previousPages = cloneDeep(state.pages);
+  state.hasChanges = true;
 };
 
 const planSheetsSlice = createSlice({
@@ -45,6 +68,9 @@ const planSheetsSlice = createSlice({
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
       state.hasChanges = false;
+      state.previousDiagrams = null;
+      state.previousPages = null;
+
       const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
       sheetTypes.forEach((type) => {
         if (state.pages.some((page) => page.pageType === type) && !state.activePageNumbers[type]) {
@@ -53,16 +79,16 @@ const planSheetsSlice = createSlice({
       });
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
+      onDataChanging(state);
       action.payload.forEach((diagram) => {
         const index = state.diagrams.findIndex((d) => d.id === diagram.id);
         state.diagrams[index] = diagram;
       });
-      state.hasChanges = true;
     },
     replacePage: (state, action: PayloadAction<PageDTO>) => {
+      onDataChanging(state);
       const index = state.pages.findIndex((page) => page.id === action.payload.id);
       state.pages[index] = action.payload;
-      state.hasChanges = true;
     },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;
@@ -71,11 +97,12 @@ const planSheetsSlice = createSlice({
       state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
     },
     setDiagramPageRef: (state, action: PayloadAction<{ id: number; pageRef: number | undefined }>) => {
+      onDataChanging(state);
       const { id, pageRef } = action.payload;
       state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
-      state.hasChanges = true;
     },
     removeDiagramPageRef: (state, action: PayloadAction<number>) => {
+      onDataChanging(state);
       state.diagrams.forEach((diagram) => {
         if (diagram.pageRef === action.payload) {
           diagram.pageRef = undefined;
@@ -83,8 +110,8 @@ const planSheetsSlice = createSlice({
       });
     },
     updatePages: (state, action: PayloadAction<PageDTO[]>) => {
+      onDataChanging(state);
       state.pages = action.payload;
-      state.hasChanges = true;
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
@@ -97,29 +124,53 @@ const planSheetsSlice = createSlice({
     },
     setSymbolHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
       const { id, hide } = action.payload;
-      state.diagrams.forEach((diagram) => {
-        diagram.coordinateLabels.forEach((label) => {
-          if (label.id.toString() === id) {
-            label.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
-          }
-        });
-      });
-      state.hasChanges = true;
+
+      const labelToChange = state.diagrams.flatMap((diagram) => {
+        return diagram.coordinateLabels.filter((label) => label.id.toString() === id);
+      })[0];
+      if (!labelToChange) return;
+      const labelIsHidden = ["hide", "systemHide"].includes(labelToChange.displayState ?? "");
+      if (labelIsHidden === hide) return;
+
+      onDataChanging(state);
+
+      labelToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
     },
     setPreviousDiagramAttributes: (state, action: PayloadAction<PreviousDiagramAttributes>) => {
       state.previousDiagramAttributesMap[action.payload.id] = action.payload;
     },
     setLineHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
       const { id, hide } = action.payload;
-      state.diagrams.forEach((diagram) => {
-        diagram.lines.forEach((line) => {
-          if (line.id.toString() === id) {
-            console.log(` hide line ${JSON.stringify(line)}`);
-            line.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
-          }
+
+      const lineToChange = state.diagrams.flatMap((diagram) => {
+        return diagram.lines.filter((line) => {
+          return line.id.toString() === id;
         });
-      });
-      state.hasChanges = true;
+      })[0];
+
+      if (!lineToChange) return;
+      const lineIsHidden = ["hide", "systemHide"].includes(lineToChange.displayState ?? "");
+      if (lineIsHidden === hide) return;
+
+      onDataChanging(state);
+
+      lineToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
+    },
+    undo: (state) => {
+      if (!state.previousDiagrams || !state.previousPages) return;
+
+      state.hasChanges = state.previousHasChanges ?? false;
+
+      state.diagrams = cloneDeep(state.previousDiagrams);
+      state.pages = cloneDeep(state.previousPages);
+
+      state.previousDiagrams = null;
+      state.previousPages = null;
+    },
+    clearUndo: (state) => {
+      state.previousHasChanges = false;
+      state.previousDiagrams = null;
+      state.previousPages = null;
     },
   },
   selectors: {
@@ -168,6 +219,7 @@ const planSheetsSlice = createSlice({
       (id: string): PreviousDiagramAttributes | undefined => {
         return state.previousDiagramAttributesMap[id];
       },
+    canUndo: (state) => state.previousDiagrams != null && state.previousPages != null,
   },
 });
 
@@ -186,6 +238,8 @@ export const {
   setSymbolHide,
   setPreviousDiagramAttributes,
   setLineHide,
+  undo,
+  clearUndo,
 } = planSheetsSlice.actions;
 
 export const {
@@ -206,6 +260,7 @@ export const {
   getPlanProperty,
   getDiagramToMove,
   getPreviousAttributesForDiagram,
+  canUndo,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

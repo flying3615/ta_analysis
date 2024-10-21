@@ -42,6 +42,7 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
             tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               if (item && !item.submenu && !item.disabled && isSimpleClickMenuItem) {
                 onItemClick(item);
                 item.callback?.(target ? { target, cy: target.cy() } : { target: null, cy: undefined });

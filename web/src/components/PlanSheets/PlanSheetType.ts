@@ -4,7 +4,7 @@ export enum PlanSheetType {
 }
 
 export enum PlanMode {
-  LineArcReverse = "Line arc reverse",
+  Undo = "Undo",
   Delete = "Delete",
   PanMap = "Pan map",
   ZoomOut = "Zoom out tool",

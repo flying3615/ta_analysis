@@ -23,6 +23,7 @@ import { useTransactionId } from "@/hooks/useTransactionId";
 import { getPlanQueryKey, useUpdatePlanMutation } from "@/queries/plan";
 import { ExternalSurveyInfoDto } from "@/queries/survey.ts";
 import {
+  clearUndo,
   getActivePageNumber,
   getActiveSheet,
   getFilteredPages,
@@ -92,6 +93,7 @@ const PlanSheetsFooter = ({
     if (updatePlanIsSuccess) {
       void queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
       successToast("Layout saved successfully");
+      dispatch(clearUndo()); // Clear undo history after saving, you can't undo save
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updatePlanIsSuccess]);
