@@ -5,7 +5,7 @@ import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitForElementToBeRemoved, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cloneDeep } from "lodash-es";
 import { http, HttpResponse } from "msw";
@@ -90,7 +90,12 @@ export const TitlePage1: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
+        http.post(/\/123\/plan-regenerate$/, () =>
+          HttpResponse.json(undefined, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
         http.get(/\/123\/plan$/, () => {
           const pd = planData();
           console.log(`Fetched planData ${JSON.stringify(pd)}`);
@@ -109,8 +114,18 @@ export const SurveyPage1: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
-        http.get(/\/123\/plan$/, () => HttpResponse.json(planData(), { status: 200, statusText: "OK" })),
+        http.post(/\/123\/plan-regenerate$/, () =>
+          HttpResponse.json(undefined, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(planData(), {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
         http.get(/\/api\/survey\/123\/survey-info/, async () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
@@ -131,7 +146,12 @@ export const SurveyPage2: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
+        http.post(/\/123\/plan-regenerate$/, () =>
+          HttpResponse.json(undefined, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(planData(), { status: 200, statusText: "OK" });
         }),
@@ -181,7 +201,8 @@ export const RenumberPage: Story = {
   },
 };
 
-export const DeletePage: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const DeletePage: Story & Required<Pick<Story, "play">> = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -264,10 +285,16 @@ export const PlanRegenerationFailedModal: Story = {
     msw: {
       handlers: [
         http.post(/\/123\/plan-regenerate$/, () =>
-          HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+          HttpResponse.json(new AsyncTaskBuilder().build(), {
+            status: 202,
+            statusText: "ACCEPTED",
+          }),
         ),
         http.get(/\/123\/async-task/, () =>
-          HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
+          HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), {
+            status: 200,
+            statusText: "OK",
+          }),
         ),
       ],
     },
@@ -341,7 +368,10 @@ const planData = () => {
       "coordinateLabels",
       100,
       "System Generated Primary Diagram",
-      { x: 40, y: -5 },
+      {
+        x: 40,
+        y: -5,
+      },
       undefined,
       undefined,
       "diagram",
@@ -385,7 +415,10 @@ const planData = () => {
       "coordinateLabels",
       200,
       "System Generated Traverse Diagram",
-      { x: 40, y: -5 },
+      {
+        x: 40,
+        y: -5,
+      },
       undefined,
       undefined,
       "diagram",
@@ -429,7 +462,10 @@ const planData = () => {
       "coordinateLabels",
       300,
       "User defined A",
-      { x: 40, y: -5 },
+      {
+        x: 40,
+        y: -5,
+      },
       undefined,
       undefined,
       "diagram",
@@ -473,7 +509,10 @@ const planData = () => {
       "coordinateLabels",
       400,
       "User defined B",
-      { x: 40, y: -5 },
+      {
+        x: 40,
+        y: -5,
+      },
       undefined,
       undefined,
       "diagram",
@@ -542,7 +581,8 @@ export const SelectDiagram: Story = {
   },
 };
 
-export const MoveDiagram: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const MoveDiagram: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -638,7 +678,8 @@ export const ShowCoordinatesMenu: Story = {
   },
 };
 
-export const HideCoordinate: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const HideCoordinate: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -693,7 +734,8 @@ export const ShowLineMenu: Story = {
   },
 };
 
-export const HideLine: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const HideLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -711,41 +753,6 @@ export const HideLine: Story = {
     await sleep(500);
     clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
     await sleep(500);
-  },
-};
-
-export const UndoAfterHideLine: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const undoButton = await waitFor(async () => {
-      // eslint-disable-next-line testing-library/no-node-access
-      const undo = (await canvas.findByTitle("Undo")).parentElement;
-      await expect(undo).toBeInTheDocument();
-      await expect(undo).toBeDisabled();
-      return undo;
-    });
-    await sleep(500);
-
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-
-    const menuHide = await canvas.findByText("Hide");
-    await userEvent.click(menuHide);
-    await sleep(500);
-    clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
-    await sleep(500);
-    await expect(undoButton).toBeEnabled();
-    await userEvent.click(undoButton as HTMLElement);
-
-    await sleep(500);
-    // await expect(undoButton).toBeDisabled();
   },
 };
 

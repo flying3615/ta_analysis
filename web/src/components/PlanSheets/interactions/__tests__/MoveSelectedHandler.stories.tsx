@@ -16,7 +16,8 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-export const MoveDiagramLine: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const MoveDiagramLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -32,7 +33,8 @@ export const MoveDiagramLine: Story = {
   },
 };
 
-export const MoveDiagramNode: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const MoveDiagramNode: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
