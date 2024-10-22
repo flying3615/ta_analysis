@@ -2,7 +2,6 @@ import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/surv
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
-import { DiagramToMovePayload } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";
 import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
@@ -16,7 +15,7 @@ export interface PlanSheetsState {
   hasChanges: boolean;
   planMode: PlanMode;
   planProperty?: PlanPropertyPayload | undefined;
-  diagramToMove?: DiagramToMovePayload | undefined;
+  diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<string, PreviousDiagramAttributes>;
   // undo buffer
   previousHasChanges?: boolean;
@@ -119,8 +118,8 @@ const planSheetsSlice = createSlice({
     setPlanProperty: (state, action: PayloadAction<PlanPropertyPayload | undefined>) => {
       state.planProperty = action.payload;
     },
-    setDiagramToMove: (state, action: PayloadAction<DiagramToMovePayload | undefined>) => {
-      state.diagramToMove = action.payload;
+    setDiagramIdToMove: (state, action: PayloadAction<number | undefined>) => {
+      state.diagramIdToMove = action.payload;
     },
     setSymbolHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
       const { id, hide } = action.payload;
@@ -213,7 +212,7 @@ const planSheetsSlice = createSlice({
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
     getPlanProperty: (state) => state.planProperty,
-    getDiagramToMove: (state) => state.diagramToMove,
+    getDiagramIdToMove: (state) => state.diagramIdToMove,
     getPreviousAttributesForDiagram:
       (state) =>
       (id: string): PreviousDiagramAttributes | undefined => {
@@ -234,7 +233,7 @@ export const {
   updatePages,
   setPlanMode,
   setPlanProperty,
-  setDiagramToMove,
+  setDiagramIdToMove,
   setSymbolHide,
   setPreviousDiagramAttributes,
   setLineHide,
@@ -258,7 +257,7 @@ export const {
   hasChanges,
   getPlanMode,
   getPlanProperty,
-  getDiagramToMove,
+  getDiagramIdToMove,
   getPreviousAttributesForDiagram,
   canUndo,
 } = planSheetsSlice.selectors;

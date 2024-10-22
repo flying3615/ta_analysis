@@ -1,4 +1,4 @@
-Story/Task: [SJ-XXX](https://toitutewhenua.atlassian.net/browse/SJ-XXX)
+Story/Task: SJ-XXX
 
 (Describe what this PR is about including screenshots or recordings to give the reviewer some context)
 

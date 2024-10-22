@@ -19,6 +19,7 @@ const SUPPRESSED_WARNINGS = [
   /has unsupported style brokenSolid1 - will use solid/,
   /The style property `height: auto` is invalid/,
   /The style value of `label` is deprecated for `width`/,
+  /Selector wrapper returned a different result when called with the same parameters/,
 ];
 
 const originalWarning = console.warn;

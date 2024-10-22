@@ -22,19 +22,13 @@ import {
   getPageRefFromPageNumber,
   getPages,
   setActivePageNumber,
+  setDiagramIdToMove,
   setDiagramPageRef,
-  setDiagramToMove,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
 import { newPageAfterCurrent, newPageAtTheEnd, newPageAtTheStart } from "@/util/pageUtil";
 
-export interface DiagramToMovePayload {
-  diagramId: number;
-}
-export type MoveDiagramToPageModalProps = {
-  diagram: DiagramToMovePayload;
-};
-export const MoveDiagramToPageModal = ({ diagram }: MoveDiagramToPageModalProps) => {
+export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => {
   const [selectedValue, setSelectedValue] = useState("existingPage");
   const dispatch = useAppDispatch();
   const { totalPages } = useAppSelector(getFilteredPages);
@@ -67,7 +61,7 @@ export const MoveDiagramToPageModal = ({ diagram }: MoveDiagramToPageModalProps)
   };
 
   const validatePageNumber = useCallback(
-    (pageNumber: number | undefined) => {
+    (pageNumber: number | undefined): boolean => {
       const isValidPageNumber = (pageNumber: number | undefined) =>
         pageNumber !== undefined && !isNaN(Number(pageNumber)) && pageNumber > 0 && pageNumber <= totalPages;
       const isCurrentPage = (pageNumber: number | undefined) => pageNumber === pageInfo.activePageNumber;
@@ -75,24 +69,25 @@ export const MoveDiagramToPageModal = ({ diagram }: MoveDiagramToPageModalProps)
       if (!isValidPageNumber(pageNumber)) {
         setPageError(`Enter a number between 1 and ${totalPages}`);
         setPageWarning(undefined);
-        return;
+        return false;
       }
 
       if (isCurrentPage(pageNumber)) {
         setPageError(undefined);
         setPageWarning(`Diagram is already on page ${pageInfo.activePageNumber}`);
-        return;
+        return false;
       }
 
       setPageError(undefined);
       setPageWarning(undefined);
+      return true;
     },
     [pageInfo.activePageNumber, totalPages],
   );
 
   const moveDiagram = (pageRef: number) => {
-    if (getPageRef && diagram.diagramId) {
-      dispatch(setDiagramPageRef({ id: diagram.diagramId, pageRef: pageRef }));
+    if (getPageRef && diagramId) {
+      dispatch(setDiagramPageRef({ id: diagramId, pageRef: pageRef }));
     }
   };
 
@@ -141,7 +136,10 @@ export const MoveDiagramToPageModal = ({ diagram }: MoveDiagramToPageModalProps)
 
   const onContinue = () => {
     if (selectedValue === "existingPage") {
-      moveToExistingPage(newPageNumber);
+      const isValid = validatePageNumber(newPageNumber);
+      if (isValid) {
+        moveToExistingPage(newPageNumber);
+      }
     } else if (selectedValue === "newLastPage") {
       moveToNewLastPage();
     } else if (selectedValue === "newPageAfterCurrent") {
@@ -152,10 +150,11 @@ export const MoveDiagramToPageModal = ({ diagram }: MoveDiagramToPageModalProps)
   };
 
   const closeModal = () => {
-    dispatch(setDiagramToMove(undefined));
+    dispatch(setDiagramIdToMove(undefined));
   };
 
   useEffect(() => {
+    if (newPageNumber === undefined) return;
     validatePageNumber(newPageNumber);
   }, [newPageNumber, validatePageNumber]);
 

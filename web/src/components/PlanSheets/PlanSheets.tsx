@@ -36,7 +36,7 @@ import { useCreateAndMaintainLockQuery } from "@/queries/lock";
 import { useGetPlanQuery } from "@/queries/plan";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
-import { getDiagramToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import { getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
 
 import { ElementHover } from "./interactions/ElementHover";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips";
@@ -107,7 +107,7 @@ const PlanSheets = () => {
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
   const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
-  const diagramToMove = useAppSelector(getDiagramToMove);
+  const diagramIdToMove = useAppSelector(getDiagramIdToMove);
   const {
     data: planData,
     isLoading: planDataIsLoading,
@@ -196,7 +196,7 @@ const PlanSheets = () => {
           {(planMode === PlanMode.SelectCoordinates || planMode === PlanMode.SelectLine) && (
             <SelectElementHandler mode={planMode} />
           )}
-          {diagramToMove && <MoveDiagramToPageModal diagram={diagramToMove} />}
+          {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />
           <PageNumberTooltips />
         </div>

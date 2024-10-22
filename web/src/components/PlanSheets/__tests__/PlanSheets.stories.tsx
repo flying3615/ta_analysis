@@ -552,6 +552,29 @@ export const MoveDiagram: Story = {
   },
 };
 
+export const MoveDiagramToPage: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Diagrams"));
+    await sleep(500);
+
+    const cytoscapeElement = await canvas.findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const menuLink = await canvas.findByText("Move to page...");
+    await userEvent.click(menuLink);
+    await sleep(500);
+  },
+};
+
 export const SelectCoordinates: Story = {
   ...Default,
   ...tabletLandscapeParameters,

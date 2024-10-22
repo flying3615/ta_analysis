@@ -17,7 +17,7 @@ import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import {
   getPlanMode,
   getPreviousAttributesForDiagram,
-  setDiagramToMove,
+  setDiagramIdToMove,
   setPlanProperty,
 } from "@/redux/planSheets/planSheetsSlice";
 
@@ -238,9 +238,11 @@ export const usePlanSheetsContextMenu = () => {
 
   const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
     const { target } = event;
-    if (target && target.data().diagramId) {
-      dispatch(setDiagramToMove({ diagramId: target.data().diagramId }));
+    if (!target?.data("diagramId")) {
+      return;
     }
+    const diagramId = Number(findDiagramId(target.data()).replace("D", ""));
+    dispatch(setDiagramIdToMove(diagramId));
   };
 
   return (
