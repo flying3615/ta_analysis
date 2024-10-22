@@ -98,38 +98,53 @@ export const usePlanSheetsContextMenu = () => {
       );
     };
 
-    const lineMenus: MenuItem[] = [
-      { title: "Original location", callback: getProperties },
-      {
-        title: "Show",
-        disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
-          element.data("displayState") === DisplayStateEnum.systemHide,
-        hideWhen: lineShouldBeDisplayed,
-        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-          setLineHidden(event.target as EdgeSingular, false);
+    const buildLineMenus = (targetLine: EdgeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
+      return [
+        { title: "Original location", callback: getProperties },
+        {
+          title: "Show",
+          disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
+            element.data("displayState") === DisplayStateEnum.systemHide,
+          hideWhen: lineShouldBeDisplayed,
+          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+            setLineHidden(event.target as EdgeSingular, false);
+          },
         },
-      },
-      {
-        title: "Hide",
-        disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
-          element.data("displayState") === DisplayStateEnum.systemDisplay,
-        hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
-        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-          setLineHidden(event.target as EdgeSingular, true);
+        {
+          title: "Hide",
+          disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
+            element.data("displayState") === DisplayStateEnum.systemDisplay,
+          hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
+          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+            setLineHidden(event.target as EdgeSingular, true);
+          },
         },
-      },
-      { title: "Properties", callback: getProperties },
-      // { title: "Cut", disabled: true },
-      // { title: "Copy", disabled: true },
-      // { title: "Paste", disabled: true },
-      // {
-      //   title: "Select",
-      //   submenu: [
-      //     { title: "Observation Distance", callback: getProperties },
-      //     { title: "All", callback: getProperties },
-      //   ],
-      // },
-    ];
+        {
+          title: "Properties",
+          callback: (event) => {
+            if (!event.target && selectedCollection && selectedCollection[0]) {
+              getProperties({
+                target: selectedCollection[0],
+                cy: selectedCollection[0].cy(),
+                position: event.position,
+              });
+            } else {
+              getProperties(event);
+            }
+          },
+        },
+        // { title: "Cut", disabled: true },
+        // { title: "Copy", disabled: true },
+        // { title: "Paste", disabled: true },
+        // {
+        //   title: "Select",
+        //   submenu: [
+        //     { title: "Observation Distance", callback: getProperties },
+        //     { title: "All", callback: getProperties },
+        //   ],
+        // },
+      ];
+    };
 
     // Which menu option to display for Show / Hide
     // inverse of the state of the actual object
@@ -223,7 +238,7 @@ export const usePlanSheetsContextMenu = () => {
         return buildDiagramMenu(findPreviousAttributesForDiagram(element.data("diagramId") as number));
       case PlanMode.SelectLine:
         if (planElementType !== PlanElementType.LINES) return undefined;
-        return lineMenus;
+        return buildLineMenus(element as EdgeSingular, selectedCollection);
       case PlanMode.SelectCoordinates:
         if (planElementType === PlanElementType.COORDINATES || planElementType === PlanElementType.COORDINATE_LABELS)
           return nodeMenus;

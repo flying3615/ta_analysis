@@ -1,7 +1,11 @@
 import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
+import { setupStore } from "@/redux/store";
+import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { mockStore } from "@/test-utils/store-mock";
 
 const mockProps: LinePropertiesProps = {
   displayState: DisplayStateEnum.display,
@@ -9,12 +13,19 @@ const mockProps: LinePropertiesProps = {
   pointWidth: 0.75,
   originalStyle: "brokenSolid1",
 };
+const mockReduxStore = setupStore({
+  planSheets: {
+    ...mockStore.planSheets,
+    activeSheet: PlanSheetType.TITLE,
+  },
+});
 
-const setup = () => render(<LineProperties data={[mockProps]} />);
+const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
+  renderWithReduxProvider(<LineProperties data={props} />, { store: reduxStore });
 
 describe("LineProperties", () => {
   it("renders correctly", () => {
-    setup();
+    renderComponent({});
     expect(screen.getByText("Visibility")).toBeInTheDocument();
     expect(screen.getByText("Type")).toBeInTheDocument();
     expect(screen.getByText("Line style")).toBeInTheDocument();
@@ -22,7 +33,7 @@ describe("LineProperties", () => {
   });
 
   it("displays Visibility property", () => {
-    setup();
+    renderComponent({});
     const checkbox = screen.getByRole("checkbox", { name: "Hide Check" });
     expect(checkbox).toBeInTheDocument();
     expect(checkbox).toBeDisabled();
@@ -36,7 +47,7 @@ describe("LineProperties", () => {
     "User",
   ];
   it.each(lineTypes)("displays Type property - %s", async (lineType: string) => {
-    render(<LineProperties data={[{ ...mockProps, lineType: lineType }]} />);
+    renderComponent({ props: [{ ...mockProps, lineType }] });
     const expectedDisplayName = lineTypeDisplayNames[lineTypes.indexOf(lineType)] || "Unknown line type";
     const textInput = screen.getByDisplayValue(expectedDisplayName);
     expect(textInput).toBeInTheDocument();
@@ -44,14 +55,14 @@ describe("LineProperties", () => {
   });
 
   it("displays Style property", () => {
-    setup();
+    renderComponent({});
     const radioInput = screen.getByRole("radio", { name: "brokenSolid1" });
     expect(radioInput).toBeInTheDocument();
     expect(radioInput).toBeDisabled();
   });
 
   it("displays Width property", () => {
-    setup();
+    renderComponent({});
     const radioInput = screen.getByRole("radio", { name: "0.75" });
     expect(radioInput).toBeInTheDocument();
     expect(radioInput).toBeDisabled();

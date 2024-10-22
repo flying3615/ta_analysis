@@ -53,6 +53,7 @@ const PlanElementProperty = () => {
   const dispatch = useAppDispatch();
   const planElementProperty = useAppSelector(getPlanProperty);
   const { component, headerContent, startHeight } = planModeConfig(planElementProperty as PlanPropertyPayload);
+  const minPanelHeight: number = 400;
   const maxPanelWidth: number = 320;
   const { panelClose } = useContext(PanelInstanceContext);
 
@@ -60,10 +61,12 @@ const PlanElementProperty = () => {
 
   // Adjusts the position to ensure it fits within the window's height.
   const adjustPosition = (pos: { x: number; y: number }) => {
+    const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
+    const newWidth = maxPanelWidth + 20;
     const newHeight = startHeight + 100;
     return {
-      x: pos.x,
+      x: pos.x + newWidth > windowWidth ? windowWidth - newWidth : pos.x,
       y: pos.y + newHeight > windowHeight ? windowHeight - newHeight : pos.y,
     };
   };
@@ -80,21 +83,20 @@ const PlanElementProperty = () => {
       position={initialPosition}
       maxWidth={maxPanelWidth}
       minWidth={maxPanelWidth}
+      minHeight={minPanelHeight}
       className="PlanElement-container"
       modal={true}
     >
       <PanelHeader icon={headerContent.icon} disablePopout={true} />
-      <PanelContent>
-        {component}
-        <div className="footer">
-          <LuiButton onClick={closeFloatingWindow} size="lg" level="tertiary">
-            Cancel
-          </LuiButton>
-          <LuiButton disabled={true} size="lg" level="primary">
-            OK
-          </LuiButton>
-        </div>
-      </PanelContent>
+      <PanelContent>{component}</PanelContent>
+      <div className="footer">
+        <LuiButton onClick={closeFloatingWindow} size="lg" level="tertiary">
+          Cancel
+        </LuiButton>
+        <LuiButton disabled={true} size="lg" level="primary">
+          OK
+        </LuiButton>
+      </div>
     </Panel>
   );
 };

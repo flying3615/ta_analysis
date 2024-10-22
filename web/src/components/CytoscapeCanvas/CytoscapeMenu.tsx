@@ -45,7 +45,6 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
               e.preventDefault();
               if (item && !item.submenu && !item.disabled && isSimpleClickMenuItem) {
                 onItemClick(item);
-                item.callback?.(target ? { target, cy: target.cy() } : { target: null, cy: undefined });
               }
             }}
             onKeyDown={(e) => {
@@ -53,7 +52,6 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
                 e.stopPropagation();
                 if (item && !item.submenu && !item.disabled) {
                   onItemClick(item);
-                  item.callback?.(target ? { target, cy: target.cy() } : { target: null, cy: undefined });
                 }
               }
             }}

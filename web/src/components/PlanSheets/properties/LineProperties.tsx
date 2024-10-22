@@ -1,8 +1,11 @@
 import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiCheckboxInput, LuiRadioInput, LuiTextInput } from "@linzjs/lui";
-import React from "react";
+import React, { useState } from "react";
 
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { getActiveSheet } from "@/redux/planSheets/planSheetsSlice";
 
 export interface LinePropertiesProps {
   displayState: DisplayStateEnum;
@@ -12,14 +15,16 @@ export interface LinePropertiesProps {
 }
 
 const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
-  const elemt = data[0];
-  if (!elemt) return;
-  const {
-    displayState = DisplayStateEnum.display,
-    lineType = "observation",
-    pointWidth = 1.0,
-    originalStyle = "brokenSolid1",
-  } = elemt;
+  const initialDisplayState = data[0]?.displayState || DisplayStateEnum.display;
+  const [displayState, setDisplayState] = useState<DisplayStateEnum>(initialDisplayState);
+  const activeSheet = useAppSelector(getActiveSheet);
+  const elem = data[0];
+  if (!elem) return;
+  const { lineType = "observation", pointWidth = 1.0, originalStyle = "brokenSolid1" } = elem;
+
+  const onVisibilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayState(e.target.checked ? DisplayStateEnum.hide : DisplayStateEnum.display);
+  };
 
   // render an SVG for a specific line type
   function renderLabelFor() {
@@ -49,13 +54,21 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
     }
   }
 
-  const invisible = displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay;
-
   return (
     <div className="plan-element-properties">
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Visibility</span>
-        <LuiCheckboxInput value="false" label="Hide" onChange={() => {}} isDisabled={true} isChecked={invisible} />
+        <LuiCheckboxInput
+          value="false"
+          label="Hide"
+          onChange={onVisibilityChange}
+          isDisabled={
+            activeSheet === PlanSheetType.TITLE ||
+            displayState === DisplayStateEnum.systemHide ||
+            displayState === DisplayStateEnum.systemDisplay
+          }
+          isChecked={displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay}
+        />
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Type</span>

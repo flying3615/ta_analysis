@@ -17,8 +17,7 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
   if (!visible) return null;
 
   const onItemClick = (item: MenuItem) => {
-    const cyInstance = target?.cy?.();
-    cyInstance && item.callback?.({ target: target, cy: cyInstance, position: position });
+    item.callback?.({ target: target, cy: target?.cy?.(), position: position });
     hideMenu();
   };
 
