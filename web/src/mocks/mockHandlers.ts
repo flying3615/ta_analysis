@@ -67,6 +67,36 @@ export const handlers: HttpHandler[] = [
     HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" }),
   ),
 
+  http.get(/\/api\/survey\/666\/locks$/, async () =>
+    HttpResponse.html("<html lang='en'><body>Unexpected exception</body></html>", {
+      status: 500,
+      statusText: "Failed",
+    }),
+  ),
+
+  http.get(/\/api\/survey\/5000061\/locks$/, async () =>
+    HttpResponse.json(
+      {
+        transactionLock: {
+          locked: true,
+          lockedId: 5000061,
+          lockedEntityId: 2100000,
+          sessionUser: "extsurv1",
+          type: null,
+          lockedBy: {
+            id: "extsurv4",
+            givenNames: "Survey X",
+            surname: "External",
+          },
+          lockedAt: "{{now}}",
+          isNewAppLock: false,
+        },
+        taCertificationRequestLocks: [],
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
   http.get(/\/api\/survey\/([0-9]+)\/locks$/, async ({ params }) =>
     HttpResponse.json(
       {
@@ -88,6 +118,13 @@ export const handlers: HttpHandler[] = [
       },
       { status: 200, statusText: "OK" },
     ),
+  ),
+
+  http.put(/\/api\/survey\/667\/locks\/([0-9]+)\/lastUsed$/, async () =>
+    HttpResponse.html("<html lang='en'><body>Unexpected exception</body></html>", {
+      status: 500,
+      statusText: "Failed",
+    }),
   ),
 
   http.put(/\/api\/survey\/([0-9]+)\/locks\/([0-9]+)\/lastUsed$/, async ({ params }) =>

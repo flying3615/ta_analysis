@@ -63,24 +63,6 @@ describe("DefineDiagrams", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: "http://localhost/v1/surveys/api/survey/123/locks",
-        }),
-      }),
-    );
-
-    expect(requestSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          method: "PUT",
-          url: "http://localhost/v1/surveys/api/survey/123/locks/2100000/lastUsed",
-        }),
-      }),
-    );
-
-    expect(requestSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/diagrams",
         }),
       }),

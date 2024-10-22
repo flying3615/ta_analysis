@@ -11,14 +11,12 @@ import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/Mainta
 import { luiColors } from "@/constants";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
 const LandingPage = () => {
   const transactionId = useTransactionId();
-  useCreateAndMaintainLockQuery();
 
   const { openPanel } = useContext(PanelsContext);
 

@@ -7,26 +7,24 @@ import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, patchFetch, UserAccessesData, UserProfile } from "@linz/lol-auth-js";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { LuiErrorPage, LuiLoadingSpinner, LuiMessagingContextProvider, LuiStaticMessage } from "@linzjs/lui";
-import { LuiModalAsyncContextProvider, PanelsContextProvider, useLuiModalPrefab } from "@linzjs/windows";
+import { LuiModalAsyncContextProvider, PanelsContextProvider } from "@linzjs/windows";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorInfo, ReactNode, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
-import { Route, useRouteError } from "react-router";
+import { Route } from "react-router";
 import { createBrowserRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
-import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
-import { DefineDiagrams as DefineDiagramsOld } from "@/components/DefineDiagrams/DefineDiagramsOld";
-import LandingPage from "@/components/LandingPage/LandingPage";
-import { unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
-import PlanSheets from "@/components/PlanSheets/PlanSheets";
+import { AppSubRoutes } from "@/AppSubRoutes";
 import { store } from "@/redux/store";
+import { RouteErrorBoundary, ShowUnhandledModal } from "@/RouteErrorBoundary";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { appClientId } from "./constants";
 import { mockUser } from "./mocks/mockAuthUser";
+import { NoMatchingRouteFound } from "./NoMatchingRouteFound";
 import { RoutePaths } from "./Paths";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
@@ -39,10 +37,7 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
     FEATUREFLAGS.SURVEY_PLAN_GENERATION,
   );
 
-  const { result: isDefineDiagramsOn, loading: isDefineDiagramsToggleLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS,
-  );
-  if (loadingApplicationAvailable || isDefineDiagramsToggleLoading) {
+  if (loadingApplicationAvailable) {
     return <LuiLoadingSpinner />;
   }
 
@@ -61,72 +56,22 @@ export const PlangenApp = (props: { mockMap?: boolean }) => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route>
-          <Route path={RoutePaths.root}>
-            <Route path="" element={<LandingPage />} ErrorBoundary={RouteErrorBoundary} />
-            {isDefineDiagramsOn ? (
-              <Route
-                path={RoutePaths.defineDiagrams}
-                element={<DefineDiagrams mock={props.mockMap} />}
-                ErrorBoundary={RouteErrorBoundary}
-              />
-            ) : (
-              <Route
-                path={RoutePaths.defineDiagrams}
-                element={<DefineDiagramsOld mock={props.mockMap} />}
-                ErrorBoundary={RouteErrorBoundary}
-              />
-            )}
-            <Route path={RoutePaths.layoutPlanSheets} element={<PlanSheets />} ErrorBoundary={RouteErrorBoundary} />
-          </Route>
-          <Route path="*" element={<NoMatchingRouteFound />} ErrorBoundary={RouteErrorBoundary} />
-        </Route>
+        <Route
+          path={RoutePaths.root}
+          element={<AppSubRoutes mockMap={props.mockMap} />}
+          ErrorBoundary={RouteErrorBoundary}
+        />
+        <Route
+          path={`${RoutePaths.root}/*`}
+          element={<AppSubRoutes mockMap={props.mockMap} />}
+          ErrorBoundary={RouteErrorBoundary}
+        />
+        <Route path="*" element={<NoMatchingRouteFound />} ErrorBoundary={RouteErrorBoundary} />
       </>,
     ),
   );
 
   return <RouterProvider router={router} />;
-};
-
-function NoMatchingRouteFound(): React.JSX.Element {
-  return (
-    <LuiErrorPage
-      content={
-        <LuiStaticMessage level="error" closable={false}>
-          <h2>This page does not exist, please check the url and try again.</h2>
-        </LuiStaticMessage>
-      }
-    />
-  );
-}
-
-const errorHandler = (error: Error, info?: ErrorInfo) => {
-  console.error(error, info);
-  newrelic.noticeError(error);
-};
-
-const RouteErrorBoundary = () => {
-  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-  const error = useRouteError() as Error;
-
-  useEffect(() => {
-    errorHandler(error);
-    void showPrefabModal(unhandledErrorModal(error));
-  }, [showPrefabModal, error]);
-
-  return <div ref={modalOwnerRef} />;
-};
-
-const ShowUnhandledModal = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
-  const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
-
-  useEffect(() => {
-    void showPrefabModal(unhandledErrorModal(error)).then(() => {
-      resetErrorBoundary();
-    });
-  }, [showPrefabModal, error, resetErrorBoundary]);
-
-  return <div ref={modalOwnerRef} />;
 };
 
 const commonDefaultOptions = {
@@ -145,6 +90,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const errorHandler = (error: Error, info?: ErrorInfo) => {
+  console.error(error, info);
+  newrelic.noticeError(error);
+};
 
 const App = () => {
   const oidcConfig: OidcConfig = {

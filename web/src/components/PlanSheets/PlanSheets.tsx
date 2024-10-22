@@ -32,7 +32,6 @@ import {
   selectActivePageEdgesAndNodes,
   selectPageConfigEdgesAndNodes,
 } from "@/modules/plan/selectGraphData";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock";
 import { useGetPlanQuery } from "@/queries/plan";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
@@ -47,7 +46,6 @@ import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();
-  useCreateAndMaintainLockQuery();
 
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();

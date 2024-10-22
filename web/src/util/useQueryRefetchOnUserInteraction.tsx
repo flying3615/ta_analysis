@@ -9,7 +9,7 @@ import { useWindowOpenHook } from "@/util/useWindowOpenHook";
  *
  * @param queryOptions Query options
  */
-export const useQueryRefetchOnUserInteraction = (queryOptions: QueryObserverOptions) => {
+export const useQueryRefetchOnUserInteraction = (queryOptions: QueryObserverOptions): void => {
   const queryClient = useQueryClient();
   const hasErrored = useRef(false);
 
@@ -49,5 +49,5 @@ export const useQueryRefetchOnUserInteraction = (queryOptions: QueryObserverOpti
     ],
   });
 
-  return useQuery(queryOptions);
+  useQuery(queryOptions);
 };

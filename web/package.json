@@ -57,7 +57,7 @@
     "@linzjs/landonline-openlayers-map": "^6.2.1",
     "@linzjs/lui": "^21.49.0",
     "@linzjs/step-ag-grid": "^22.2.3",
-    "@linzjs/windows": "^3.3.1",
+    "@linzjs/windows": "^3.4.3",
     "@reduxjs/toolkit": "^2.3.0",
     "@splitsoftware/splitio-react": "^1.13.0",
     "@szhsin/react-menu": "^2.3.4",

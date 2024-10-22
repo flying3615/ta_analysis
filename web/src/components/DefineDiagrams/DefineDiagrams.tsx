@@ -39,7 +39,6 @@ import { useHasChanged } from "@/hooks/useHasChanged";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useGetLinesQuery } from "@/queries/lines";
-import { useCreateAndMaintainLockQuery } from "@/queries/lock";
 import { PrepareDatasetError, usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { useSurveyFeaturesQuery } from "@/queries/surveyFeatures";
 import { metersToLatLongCoordinate } from "@/util/mapUtil";
@@ -54,8 +53,6 @@ export interface DefineDiagramsProps {
 const maxZoom = 24;
 
 export const DefineDiagrams = (props: PropsWithChildren<DefineDiagramsProps>) => {
-  useCreateAndMaintainLockQuery();
-
   return (
     <LolOpenLayersMapContextProvider>
       <DefineDiagramsInner {...props} />
