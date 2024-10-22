@@ -10,5 +10,6 @@ declare interface Window {
     surveyBaseUrl: string;
     secureFileUploadBaseUrl: string;
   };
+  cyRef: cytoscape.Core;
   isStorybook?: true | undefined;
 }

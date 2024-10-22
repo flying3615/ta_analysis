@@ -714,24 +714,6 @@ export const HideLine: Story = {
   },
 };
 
-export const ShowLineMenuProperties: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
-    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
-    await userEvent.click(propertiesMenuItem);
-  },
-};
-
 export const UndoAfterHideLine: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -764,5 +746,59 @@ export const UndoAfterHideLine: Story = {
 
     await sleep(500);
     // await expect(undoButton).toBeDisabled();
+  },
+};
+
+const checkElementProperties = async (
+  selector: string,
+  expectedColor: string,
+  styleProperty: string,
+  expectedClass: string,
+) => {
+  const element = window.cyRef.$(selector);
+  if (element.length > 0) {
+    const color = element.style(styleProperty);
+    const classes = element.classes();
+
+    await expect(color).toBe(expectedColor);
+    await expect(classes).toContain(expectedClass);
+  } else {
+    console.log(`Element with ID ${selector} not found.`);
+  }
+};
+
+export const SelectLineAndLinkedLabel: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 520, 135);
+    await sleep(500);
+
+    await checkElementProperties("#1001_0", "rgb(248,27,239)", "line-color", "element-move-control");
+    await checkElementProperties("#13", "rgb(248,27,239)", "text-background-color", "related-element-selected");
+  },
+};
+
+export const SelectMarkAndLinkedLabel: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 411, 135);
+    await sleep(500);
+
+    await checkElementProperties("#10001", "rgb(248,27,239)", "outline-color", "related-label-selected");
+    await checkElementProperties("#11", "rgb(248,27,239)", "text-background-color", "related-element-selected");
   },
 };
