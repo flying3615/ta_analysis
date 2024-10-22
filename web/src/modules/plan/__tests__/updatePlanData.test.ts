@@ -69,6 +69,7 @@ describe("updatePlanData", () => {
         featureType: "mark",
         font: "Arial",
         fontSize: 12,
+        textRotation: -90,
       },
       position: { x: 99, y: -99 },
     } as INodeData;
@@ -84,7 +85,7 @@ describe("updatePlanData", () => {
             displayState: DisplayStateEnum.display,
             effect: "none",
             pointOffset: 0,
-            rotationAngle: 0,
+            rotationAngle: 90,
             userEdited: false,
             id: 2,
             displayText: "Label 2",

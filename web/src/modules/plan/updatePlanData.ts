@@ -141,7 +141,7 @@ const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
     ...label,
     displayText: updatedNode.label ?? label.displayText,
     position: updatedNode.position,
-    rotationAngle: rotationAngle ? -rotationAngle : 0,
+    rotationAngle: (360 - rotationAngle) % 360,
     anchorAngle,
     pointOffset,
     textAlignment,
