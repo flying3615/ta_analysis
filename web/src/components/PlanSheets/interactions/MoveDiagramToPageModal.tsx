@@ -36,7 +36,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   const activeSheet = useAppSelector(getActiveSheet);
   const getAllPages = useAppSelector(getPages);
   const activePages = useAppSelector(getActivePages);
-  const getPageRef = useAppSelector((state) => getPageRefFromPageNumber(state)(activePageNumber));
+  const getPageRef = useAppSelector(getPageRefFromPageNumber);
   const onPageUpdated = (pages: PageDTO[]) => dispatch(updatePages(pages));
   const onActivePageNumberUpdated = (pageNumber: number) =>
     dispatch(setActivePageNumber({ pageType: activeSheet, pageNumber }));
@@ -86,7 +86,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   );
 
   const moveDiagram = (pageRef: number) => {
-    if (getPageRef && diagramId) {
+    if (diagramId) {
       dispatch(setDiagramPageRef({ id: diagramId, pageRef: pageRef }));
     }
   };
@@ -128,9 +128,11 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
 
   const moveToExistingPage = (pageNumber: number | undefined) => {
     if (!pageNumber) return;
+    const pageRef = getPageRef(pageNumber);
+    if (!pageRef) return;
     onActivePageNumberUpdated(pageNumber);
     zoomToFit();
-    moveDiagram(pageNumber);
+    moveDiagram(pageRef);
     closeModal();
   };
 

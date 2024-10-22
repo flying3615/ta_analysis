@@ -8,12 +8,12 @@ import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { MoveDiagramToPageModal } from "../MoveDiagramToPageModal";
 
 describe("MoveDiagramToPageModal", () => {
-  const page1 = { id: 1, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;
-  const page2 = { id: 2, pageNumber: 2, pageType: PlanSheetType.TITLE } as PageDTO;
-  const page3 = { id: 3, pageNumber: 3, pageType: PlanSheetType.TITLE } as PageDTO;
-  const page4 = { id: 4, pageNumber: 4, pageType: PlanSheetType.SURVEY } as PageDTO;
-  const diagram1 = { id: 1, pageRef: 1 } as DiagramDTO;
-  const diagram2 = { id: 2, pageRef: 2 } as DiagramDTO;
+  const page1 = { id: 4, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;
+  const page2 = { id: 3, pageNumber: 2, pageType: PlanSheetType.TITLE } as PageDTO;
+  const page3 = { id: 2, pageNumber: 3, pageType: PlanSheetType.TITLE } as PageDTO;
+  const page4 = { id: 1, pageNumber: 1, pageType: PlanSheetType.SURVEY } as PageDTO;
+  const diagram1 = { id: 1, pageRef: 4 } as DiagramDTO;
+  const diagram2 = { id: 2, pageRef: 3 } as DiagramDTO;
 
   const diagramIdToMove = diagram1.id;
 
@@ -70,7 +70,7 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(continueButton);
 
     const updatedState = store.getState().planSheets;
-    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 2 }, diagram2]);
+    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 3 }, diagram2]);
     expect(updatedState.pages).toStrictEqual(initialState.pages);
     expect(updatedState.diagramIdToMove).toBeUndefined();
     expect(updatedState.activePageNumbers).toStrictEqual({
