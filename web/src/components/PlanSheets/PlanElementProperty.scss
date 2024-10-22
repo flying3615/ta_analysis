@@ -1,3 +1,5 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
 .PlanElement-container {
   .WindowPanel-content {
     flex-direction: column;
@@ -23,6 +25,10 @@
           height: 64px;
           width: 100%;
           resize: none;
+          font-size: 16px;
+          &:disabled {
+            background-color: lui.$lily;
+          }
         }
       }
     }

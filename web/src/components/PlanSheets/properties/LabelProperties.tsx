@@ -176,14 +176,26 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
         <span className="LuiTextInput-label-text">Text</span>
         <div className="row">
           <span style={{ flex: `${labelType === LabelDTOLabelTypeEnum.obsBearing ? "1 1 65%" : "1 1 100%"}` }}>
-            <textarea
-              disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
-              value={props.data.length === 1 ? labelText : ""}
-              onChange={(e) => {
-                setLabelText(e.target.value);
-              }}
-              className={clsx("PageLabelInput labelTextarea", { error: false })}
-            />
+            {labelType === LabelDTOLabelTypeEnum.obsBearing ? (
+              <div data-testid="label-text-input">
+                <LuiTextInput
+                  label=""
+                  hideLabel
+                  value={props.data.length === 1 ? labelText : ""}
+                  inputProps={{ disabled: true }}
+                />
+              </div>
+            ) : (
+              <textarea
+                disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
+                value={props.data.length === 1 ? labelText : ""}
+                onChange={(e) => {
+                  setLabelText(e.target.value);
+                }}
+                className={clsx("PageLabelInput labelTextarea", { error: false })}
+                data-testid="label-textarea"
+              />
+            )}
           </span>
           {labelType === LabelDTOLabelTypeEnum.obsBearing && (
             <span style={{ flex: "1 1 35%", marginLeft: "8px" }}>
