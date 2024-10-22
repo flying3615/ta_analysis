@@ -45,7 +45,6 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
     const onSelect = () => {
       const selection = cyto.$(":selected");
-
       selection.forEach((ele) => {
         const related = getRelatedElements(ele);
         if (related && !selection.contains(related)) {
@@ -72,14 +71,35 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       setSelected(selection.nonempty() ? selection : undefined);
     };
 
+    const onClick = (event: EventObjectEdge | EventObjectNode) => {
+      if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
+        return;
+      }
+      const clickedElement = event.target;
+
+      const selected = cyto.elements(":selected");
+      if (!selected.contains(clickedElement)) {
+        // allow normal selection to occur
+        return;
+      }
+
+      const related = getRelatedElements(clickedElement);
+      const keepSelected = clickedElement.union(related || []);
+
+      selected.difference(keepSelected).unselect();
+      setSelected(keepSelected);
+    };
+
     const selector = getSelector(mode);
     cyto.on("select", onSelect);
     cyto.on("unselect", onUnselect);
+    cyto.on("click", selector, onClick);
     cyto.$(selector).selectify().style("events", "yes");
 
     return () => {
       cyto?.off("select", onSelect);
       cyto?.off("unselect", onUnselect);
+      cyto?.off("click", selector, onClick);
       cyto.$(selector).unselectify().style("events", "no");
 
       onUnselect();

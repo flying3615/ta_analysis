@@ -126,6 +126,18 @@ export const clickAtCoordinates = (
   fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
 };
 
+export const clickMultipleCoordinates = (
+  cytoscapeNodeLayer: HTMLElement,
+  coordinates: { x: number; y: number }[],
+  button: number | undefined = undefined,
+) => {
+  coordinates.forEach(({ x, y }) => {
+    fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
+    fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y, ctrlKey: true });
+    fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y, ctrlKey: true });
+  });
+};
+
 export const PanelInstanceContextMock = ({
   children,
   ...props

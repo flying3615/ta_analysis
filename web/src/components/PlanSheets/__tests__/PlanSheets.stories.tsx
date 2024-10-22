@@ -23,6 +23,7 @@ import { store } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import {
   clickAtCoordinates,
+  clickMultipleCoordinates,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   ModalStoryWrapper,
@@ -516,6 +517,12 @@ export const ExportPdfAndDownload: Story = {
 
 const CANVAS_CORNER_REL_X = 280;
 const CANVAS_CORNER_REL_Y = 56;
+
+const COORDINATE_10001_X = 411;
+const COORDINATE_10001_Y = 136;
+
+const COORDINATE_10004_X = 733;
+const COORDINATE_10004_Y = 456;
 export const SelectDiagram: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -528,8 +535,8 @@ export const SelectDiagram: Story = {
     const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
-    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
-    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y);
     await sleep(500);
   },
@@ -547,7 +554,10 @@ export const MoveDiagram: Story = {
     const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
     const cytoCanvas = getCytoscapeNodeLayer(cytoscapeElement);
 
-    const position = { clientX: 411 - CANVAS_CORNER_REL_X + cyOffsetX, clientY: 136 - CANVAS_CORNER_REL_Y + cyOffsetY };
+    const position = {
+      clientX: COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX,
+      clientY: COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY,
+    };
     await selectAndDrag(cytoCanvas, position, { clientX: position.clientX + 200, clientY: position.clientY + 150 });
   },
 };
@@ -589,10 +599,20 @@ export const SelectCoordinates: Story = {
 
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
-    // Location of a mark in cytoscape pixels
-    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
-    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
-    clickAtCoordinates(cytoscapeNodeLayer, x, y);
+    const x_10001 = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y_10001 = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
+
+    const x_10004 = COORDINATE_10004_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y_10004 = COORDINATE_10004_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
+
+    clickMultipleCoordinates(cytoscapeNodeLayer, [
+      { x: x_10001, y: y_10001 },
+      { x: x_10004, y: y_10004 },
+    ]);
+
+    await sleep(500);
+
+    clickAtCoordinates(cytoscapeNodeLayer, x_10001, y_10001);
 
     await sleep(500);
   },
@@ -611,8 +631,8 @@ export const ShowCoordinatesMenu: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
     // Location of a mark in cytoscape pixels
-    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
-    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
     await sleep(500);
   },
@@ -631,8 +651,8 @@ export const HideCoordinate: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
     // Location of a mark in cytoscape pixels
-    const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
-    const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
+    const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
     clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
 
     const menuHide = await canvas.findByText("Hide");
