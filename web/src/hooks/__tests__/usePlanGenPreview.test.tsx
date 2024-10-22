@@ -68,9 +68,7 @@ describe("usePlanGenPreview hook", () => {
     await screen.findByText("Processing...");
     expect(previewing).toBeTruthy();
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const workerInstance = PreviewWorker.mock.instances[0];
+    const workerInstance = (PreviewWorker as jest.Mock).mock.instances[0] as Worker;
     const postMessageSpy = jest.spyOn(workerInstance, "postMessage");
     const workerPostMessage = workerInstance.postMessage;
     expect(workerPostMessage).toHaveBeenCalledTimes(1);

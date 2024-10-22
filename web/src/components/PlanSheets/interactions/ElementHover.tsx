@@ -1,3 +1,4 @@
+import cytoscape from "cytoscape";
 import { useEffect } from "react";
 
 import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
@@ -12,12 +13,12 @@ export function ElementHover() {
       return;
     }
 
-    const onMouseOver = (event: cytoscape.EventObject) => {
+    const onMouseOver = (event: cytoscape.EventObjectEdge | cytoscape.EventObjectNode) => {
       const element = event.target;
       element.addClass(PlanStyleClassName.ElementHover);
     };
 
-    const onMouseOut = (event: cytoscape.EventObject) => {
+    const onMouseOut = (event: cytoscape.EventObjectEdge | cytoscape.EventObjectNode) => {
       const element = event.target;
       element.removeClass(PlanStyleClassName.ElementHover);
     };

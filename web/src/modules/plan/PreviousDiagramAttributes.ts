@@ -1,5 +1,5 @@
 export interface PreviousDiagramAttributes {
-  id: string;
+  id: number;
   linesAffectedByLastMove: ElementImpactedByMove[];
   labelsAffectedByLastMove: ElementImpactedByMove[];
 }

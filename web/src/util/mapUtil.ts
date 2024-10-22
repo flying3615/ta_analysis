@@ -41,9 +41,9 @@ export const metersToLatLongCartesian = (v: number[]) => numericToCartesian(mete
 
 const mapCoordinatesFromGeometry = (geometry: SimpleGeometry): Coordinate[] => {
   if (geometry.getType() === "Polygon") {
-    return geometry.getCoordinates()?.[0] ?? [];
+    return (geometry.getCoordinates() as Coordinate[][] | null)?.[0] ?? [];
   } else {
-    return geometry.getCoordinates() ?? [];
+    return (geometry.getCoordinates() as Coordinate[]) ?? [];
   }
 };
 

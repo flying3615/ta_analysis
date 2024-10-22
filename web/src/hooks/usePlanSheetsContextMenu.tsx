@@ -4,11 +4,13 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 import { useContext } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
+import { CytoscapeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
-import { SELECTED_DIAGRAM } from "@/components/PlanSheets/interactions/SelectedDiagram";
-import PlanElementProperty, { PlanElementPropertyMode } from "@/components/PlanSheets/PlanElementProperty";
+import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { LabelPropertiesProps } from "@/components/PlanSheets/properties/LabelProperties";
+import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
@@ -51,7 +53,6 @@ export const usePlanSheetsContextMenu = () => {
   }) => {
     const { target, position, cy } = event;
     if (!cy) return;
-    const selectedFeatures = planMode === PlanMode.SelectLine ? cy.$("edge:selected") : cy.$("node:selected");
     const elementTypes = [
       PlanElementType.LINES,
       PlanElementType.LABELS,
@@ -60,14 +61,22 @@ export const usePlanSheetsContextMenu = () => {
       PlanElementType.CHILD_DIAGRAM_LABELS,
       PlanElementType.PARCEL_LABELS,
     ];
-    if (target && position && elementTypes.includes(target.data().elementType)) {
-      dispatch(
-        setPlanProperty({
-          mode: planMode as PlanElementPropertyMode,
-          data: selectedFeatures.map((feature) => feature.data()),
-          position: { x: position.x, y: position.y },
-        }),
-      );
+    const data = target?.data() as CytoscapeDataProperties;
+    if (data?.elementType && position && elementTypes.includes(data.elementType)) {
+      const planProperty: PlanPropertyPayload =
+        planMode === PlanMode.SelectLine
+          ? {
+              mode: PlanMode.SelectLine,
+              data: cy.$("edge:selected").map((edge) => edge.data() as LinePropertiesProps),
+              position: { ...position },
+            }
+          : {
+              mode: PlanMode.SelectLabel,
+              data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesProps),
+              position: { ...position },
+            };
+      // NOTE: why is this dispatching instead of opening the Property panel with data !?
+      dispatch(setPlanProperty(planProperty));
       openPanel("Plan element property", () => <PlanElementProperty />);
     }
   };
@@ -78,7 +87,7 @@ export const usePlanSheetsContextMenu = () => {
     selectedCollection?: CollectionReturnValue,
   ) => {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
-      return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
+      return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id") as string);
     };
 
     const lineShouldBeDisplayed = (element: NodeSingular | EdgeSingular | cytoscape.Core) => {
@@ -211,7 +220,7 @@ export const usePlanSheetsContextMenu = () => {
     switch (planMode) {
       case PlanMode.SelectDiagram:
         if (element.data("id") == null) return undefined;
-        return buildDiagramMenu(findPreviousAttributesForDiagram(findDiagramId(element.data())));
+        return buildDiagramMenu(findPreviousAttributesForDiagram(element.data("diagramId") as number));
       case PlanMode.SelectLine:
         if (planElementType !== PlanElementType.LINES) return undefined;
         return lineMenus;
@@ -237,11 +246,10 @@ export const usePlanSheetsContextMenu = () => {
   };
 
   const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    const { target } = event;
-    if (!target?.data("diagramId")) {
+    const diagramId = event.target?.data("diagramId") as number;
+    if (!diagramId) {
       return;
     }
-    const diagramId = Number(findDiagramId(target.data()).replace("D", ""));
     dispatch(setDiagramIdToMove(diagramId));
   };
 
@@ -263,11 +271,4 @@ export const usePlanSheetsContextMenu = () => {
         }) ?? []
     );
   };
-};
-
-const findDiagramId = (elementData: { id: string; diagramId: string }): string => {
-  if (elementData.id === SELECTED_DIAGRAM) {
-    return elementData.diagramId;
-  }
-  return elementData.id;
 };

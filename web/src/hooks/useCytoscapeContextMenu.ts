@@ -44,7 +44,6 @@ export const useCytoscapeContextMenu = (
       if (!event.cy) return;
 
       const { clientX: x, clientY: y } = event.originalEvent;
-      console.log(`cxtTap ${event.target.id?.()}, ${x}, ${y}`);
       const target = event.target === cy ? null : (event.target as SingularElementArgument);
 
       if (!target) {
@@ -85,7 +84,6 @@ export const useCytoscapeContextMenu = (
     (event: EventObject) => {
       event.stopPropagation();
 
-      // console.log(`onTap ${x} ${y}`);
       hideMenu();
     },
     [hideMenu],

@@ -18,10 +18,10 @@ const mockPreCompileWarning =
   "A full set of digital plans have already been generated for this survey. The existing digital plans will now be " +
   "replaced based on your current diagram layout, attached supporting documents and survey header information. This may take some time. Do you wish to continue?";
 
-jest.mock("@/util/imageUtil.ts", () => {
+jest.mock("@/util/imageUtil", () => {
   return {
     __esModule: true,
-    ...jest.requireActual("@/util/imageUtil.ts"),
+    ...jest.requireActual<typeof import("@/util/imageUtil")>("@/util/imageUtil"),
     convertImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.jpg" }),
   };
 });
@@ -39,10 +39,10 @@ jest.mock("@linz/secure-file-upload", () => {
   };
 });
 
-jest.mock("@/util/imageUtil.ts", () => {
+jest.mock("@/util/imageUtil", () => {
   return {
     __esModule: true,
-    ...jest.requireActual("@/util/imageUtil.ts"),
+    ...jest.requireActual<typeof import("@/util/imageUtil")>("@/util/imageUtil"),
     convertImageDataTo1Bit: jest.fn().mockResolvedValue({ processedBlob: new Blob(), name: "test.jpg" }),
   };
 });

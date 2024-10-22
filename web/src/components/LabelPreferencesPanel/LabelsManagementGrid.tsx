@@ -57,8 +57,11 @@ export const LabelsManagementGrid = ({
         {
           visible: ({ data }: ICellEditorParams) => {
             if (readOnly) return false;
-            const m = defaults.find((r) => r.labelType === data.labelType);
-            return !!(m && !(m.bold === data.bold && m.font === data.font && m.fontSize === data.fontSize));
+            const typedData = data as Partial<{ labelType: string; bold: boolean; font: string; fontSize: number }>;
+            const m = defaults.find((r) => r.labelType === typedData.labelType);
+            return !!(
+              m && !(m.bold === typedData.bold && m.font === typedData.font && m.fontSize === typedData.fontSize)
+            );
           },
           onClick: ({ selectedRowIds }) => {
             setList(
@@ -80,7 +83,7 @@ export const LabelsManagementGrid = ({
           field: "font",
           headerName: "Font",
           valueFormatter: ({ value }) => {
-            return fontMap[value] ?? "";
+            return fontMap[value as string] ?? "";
           },
           resizable: false,
           editable: !readOnly,

@@ -167,6 +167,7 @@ describe("nodePositionsFromData", () => {
         label: "Offset Label",
         properties: {
           diagramId: 1,
+          // NOTE: this isn't valid, should be verticalHorizontal
           textAlignment: "rightCenter",
           fontSize: 12,
           font: "Arial",

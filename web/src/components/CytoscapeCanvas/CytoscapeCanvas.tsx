@@ -14,6 +14,7 @@ import {
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
@@ -81,27 +82,38 @@ const CytoscapeCanvas = ({
     }
   };
 
-  const labelTypesWithRelatedElements = ["lineLabels", "coordinateLabels"];
+  interface SelectRelatedData {
+    elementType: PlanElementType;
+    featureId: string;
+  }
+  const labelTypesWithRelatedElements = [PlanElementType.COORDINATE_LABELS, PlanElementType.LINE_LABELS];
 
-  const onSelected = (event: cytoscape.EventObject) => {
-    const nodeData = event.target.data();
-    if (labelTypesWithRelatedElements.includes(nodeData.elementType)) {
-      event.cy.$(`edge[id*='${nodeData.featureId}_'], node[id='${nodeData.featureId}']`).forEach((ele) => {
-        ele.addClass(PlanStyleClassName.RelatedLabelSelected);
-      });
+  // NOTE: onSelected is called once for _every_ feature that is deselected
+  const onSelected = (event: cytoscape.EventObjectEdge | cytoscape.EventObjectNode) => {
+    const { elementType, featureId } = event.target.data() as Partial<SelectRelatedData>;
+    if (!elementType || !featureId) {
+      return;
+    }
+    if (labelTypesWithRelatedElements.includes(elementType)) {
+      event.cy
+        .$(`edge[id*='${featureId}_'], node[id='${featureId}']`)
+        .addClass(PlanStyleClassName.RelatedLabelSelected);
     }
   };
 
-  const onUnselected = (event: cytoscape.EventObject) => {
-    const nodeData = event.target.data();
-    if (labelTypesWithRelatedElements.includes(nodeData.elementType)) {
-      const selectedElements = event.cy.$(":selected");
-      event.cy.$(`edge[id*='${nodeData.featureId}_'], node[id='${nodeData.featureId}']`).forEach((ele) => {
-        //only remove the class if no other labels are selected with this related feature
-        //e.g. some lines can have two labels (bearing/distance)
-        selectedElements.filter((x) => x.data().featureId == nodeData.featureId).length == 0 &&
-          ele.removeClass(PlanStyleClassName.RelatedLabelSelected);
-      });
+  // NOTE: onUnselected is called once for _every_ feature that is deselected
+  const onUnselected = (event: cytoscape.EventObjectEdge | cytoscape.EventObjectNode) => {
+    const { elementType, featureId } = event.target.data() as Partial<SelectRelatedData>;
+    if (!elementType || !featureId) {
+      return;
+    }
+    if (labelTypesWithRelatedElements.includes(elementType)) {
+      const selectedElements = event.cy.$(`:selected[elementType='${elementType}'][featureId=${featureId}]`);
+      if (selectedElements.length == 0) {
+        event.cy
+          .$(`edge[id*='${featureId}_'], node[id='${featureId}']`)
+          .removeClass(PlanStyleClassName.RelatedLabelSelected);
+      }
     }
   };
 

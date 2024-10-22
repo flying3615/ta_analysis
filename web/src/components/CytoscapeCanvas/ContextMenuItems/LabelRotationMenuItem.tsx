@@ -11,7 +11,7 @@ const CLOCKWISE_MAX = 90;
 export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
   const { updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
 
-  const currentAngle = props.targetLabel.style("text-rotation");
+  const currentAngle = (props.targetLabel.style("text-rotation") as string) ?? "0";
   const degConverter = useCallback((input: string) => {
     let value = parseFloat(input);
     if (input.includes("rad")) {

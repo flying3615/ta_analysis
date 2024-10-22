@@ -50,7 +50,7 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
   const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
   const dispatch = useAppDispatch();
   const diagrams = useAppSelector(getDiagrams);
-  const diagramDto = diagrams.find((d) => d.id === diagram.data().diagramId);
+  const diagramDto = diagrams.find((d) => d.id === diagram.data("diagramId"));
   const activePage = useAppSelector(getActivePage);
   const diagramOnDifferentPage = diagramDto?.pageRef !== activePage?.id;
   useEffect(() => {
@@ -65,14 +65,16 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
     let moveStart: Position | undefined;
     let resizeLimits: ResizeLimits | undefined;
 
-    const allControls = cyto.add(getSelectedDiagramElement(diagramExtent, diagram.id())).addClass(SELECTED_DIAGRAM);
+    const allControls = cyto
+      .add(getSelectedDiagramElement(diagramExtent, diagram.data("diagramId") as number))
+      .addClass(SELECTED_DIAGRAM);
     // only resize controls move
     const resizeControls = cyto.add(getResizeControlElements());
     setResizeControlPositions(resizeControls, diagramExtent);
     // ungrabify to prevent default movement
     allControls.merge(resizeControls).addClass(DIAGRAM_CONTROL_CLASS).ungrabify();
 
-    const addControlClass = (event: EventObjectNode | EventObjectEdge | InputEventObject) => {
+    const addControlClass = (event: EventObjectNode | EventObjectEdge) => {
       const id = moveId ?? event.target.id();
       const className = isResizeControl(id) ? id : moveId === id ? DIAGRAM_CLASS_MOVING : DIAGRAM_CLASS_MOVABLE;
       cytoCanvas.classList.add(className);
@@ -101,7 +103,7 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
       const pageNodes = cyto.elements(`node[^diagramId][labelType = 'userAnnotation']`).map(nodeSingularToNodeData);
       const pageEdges = cyto.elements(`edge[^diagramId][lineType = 'userDefined']`).map(edgeSingularToEdgeData);
       const diagramAttributes = calculatePreviousDiagramAttributes(
-        diagram.id(),
+        diagram.data("diagramId") as number,
         {
           ...diagramExtent,
         },
@@ -276,7 +278,7 @@ function getResizeControlPosition(id: string, extent: BoundingBox12): Position {
   return { x: 0, y: 0 };
 }
 
-function getSelectedDiagramElement(extent: BoundingBox12, diagramId: string): ElementDefinition {
+function getSelectedDiagramElement(extent: BoundingBox12, diagramId: number): ElementDefinition {
   return {
     group: "nodes",
     data: { id: SELECTED_DIAGRAM, width: extent.x2 - extent.x1, height: extent.y2 - extent.y1, diagramId },

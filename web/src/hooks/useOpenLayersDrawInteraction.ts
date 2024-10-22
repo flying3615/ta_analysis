@@ -197,12 +197,13 @@ export const useOpenLayersDrawInteraction = ({
     const finishCondition = () => {
       if (currentType !== "Polygon") return true;
 
-      const rings = currentFeatureRef.current?.getCoordinates() ?? [];
+      const rings = (currentFeatureRef.current?.getCoordinates() as Coordinate[][]) ?? [];
 
       // Multi-polygon or no polygon then it's invalid
       if (rings.length !== 1) return false;
 
       const coords = rings[0];
+      if (!coords) return false;
 
       // Displayed polygon has duplicate points that were for display only, these need removing to test for kinks
       for (let i = 1; i < coords.length; i++) {
@@ -236,6 +237,7 @@ export const useOpenLayersDrawInteraction = ({
           if (e.originalEvent.buttons === 2) {
             drawInteractionRef.current?.removeLastPoint();
             // @ts-expect-error private method, but needed to update screen
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             drawInteractionRef.current?.handlePointerMove_(e);
             return false;
           }

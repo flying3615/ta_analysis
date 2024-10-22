@@ -546,8 +546,7 @@ export const ExportPdfAndDownload: Story = {
     //   downloadBlob(file, `layout-plan-${imageFile.name}.jpeg`);
     // });
 
-    /* eslint-disable-next-line */
-    const pdf = (window as any).pdfBlob;
+    const pdf = (window as unknown as { pdfBlob: URL }).pdfBlob;
     const blob = await fetch(pdf).then((r) => r.blob());
     const file = new File([blob], "layout-plan-123.pdf", { type: "application/pdf" });
     downloadBlob(file, `layout-plan-123.pdf`);

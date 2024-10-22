@@ -24,7 +24,7 @@ describe("PlanSheetsContextMenu", () => {
           pages: mockPlanData.pages,
           configs: [],
           planMode: planMode,
-          previousDiagramAttributesMap: previousDiagramAttributesMap,
+          previousDiagramAttributesMap,
           previousDiagrams: null,
           previousPages: null,
         },
@@ -45,7 +45,7 @@ describe("PlanSheetsContextMenu", () => {
     return <></>;
   };
 
-  const buildMockNode = (id: string, elementType: PlanElementType, extraData: Record<string, string> = {}) =>
+  const buildMockNode = (id: string, elementType: PlanElementType, extraData: Record<string, string | number> = {}) =>
     ({
       data: (key: string | undefined) => {
         const element: Record<string, string> = { id, elementType, ...extraData };
@@ -152,10 +152,10 @@ describe("PlanSheetsContextMenu", () => {
   });
 
   test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected lines", () => {
-    const id = "10001";
+    const id = 10001;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        targetElement={buildMockNode(id, PlanElementType.DIAGRAM)}
+        targetElement={buildMockNode(`D${id}`, PlanElementType.DIAGRAM, { diagramId: id })}
         expectations={(diagramMenuItems) => {
           const menuItemTitles = diagramMenuItems?.map((m) => m.title);
           expect(menuItemTitles).toContain("Select lines affected by last diagram shift");
@@ -177,7 +177,7 @@ describe("PlanSheetsContextMenu", () => {
   });
 
   test("shows diagram menu if node id is selected-diagram", () => {
-    const id = "10001";
+    const id = 10001;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
         targetElement={buildMockNode("selected-diagram", PlanElementType.DIAGRAM, { diagramId: id })}
@@ -193,12 +193,12 @@ describe("PlanSheetsContextMenu", () => {
           id: id,
           linesAffectedByLastMove: [
             {
-              id,
+              id: `${id}`,
             },
           ],
           labelsAffectedByLastMove: [
             {
-              id,
+              id: `${id}`,
             },
           ],
         },
@@ -207,10 +207,10 @@ describe("PlanSheetsContextMenu", () => {
   });
 
   test("getMenuItemsForPlanMode for Select diagram shows menu item for Affected labels", () => {
-    const id = "10001";
+    const id = 10001;
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
-        targetElement={buildMockNode(id, PlanElementType.DIAGRAM)}
+        targetElement={buildMockNode(`D${id}`, PlanElementType.DIAGRAM, { diagramId: id })}
         expectations={(diagramMenuItems) => {
           const menuItemTitles = diagramMenuItems?.map((m) => m.title);
           expect(menuItemTitles).toContain("Select text affected by last diagram shift");

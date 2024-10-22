@@ -1,5 +1,5 @@
-import cytoscape from "cytoscape";
-import { max, sum } from "lodash-es";
+import cytoscape, { NodeSingular } from "cytoscape";
+import { max, memoize, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -13,10 +13,30 @@ export const CIRCLE_FACTOR = 1.1;
 
 const radiusForSquare = Math.sqrt(2.0);
 
+export interface StyleData {
+  anchorAngle?: number;
+  font?: string;
+  fontSize?: number;
+  fontStyle?: string;
+  label?: string;
+  pointOffset?: number;
+  symbolId?: string;
+  textAlignment?: string;
+  textRotation?: number;
+}
+
+function getStyleData(ele: cytoscape.NodeSingular): StyleData {
+  return ele.data() as StyleData;
+}
+
 export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
-  const fontSize = ele.data("fontSize") * cytoscapeCoordinateMapper.fontScaleFactor();
-  const fontName = ele.data("font");
-  const lines = ele.data("label").split("\n");
+  const { font, fontSize, label } = getStyleData(ele);
+  if (!font || !fontSize || !label) {
+    return { height: 0, width: 0 };
+  }
+
+  const lines = label.split("\n");
+  const scaledFontSize = fontSize * cytoscapeCoordinateMapper.fontScaleFactor();
 
   // Use the presumed cytoscape canvas to measure
   // text size in context
@@ -24,7 +44,7 @@ export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
   const cyContext = cyCanvas?.getContext("2d");
 
   if (cyContext) {
-    cyContext.font = `${fontSize}px ${fontName}`; // order matters here
+    cyContext.font = `${scaledFontSize}px ${font}`; // order matters here
     const lineSizes = lines.map((l: string) => cyContext.measureText(l));
 
     const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
@@ -33,8 +53,8 @@ export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
   }
 
   // Fallback if we couldn't get the canvas context
-  const height = lines.length * fontSize;
-  const width = (max(lines.map((l: string) => l.length) as number[]) ?? 0) * fontSize;
+  const height = lines.length * scaledFontSize;
+  const width = (max(lines.map((l: string) => l.length)) ?? 0) * scaledFontSize;
   return { height, width };
 };
 
@@ -56,70 +76,92 @@ export const textRotationMathRads = (ele: cytoscape.NodeSingular) => {
   return ((ele.data("textRotation") ?? 0.0) * Math.PI) / 180;
 };
 
-const dbAlignmentHorizontal = (ele: cytoscape.NodeSingular): "Left" | "Center" | "Right" =>
-  ele.data("textAlignment").match(/^[a-z]+([A-Z][a-z]+)/)?.[1];
+interface TextAlignment {
+  horizontal: "left" | "center" | "right";
+  justify: "left" | "center" | "right";
+  vertical: "bottom" | "center" | "top";
+}
 
-export const textHAlign = (ele: cytoscape.NodeSingular) => {
-  return (
-    (
-      {
-        Left: "right",
-        Center: "center",
-        Right: "left",
-      } as Record<string, string>
-    )[dbAlignmentHorizontal(ele)] ?? "right"
-  );
-};
+function getTextAlign(textAlignment?: string): TextAlignment | undefined {
+  if (!textAlignment) {
+    return;
+  }
+  let horizontal: TextAlignment["horizontal"] = "left";
+  let justify: TextAlignment["justify"] = "left";
+  let vertical: TextAlignment["vertical"] = "center";
 
-const signumHorizontal = (ele: cytoscape.NodeSingular) => {
-  return (
-    {
-      Left: 1,
-      Center: 0,
-      Right: -1,
-    }[dbAlignmentHorizontal(ele)] ?? -1
-  );
-};
+  const [textAlign, textJustify] = textAlignment.split(",", 2);
+  if (textAlign?.endsWith("Center")) {
+    horizontal = "center";
+  } else if (textAlign?.endsWith("Right")) {
+    horizontal = "right";
+  }
+
+  if (textJustify?.endsWith("Center")) {
+    justify = "center";
+  } else if (textJustify?.endsWith("Right")) {
+    justify = "right";
+  }
+
+  if (textAlign?.startsWith("bottom")) {
+    vertical = "bottom";
+  } else if (textAlign?.startsWith("top")) {
+    vertical = "top";
+  }
+
+  return { horizontal, justify, vertical };
+}
+
+const memoizedTextAlign = memoize(getTextAlign);
+const elementTextAlign = (ele: NodeSingular): TextAlignment | undefined =>
+  memoizedTextAlign(getStyleData(ele).textAlignment);
+
+export const textHAlign = (ele: cytoscape.NodeSingular): TextAlignment["horizontal"] =>
+  (
+    ({
+      left: "right",
+      center: "center",
+      right: "left",
+    }) as Record<TextAlignment["horizontal"], TextAlignment["horizontal"]>
+  )[elementTextAlign(ele)?.horizontal ?? "left"]; // so default is "right" !?;
+
+const signumHorizontal = (ele: cytoscape.NodeSingular): number =>
+  ({
+    left: 1,
+    center: 0,
+    right: -1,
+  })[elementTextAlign(ele)?.horizontal ?? "right"];
 
 // Cytoscape pads our labels inside the border
 // but we also need to adjust the label location relative to the node
 export const paddingOffsetHorizontal = (ele: cytoscape.NodeSingular) => signumHorizontal(ele) * LABEL_PADDING_PX;
 
-const signumVertical = (ele: cytoscape.NodeSingular) => {
-  return (
-    {
-      bottom: 1,
-      center: 0,
-      top: -1,
-    }[dbAlignmentVertical(ele)] ?? 0
-  );
-};
+const signumVertical = (ele: cytoscape.NodeSingular): number =>
+  ({
+    bottom: 1,
+    center: 0,
+    top: -1,
+  })[elementTextAlign(ele)?.vertical ?? "center"];
 
 export const paddingOffsetVertical = (ele: cytoscape.NodeSingular) =>
   ((signumVertical(ele) + 1) * LABEL_PADDING_PX) / 2;
 
-const dbAlignmentVertical = (ele: cytoscape.NodeSingular): "top" | "center" | "bottom" =>
-  ele.data("textAlignment").match(/^([a-z]+)/)?.[1];
+export const textVAlign = (ele: cytoscape.NodeSingular): TextAlignment["vertical"] =>
+  (
+    ({
+      bottom: "top",
+      center: "center",
+      top: "bottom",
+    }) as Record<TextAlignment["vertical"], TextAlignment["vertical"]>
+  )[elementTextAlign(ele)?.vertical ?? "center"];
 
-export const textVAlign = (ele: cytoscape.NodeSingular) => {
-  return (
-    (
-      {
-        top: "bottom",
-        centre: "center",
-        bottom: "top",
-      } as Record<string, string>
-    )[dbAlignmentVertical(ele)] ?? "center"
-  );
-};
+export const fontStyle = (ele: cytoscape.NodeSingular): string =>
+  ["boldItalic", "italic"].includes(getStyleData(ele).fontStyle ?? "") ? "italic" : "normal";
+export const fontWeight = (ele: cytoscape.NodeSingular): string =>
+  ["boldItalic", "bold"].includes(getStyleData(ele).fontStyle ?? "") ? "bold" : "normal";
 
-export const fontStyle = (ele: cytoscape.NodeSingular) =>
-  ["boldItalic", "italic"].includes(ele.data("fontStyle")) ? "italic" : "normal";
-export const fontWeight = (ele: cytoscape.NodeSingular) =>
-  ["boldItalic", "bold"].includes(ele.data("fontStyle")) ? "bold" : "normal";
-
-export const textJustification = (ele: cytoscape.NodeSingular) =>
-  (ele.data("textAlignment").match(/,text(\w+)$/)?.[1] ?? "Left").toLowerCase();
+export const textJustification = (ele: cytoscape.NodeSingular): TextAlignment["justify"] =>
+  memoizedTextAlign(getStyleData(ele).textAlignment)?.justify ?? "left";
 
 /**
  * Calculate the margin to apply,
@@ -154,7 +196,7 @@ export const calculateTextAlignmentPolar = (
 ) => {
   const textSlope = Math.sqrt((textSize.height * textSize.height) / 4 + (textSize.width * textSize.width) / 4);
   const textAngle = (Math.atan2(textSize.height, textSize.width) * 180) / Math.PI;
-  const textCenterDirection = ele.data("textAlignment").split(",")[0];
+  const textCenterDirection = getStyleData(ele).textAlignment?.split(",")[0];
   let textRadiusDist: number = 0;
   let textTheta: number = 0;
   switch (textCenterDirection) {
@@ -254,10 +296,8 @@ export const scaledFontSize = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
 export const svgDataForSymbolFun =
   (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => (ele: cytoscape.NodeSingular) => {
     // The symbolId is either a 2/3 digit ascii code or a character
-    const symbolId = ele.data("symbolId");
-    const symbolSvg = isNaN(parseInt(symbolId))
-      ? symbolSvgs[symbolId.charCodeAt(0).toString() as keyof typeof symbolSvgs]
-      : symbolSvgs[symbolId as keyof typeof symbolSvgs];
+    const symbolId = getStyleData(ele).symbolId ?? " ";
+    const symbolSvg = isNaN(parseInt(symbolId)) ? symbolSvgs[symbolId.charCodeAt(0).toString()] : symbolSvgs[symbolId];
     if (!symbolSvg) {
       console.warn(`Symbol ${symbolId} not recognised`);
       return {

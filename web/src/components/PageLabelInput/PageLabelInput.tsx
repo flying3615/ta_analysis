@@ -2,6 +2,7 @@ import "./PageLabelInput.scss";
 
 import { LuiIcon } from "@linzjs/lui";
 import clsx from "clsx";
+import cytoscape, { NodeSingular } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -51,17 +52,23 @@ export const PageLabelInput = () => {
   };
 
   const onClick = useCallback(
-    (event: cytoscape.EventObject) => {
+    (event: cytoscape.EventObjectCore | cytoscape.EventObjectNode) => {
       if (hasError || !activePage || !cyto || !cytoCoordMapper) return;
 
       if (planMode === PlanMode.SelectLabel) {
-        if (event.originalEvent.ctrlKey) return; // prevent from showing input when ctrl is pressed
+        // NOTE: this should possibly be a _separate handler_ from AddLabel
+        // and use onSelect.  Also, edit not currently repositioning if out of bounds.
 
-        const { id, label, elementType } = event.target.data();
-        if (elementType === PlanElementType.LABELS && event.target.selected()) {
+        if (event.originalEvent.ctrlKey) return; // prevent from showing input when ctrl is pressed
+        if (event.target === event.cy) {
+          return;
+        }
+        const target = event.target as NodeSingular;
+        const { id, label, elementType } = target.data();
+        if (elementType === PlanElementType.LABELS && target.selected()) {
           labelRef.current = { id, label };
           setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
-          setLabelText(label || "");
+          setLabelText((label as string) || "");
         }
       } else if (planMode === PlanMode.AddLabel) {
         const diagramAreasLimits = cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto);

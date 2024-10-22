@@ -36,7 +36,7 @@ export const useGetPlanKeyQuery: PlanGenQuery<TransactionTitleDTO> = ({ transact
   });
 };
 
-const getSurveyTitle = async (transactionId: number) => {
+const getSurveyTitle = async (transactionId: number): Promise<TransactionTitleDTO> => {
   const config = await surveyApiConfig();
   const basePath = config.basePath ?? "";
   const response = await fetch(`${basePath}/api/survey/${transactionId}/survey-title`, {
@@ -45,7 +45,7 @@ const getSurveyTitle = async (transactionId: number) => {
   if (!response.ok) {
     throw new Error("Unable to get survey title.");
   }
-  return await response.json();
+  return (await response.json()) as TransactionTitleDTO;
 };
 export const getSurveyInfoQueryKey = (transactionId: number) => ["getSurveyInfo", transactionId];
 

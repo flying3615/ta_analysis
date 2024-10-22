@@ -16,7 +16,7 @@ export interface PlanSheetsState {
   planMode: PlanMode;
   planProperty?: PlanPropertyPayload | undefined;
   diagramIdToMove?: number | undefined;
-  previousDiagramAttributesMap: Record<string, PreviousDiagramAttributes>;
+  previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
   // undo buffer
   previousHasChanges?: boolean;
   previousDiagrams: DiagramDTO[] | null;
@@ -215,7 +215,7 @@ const planSheetsSlice = createSlice({
     getDiagramIdToMove: (state) => state.diagramIdToMove,
     getPreviousAttributesForDiagram:
       (state) =>
-      (id: string): PreviousDiagramAttributes | undefined => {
+      (id: number): PreviousDiagramAttributes | undefined => {
         return state.previousDiagramAttributesMap[id];
       },
     canUndo: (state) => state.previousDiagrams != null && state.previousPages != null,

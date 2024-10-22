@@ -145,7 +145,7 @@ function getRelatedElements(ele: EdgeSingular | NodeSingular): CollectionReturnV
 
   if (ele.isNode() && ele.data("featureId") && ele.data("symbolId")) {
     // include coordinate for symbol
-    const coordinate = ele.cy().$id(ele.data("featureId"));
+    const coordinate = ele.cy().$id((ele.data("featureId") as number).toString());
     return coordinate;
   }
 

@@ -7,11 +7,11 @@ import Header from "../Header";
 
 const mockedUsedNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
+  ...jest.requireActual<typeof import("react-router-dom")>("react-router-dom"),
   useNavigate: () => mockedUsedNavigate,
 }));
 
-const mockedUseTransactionId = jest.fn();
+const mockedUseTransactionId: () => number = jest.fn().mockReturnValue(123);
 jest.mock("@/hooks/useTransactionId", () => ({
   useTransactionId: () => mockedUseTransactionId(),
 }));
@@ -19,7 +19,6 @@ jest.mock("@/hooks/useTransactionId", () => ({
 describe("Header", () => {
   beforeEach(() => {
     mockedUsedNavigate.mockClear();
-    mockedUseTransactionId.mockReturnValue(123);
   });
 
   it("displays correct Diagrams label", () => {

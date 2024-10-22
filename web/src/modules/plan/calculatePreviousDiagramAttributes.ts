@@ -14,7 +14,7 @@ export interface PageNodeData {
 }
 
 export const calculatePreviousDiagramAttributes = (
-  diagramId: string,
+  diagramId: number,
   diagramPoints: BoundingBox12,
   pageLineEdges: PageEdgeData[],
   pageLabelNodes: PageNodeData[],

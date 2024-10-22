@@ -8,3 +8,4 @@ build/
 allure-report/
 allure-results/
 public/mockServiceWorker.js
+storybook-static/

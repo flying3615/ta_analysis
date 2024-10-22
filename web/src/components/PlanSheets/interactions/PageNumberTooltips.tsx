@@ -22,7 +22,7 @@ export function PageNumberTooltips({ selector = "node#border_page_no" }: PageNum
       setTooltipPosition(null);
     };
 
-    const onMouseOver = (event: cytoscape.EventObject) => {
+    const onMouseOver = (event: cytoscape.EventObjectNode) => {
       const { x: x0, y: y0 } = cyto?.container()?.getBoundingClientRect() ?? { x: 0, y: 0 };
       const { x, y } = event.target.renderedPosition();
 

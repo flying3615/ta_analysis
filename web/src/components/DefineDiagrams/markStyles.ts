@@ -10,7 +10,7 @@ const iconSize = 25;
 
 export const markStyleFunction = (feature: FeatureLike): Style[] => [
   new Style({
-    image: new Icon({ src: svgForSymbol(feature.get("markSymbol")) }),
+    image: new Icon({ src: svgForSymbol(feature.get("markSymbol") as number) }),
   }),
 ];
 

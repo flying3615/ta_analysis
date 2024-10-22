@@ -19,7 +19,9 @@ import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } 
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
-  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState")) ? 0.2 : 1;
+  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState") as string)
+    ? 0.2
+    : 1;
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
   const svgDataForSymbol = svgDataForSymbolFun(cytoscapeCoordinateMapper);
@@ -285,11 +287,11 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         label: "data(label)", // Display node labels
         "text-valign": "center",
-        "text-halign": (ele: cytoscape.NodeSingular) => ele.data("text-halign") || "center",
-        "text-max-width": (ele: cytoscape.NodeSingular) => ele.data("text-max-width"),
-        "font-size": (ele: cytoscape.NodeSingular) => ele.data("font-size"),
-        "text-wrap": (ele: cytoscape.NodeSingular) => ele.data("text-wrap") || "ellipsis",
-        "line-height": (ele: cytoscape.NodeSingular) => ele.data("line-height") || 1.2,
+        "text-halign": (ele: cytoscape.NodeSingular) => (ele.data("text-halign") as string) || "center",
+        "text-max-width": (ele: cytoscape.NodeSingular) => ele.data("text-max-width") as number,
+        "font-size": (ele: cytoscape.NodeSingular) => ele.data("font-size") as number,
+        "text-wrap": (ele: cytoscape.NodeSingular) => (ele.data("text-wrap") as string) || "ellipsis",
+        "line-height": (ele: cytoscape.NodeSingular) => (ele.data("line-height") as number | undefined) ?? 1.2,
         ...noNodeMarker,
         height: 1,
         width: 1,

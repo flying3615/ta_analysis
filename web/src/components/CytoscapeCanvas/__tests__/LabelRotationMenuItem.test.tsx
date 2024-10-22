@@ -10,22 +10,20 @@ const mockedState = {
 };
 
 describe("LabelRotationMenuItem", () => {
+  let targetStyles: Record<string, unknown>;
   let targetLabel: NodeSingular;
 
   beforeEach(() => {
+    targetStyles = { "text-rotation": "0deg" };
     targetLabel = {
       data: jest.fn().mockReturnValue({ elementType: "mockElementType", id: "mockId" }),
-      style: jest.fn().mockImplementation((key, value) => {
+      style: jest.fn().mockImplementation((key: string, value?: unknown) => {
         if (value !== undefined) {
-          // @ts-expect-error mock
-          targetLabel.styles[key] = value;
+          targetStyles[key] = value;
         }
-        // @ts-expect-error mock
-        return targetLabel.styles[key];
+        return targetStyles[key];
       }),
-      // @ts-expect-error mock
-      styles: { "text-rotation": "0deg" },
-    };
+    } as unknown as NodeSingular;
   });
 
   it("renders with initial rotation value", () => {
@@ -62,44 +60,19 @@ describe("LabelRotationMenuItem", () => {
   });
 
   it("converts radian values to degrees correctly", () => {
-    const radTargetLabel = {
-      data: jest.fn().mockReturnValue({ elementType: "mockElementType", id: "mockId" }),
-      style: jest.fn().mockImplementation((key, value) => {
-        if (value !== undefined) {
-          // @ts-expect-error mock
-          radTargetLabel.styles[key] = value;
-        }
-        // @ts-expect-error mock
-        return radTargetLabel.styles[key];
-      }),
-      styles: { "text-rotation": "6rad" },
-    };
-
+    targetLabel.style("text-rotation", "6rad");
     const expectedDegreeValue = -16;
 
-    // @ts-expect-error mock
-    renderWithReduxProvider(<LabelRotationMenuItem targetLabel={radTargetLabel} />, mockedState);
+    renderWithReduxProvider(<LabelRotationMenuItem targetLabel={targetLabel} />, mockedState);
 
     expect(screen.getByText(`${expectedDegreeValue}°`)).toBeInTheDocument();
   });
 
   it("handles values greater than 90 correctly", () => {
-    const radTargetLabel = {
-      data: jest.fn().mockReturnValue({ elementType: "mockElementType", id: "mockId" }),
-      style: jest.fn().mockImplementation((key, value) => {
-        if (value !== undefined) {
-          // @ts-expect-error mock
-          radTargetLabel.styles[key] = value;
-        }
-        // @ts-expect-error mock
-        return radTargetLabel.styles[key];
-      }),
-      styles: { "text-rotation": "20rad" },
-    };
+    targetLabel.style("text-rotation", "20rad");
     const expectedDegreeValue = 66;
 
-    // @ts-expect-error mock
-    renderWithReduxProvider(<LabelRotationMenuItem targetLabel={radTargetLabel} />, mockedState);
+    renderWithReduxProvider(<LabelRotationMenuItem targetLabel={targetLabel} />, mockedState);
 
     expect(screen.getByText(`${expectedDegreeValue}°`)).toBeInTheDocument();
   });

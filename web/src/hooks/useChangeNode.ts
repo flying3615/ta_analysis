@@ -11,7 +11,7 @@ export const useChangeNode = () => {
 
   return (target: cytoscape.NodeSingular | cytoscape.EdgeSingular | null, hidden: boolean) => {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
-      return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id"));
+      return lookupGraphData.lookupSource(element.data("elementType") as PlanElementType, element.data("id") as string);
     };
 
     const markSymbol = lookupGraphData.findMarkSymbol(lookupElementSource(target as NodeSingular | EdgeSingular));

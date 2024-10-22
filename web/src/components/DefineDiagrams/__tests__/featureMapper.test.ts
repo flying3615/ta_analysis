@@ -1,6 +1,6 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import { ObservationElementSurveyedClassCode } from "@linz/luck-syscodes/build/js/ObservationElementSurveyedClassCode";
-import { SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { GeometryGeoJSON, SurveyFeaturesResponseDTO } from "@linz/survey-plan-generation-api-client";
 
 import { TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";
 import { mockDiagrams } from "@/mocks/data/mockDiagrams";
@@ -98,21 +98,23 @@ describe("featureMapper", () => {
 
     expect(diagrams[4]?.id).toBe(1);
     expect(diagrams[4]?.["diagramType"]).toBe(CpgDiagramType.SYSN);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 170]);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 170]);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 70]);
-    expect(diagrams[4]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
+    const geometry4 = diagrams[4]?.shape?.["geometry"] as GeometryGeoJSON;
+    expect(geometry4.coordinates?.[0]).toHaveLength(5);
+    expect(geometry4.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
+    expect(geometry4.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 170]);
+    expect(geometry4.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 170]);
+    expect(geometry4.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [70, 70]);
+    expect(geometry4.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-30, 70]);
 
     expect(diagrams[5]?.id).toBe(2);
     expect(diagrams[5]?.["diagramType"]).toBe(CpgDiagramType.SYSP);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates?.[0]).toHaveLength(5);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 165]);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 165]);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 65]);
-    expect(diagrams[5]?.shape?.["geometry"]?.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
+    const geometry5 = diagrams[5]?.shape?.["geometry"] as GeometryGeoJSON;
+    expect(geometry5.coordinates?.[0]).toHaveLength(5);
+    expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
+    expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 165]);
+    expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 165]);
+    expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [65, 65]);
+    expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
   });
 
   test("diagram and label features are sorted correctly", async () => {

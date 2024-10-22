@@ -2,9 +2,23 @@ import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum } from "@linz/survey-
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 import { calculateTextAlignmentPolar, rotatedMargin, textDimensions, textRotationMathRads } from "./styleNodeMethods";
+
+export interface CytoscapeDataProperties {
+  diagramId?: number;
+  elementType?: PlanElementType;
+  featureId?: number;
+  featureType?: string;
+  "font-family"?: string;
+  "font-size"?: number;
+  id?: string;
+  label?: string;
+  offsetX?: number;
+  offsetY?: number;
+}
 
 export interface IGraphData {
   id: string;
@@ -62,14 +76,14 @@ export const getNodeData = (
   node: cytoscape.NodeSingular,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): INodeData => {
-  const cyData = node.data();
-  const diagramId = cyData["diagramId"];
+  const cyData = node.data() as CytoscapeDataProperties;
+  const diagramId = cyData.diagramId;
 
   let position = { ...node.position() };
   if (cyData.offsetX || cyData.offsetY) {
     // remove any offset made during nodePositionFromData
-    position.x -= cyData.offsetX;
-    position.y -= cyData.offsetY;
+    position.x -= cyData.offsetX ?? 0;
+    position.y -= cyData.offsetY ?? 0;
   }
   position = diagramId
     ? cytoscapeCoordinateMapper.cytoscapeToGroundCoord(position, diagramId)
@@ -118,7 +132,6 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
   } as IEdgeData;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const diagramLabelNodePositioner = (
   node: INodeData,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
@@ -170,9 +183,6 @@ export const nodePositionFromData = (
     if (node.label && node.properties["textAlignment"] && !node.properties["symbolId"]) {
       const { x, y } = { ...nodePositionPixels };
       diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
-      // TODO: which is better?
-      node.properties["initialX"] = x;
-      node.properties["initialY"] = y;
       node.properties["offsetX"] = nodePositionPixels.x - x;
       node.properties["offsetY"] = nodePositionPixels.y - y;
     }

@@ -2,8 +2,7 @@ import cytoscape from "cytoscape";
 
 export const isPlaywrightTest = () => localStorage.getItem("isPlaywrightTest") === "1";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isStorybookTest = () => (window as any).isStorybook === true;
+export const isStorybookTest = () => (window as Partial<{ isStorybook: boolean }>).isStorybook;
 
 /**
  * Updates the cytoscape state in the window variable so we can access cytoscape data such as positions of nodes in tests

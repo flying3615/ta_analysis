@@ -10,9 +10,8 @@ import { mockStore } from "@/test-utils/store-mock";
 
 jest.mock("@/hooks/useCytoscapeContext");
 
-const mockedUseTransactionId = jest.fn();
 jest.mock("@/hooks/useTransactionId", () => ({
-  useTransactionId: () => mockedUseTransactionId(),
+  useTransactionId: () => 123,
 }));
 
 const mockStoreRedux = setupStore({
