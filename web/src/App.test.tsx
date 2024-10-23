@@ -1,7 +1,9 @@
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { screen } from "@testing-library/react";
 
 import { PlangenApp } from "@/App";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 
 import { renderWithReduxProvider } from "./test-utils/jest-utils";
@@ -10,11 +12,13 @@ const queryClient = new QueryClient();
 
 const renderPlangenApp = () => {
   renderWithReduxProvider(
-    <FeatureFlagProvider>
-      <QueryClientProvider client={queryClient}>
-        <PlangenApp mockMap={true} />
-      </QueryClientProvider>
-    </FeatureFlagProvider>,
+    <MockUserContextProvider user={singleFirmUserExtsurv1} initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}>
+      <FeatureFlagProvider>
+        <QueryClientProvider client={queryClient}>
+          <PlangenApp mockMap={true} />
+        </QueryClientProvider>
+      </FeatureFlagProvider>
+    </MockUserContextProvider>,
   );
 };
 

@@ -14,13 +14,20 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 export const AppSubRoutes = (props: { mockMap?: boolean }) => {
-  useCreateAndMaintainLock();
+  const { lockPreviouslyHeld } = useCreateAndMaintainLock();
 
   const { result: isDefineDiagramsOn, loading: isDefineDiagramsToggleLoading } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS,
   );
   if (isDefineDiagramsToggleLoading) {
     return <LuiLoadingSpinner />;
+  }
+
+  // Prevent the sub-pages from loading until we are sure we have an initial lock
+  // Plan-gen will exception if it executes before there is a lock
+  // This occurs if the Layout PlanSheets/Diagrams page url is entered directly, or on refresh of a window
+  if (!lockPreviouslyHeld) {
+    return <></>;
   }
 
   return (

@@ -1,7 +1,12 @@
+import { DefaultError } from "@tanstack/query-core";
 import { QueryObserverOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 
 import { useWindowOpenHook } from "@/util/useWindowOpenHook";
+
+export interface useCreateAndMaintainLockResult {
+  lockOwnedByUser?: boolean;
+}
 
 /**
  * Re-fetches queries if user interacts with the application, obeying original useQuery's options.
@@ -9,7 +14,9 @@ import { useWindowOpenHook } from "@/util/useWindowOpenHook";
  *
  * @param queryOptions Query options
  */
-export const useQueryRefetchOnUserInteraction = (queryOptions: QueryObserverOptions): void => {
+export const useQueryRefetchOnUserInteraction = <TQueryData = unknown,>(
+  queryOptions: QueryObserverOptions<unknown, DefaultError, TQueryData>,
+) => {
   const queryClient = useQueryClient();
   const hasErrored = useRef(false);
 
@@ -49,5 +56,5 @@ export const useQueryRefetchOnUserInteraction = (queryOptions: QueryObserverOpti
     ],
   });
 
-  useQuery(queryOptions);
+  return useQuery<unknown, DefaultError, TQueryData>(queryOptions);
 };

@@ -1,8 +1,9 @@
 import { useUserProfile } from "@linz/lol-auth-js";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import { useLuiModalPrefabProps } from "@linzjs/windows/dist/LuiModalAsync/useLuiModalPrefab";
-import { useQueryClient } from "@tanstack/react-query";
-import { PropsWithChildren, useMemo, useState } from "react";
+import type { DefaultError } from "@tanstack/query-core";
+import { QueryObserverOptions, useQueryClient } from "@tanstack/react-query";
+import { PropsWithChildren, useMemo, useRef, useState } from "react";
 
 import {
   failedToLoadLocksModal,
@@ -14,9 +15,17 @@ import { getsertLock, getsertLockQueryKey, updateLockLastUsed } from "@/queries/
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { hostProtoForApplication } from "@/util/httpUtil";
-import { useQueryRefetchOnUserInteraction } from "@/util/useQueryRefetchOnUserInteraction";
+import {
+  useCreateAndMaintainLockResult,
+  useQueryRefetchOnUserInteraction,
+} from "@/util/useQueryRefetchOnUserInteraction";
 
-export const useCreateAndMaintainLock = () => {
+export interface useCreateAndMaintainLock {
+  isLoading: boolean;
+  lockPreviouslyHeld: boolean;
+}
+
+export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
   const transactionId = useTransactionId();
   const userProfile = useUserProfile();
   const queryClient = useQueryClient();
@@ -24,9 +33,10 @@ export const useCreateAndMaintainLock = () => {
 
   const { result: maintainLocksAllowed } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS);
 
+  const lockPreviouslyHeldRef = useRef(false);
   const [stopLockChecks, setStopLockChecks] = useState(false);
 
-  const options = useMemo(() => {
+  const queryOptions: QueryObserverOptions<unknown, DefaultError, useCreateAndMaintainLockResult> = useMemo(() => {
     // Re-login modal doesn't check if user has changed so userId must be part of the queryKey
     const queryKey = getsertLockQueryKey(transactionId, userProfile?.id);
     return {
@@ -47,7 +57,9 @@ export const useCreateAndMaintainLock = () => {
           setStopLockChecks(true);
           await showPrefabModal(modal);
           window.location.href = `${hostProtoForApplication(8080)}/survey/${transactionId}`;
-          return null;
+          return {
+            lockOwnedByUser: false,
+          };
         };
 
         const locks = await getsertLock(transactionId);
@@ -71,7 +83,9 @@ export const useCreateAndMaintainLock = () => {
         }
 
         closeLoadingLocksModal();
-        return locks;
+        return {
+          lockOwnedByUser: true,
+        };
       },
       refetchOnWindowFocus: true,
       staleTime: 30000,
@@ -79,5 +93,14 @@ export const useCreateAndMaintainLock = () => {
     };
   }, [transactionId, userProfile?.id, maintainLocksAllowed, stopLockChecks, queryClient, showPrefabModal]);
 
-  useQueryRefetchOnUserInteraction(options);
+  const { isLoading, data } = useQueryRefetchOnUserInteraction(queryOptions);
+
+  // We don't want re-auth to unload/reload the Layout PlanSheets/Diagrams as it will trigger a regenerate plan
+  // At this point we know the pages have run plan-gen already and won't throw an exception by re-running plangen
+  lockPreviouslyHeldRef.current ||= !!data?.lockOwnedByUser;
+
+  return {
+    isLoading,
+    lockPreviouslyHeld: lockPreviouslyHeldRef.current,
+  };
 };
