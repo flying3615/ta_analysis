@@ -10,8 +10,8 @@ import { expect } from "@storybook/jest";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
 import { isEqual } from "lodash-es";
 
-export const countRows = async (within?: HTMLElement): Promise<number> => {
-  return getAllQuick({ tagName: `div[row-id]:not(:empty)` }, within).length;
+export const countRows = (within?: HTMLElement): Promise<number> => {
+  return Promise.resolve(getAllQuick({ tagName: `div[row-id]:not(:empty)` }, within).length);
 };
 
 export const findRowByIndex = async (rowIndex: number | string, within?: HTMLElement): Promise<HTMLDivElement> => {
@@ -85,8 +85,8 @@ export const findRow = async (rowId: number | string, within?: HTMLElement): Pro
   return row;
 };
 
-export const queryRow = async (rowId: number | string, within?: HTMLElement): Promise<HTMLDivElement | null> => {
-  return queryQuick<HTMLDivElement>({ tagName: `div[row-id='${rowId}']:not(:empty)` }, within);
+export const queryRow = (rowId: number | string, within?: HTMLElement): Promise<HTMLDivElement | null> => {
+  return Promise.resolve(queryQuick<HTMLDivElement>({ tagName: `div[row-id='${rowId}']:not(:empty)` }, within));
 };
 
 const _selectRow = async (

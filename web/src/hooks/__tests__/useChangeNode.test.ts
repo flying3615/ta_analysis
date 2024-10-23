@@ -22,11 +22,9 @@ describe("useChangeNode", () => {
       data: (key: string) => targetData[key as keyof typeof targetData],
     } as EdgeSingular;
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-member-access
-    const useChangeNode = require("@/hooks/useChangeNode.ts").useChangeNode;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const useChangeNode = (require("@/hooks/useChangeNode") as typeof import("@/hooks/useChangeNode")).useChangeNode;
     const changeNode = useChangeNode();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     changeNode(target, true);
 
     expect(setSymbolHide).toHaveBeenCalledWith({ id: "1002", hide: true });

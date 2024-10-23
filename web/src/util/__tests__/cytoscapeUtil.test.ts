@@ -3,21 +3,23 @@ import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 const { zoomByDelta, zoomToFit, isPositionWithinAreaLimits } = cytoscapeUtils;
 
 describe("cytoscapeUtil", () => {
+  const mockReset = jest.fn();
+  const mockZoom = jest.fn().mockReturnValue(1.0);
   const mockCy = {
-    reset: jest.fn(),
+    reset: mockReset,
     pan: jest.fn(),
-    zoom: jest.fn().mockReturnValue(1.0),
+    zoom: mockZoom,
     container: jest.fn().mockReturnValue({ clientWidth: 1600, clientHeight: 900 }),
   } as unknown as jest.Mocked<cytoscape.Core>;
 
   test("should call cy.reset() on Zoom to screen", () => {
     zoomToFit(mockCy);
-    expect(mockCy.reset).toHaveBeenCalled();
+    expect(mockReset).toHaveBeenCalled();
   });
 
   test("should increase zoom on Zoom in", () => {
     zoomByDelta(1, mockCy);
-    expect(mockCy.zoom).toHaveBeenCalledWith({
+    expect(mockZoom).toHaveBeenCalledWith({
       level: 3.25,
       renderedPosition: { x: 800, y: 450 },
     });
@@ -25,7 +27,7 @@ describe("cytoscapeUtil", () => {
 
   test("should decrease zoom on Zoom out", () => {
     zoomByDelta(-1, mockCy);
-    expect(mockCy.zoom).toHaveBeenCalledWith(0.75);
+    expect(mockZoom).toHaveBeenCalledWith(0.75);
   });
 
   test("isPositionWithinAreaLimits returns correct value", () => {

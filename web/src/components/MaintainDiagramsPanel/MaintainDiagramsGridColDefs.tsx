@@ -95,12 +95,12 @@ export const useMaintainDiagramsGridColDefs = ({ refreshGrid, rows }: useMaintai
           editable: ({ data }) => data.selected,
         },
         {
-          onClick: async ({ selectedRows, checked }) => {
+          onClick: ({ selectedRows, checked }) => {
             selectedRows.forEach((row) => {
               row.hideLabels = !checked;
             });
             refreshGrid();
-            return true;
+            return Promise.resolve(true);
           },
         },
       ),

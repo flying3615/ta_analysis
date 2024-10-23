@@ -1,29 +1,77 @@
-import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTOCoordTypeEnum,
+  DisplayStateEnum,
+  LabelDTOLabelTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 import { calculateTextAlignmentPolar, rotatedMargin, textDimensions, textRotationMathRads } from "./styleNodeMethods";
 
-export interface CytoscapeDataProperties {
+// common properties
+export interface IGraphDataProperties extends Record<string, unknown> {
   diagramId?: number;
+  displayState?: DisplayStateEnum;
   elementType?: PlanElementType;
   featureId?: number;
   featureType?: string;
-  "font-family"?: string;
-  "font-size"?: number;
   id?: string;
+  invisible?: boolean;
   label?: string;
+  lineId?: string;
+  lineType?: string;
+  locked?: boolean;
+  parent?: string;
+  zIndex?: number;
+}
+
+export interface IEdgeDataProperties extends IGraphDataProperties {
+  [BROKEN_LINE_COORD]?: string;
+  coordRefs?: string;
+  pointWidth?: number;
+  source?: string;
+  target?: string;
+}
+
+export interface INodeDataProperties extends IGraphDataProperties {
+  anchorAngle?: number;
+  borderWidth?: number;
+  circled?: number;
+  coordType?: CoordinateDTOCoordTypeEnum;
+  font?: string;
+  fontColor?: string;
+  fontSize?: number;
+  fontStyle?: string;
+  labelType?: LabelDTOLabelTypeEnum;
   offsetX?: number;
   offsetY?: number;
+  pointOffset?: number;
+  symbolId?: string;
+  textAlignment?: string;
+  textBackgroundOpacity?: number;
+  textBorderOpacity?: number;
+  textBorderWidth?: number;
+  textRotation?: number;
+}
+
+export interface IDiagramNodeDataProperties extends INodeDataProperties {
+  diagramId: number;
+  elementType: PlanElementType.DIAGRAM;
+  bottomRightX: number;
+  bottomRightY: number;
+  originPageX: number;
+  originPageY: number;
+  zoomScale: number;
 }
 
 export interface IGraphData {
   id: string;
   label?: string;
-  properties: Record<string, string | number | boolean | undefined>;
+  properties: IGraphDataProperties;
   classes?: string | string[];
 }
 
@@ -35,11 +83,17 @@ export interface GroundMetresPosition {
 export interface INodeData extends IGraphData {
   image?: string;
   position: GroundMetresPosition;
+  properties: INodeDataProperties;
 }
 
 export interface IEdgeData extends IGraphData {
   sourceNodeId: string;
   destNodeId: string;
+  properties: IEdgeDataProperties;
+}
+
+export interface IDiagramNodeData extends INodeData {
+  properties: IDiagramNodeDataProperties;
 }
 
 export interface INodeAndEdgeData {
@@ -61,8 +115,8 @@ export const nodeDefinitionsFromData = (
         data: {
           id: nodeDataEntry.id,
           label: nodeDataEntry.label,
-          "font-family": nodeDataEntry.properties["font"],
-          "font-size": nodeDataEntry.properties["fontSize"],
+          "font-family": nodeDataEntry.properties.font,
+          "font-size": nodeDataEntry.properties.fontSize,
           ...nodeDataEntry.properties,
         },
         position: nodePositionPixels,
@@ -76,7 +130,7 @@ export const getNodeData = (
   node: cytoscape.NodeSingular,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
 ): INodeData => {
-  const cyData = node.data() as CytoscapeDataProperties;
+  const cyData = node.data() as INodeDataProperties;
   const diagramId = cyData.diagramId;
 
   let position = { ...node.position() };
@@ -121,7 +175,7 @@ export const edgeDefinitionsFromData = (data: IEdgeData[]): cytoscape.EdgeDefini
 };
 
 export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
-  const { id, label, source, target, ...properties } = edge.data();
+  const { id, label, source, target, ...properties } = edge.data() as IEdgeDataProperties;
   return {
     id,
     label,
@@ -166,25 +220,25 @@ export const nodePositionFromData = (
 ): cytoscape.Position => {
   let nodePositionPixels;
 
-  if (node.properties["coordType"] === CoordinateDTOCoordTypeEnum.userDefined) {
+  if (node.properties.coordType === CoordinateDTOCoordTypeEnum.userDefined) {
     nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
   } else if (
-    node.properties["lineType"] === "userDefined" ||
-    node.properties["labelType"] === LabelDTOLabelTypeEnum.userAnnotation
+    node.properties.lineType === CoordinateDTOCoordTypeEnum.userDefined ||
+    node.properties.labelType === LabelDTOLabelTypeEnum.userAnnotation
   ) {
     nodePositionPixels = cytoscapeCoordinateMapper.pageLabelCoordToCytoscape(node.position);
   } else {
-    const diagramId = node.properties["diagramId"];
-    if (typeof diagramId !== "number") {
+    const diagramId = node.properties.diagramId;
+    if (!diagramId) {
       throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
     }
     nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
     //for diagram labels, we want the node to be positioned in the middle of the label
-    if (node.label && node.properties["textAlignment"] && !node.properties["symbolId"]) {
+    if (node.label && node.properties.textAlignment && !node.properties.symbolId) {
       const { x, y } = { ...nodePositionPixels };
       diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
-      node.properties["offsetX"] = nodePositionPixels.x - x;
-      node.properties["offsetY"] = nodePositionPixels.y - y;
+      node.properties.offsetX = nodePositionPixels.x - x;
+      node.properties.offsetY = nodePositionPixels.y - y;
     }
   }
 

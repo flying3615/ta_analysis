@@ -4,7 +4,7 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 import { useContext } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
-import { CytoscapeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -61,7 +61,7 @@ export const usePlanSheetsContextMenu = () => {
       PlanElementType.CHILD_DIAGRAM_LABELS,
       PlanElementType.PARCEL_LABELS,
     ];
-    const data = target?.data() as CytoscapeDataProperties;
+    const data = target?.data() as IGraphDataProperties;
     if (data?.elementType && position && elementTypes.includes(data.elementType)) {
       const planProperty: PlanPropertyPayload =
         planMode === PlanMode.SelectLine

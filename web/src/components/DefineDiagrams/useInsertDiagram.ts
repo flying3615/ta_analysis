@@ -86,7 +86,7 @@ export const useInsertDiagram = () => {
   });
 
   if (diagramsLoadError) {
-    console.warn(`Could not load diagrams for useInsertDiagram ${diagramsLoadError}`);
+    console.warn(`Could not load diagrams for useInsertDiagram ${diagramsLoadError.message}`);
     // We don't want to throw here as it interferes with correct 404 handling
   }
 

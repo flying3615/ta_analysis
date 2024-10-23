@@ -25,7 +25,7 @@ describe("useWindowOpenHook", () => {
     windowOpenBackup = window.open;
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     window.open = windowOpenBackup!;
   });
 

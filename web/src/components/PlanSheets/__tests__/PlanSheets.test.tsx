@@ -119,7 +119,7 @@ describe("PlanSheets", () => {
       await userEvent.click(renumberButton);
     });
 
-    await waitFor(async () => {
+    await waitFor(() => {
       const modal = screen.getByRole("dialog");
       expect(modal).toBeInTheDocument();
     });
@@ -151,19 +151,19 @@ describe("PlanSheets", () => {
     };
 
     server.use(
-      http.get(/\/123\/plan$/, async () => {
+      http.get(/\/123\/plan$/, () => {
         return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
       }),
     );
 
     renderWithState(mockState);
 
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
 
     const renumberPageButton = screen.getByRole("button", { description: /Renumber page/i });
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(renumberPageButton).toBeInTheDocument();
     });
 
@@ -218,19 +218,19 @@ describe("PlanSheets", () => {
     };
 
     server.use(
-      http.get(/\/123\/plan$/, async () => {
+      http.get(/\/123\/plan$/, () => {
         return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
       }),
     );
 
     renderWithState(mockState);
 
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
 
     const renumberPageButton = screen.getByRole("button", { description: /Renumber page/i });
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(renumberPageButton).toBeInTheDocument();
     });
 
@@ -278,19 +278,19 @@ describe("PlanSheets", () => {
     };
 
     server.use(
-      http.get(/\/123\/plan$/, async () => {
+      http.get(/\/123\/plan$/, () => {
         return HttpResponse.json(mockGetPlanResponse, { status: 200, statusText: "OK" });
       }),
     );
 
     renderWithState(mockState);
 
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
 
     const deletePageButton = screen.getByRole("button", { description: /Delete page/i });
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(deletePageButton).toBeInTheDocument();
     });
 
@@ -309,7 +309,7 @@ describe("PlanSheets", () => {
     ]);
 
     await userEvent.click(deletePageButton);
-    await waitFor(async () => {
+    await waitFor(() => {
       expect(screen.getByRole("heading", { name: /delete page\?/i })).toBeInTheDocument();
     });
     await userEvent.click(
@@ -345,7 +345,7 @@ describe("PlanSheets", () => {
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
 
-  it("displays loading spinner while waiting for response", async () => {
+  it("displays loading spinner while waiting for response", () => {
     // response handler with delayed response
     server.use(
       http.get(/\/plan\/123$/, async () => {
@@ -370,10 +370,10 @@ describe("PlanSheets", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.post(/\/124\/plan-regenerate$/, async () =>
+      http.post(/\/124\/plan-regenerate$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/124\/async-task/, async () =>
+      http.get(/\/124\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -393,22 +393,22 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
-          url: expect.stringMatching(/\/124\/plan-regenerate$/),
-        }),
+          url: expect.stringMatching(/\/124\/plan-regenerate$/) as unknown,
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: expect.stringMatching(/\/124\/async-task/),
-        }),
+          url: expect.stringMatching(/\/124\/async-task/) as unknown,
+        }) as unknown,
       }),
     );
 
     requestSpy.mockReset();
     server.use(
-      http.get(/\/124\/async-task/, async () =>
+      http.get(/\/124\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -419,34 +419,34 @@ describe("PlanSheets", () => {
       expect.objectContaining({
         request: expect.objectContaining({
           method: "POST",
-          url: expect.stringMatching(/\/124\/plan-regenerate$/),
-        }),
+          url: expect.stringMatching(/\/124\/plan-regenerate$/) as unknown,
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: expect.stringMatching(/\/124\/async-task/),
-        }),
+          url: expect.stringMatching(/\/124\/async-task/) as unknown,
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
           method: "GET",
-          url: expect.stringMatching(/\/124\/plan$/),
-        }),
+          url: expect.stringMatching(/\/124\/plan$/) as unknown,
+        }) as unknown,
       }),
     );
   }, 20000);
 
   it("shows message while regenerate plan task is already in progress", async () => {
     server.use(
-      http.post(/\/124\/plan-regenerate$/, async () =>
+      http.post(/\/124\/plan-regenerate$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 200, statusText: "OK" }),
       ),
-      http.get(/\/124\/async-task/, async () =>
+      http.get(/\/124\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );

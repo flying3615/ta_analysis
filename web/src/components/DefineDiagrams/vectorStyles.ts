@@ -43,7 +43,7 @@ export const vectorStyles = (feature: FeatureLike): Style => {
     });
   }
 
-  const surveyClass: ObservationElementSurveyedClassCode = feature.get("surveyClass");
+  const surveyClass = feature.get("surveyClass") as ObservationElementSurveyedClassCode;
   const lineType = observationStrokeOptionsMap[surveyClass];
   return new Style({
     stroke: new Stroke(lineType),

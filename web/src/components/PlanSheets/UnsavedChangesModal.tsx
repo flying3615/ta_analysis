@@ -34,8 +34,7 @@ export const UnsavedChangesModal = ({
         blocker.proceed();
       }, 20); // Short delay so that the toast message has time to be initialised
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blocker.state, updatePlanIsSuccess]);
+  }, [blocker, updatePlanIsSuccess]);
 
   if (blocker.state !== "blocked") {
     return null;
@@ -46,13 +45,13 @@ export const UnsavedChangesModal = ({
   }
 
   return (
-    <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={blocker.reset}>
+    <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={() => blocker.reset()}>
       <p>If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes</p>
       <LuiModalV2.Buttons>
-        <LuiButton level="tertiary" onClick={blocker.reset}>
+        <LuiButton level="tertiary" onClick={() => blocker.reset()}>
           Cancel
         </LuiButton>
-        <LuiButton level="tertiary" onClick={blocker.proceed}>
+        <LuiButton level="tertiary" onClick={() => blocker.proceed()}>
           Leave
         </LuiButton>
         <LuiButton level="tertiary" onClick={updatePlan}>

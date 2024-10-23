@@ -70,10 +70,9 @@ describe("usePlanGenPreview hook", () => {
 
     const workerInstance = (PreviewWorker as jest.Mock).mock.instances[0] as Worker;
     const postMessageSpy = jest.spyOn(workerInstance, "postMessage");
-    const workerPostMessage = workerInstance.postMessage;
-    expect(workerPostMessage).toHaveBeenCalledTimes(1);
+    expect(postMessageSpy).toHaveBeenCalledTimes(1);
     expect(postMessageSpy).toHaveBeenCalledWith({
-      ImageFiles: [{ blob: expect.any(Blob), name: "DTPS-1.jpg" }],
+      ImageFiles: [{ blob: expect.any(Blob) as unknown, name: "DTPS-1.jpg" }],
       type: "PREVIEW",
     });
   });

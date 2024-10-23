@@ -1,6 +1,7 @@
+import ResizeObserver from "resize-observer-polyfill";
 import { TextEncoder } from "util";
 
-global.ResizeObserver = require("resize-observer-polyfill");
+global.ResizeObserver = ResizeObserver;
 global.TextEncoder = TextEncoder;
 
 // If this method is not stubbed, it can prevent `setupTests.tsx` from loading

@@ -103,7 +103,7 @@ describe("PlanSheetsHeaderButtons", () => {
     expect(zoomByDeltaMock).toHaveBeenCalledWith(-0.5);
   });
 
-  it("should disable Zoom in tool button when at maximum", async () => {
+  it("should disable Zoom in tool button when at maximum", () => {
     (useCytoscapeContext as jest.Mock).mockReturnValue({
       isMaxZoom: true,
     });
@@ -113,7 +113,7 @@ describe("PlanSheetsHeaderButtons", () => {
     expect(button).not.toBeEnabled();
   });
 
-  it("should disable Zoom out tool button when at minimum", async () => {
+  it("should disable Zoom out tool button when at minimum", () => {
     (useCytoscapeContext as jest.Mock).mockReturnValue({
       isMinZoom: true,
     });

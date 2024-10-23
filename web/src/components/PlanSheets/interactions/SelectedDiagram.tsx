@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { IDiagramNodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
@@ -202,20 +203,11 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
   return <></>;
 }
 
-export interface DiagramData {
-  diagramId: number;
-  originPageX: number;
-  originPageY: number;
-  bottomRightX: number;
-  bottomRightY: number;
-  zoomScale: number;
-}
-
 function getDiagramDataAndExtent(
   cytoCoordMapper: CytoscapeCoordinateMapper,
   diagram: NodeSingular,
-): DiagramData & BoundingBox12 {
-  const data = diagram.data() as DiagramData;
+): IDiagramNodeDataProperties & BoundingBox12 {
+  const data = diagram.data() as IDiagramNodeDataProperties;
   const { x: x1, y: y1 } = cytoCoordMapper.groundCoordToCytoscape(
     // _diagram reference frame (0,0)_ <=> originPageX/originPageY
     { x: 0, y: 0 },
@@ -235,7 +227,7 @@ function getNewDiagramOriginAndScale(
   cytoCoordMapper: CytoscapeCoordinateMapper,
   diagram: NodeSingular,
   newExtent: BoundingBox12,
-): Partial<DiagramData> {
+): Pick<IDiagramNodeDataProperties, "originPageX" | "originPageY" | "zoomScale"> {
   const data = getDiagramDataAndExtent(cytoCoordMapper, diagram);
   // new origin is relative to diagram coordinate system
   const newOrigin = cytoCoordMapper.cytoscapeToGroundCoord({ x: newExtent.x1, y: newExtent.y1 }, data.diagramId);

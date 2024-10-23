@@ -166,7 +166,7 @@ export const useOpenLayersDrawInteraction = ({
       };
 
       drawListenerRef.current = event.feature.getGeometry()?.on("change", (evt: BaseEvent) => {
-        currentFeatureRef.current = evt.target;
+        currentFeatureRef.current = evt.target as SimpleGeometry;
 
         switch (currentType) {
           case "Line":

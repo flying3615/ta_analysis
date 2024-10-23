@@ -41,8 +41,8 @@ const centerLineParcelStyle = createParcelStyle(MapColors.transparent, MapColors
  * - consolidated centerline parcel styles
  */
 export const parcelStyles = (feature: FeatureLike, _: number, _styleContext?: StyleContext): Style => {
-  const parcelIntent = feature.get("parcelIntent");
-  const parcelTopologyClass = feature.get("topoClass");
+  const parcelIntent = feature.get("parcelIntent") as ParcelIntentCode;
+  const parcelTopologyClass = feature.get("topoClass") as ParcelTopologyClassCode;
 
   switch (parcelTopologyClass) {
     case ParcelTopologyClassCode.PRIM: {

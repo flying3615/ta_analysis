@@ -1,6 +1,6 @@
 import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
-import { DisplayStateEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
 import { useToast } from "@linzjs/lui";
@@ -170,33 +170,33 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
       const processFilesGroupPromises = Object.values(PlanSheetTypeObject).map(async (obj) => {
         const imageFiles: ImageFile[] = [];
-        const activePlanSheetPages = pages.filter((p) => p.pageType == obj.type);
+        const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
 
         let firstTimeExport = true;
 
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
-          const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
+          const currentPageId = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber)?.id;
 
           if (!currentPageId) {
             continue;
           }
 
-          const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
+          const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
           // filter out hidden nodes
           let diagramNodeData = extractDiagramNodes(currentPageDiagrams).filter(
             (node) =>
               ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
-                node.properties["displayState"]?.toString() ?? "",
+                node.properties.displayState?.valueOf() ?? "",
               ),
           );
 
           // filter out the mark name if the sheet type is title plan title
           if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE) {
             diagramNodeData = diagramNodeData.filter(
-              (node) => !node.properties["labelType"] || node.properties["labelType"] != "markName",
+              (node) => node.properties.labelType !== LabelDTOLabelTypeEnum.markName,
             );
           }
 

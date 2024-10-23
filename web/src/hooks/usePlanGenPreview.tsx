@@ -133,7 +133,7 @@ export const usePlanGenPreview = (props: {
     setPreviewing(true);
 
     // find the max pageNumber for the given activeSheet type like survey or title
-    const activePlanSheetPages = pages.filter((p) => p.pageType == activeSheet);
+    const activePlanSheetPages = pages.filter((p) => p.pageType === activeSheet);
     const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
     const isSurveySheet = activeSheet === PlanSheetType.SURVEY;
     const sheetName = isSurveySheet
@@ -145,7 +145,7 @@ export const usePlanGenPreview = (props: {
       let firstTimeExport = true;
       for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
         const imageName = `${sheetName}-${currentPageNumber}.jpg`;
-        const currentPageId = activePlanSheetPages.find((p) => p.pageNumber == currentPageNumber)?.id;
+        const currentPageId = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber)?.id;
 
         if (!currentPageId) {
           continue;
@@ -164,7 +164,7 @@ export const usePlanGenPreview = (props: {
           });
         });
 
-        const currentPageDiagrams = diagrams.filter((d) => d.pageRef == currentPageId);
+        const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
         const surveyInfoNodes = await extractSurveyInfoNodeData(
           props.surveyInfo,
           cyMapperCurrent.scalePixelsPerCm,
@@ -179,7 +179,7 @@ export const usePlanGenPreview = (props: {
           ...extractDiagramNodes(currentPageDiagrams).filter(
             (node) =>
               ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
-                node.properties["displayState"]?.toString() ?? "",
+                node.properties.displayState?.valueOf() ?? "",
               ),
           ), // filter out hidden diagram nodes
         ];

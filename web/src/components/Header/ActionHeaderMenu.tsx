@@ -115,7 +115,7 @@ export const ActionHeaderMenu = ({
                 }}
               >
                 <LuiIcon
-                  name={o.icon ?? "ic_" + o.action ?? "ic_menu"}
+                  name={o.icon ?? (o.action ? `ic_${o.action}` : "ic_menu")}
                   alt={o.title}
                   size="md"
                   className={o.iconClassName}

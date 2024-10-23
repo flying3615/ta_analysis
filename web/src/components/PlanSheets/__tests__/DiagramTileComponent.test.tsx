@@ -81,7 +81,7 @@ describe("Diagram Tile component", () => {
     expect(screen.getAllByRole("presentation")).toHaveLength(2);
   });
 
-  it("displays enabled Remove diagram button when diagram is in active page", async () => {
+  it("displays enabled Remove diagram button when diagram is in active page", () => {
     renderWithReduxProvider(
       <DiagramTileComponent
         diagramDisplay={{ ...mockDiagramDisplay, pageRef: 1 }}
@@ -98,7 +98,7 @@ describe("Diagram Tile component", () => {
     expect(removeFromSheetButton).not.toBeDisabled();
   });
 
-  it("displays disabled Remove diagram button when diagram is not in active page", async () => {
+  it("displays disabled Remove diagram button when diagram is not in active page", () => {
     renderWithReduxProvider(
       <DiagramTileComponent
         diagramDisplay={{ ...mockDiagramDisplay, pageRef: 3 }}

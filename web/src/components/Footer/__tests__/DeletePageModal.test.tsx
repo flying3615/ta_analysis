@@ -16,7 +16,7 @@ describe("DeletePageModal", () => {
     jest.clearAllMocks();
   });
 
-  it("renders correctly with given props", async () => {
+  it("renders correctly with given props", () => {
     render(<DeletePageModal closeModal={closeModalSpy} pageInfo={pageInfo} callback={callbackSpy} />);
 
     expect(screen.getByRole("heading", { name: "Delete page?" })).toBeInTheDocument();

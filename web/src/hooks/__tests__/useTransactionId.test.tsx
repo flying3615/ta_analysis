@@ -20,7 +20,7 @@ describe("useTransactionId hook", () => {
     expect(await screen.findByText("Transaction ID: 123")).toBeInTheDocument();
   });
 
-  it("useTransactionId should throw error when there is no transaction ID in the URL", async () => {
+  it("useTransactionId should throw error when there is no transaction ID in the URL", () => {
     jest.spyOn(console, "error").mockImplementation(jest.fn());
     let error: Error;
     const ErrorBoundary = () => {

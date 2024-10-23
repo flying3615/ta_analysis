@@ -7,7 +7,7 @@ import { mockStore } from "@/test-utils/store-mock";
 import { selectDiagramToPageLookupTable } from "../selectGraphData";
 
 describe("selectDiagramToPageLookupTable", () => {
-  it("should derive lookup table from diagrams and pages", async () => {
+  it("should derive lookup table from diagrams and pages", () => {
     const { diagrams, pages } = new PlanDataBuilder()
       .addDiagram({
         bottomRightPoint: {

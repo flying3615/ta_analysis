@@ -13,6 +13,7 @@ import {
 } from "cytoscape";
 import { useEffect } from "react";
 
+import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 
@@ -228,7 +229,7 @@ function getMoveControlElements(
       // control nodes are re-positioned during move; original node is updated after move
       controlNodes.push({
         data: {
-          ...ele.data(),
+          ...(ele.data() as IGraphDataProperties),
           id: controlId,
         },
         group: "nodes",
@@ -250,7 +251,7 @@ function getMoveControlElements(
       controlEdges.push({
         group: "edges",
         data: {
-          ...ele.data(),
+          ...(ele.data() as IEdgeDataProperties),
           id: controlId,
           source: `moveStart${ele.source().id()}`,
           target: `moveStart${ele.target().id()}`,
@@ -263,6 +264,7 @@ function getMoveControlElements(
   // actual adjacent edges are hidden
   adjacentEdges.forEach((ele) => {
     const id = ele.id();
+    const data = ele.data() as IEdgeDataProperties;
     const source = ele.source();
     const target = ele.target();
     const isSourceMoving = movingElements.contains(source);
@@ -274,7 +276,7 @@ function getMoveControlElements(
     controlEdges.push({
       group: "edges",
       data: {
-        ...ele.data(),
+        ...(ele.data() as IEdgeDataProperties),
         id: `adjacentEdgeStart${id}`,
         source: isSourceMoving ? `moveStart${sourceId}` : sourceId,
         target: isTargetMoving ? `moveStart${targetId}` : targetId,
@@ -289,8 +291,8 @@ function getMoveControlElements(
         id: `moveVector${id}`,
         source:
           // broken line id ends with _S or _E, anchor to opposite coord
-          id.endsWith("_S") || id.endsWith("_E")
-            ? ele.data(BROKEN_LINE_COORD)
+          (id.endsWith("_S") || id.endsWith("_E")) && data[BROKEN_LINE_COORD]
+            ? data[BROKEN_LINE_COORD]
             : (isSourceMoving ? target : source).id(),
         target: (isTargetMoving ? target : source).id(),
       },

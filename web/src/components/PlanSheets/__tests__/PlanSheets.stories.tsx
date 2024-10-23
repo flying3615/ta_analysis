@@ -101,7 +101,7 @@ export const TitlePage1: Story = {
           console.log(`Fetched planData ${JSON.stringify(pd)}`);
           return HttpResponse.json(pd, { status: 200, statusText: "OK" });
         }),
-        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+        http.get(/\/api\/survey\/123\/survey-info/, () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
@@ -126,7 +126,7 @@ export const SurveyPage1: Story = {
             statusText: "OK",
           }),
         ),
-        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+        http.get(/\/api\/survey\/123\/survey-info/, () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
@@ -155,7 +155,7 @@ export const SurveyPage2: Story = {
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(planData(), { status: 200, statusText: "OK" });
         }),
-        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+        http.get(/\/api\/survey\/123\/survey-info/, () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
@@ -763,7 +763,7 @@ const checkElementProperties = async (
 ) => {
   const element = window.cyRef.$(selector);
   if (element.length > 0) {
-    const color = element.style(styleProperty);
+    const color = element.style(styleProperty) as string;
     const classes = element.classes();
 
     await expect(color).toBe(expectedColor);

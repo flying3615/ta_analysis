@@ -123,10 +123,10 @@ export const LabelsManagementGrid = ({
           editable: !readOnly,
         },
         {
-          onClick: async ({ selectedRows, checked }) => {
+          onClick: ({ selectedRows, checked }) => {
             selectedRows.forEach((row) => (row.bold = checked));
             setList([...list]);
-            return true;
+            return Promise.resolve(true);
           },
         },
       ),

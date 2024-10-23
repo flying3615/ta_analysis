@@ -117,7 +117,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
 
   const cancel = async (): Promise<void> => {
     void queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
-    panelClose();
+    return Promise.resolve().then(panelClose);
   };
 
   const refreshGrid = useCallback(() => {

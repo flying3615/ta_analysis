@@ -95,6 +95,7 @@ export const coordinateMatchers = {
         Math.abs(expectedLocation[0] - l[0]) < POS_TOLERANCE && Math.abs(expectedLocation[1] - l[1]) < POS_TOLERANCE,
     );
     return {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       message: () => `expecting ${actualLocation} toContainCoordinate ${baseLocation}, ${offset}`,
       pass,
     };

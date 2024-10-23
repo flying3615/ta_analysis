@@ -57,7 +57,7 @@ describe("useCreateAndMaintainLock hook", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/v1/surveys/api/survey/123/locks",
-        }),
+        }) as unknown,
       }),
     );
   });
@@ -74,7 +74,7 @@ describe("useCreateAndMaintainLock hook", () => {
           request: expect.objectContaining({
             method: "GET",
             url: "http://localhost/v1/surveys/api/survey/123/locks",
-          }),
+          }) as unknown,
         }),
       );
     });
@@ -85,7 +85,7 @@ describe("useCreateAndMaintainLock hook", () => {
           request: expect.objectContaining({
             method: "PUT",
             url: "http://localhost/v1/surveys/api/survey/123/locks/2100000/lastUsed",
-          }),
+          }) as unknown,
         }),
       );
     });

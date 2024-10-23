@@ -1,6 +1,12 @@
-import { CoordinateDTOCoordTypeEnum, DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTOCoordTypeEnum,
+  DisplayStateEnum,
+  LabelDTO,
+  LabelDTOLabelTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 import { updateDiagramsWithEdge, updateDiagramsWithNode } from "../updatePlanData";
@@ -27,16 +33,30 @@ describe("updatePlanData", () => {
       x: 20,
       y: -10,
     })
-    .addLabel("coordinateLabels", 2, "Label 2", { x: 55, y: -10 }, 10001, "mark", "display", "Arial", 12)
+    .addLabel(
+      "coordinateLabels",
+      2,
+      "Label 2",
+      { x: 55, y: -10 },
+      10001,
+      "mark",
+      LabelDTOLabelTypeEnum.markDescription,
+      "Arial",
+      12,
+    )
     .addLine(3, [1, 2], 1.0, "observation")
     .build().diagrams;
 
   test("updateDiagramsWithNode should return diagrams with updated coordinate data", () => {
-    const updatedNode = {
+    const updatedNode: INodeData = {
       id: "1",
-      properties: { diagramId: 1, elementType: "coordinates", coordType: CoordinateDTOCoordTypeEnum.node },
+      properties: {
+        diagramId: 1,
+        elementType: PlanElementType.COORDINATES,
+        coordType: CoordinateDTOCoordTypeEnum.node,
+      },
       position: { x: 99, y: -99 },
-    } as INodeData;
+    };
 
     const result = updateDiagramsWithNode(diagrams, updatedNode);
     expect(result).toStrictEqual([
@@ -58,13 +78,13 @@ describe("updatePlanData", () => {
   });
 
   test("updateDiagramsWithNode should return diagrams with updated label data", () => {
-    const updatedNode = {
+    const updatedNode: INodeData = {
       id: "2",
       label: "Label 2",
       properties: {
         diagramId: 2,
-        elementType: "coordinateLabels",
-        labelType: "display",
+        elementType: PlanElementType.COORDINATE_LABELS,
+        labelType: LabelDTOLabelTypeEnum.markDescription,
         featureId: 10001,
         featureType: "mark",
         font: "Arial",
@@ -72,7 +92,7 @@ describe("updatePlanData", () => {
         textRotation: 90,
       },
       position: { x: 99, y: -99 },
-    } as INodeData;
+    };
 
     const result = updateDiagramsWithNode(diagrams, updatedNode);
     expect(result).toStrictEqual([
@@ -93,7 +113,7 @@ describe("updatePlanData", () => {
               x: 99,
               y: -99,
             },
-            labelType: "display",
+            labelType: LabelDTOLabelTypeEnum.markDescription,
             font: "Arial",
             fontSize: 12,
             featureId: 10001,
@@ -101,7 +121,7 @@ describe("updatePlanData", () => {
             textAlignment: "centerCenter",
             borderWidth: undefined,
             symbolType: undefined,
-          },
+          } satisfies LabelDTO,
         ],
       },
     ]);

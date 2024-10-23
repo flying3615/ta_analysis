@@ -1,4 +1,4 @@
-import { CoordinateDTOCoordTypeEnum, LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -185,7 +185,18 @@ export const mockPlanData = new PlanDataBuilder()
     editedText: "Edited\nLine",
     textAlignment: "centerCenter",
   } as LabelDTO)
-  .addLabel("parcelLabels", 22, "Parcel", { x: 50, y: -35 }, 1, "parcel", "display", "Tahoma", 14, "halo")
+  .addLabel(
+    "parcelLabels",
+    22,
+    "Parcel",
+    { x: 50, y: -35 },
+    1,
+    "parcel",
+    LabelDTOLabelTypeEnum.parcelArea,
+    "Tahoma",
+    14,
+    "halo",
+  )
   .addLabel(
     "parcelLabels",
     23,
@@ -193,7 +204,7 @@ export const mockPlanData = new PlanDataBuilder()
     { x: 20, y: -35 },
     1,
     "parcel",
-    "display",
+    LabelDTOLabelTypeEnum.parcelAppellation,
     "Tahoma",
     14,
     "halo",

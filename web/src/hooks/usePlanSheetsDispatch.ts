@@ -61,14 +61,14 @@ export function usePlanSheetsDispatch(): PlanSheetsDispatch {
       let updatedPage = activePage;
 
       elements.edges?.forEach((edge) => {
-        if (edge.properties["diagramId"]) {
+        if (edge.properties.diagramId) {
           updatedDiagrams = updateDiagramsWithEdge(updatedDiagrams, edge);
         } else {
           console.warn("update page edge not implemented");
         }
       });
       elements.nodes?.forEach((node) => {
-        if (node.properties["diagramId"]) {
+        if (node.properties.diagramId) {
           updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
         } else if (updatedPage) {
           updatedPage = updatePagesWithNode(updatedPage, node);

@@ -15,6 +15,7 @@ import {
 import type { ConfigDataDTO } from "@linz/survey-plan-generation-api-client/src/models/ConfigDataDTO";
 import { last } from "lodash-es";
 
+import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
 
 interface DiagramOptions {
@@ -171,7 +172,7 @@ export class PlanDataBuilder {
     position: CartesianCoordsDTO,
     coordType: CoordinateDTOCoordTypeEnum = CoordinateDTOCoordTypeEnum.node,
   ): PlanDataBuilder {
-    if (this.planData.diagrams.length == 0) {
+    if (this.planData.diagrams.length === 0) {
       throw new Error(
         "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addCoordinate()",
       );
@@ -192,7 +193,7 @@ export class PlanDataBuilder {
     lineType: string = "observation",
     style: string = "solid",
   ): PlanDataBuilder {
-    if (this.planData.diagrams.length == 0) {
+    if (this.planData.diagrams.length === 0) {
       throw new Error(
         "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addLine()",
       );
@@ -235,9 +236,9 @@ export class PlanDataBuilder {
     idOrOptions: number | LabelDTO,
     displayText: string = "",
     position?: CartesianCoordsDTO,
-    featureId?: number,
-    featureType?: string,
-    labelType: string = "markName",
+    featureId?: INodeDataProperties["featureId"],
+    featureType?: INodeDataProperties["featureType"],
+    labelType: INodeDataProperties["labelType"] = "markName",
     font: string = "Tahoma",
     fontSize: number = 10,
     effect: string = "none",
@@ -246,7 +247,7 @@ export class PlanDataBuilder {
     textAlignment: string | undefined = undefined,
     borderWidth: number | undefined = undefined,
   ) {
-    if (this.planData.diagrams.length == 0) {
+    if (this.planData.diagrams.length === 0) {
       throw new Error(
         "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addLabel()",
       );
@@ -265,7 +266,7 @@ export class PlanDataBuilder {
             id: idOrOptions,
             displayText,
             position: position!,
-            labelType: labelType as LabelDTOLabelTypeEnum,
+            labelType: labelType,
             font,
             fontSize,
             featureId,
@@ -317,7 +318,7 @@ export class PlanDataBuilder {
   }
 
   addUserCoordinate(coordinate: CoordinateDTO) {
-    if (coordinate.coordType != CoordinateDTOCoordTypeEnum.userDefined) {
+    if (coordinate.coordType !== CoordinateDTOCoordTypeEnum.userDefined) {
       throw new Error(
         `Only ${CoordinateDTOCoordTypeEnum.userDefined.valueOf()} coordinate types supported as a child of page`,
       );
@@ -331,7 +332,7 @@ export class PlanDataBuilder {
   }
 
   addUserLine(line: LineDTO) {
-    if (line.lineType != "userDefined") {
+    if (line.lineType !== CoordinateDTOCoordTypeEnum.userDefined) {
       throw new Error(`Only userDefined line types supported as a child of page`);
     }
     const targetPage = last(this.planData.pages);
@@ -354,7 +355,7 @@ export class PlanDataBuilder {
     pointOffset: number = 0,
     symbolType: string | undefined = undefined,
   ) {
-    if (this.planData.diagrams.length == 0) {
+    if (this.planData.diagrams.length === 0) {
       throw new Error(
         "Must add at least one Diagram via PlanDataBuilder.addDiagram() before calling PlanDataBuilder.addRotatedLabel()",
       );

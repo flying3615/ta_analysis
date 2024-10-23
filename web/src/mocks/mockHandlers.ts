@@ -43,7 +43,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/api\/survey\/123\/survey-title/, async () =>
+  http.get(/\/api\/survey\/123\/survey-title/, () =>
     HttpResponse.json(
       {
         surveyNo: "LT 999999",
@@ -53,7 +53,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/api\/survey\/124\/survey-title/, async () =>
+  http.get(/\/api\/survey\/124\/survey-title/, () =>
     HttpResponse.json(
       {
         surveyNo: "LT 999999",
@@ -63,18 +63,18 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/api\/survey\/(123|124)\/survey-info/, async () =>
+  http.get(/\/api\/survey\/(123|124)\/survey-info/, () =>
     HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" }),
   ),
 
-  http.get(/\/api\/survey\/666\/locks$/, async () =>
+  http.get(/\/api\/survey\/666\/locks$/, () =>
     HttpResponse.html("<html lang='en'><body>Unexpected exception</body></html>", {
       status: 500,
       statusText: "Failed",
     }),
   ),
 
-  http.get(/\/api\/survey\/5000061\/locks$/, async () =>
+  http.get(/\/api\/survey\/5000061\/locks$/, () =>
     HttpResponse.json(
       {
         transactionLock: {
@@ -97,7 +97,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/api\/survey\/([0-9]+)\/locks$/, async ({ params }) =>
+  http.get(/\/api\/survey\/([0-9]+)\/locks$/, ({ params }) =>
     HttpResponse.json(
       {
         transactionLock: {
@@ -120,14 +120,14 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.put(/\/api\/survey\/667\/locks\/([0-9]+)\/lastUsed$/, async () =>
+  http.put(/\/api\/survey\/667\/locks\/([0-9]+)\/lastUsed$/, () =>
     HttpResponse.html("<html lang='en'><body>Unexpected exception</body></html>", {
       status: 500,
       statusText: "Failed",
     }),
   ),
 
-  http.put(/\/api\/survey\/([0-9]+)\/locks\/([0-9]+)\/lastUsed$/, async ({ params }) =>
+  http.put(/\/api\/survey\/([0-9]+)\/locks\/([0-9]+)\/lastUsed$/, ({ params }) =>
     HttpResponse.json(
       {
         id: params[1],
@@ -218,12 +218,12 @@ export const handlers: HttpHandler[] = [
     ),
   ),
   http.get(/\/124\/extinguished-lines/, () => HttpResponse.json(mockLines(), { status: 200, statusText: "OK" })),
-  http.post(/\/124\/convert-extinguished-lines/, async () => {
+  http.post(/\/124\/convert-extinguished-lines/, () => {
     return HttpResponse.json({ ok: true, statusCode: null, message: null }, { status: 200, statusText: "OK" });
   }),
   http.get(/\/124\/diagram-labels/, () => HttpResponse.json(mockLabels(), { status: 200, statusText: "OK" })),
   http.patch(/\/124\/diagram-labels/, () => new HttpResponse(null, { status: 204 })),
-  http.get(/\/api\/survey\/124\/survey-title/, async () =>
+  http.get(/\/api\/survey\/124\/survey-title/, () =>
     HttpResponse.json(
       {
         surveyNo: "LT 999999",
@@ -312,7 +312,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagrams-check/, async () => {
+  http.get(/\/diagrams-check/, () => {
     return HttpResponse.json(
       {
         isPrimaryParcelsExists: true,
@@ -323,7 +323,7 @@ export const handlers: HttpHandler[] = [
     );
   }),
 
-  http.get(/\/label-preference/, async () =>
+  http.get(/\/label-preference/, () =>
     HttpResponse.json(
       {
         fonts: mockLabelPreferences.fonts,
@@ -335,7 +335,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagram-layers-by-diagram-type/, async () =>
+  http.get(/\/diagram-layers-by-diagram-type/, () =>
     HttpResponse.json(
       {
         ok: mockMaintainDiagramLayersByDiagramType.ok,
@@ -345,7 +345,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagram-layers-by-diagram/, async () =>
+  http.get(/\/diagram-layers-by-diagram/, () =>
     HttpResponse.json(
       {
         ok: mockMaintainDiagramLayersByDiagram.ok,
@@ -355,7 +355,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagram-layer-types/, async () =>
+  http.get(/\/diagram-layer-types/, () =>
     HttpResponse.json(
       {
         ok: mockDiagramLayerTypes.ok,
@@ -365,7 +365,7 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
-  http.get(/\/diagram-layer-names/, async () =>
+  http.get(/\/diagram-layer-names/, () =>
     HttpResponse.json(
       {
         ok: mockDiagramLayerNames.ok,
@@ -374,7 +374,7 @@ export const handlers: HttpHandler[] = [
       { status: 200, statusText: "OK" },
     ),
   ),
-  http.get(/\/123\/pre-compile-plans$/, async () => {
+  http.get(/\/123\/pre-compile-plans$/, () => {
     return HttpResponse.json(
       {
         hasPlanGenRanBefore: true,
@@ -383,7 +383,7 @@ export const handlers: HttpHandler[] = [
     );
   }),
 
-  http.get(/\/456\/pre-compile-plans$/, async () => {
+  http.get(/\/456\/pre-compile-plans$/, () => {
     return HttpResponse.json(
       {
         hasPlanGenRanBefore: false,
@@ -415,6 +415,7 @@ export const handlers: HttpHandler[] = [
   // Note: the /v1/generate-plans prefix is needed to differentiate from basemap's /tiles endpoint
   http.get(/\/v1\/generate-plans\/tiles\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/, async ({ params }) => {
     const [layerName, zoom, x, y] = Object.values(params);
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const response = await fetch(`/data/geotiles/${layerName}/${zoom}/${x}/${y}`);
     if (response.ok) {
       return HttpResponse.arrayBuffer(await response.arrayBuffer());

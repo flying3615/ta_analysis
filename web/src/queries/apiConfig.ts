@@ -10,7 +10,7 @@ export const apiConfig = () => {
   });
 };
 
-export const surveyApiConfig = async () => {
+export const surveyApiConfig = () => {
   const { surveyBaseUrl } = window._env_;
   return new Configuration({
     basePath: surveyBaseUrl,

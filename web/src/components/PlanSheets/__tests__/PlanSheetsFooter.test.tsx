@@ -125,10 +125,10 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -197,7 +197,7 @@ describe("PlanSheetsFooter", () => {
             ],
             pages: [],
           }),
-        }),
+        }) as unknown,
       }),
     );
 
@@ -209,10 +209,10 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withInProgressStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -240,7 +240,7 @@ describe("PlanSheetsFooter", () => {
         request: expect.objectContaining({
           method: "PUT",
           url: "http://localhost/api/v1/generate-plans/123/plan",
-        }),
+        }) as unknown,
       }),
     );
 
@@ -258,10 +258,10 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -290,7 +290,7 @@ describe("PlanSheetsFooter", () => {
         request: expect.objectContaining({
           method: "PUT",
           url: "http://localhost/api/v1/generate-plans/123/plan",
-        }),
+        }) as unknown,
       }),
     );
 
@@ -334,7 +334,7 @@ describe("PlanSheetsFooter", () => {
         request: expect.objectContaining({
           method: "PUT",
           url: "http://localhost/api/v1/generate-plans/123/plan",
-        }),
+        }) as unknown,
       }),
     );
 
@@ -348,10 +348,10 @@ describe("PlanSheetsFooter", () => {
     server.events.on("request:start", requestSpy);
 
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -400,7 +400,7 @@ describe("PlanSheetsFooter", () => {
         request: expect.objectContaining({
           method: "PUT",
           url: "http://localhost/api/v1/generate-plans/123/plan",
-        }),
+        }) as unknown,
       }),
     );
   });
@@ -525,10 +525,10 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -580,7 +580,7 @@ describe("PlanSheetsFooter", () => {
         request: expect.objectContaining({
           method: "PUT",
           url: "http://localhost/api/v1/generate-plans/123/plan",
-        }),
+        }) as unknown,
       }),
     );
   });
@@ -606,7 +606,7 @@ describe("PlanSheetsFooter", () => {
     expect(addEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function), undefined);
   });
 
-  it("displays the number of pages", async () => {
+  it("displays the number of pages", () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
@@ -625,7 +625,7 @@ describe("PlanSheetsFooter", () => {
     expect(paginationElement).toBeInTheDocument();
   });
 
-  it("shows current page number and it's non-editable", async () => {
+  it("shows current page number and it's non-editable", () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
@@ -646,7 +646,7 @@ describe("PlanSheetsFooter", () => {
     expect(paginationElement).not.toHaveAttribute("contenteditable", "true");
   });
 
-  it("disable appropriate navigation buttons when on the first page", async () => {
+  it("disable appropriate navigation buttons when on the first page", () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
@@ -666,7 +666,7 @@ describe("PlanSheetsFooter", () => {
     expect(screen.getByRole("button", { name: /Last/i })).toBeEnabled();
   });
 
-  it("should display renumber and delete page buttons with correct titles", async () => {
+  it("should display renumber and delete page buttons with correct titles", () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
@@ -689,7 +689,7 @@ describe("PlanSheetsFooter", () => {
     verifyButton(/Delete page/i, "Delete page");
   });
 
-  it("disable appropriate navigation buttons when on the last page", async () => {
+  it("disable appropriate navigation buttons when on the last page", () => {
     renderWithState({
       ...planSheetsState,
       activeSheet: PlanSheetType.TITLE,
@@ -767,10 +767,10 @@ describe("PlanSheetsFooter", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
     server.use(
-      http.put(/\/123\/plan$/, async () =>
+      http.put(/\/123\/plan$/, () =>
         HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
       ),
-      http.get(/\/123\/async-task/, async () =>
+      http.get(/\/123\/async-task/, () =>
         HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
       ),
     );
@@ -827,7 +827,7 @@ describe("PlanSheetsFooter", () => {
             diagrams: [],
             pages: expected,
           }),
-        }),
+        }) as unknown,
       }),
     );
     expect(await screen.findByText("Layout saved successfully")).toBeInTheDocument();

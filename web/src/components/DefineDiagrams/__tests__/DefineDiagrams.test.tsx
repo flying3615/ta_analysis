@@ -64,7 +64,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/diagrams",
-        }),
+        }) as unknown,
       }),
     );
 
@@ -73,7 +73,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "POST",
           url: "http://localhost/api/v1/generate-plans/123/prepare",
-        }),
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
@@ -81,7 +81,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/survey-features",
-        }),
+        }) as unknown,
       }),
     );
     // Get diagrams again as `POST prepare` would have changed
@@ -90,7 +90,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/diagrams",
-        }),
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/lines",
-        }),
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
@@ -106,7 +106,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/diagram-labels",
-        }),
+        }) as unknown,
       }),
     );
     expect(requestSpy).toHaveBeenCalledWith(
@@ -114,7 +114,7 @@ describe("DefineDiagrams", () => {
         request: expect.objectContaining({
           method: "GET",
           url: "http://localhost/api/v1/generate-plans/123/diagrams-check",
-        }),
+        }) as unknown,
       }),
     );
   });
@@ -240,7 +240,7 @@ describe("DefineDiagrams", () => {
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
   });
 
-  it("displays loading spinner when survey data hasn't been loaded", async () => {
+  it("displays loading spinner when survey data hasn't been loaded", () => {
     server.use(http.get(/\/123\/diagrams$/, () => HttpResponse.text(null, { status: 404 })));
     server.use(http.get(/\/survey-features\/123$/, () => HttpResponse.text(null, { status: 404 })));
 

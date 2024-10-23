@@ -88,7 +88,7 @@ export const DiagramListDisabledRemoveButtonEnabled: Story = {
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
         }),
-        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+        http.get(/\/api\/survey\/123\/survey-info/, () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],
@@ -105,7 +105,7 @@ export const RemoveDiagramFromSameAndDifferentPage: Story = {
         http.get(/\/123\/plan$/, () => {
           return HttpResponse.json(nestedMiniTitlePlan, { status: 200, statusText: "OK" });
         }),
-        http.get(/\/api\/survey\/123\/survey-info/, async () => {
+        http.get(/\/api\/survey\/123\/survey-info/, () => {
           return HttpResponse.json(mockSurveyInfo, { status: 200, statusText: "OK" });
         }),
       ],

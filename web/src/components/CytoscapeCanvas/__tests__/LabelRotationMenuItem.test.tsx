@@ -13,16 +13,18 @@ describe("LabelRotationMenuItem", () => {
   let targetStyles: Record<string, unknown>;
   let targetLabel: NodeSingular;
 
+  const styleMock = jest.fn().mockImplementation((key: string, value?: unknown) => {
+    if (value !== undefined) {
+      targetStyles[key] = value;
+    }
+    return targetStyles[key];
+  });
+
   beforeEach(() => {
     targetStyles = { "text-rotation": "0deg" };
     targetLabel = {
       data: jest.fn().mockReturnValue({ elementType: "mockElementType", id: "mockId" }),
-      style: jest.fn().mockImplementation((key: string, value?: unknown) => {
-        if (value !== undefined) {
-          targetStyles[key] = value;
-        }
-        return targetStyles[key];
-      }),
+      style: styleMock,
     } as unknown as NodeSingular;
   });
 
@@ -42,21 +44,21 @@ describe("LabelRotationMenuItem", () => {
     renderWithReduxProvider(<LabelRotationMenuItem targetLabel={targetLabel} />, mockedState);
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "45" } });
-    expect(targetLabel.style).toHaveBeenCalledWith("text-rotation", "45deg");
+    expect(styleMock).toHaveBeenCalledWith("text-rotation", "45deg");
   });
 
   it("does not exceed maximum clockwise rotation", () => {
     renderWithReduxProvider(<LabelRotationMenuItem targetLabel={targetLabel} />, mockedState);
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "100" } });
-    expect(targetLabel.style).toHaveBeenCalledWith("text-rotation", "90deg");
+    expect(styleMock).toHaveBeenCalledWith("text-rotation", "90deg");
   });
 
   it("does not exceed maximum anti-clockwise rotation", () => {
     renderWithReduxProvider(<LabelRotationMenuItem targetLabel={targetLabel} />, mockedState);
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "-100" } });
-    expect(targetLabel.style).toHaveBeenCalledWith("text-rotation", "-90deg");
+    expect(styleMock).toHaveBeenCalledWith("text-rotation", "-90deg");
   });
 
   it("converts radian values to degrees correctly", () => {

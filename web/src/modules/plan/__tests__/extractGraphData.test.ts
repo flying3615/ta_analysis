@@ -1,4 +1,4 @@
-import { LineDTO } from "@linz/survey-plan-generation-api-client";
+import { LabelDTOLabelTypeEnum, LineDTO } from "@linz/survey-plan-generation-api-client";
 
 import { nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -128,7 +128,7 @@ describe("extractGraphData", () => {
     expect(labelNode23?.id).toBe("23");
     expect(labelNode23?.label).toBe("A");
     expect(labelNode23?.position).toStrictEqual({ x: 20, y: -35 });
-    expect(labelNode23?.properties?.["labelType"]).toBe("display");
+    expect(labelNode23?.properties?.["labelType"]).toBe(LabelDTOLabelTypeEnum.parcelAppellation);
     expect(labelNode23?.properties?.["featureId"]).toBe(1);
     expect(labelNode23?.properties?.["featureType"]).toBe("parcel");
     expect(labelNode23?.properties?.["font"]).toBe("Tahoma");

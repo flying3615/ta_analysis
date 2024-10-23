@@ -94,6 +94,7 @@ export class LookupGraphData {
         if (!result) return undefined;
         return { resultType: "LabelDTO", result };
       default:
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         throw new Error(`Unknown PlanElementType: ${planElementType}`);
     }
   }

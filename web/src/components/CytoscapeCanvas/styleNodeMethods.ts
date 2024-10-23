@@ -172,8 +172,7 @@ export const textJustification = (ele: cytoscape.NodeSingular): TextAlignment["j
  * @param cytoscapeCoordinateMapper
  */
 export const rotatedMargin = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
-  const anchorAngle = ele.data("anchorAngle") ?? 0;
-  const pointOffset = ele.data("pointOffset") ?? 0;
+  const { anchorAngle = 0, pointOffset = 0 } = ele.data() as StyleData;
   const angleRadsAntiClockwise = ((360.0 - anchorAngle) * Math.PI) / 180.0;
 
   const cytoscapePixelOffset = cytoscapeCoordinateMapper.planCmToCytoscape(pointOffset / pointsPerCm);

@@ -9,7 +9,13 @@ import {
 } from "@linz/survey-plan-generation-api-client";
 import { chunk, flatten, negate, zip } from "lodash-es";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import {
+  IDiagramNodeData,
+  IEdgeData,
+  IGraphData,
+  INodeData,
+  INodeDataProperties,
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { SYMBOLS_FONT } from "@/constants";
 import { createNewNode } from "@/util/mapUtil";
@@ -19,10 +25,10 @@ import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, g
 const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
 const notSymbol = negate(isSymbol);
 const isUserAnnotation = (label: LabelDTO) => label.labelType === LabelDTOLabelTypeEnum.userAnnotation;
-const addDiagramKey =
-  (elementType: INodeData["properties"]["elementType"]) =>
-  (node: INodeData): INodeData => {
-    node.properties["elementType"] = elementType;
+const setElementType =
+  (elementType: PlanElementType): (<T extends IGraphData>(node: T) => T) =>
+  (node) => {
+    node.properties.elementType = elementType;
     return node;
   };
 
@@ -32,7 +38,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
     position: label.position,
     label: label.editedText ?? label.displayText,
     properties: {
-      elementType: "labels",
+      elementType: PlanElementType.LABELS,
       labelType: label.labelType,
       font: label.font,
       fontSize: label.fontSize ?? 10,
@@ -52,7 +58,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
       featureId: label.featureId,
       featureType: label.featureType,
       ...(isSymbol(label) && { symbolId: label.displayText }),
-    },
+    } satisfies INodeDataProperties,
   };
 };
 
@@ -62,15 +68,19 @@ const coordinateToNode = (coordinate: CoordinateDTO): INodeData => {
     position: coordinate.position,
     properties: {
       coordType: coordinate.coordType,
-      elementType: "coordinates",
-    },
+      elementType: PlanElementType.COORDINATES,
+    } satisfies INodeDataProperties,
   };
 };
 
 export const extractPageNodes = (pages: PageDTO[]): INodeData[] => {
   return pages.flatMap((page) => {
     const labels =
-      page.labels?.filter(isUserAnnotation).filter(notSymbol).map(labelToNode).map(addDiagramKey("labels")) ?? [];
+      page.labels
+        ?.filter(isUserAnnotation)
+        .filter(notSymbol)
+        .map(labelToNode)
+        .map(setElementType(PlanElementType.LABELS)) ?? [];
 
     const coordinates = page.coordinates?.map(coordinateToNode) ?? [];
     return [...labels, ...coordinates] as INodeData[];
@@ -96,10 +106,8 @@ export const extractPageConfigNodes = (pageConfigs: PageConfigDTO[]): INodeData[
       properties: {
         coordType: coordinate.coordType,
         featureId: 1,
-        featureType: "",
         font: "Arial",
-        labelType: "",
-      },
+      } satisfies INodeDataProperties,
     }));
 
     // Sort nodes by x (right-most) and y (bottom-most)
@@ -132,16 +140,15 @@ export const extractPageConfigEdges = (pageConfigs: PageConfigDTO[]): IEdgeData[
     const pageLines = pageConfig.lines
       .filter((line) => line.coordRefs?.[0] && line.coordRefs?.[1])
       .map(
-        (line) =>
-          ({
-            id: `border_${line.id.toString()}`,
-            sourceNodeId: `border_${line.coordRefs?.[0]?.toString()}`,
-            destNodeId: `border_${line.coordRefs?.[1]?.toString()}`,
-            properties: {
-              locked: true,
-              pointWidth: line.pointWidth ?? 1,
-            },
-          }) as IEdgeData,
+        (line): IEdgeData => ({
+          id: `border_${line.id.toString()}`,
+          sourceNodeId: `border_${line.coordRefs?.[0]?.toString()}`,
+          destNodeId: `border_${line.coordRefs?.[1]?.toString()}`,
+          properties: {
+            locked: true,
+            pointWidth: line.pointWidth ?? 1,
+          },
+        }),
       );
 
     const createNewLine = (id: string, sourceNodeId: string, destNodeId: string): IEdgeData => ({
@@ -172,7 +179,7 @@ export interface IDiagramToPage {
 
 export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagramToPage | undefined): INodeData[] => {
   return diagrams.flatMap((diagram) => {
-    const diagramLabelToNode = (label: LabelDTO) => {
+    const diagramLabelToNode = (label: LabelDTO): INodeData => {
       const baseLabelToNode = labelToNode(label);
       // Add diagram and parent ids
       return {
@@ -185,7 +192,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       };
     };
 
-    const childDiagramLabelToNode = (label: LabelDTO, pageNumber?: string | undefined) => {
+    const childDiagramLabelToNode = (label: LabelDTO, pageNumber?: string | undefined): INodeData => {
       const baseLabelToNode = labelToNode(label);
       // we replace "?" with pageNumber in label.displayText if labelType is "childDiagramPage"
       baseLabelToNode.label =
@@ -208,20 +215,20 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
       return diagramType.startsWith("userDefn");
     };
     const userDefnLabels = isUserDefnDiagram(diagram.diagramType)
-      ? diagram.labels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("labels"))
+      ? diagram.labels.filter(notSymbol).map(diagramLabelToNode).map(setElementType(PlanElementType.LABELS))
       : [];
-    const childDiagLabels =
+    const childDiagLabels: INodeData[] =
       diagram.childDiagrams?.flatMap((childDiagram) => {
         const pageDetails = lookupTbl ? lookupTbl[childDiagram.diagramRef] : null;
         const pageNumber = pageDetails ? pageDetails.page.pageNumber.toString() : "?";
         return (
           childDiagram?.labels
             ?.map((label) => childDiagramLabelToNode(label, pageNumber))
-            ?.map(addDiagramKey("childDiagramLabels")) ?? []
+            ?.map(setElementType(PlanElementType.CHILD_DIAGRAM_LABELS)) ?? []
         );
       }) ?? [];
 
-    const coordinates = diagram.coordinates.map((coordinate) => {
+    const coordinates = diagram.coordinates.map((coordinate): INodeData => {
       const baseCoordinate = coordinateToNode(coordinate);
       return {
         ...baseCoordinate,
@@ -238,35 +245,35 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
 
     const parcelLabelNodes =
       diagram.parcelLabelGroups?.flatMap((parcelLabelGroup) =>
-        (parcelLabelGroup.labels ?? []).filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("parcelLabels")),
+        (parcelLabelGroup.labels ?? [])
+          .filter(notSymbol)
+          .map(diagramLabelToNode)
+          .map(setElementType(PlanElementType.PARCEL_LABELS)),
       ) ?? [];
 
-    const parentNode = [
-      {
-        id: `D${diagram.id}`,
-        // as a parent node, position
-        position: { x: 1, y: -1 },
-        properties: {
-          coordType: "",
-          diagramId: diagram.id,
-          elementType: PlanElementType.DIAGRAM,
-          // these data define relative coordinate system (even if user has edited diagram)
-          bottomRightX: diagram.bottomRightPoint.x,
-          bottomRightY: diagram.bottomRightPoint.y,
-          originPageX: diagram.originPageOffset.x,
-          originPageY: diagram.originPageOffset.y,
-          zoomScale: diagram.zoomScale,
-        },
+    const parentNode: IDiagramNodeData = {
+      id: `D${diagram.id}`,
+      // as a parent node, position
+      position: { x: 1, y: -1 },
+      properties: {
+        diagramId: diagram.id,
+        elementType: PlanElementType.DIAGRAM,
+        // these data define relative coordinate system (even if user has edited diagram)
+        bottomRightX: diagram.bottomRightPoint.x,
+        bottomRightY: diagram.bottomRightPoint.y,
+        originPageX: diagram.originPageOffset.x,
+        originPageY: diagram.originPageOffset.y,
+        zoomScale: diagram.zoomScale,
       },
-    ];
+    };
 
     return [
-      ...parentNode,
+      parentNode,
       ...coordinates,
       ...userDefnLabels,
       ...childDiagLabels,
-      ...diagram.coordinateLabels.map(diagramLabelToNode).map(addDiagramKey("coordinateLabels")),
-      ...diagram.lineLabels.filter(notSymbol).map(diagramLabelToNode).map(addDiagramKey("lineLabels")),
+      ...diagram.coordinateLabels.map(diagramLabelToNode).map(setElementType(PlanElementType.COORDINATE_LABELS)),
+      ...diagram.lineLabels.filter(notSymbol).map(diagramLabelToNode).map(setElementType(PlanElementType.LINE_LABELS)),
       ...brokenLineNodes,
       ...parcelLabelNodes,
     ];
@@ -331,30 +338,35 @@ export const BROKEN_LINE_COORD = "brokenLineCoord";
  * @param diagram the diagram the line belongs to
  */
 const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
-  const brokenLine = {
+  const sourceNodeId = line.coordRefs[0]?.toString();
+  const destNodeId = line.coordRefs[1]?.toString();
+  if (!sourceNodeId || !destNodeId) {
+    return [];
+  }
+  const brokenLine: IEdgeData = {
     id: `${line.id}_S`,
-    sourceNodeId: line.coordRefs[0]?.toString(),
+    sourceNodeId,
     destNodeId: `${line.id}_M1`,
     properties: {
       ...getEdgeStyling(line),
       diagramId: diagram.id,
-      elementType: "lines",
-      [BROKEN_LINE_COORD]: line.coordRefs[1]?.toString(),
+      elementType: PlanElementType.LINES,
+      [BROKEN_LINE_COORD]: destNodeId,
       lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
     },
-  } as IEdgeData;
+  };
 
   const brokenLine2 = {
     id: `${line.id}_E`,
     sourceNodeId: `${line.id}_M2`,
-    destNodeId: line.coordRefs[1]?.toString(),
+    destNodeId,
     properties: {
       ...getEdgeStyling(line),
       diagramId: diagram.id,
       elementType: "lines",
-      [BROKEN_LINE_COORD]: line.coordRefs[0]?.toString(),
+      [BROKEN_LINE_COORD]: sourceNodeId,
       lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
@@ -403,9 +415,8 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
       position: breakStartPosition,
       label: "",
       properties: {
-        coordType: "",
         diagramId: diagramId,
-        elementType: "coordinates",
+        elementType: PlanElementType.COORDINATES,
         invisible: true,
         lineId: `${line.id}`,
         parent: `D${diagramId}`,
@@ -416,9 +427,8 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
       position: breakEndPosition,
       label: "",
       properties: {
-        coordType: "",
         diagramId: diagramId,
-        elementType: "coordinates",
+        elementType: PlanElementType.COORDINATES,
         invisible: true,
         lineId: `${line.id}`,
         parent: `D${diagramId}`,

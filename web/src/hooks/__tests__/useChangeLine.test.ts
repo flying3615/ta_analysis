@@ -1,7 +1,7 @@
 import { EdgeSingular } from "cytoscape";
 
 describe("useChangeLine", () => {
-  test("should set line hide", async () => {
+  test("should set line hide", () => {
     const dispatch = jest.fn();
     const setLineHide = jest.fn();
     const useAppDispatch = jest.fn().mockReturnValue(dispatch);
@@ -10,11 +10,9 @@ describe("useChangeLine", () => {
 
     const target = { data: (key: string) => ({ id: "1_2", lineId: "1" })[key] } as EdgeSingular;
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-member-access
-    const useChangeLine = require("@/hooks/useChangeLine.ts").useChangeLine;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const useChangeLine = (require("@/hooks/useChangeLine") as typeof import("@/hooks/useChangeLine")).useChangeLine;
     const changeLine = useChangeLine();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     changeLine(target, true);
 
     expect(dispatch).toHaveBeenCalledTimes(1);

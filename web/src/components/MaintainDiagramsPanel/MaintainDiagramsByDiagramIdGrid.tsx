@@ -126,10 +126,10 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
     hasChanged && setSaving(undefined);
   }, [hasChanged]);
 
-  const cancel = async () => {
+  const cancel = (): Promise<void> => {
     void queryClient.invalidateQueries({ queryKey: diagramNamesQueryKey(transactionId) });
     void queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
-    panelClose();
+    return Promise.resolve().then(panelClose);
   };
 
   const refreshGrid = useCallback(() => {

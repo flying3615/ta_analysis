@@ -19,7 +19,7 @@ const vtRoadsCentrelineStyle = (feature: FeatureLike) => {
     }),
     text: new Text({
       font: '12px "Open Sans",sans-serif',
-      text: feature.get("road_name"),
+      text: feature.get("road_name") as string,
       placement: "line",
       offsetY: -10,
       fill: new Fill({ color: MapColors.black }),
@@ -37,9 +37,9 @@ export const vtRoadsCentrelineStyleFunction = (feature: FeatureLike) => {
  * but for Plan Gen we only show current underlying parcels, not historic/approved/pending/etc.
  */
 export const underlyingParcelStyles = (feature: FeatureLike): Style => {
-  const parcelIntent = feature.get("parcel_intent");
-  const parcelTopologyClass = feature.get("toc_code");
-  const parcelStatus = feature.get("status");
+  const parcelIntent = feature.get("parcel_intent") as ParcelIntentCode;
+  const parcelTopologyClass = feature.get("toc_code") as ParcelTopologyClassCode;
+  const parcelStatus = feature.get("status") as ParcelStatusCode;
 
   if (parcelStatus !== ParcelStatusCode.CURR) {
     return new Style();

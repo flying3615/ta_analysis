@@ -46,7 +46,7 @@ describe("LineProperties", () => {
     "CT boundary or abuttal",
     "User",
   ];
-  it.each(lineTypes)("displays Type property - %s", async (lineType: string) => {
+  it.each(lineTypes)("displays Type property - %s", (lineType: string) => {
     renderComponent({ props: [{ ...mockProps, lineType }] });
     const expectedDisplayName = lineTypeDisplayNames[lineTypes.indexOf(lineType)] || "Unknown line type";
     const textInput = screen.getByDisplayValue(expectedDisplayName);

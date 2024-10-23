@@ -25,7 +25,7 @@ const getTaskStatus = (taskId: string): AsyncTaskDTOStatusEnum => {
   return AsyncTaskDTOStatusEnum.IN_PROGRESS;
 };
 
-export const mockAsyncTaskGeneratorHandler: HttpResponseResolver = async function* ({ request }) {
+export const mockAsyncTaskGeneratorHandler: HttpResponseResolver = function* ({ request }) {
   const taskId = new URL(request.url).searchParams.get("taskId");
   if (!taskId) {
     throw new Error("taskId URL param not passed for /async-task request");

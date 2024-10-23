@@ -109,7 +109,7 @@ const CytoscapeCanvas = ({
     }
     if (labelTypesWithRelatedElements.includes(elementType)) {
       const selectedElements = event.cy.$(`:selected[elementType='${elementType}'][featureId=${featureId}]`);
-      if (selectedElements.length == 0) {
+      if (selectedElements.length === 0) {
         event.cy
           .$(`edge[id*='${featureId}_'], node[id='${featureId}']`)
           .removeClass(PlanStyleClassName.RelatedLabelSelected);

@@ -69,7 +69,7 @@ export const Default: Story = {
       handlers: [
         ...handlers,
         // Return two marks in order to center the map on the geotiles fixture data we have manually defined
-        http.get(/\/123\/survey-features$/, async () =>
+        http.get(/\/123\/survey-features$/, () =>
           HttpResponse.json(
             {
               marks: [
@@ -84,7 +84,7 @@ export const Default: Story = {
           ),
         ),
         // mock basemaps endpoint
-        http.get(/^https:\/\/basemaps.linz.govt.nz\/v1\/tiles\//, async () =>
+        http.get(/^https:\/\/basemaps.linz.govt.nz\/v1\/tiles\//, () =>
           HttpResponse.arrayBuffer(new ArrayBuffer(0), {
             headers: { "Content-Type": "application/x-protobuf", "Content-Length": "0" },
           }),
@@ -202,7 +202,7 @@ export const DrawButtonsDisabled: Story = {
     backgrounds: {},
     msw: {
       handlers: [
-        http.get(/\/125\/diagrams-check/, async () => {
+        http.get(/\/125\/diagrams-check/, () => {
           return HttpResponse.json(
             {
               isPrimaryParcelsExists: false,
@@ -330,7 +330,7 @@ export const RTLineAlreadyPresentError: Story = {
     backgrounds: {},
     msw: {
       handlers: [
-        http.post(/\/124\/convert-extinguished-lines/, async () => {
+        http.post(/\/124\/convert-extinguished-lines/, () => {
           return HttpResponse.json(
             {
               ok: false,

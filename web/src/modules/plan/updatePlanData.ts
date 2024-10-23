@@ -8,25 +8,25 @@ import {
   PageDTO,
 } from "@linz/survey-plan-generation-api-client";
 
-import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-import { DiagramData } from "@/components/PlanSheets/interactions/SelectedDiagram";
+import { IDiagramNodeData, IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
-    if (diagram.id !== node.properties["diagramId"]) {
+    if (diagram.id !== node.properties.diagramId || !node.properties.elementType) {
       return diagram;
     }
 
-    if (node.properties["elementType"] === "coordinates") {
+    const elementType = node.properties.elementType;
+    if (elementType === PlanElementType.COORDINATES) {
       return {
         ...diagram,
         coordinates: diagram.coordinates.map((coordinate) =>
           coordinate.id === parseInt(node.id) ? mergeCoordinateData(coordinate, node) : coordinate,
         ),
       };
-    } else if (node.properties["elementType"] === PlanElementType.DIAGRAM) {
-      const data = node.properties as unknown as DiagramData;
+    } else if (elementType === PlanElementType.DIAGRAM) {
+      const data = (node as IDiagramNodeData).properties;
       return {
         ...diagram,
         originPageOffset: {
@@ -35,28 +35,29 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
         },
         zoomScale: data.zoomScale,
       };
-    } else {
-      const labelType = node.properties["elementType"] as "labels" | "coordinateLabels" | "lineLabels" | "parcelLabels";
-      if (labelType === "parcelLabels") {
-        return {
-          ...diagram,
-          parcelLabelGroups: diagram.parcelLabelGroups?.map((group) => {
-            return {
-              ...group,
-              labels: group.labels.map((label) =>
-                label.id === parseInt(node.id) ? mergeLabelData(label, node) : label,
-              ),
-            };
-          }),
-        };
-      }
-
+    } else if (elementType === PlanElementType.PARCEL_LABELS) {
       return {
         ...diagram,
-        [labelType]: diagram[labelType].map((label) =>
+        parcelLabelGroups: diagram.parcelLabelGroups?.map((group) => {
+          return {
+            ...group,
+            labels: group.labels.map((label) => (label.id === parseInt(node.id) ? mergeLabelData(label, node) : label)),
+          };
+        }),
+      };
+    } else if (
+      elementType === PlanElementType.LABELS ||
+      elementType === PlanElementType.COORDINATE_LABELS ||
+      elementType === PlanElementType.LINE_LABELS
+    ) {
+      return {
+        ...diagram,
+        [elementType]: diagram[elementType].map((label) =>
           label.id === parseInt(node.id) ? mergeLabelData(label, node) : label,
         ),
       };
+    } else {
+      return diagram;
     }
   });
 };
@@ -96,7 +97,7 @@ export const updatePageLabel = (
 };
 
 export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {
-  if (node.properties["elementType"] === "coordinates") {
+  if (node.properties.elementType === PlanElementType.COORDINATES) {
     return {
       ...page,
       coordinates: page.coordinates?.map((coordinate) =>
@@ -113,7 +114,7 @@ export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => 
 
 export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
-    if (diagram.id !== edge.properties["diagramId"]) {
+    if (diagram.id !== edge.properties.diagramId) {
       return diagram;
     }
 
@@ -125,17 +126,12 @@ export const updateDiagramsWithEdge = (diagrams: DiagramDTO[], edge: IEdgeData):
 };
 
 const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
-  function getUpdatedProperty<T>(property: string, defaultValue: T): T {
-    const value = updatedNode.properties[property] as T;
-    if (value === undefined) return defaultValue;
-    return value;
-  }
-
-  const rotationAngle = getUpdatedProperty("textRotation", label.rotationAngle);
-  const anchorAngle = getUpdatedProperty("anchorAngle", label.anchorAngle);
-  const pointOffset = getUpdatedProperty("pointOffset", label.pointOffset);
-  const textAlignment = getUpdatedProperty("textAlignment", label.textAlignment);
-  const displayState = getUpdatedProperty("displayState", label.displayState);
+  const updated = updatedNode.properties;
+  const rotationAngle = updated.textRotation ?? label.rotationAngle;
+  const anchorAngle = updated.anchorAngle ?? label.anchorAngle;
+  const pointOffset = updated.pointOffset ?? label.pointOffset;
+  const textAlignment = updated.textAlignment ?? label.textAlignment;
+  const displayState = updated.displayState ?? label.displayState;
 
   return {
     ...label,

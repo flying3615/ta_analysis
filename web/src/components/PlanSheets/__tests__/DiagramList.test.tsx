@@ -1,3 +1,4 @@
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { screen } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
@@ -14,7 +15,7 @@ describe("The Diagram list tree", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
     const allLabelsForDiagrams: string[] = titleDiagramList
-      .flatMap((m) => m.labels.filter((l) => l.labelType == "diagram"))
+      .flatMap((m) => m.labels.filter((l) => l.labelType === LabelDTOLabelTypeEnum.diagram))
       .map((l) => l.displayText);
     // check that a label has been found for all diagrams
     expect(allLabelsForDiagrams).toHaveLength(titleDiagramList.length);
@@ -47,7 +48,7 @@ describe("The Diagram list tree", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
     );
     const allLabelsForDiagrams: string[] = surveyDiagramList
-      .flatMap((m) => m.labels.filter((l) => l.labelType == "diagram"))
+      .flatMap((m) => m.labels.filter((l) => l.labelType === LabelDTOLabelTypeEnum.diagram))
       .map((l) => l.displayText);
     // check that a label has been found for all diagrams
     expect(allLabelsForDiagrams).toHaveLength(surveyDiagramList.length);

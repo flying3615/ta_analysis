@@ -22,7 +22,7 @@ describe("PageManager", () => {
     },
   });
 
-  test("renders the component", async () => {
+  test("renders the component", () => {
     renderWithReduxProvider(<PageManager />, { store: mockReduxStore });
 
     expect(screen.getByRole("button", { description: "Add page" })).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("PageManager", () => {
     expect(screen.getByRole("menuitem", { name: "Add new last page" })).toBeInTheDocument();
   });
 
-  test("disables buttons when there are no pages", async () => {
+  test("disables buttons when there are no pages", () => {
     const mockNoPagesStore = setupStore({
       planSheets: {
         ...mockStore.planSheets,

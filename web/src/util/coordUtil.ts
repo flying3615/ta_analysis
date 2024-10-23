@@ -3,7 +3,7 @@ import { flattenDepth, isArray } from "lodash-es";
 export type GeometryCoords = number[] | number[][] | number[][][] | number[][][][] | number[][][][][];
 
 function isArrayOfNumber(a: GeometryCoords | number | undefined) {
-  return a && isArray(a) && typeof a[0] == "number";
+  return a && isArray(a) && typeof a[0] === "number";
 }
 
 /**

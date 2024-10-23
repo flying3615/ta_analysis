@@ -37,7 +37,7 @@ export const useGetPlanKeyQuery: PlanGenQuery<TransactionTitleDTO> = ({ transact
 };
 
 const getSurveyTitle = async (transactionId: number): Promise<TransactionTitleDTO> => {
-  const config = await surveyApiConfig();
+  const config = surveyApiConfig();
   const basePath = config.basePath ?? "";
   const response = await fetch(`${basePath}/api/survey/${transactionId}/survey-title`, {
     headers: config.headers,
@@ -59,7 +59,7 @@ export const useSurveyInfoQuery: PlanGenQuery<ExternalSurveyInfoDto> = ({ transa
 };
 
 const getSurveyInfo = async (transactionId: number) => {
-  const config = await surveyApiConfig();
+  const config = surveyApiConfig();
   const basePath = config.basePath ?? "";
   const response = await fetch(`${basePath}/api/survey/${transactionId}/survey-info`, {
     headers: config.headers,

@@ -150,8 +150,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -163,8 +162,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -176,8 +174,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -189,8 +186,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -202,8 +198,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -215,8 +210,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -228,8 +222,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -241,8 +234,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -254,8 +246,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -267,8 +258,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -280,8 +270,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -293,8 +282,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
 
@@ -307,8 +295,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -320,8 +307,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -333,8 +319,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -346,8 +331,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10%",
-      labelType: "",
+      fontSize: 10,
     },
   },
   {
@@ -359,8 +343,7 @@ export const pageBorderNodes: INodeData[] = [
       featureId: 1,
       featureType: "",
       font: "Arial",
-      fontSize: "10px",
-      labelType: "",
+      fontSize: 10,
     },
   },
 ];

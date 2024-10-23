@@ -6,6 +6,7 @@ import cytoscape, { NodeSingular } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
@@ -64,11 +65,11 @@ export const PageLabelInput = () => {
           return;
         }
         const target = event.target as NodeSingular;
-        const { id, label, elementType } = target.data();
-        if (elementType === PlanElementType.LABELS && target.selected()) {
+        const { id, label, elementType } = target.data() as IGraphDataProperties;
+        if (id && label && elementType === PlanElementType.LABELS && target.selected()) {
           labelRef.current = { id, label };
           setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
-          setLabelText((label as string) || "");
+          setLabelText(label || "");
         }
       } else if (planMode === PlanMode.AddLabel) {
         const diagramAreasLimits = cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto);

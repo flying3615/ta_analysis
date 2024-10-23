@@ -36,7 +36,7 @@ export const updateLockLastUsed = async (
   transactionId: number,
   lockId: number,
 ): Promise<TransactionalLockDTO | null> => {
-  const config = await surveyApiConfig();
+  const config = surveyApiConfig();
   const basePath = config.basePath ?? "";
   const response = await fetch(`${basePath}/api/survey/${transactionId}/locks/${lockId}/lastUsed`, {
     method: "PUT",
@@ -57,7 +57,7 @@ export const getsertLockQueryKey = (transactionId: number, userId: string | unde
 ];
 
 export const getsertLock = async (transactionId: number): Promise<LocksDTO | null> => {
-  const config = await surveyApiConfig();
+  const config = surveyApiConfig();
   const basePath = config.basePath ?? "";
   const response = await fetch(`${basePath}/api/survey/${transactionId}/locks`, {
     headers: config.headers,

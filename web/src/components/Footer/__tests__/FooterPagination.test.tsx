@@ -12,7 +12,7 @@ describe("FooterPagination", () => {
     jest.clearAllMocks();
   });
 
-  it("renders pagination buttons", async () => {
+  it("renders pagination buttons", () => {
     render(<FooterPagination currentPage={currentPage} totalPages={totalPages} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "First" })).toBeInTheDocument();
@@ -21,35 +21,35 @@ describe("FooterPagination", () => {
     expect(screen.getByRole("button", { name: "Last" })).toBeInTheDocument();
   });
 
-  it('disables "First" and "Previous" buttons on the first page', async () => {
+  it('disables "First" and "Previous" buttons on the first page', () => {
     render(<FooterPagination currentPage={1} totalPages={totalPages} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "First" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
   });
 
-  it('enables "First" and "Previous" buttons when not on the first page', async () => {
+  it('enables "First" and "Previous" buttons when not on the first page', () => {
     render(<FooterPagination currentPage={2} totalPages={totalPages} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "First" })).not.toBeDisabled();
     expect(screen.getByRole("button", { name: "Previous" })).not.toBeDisabled();
   });
 
-  it('disables "Next" and "Last" buttons on the last page', async () => {
+  it('disables "Next" and "Last" buttons on the last page', () => {
     render(<FooterPagination currentPage={10} totalPages={totalPages} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Last" })).toBeDisabled();
   });
 
-  it('enables "Next" and "Last" buttons when not on the last page', async () => {
+  it('enables "Next" and "Last" buttons when not on the last page', () => {
     render(<FooterPagination currentPage={currentPage} totalPages={totalPages} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
     expect(screen.getByRole("button", { name: "Last" })).not.toBeDisabled();
   });
 
-  it("disables buttons when there are no pages", async () => {
+  it("disables buttons when there are no pages", () => {
     render(<FooterPagination currentPage={0} totalPages={0} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "First" })).toBeDisabled();
@@ -58,7 +58,7 @@ describe("FooterPagination", () => {
     expect(screen.getByRole("button", { name: "Last" })).toBeDisabled();
   });
 
-  it("disables buttons when there is only one page", async () => {
+  it("disables buttons when there is only one page", () => {
     render(<FooterPagination currentPage={1} totalPages={1} onPageChange={jest.fn} />);
 
     expect(screen.getByRole("button", { name: "First" })).toBeDisabled();

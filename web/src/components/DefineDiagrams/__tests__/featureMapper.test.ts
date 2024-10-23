@@ -67,7 +67,7 @@ describe("featureMapper", () => {
     });
   });
 
-  test("getVectorsForOpenLayers", async () => {
+  test("getVectorsForOpenLayers", () => {
     const features = {
       parcelDimensionVectors: mockParcelDimensionVectors(),
       nonBoundaryVectors: mockNonBoundaryVectors(),
@@ -93,7 +93,7 @@ describe("featureMapper", () => {
     });
   });
 
-  test("getDiagramsForOpenLayers", async () => {
+  test("getDiagramsForOpenLayers", () => {
     const diagrams = getDiagramsForOpenLayers(mockDiagrams());
 
     expect(diagrams[4]?.id).toBe(1);
@@ -117,7 +117,7 @@ describe("featureMapper", () => {
     expect(geometry5.coordinates).toContainCoordinate(TEST_LOCATION_LAT_LONG, [-35, 65]);
   });
 
-  test("diagram and label features are sorted correctly", async () => {
+  test("diagram and label features are sorted correctly", () => {
     const diagrams = getDiagramsForOpenLayers(mockDiagrams());
     const labels = getLabelsForOpenLayers(mockLabels());
 
