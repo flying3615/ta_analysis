@@ -69,7 +69,7 @@ describe("updatePlanData", () => {
         featureType: "mark",
         font: "Arial",
         fontSize: 12,
-        textRotation: -90,
+        textRotation: 90,
       },
       position: { x: 99, y: -99 },
     } as INodeData;
