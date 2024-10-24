@@ -1,8 +1,9 @@
 import "./LandingPage.scss";
 
 import { LuiButton, LuiIcon, LuiShadow } from "@linzjs/lui";
+import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import { PanelsContext } from "@linzjs/windows";
-import { useContext } from "react";
+import { PropsWithChildren, useContext } from "react";
 import { generatePath, Link } from "react-router-dom";
 
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
@@ -11,12 +12,29 @@ import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/Mainta
 import { luiColors } from "@/constants";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
+import { useSurveyInfoQuery } from "@/queries/survey";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
+interface BigButtonProps {
+  icon: IconName;
+  path?: string;
+  onClick?: () => void;
+}
+
+const BigButton = ({ icon, path, children, onClick }: PropsWithChildren<BigButtonProps>) => (
+  <Link className="LandingPage-option" to={path ?? ""} onClick={onClick}>
+    <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
+      <LuiIcon name={icon} className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
+      <p>{children}</p>
+    </LuiShadow>
+  </Link>
+);
+
 const LandingPage = () => {
   const transactionId = useTransactionId();
+  const { data: surveyInfo } = useSurveyInfoQuery({ transactionId });
 
   const { openPanel } = useContext(PanelsContext);
 
@@ -29,7 +47,7 @@ const LandingPage = () => {
   );
 
   return (
-    <>
+    <div className="LandingPage">
       <header className="Header">
         <LuiButton
           href={`${hostProtoForApplication(8080)}/survey/${transactionId}`}
@@ -42,31 +60,25 @@ const LandingPage = () => {
         <div className="CommonButtons__fill" />
         <ActionHeaderButton title="Help" icon="ic_help_outline" onClick={() => alert("Not implemented")} />
       </header>
-      <div className="LandingPage-background"></div>
-      <div className="LandingPage">
-        <div className="LandingPage-top"></div>
-        <div className="LandingPage-inner">
-          <div className="LandingPage-title">
-            <h1>Plan generation</h1>
-            <h5 className="LandingPage-titlePrompt">What would you like to do?</h5>
+      <div className="LandingPage-inner">
+        <div className="LandingPage-title">
+          <h1>Plan generation</h1>
+          <h2 className="LandingPage-titlePrompt" title={surveyInfo?.description}>
+            {surveyInfo?.datasetSeries}&#160;{surveyInfo?.datasetId}
+          </h2>
+        </div>
+        <div className="LandingPage-options">
+          <div className="LandingPage-options-row">
+            <BigButton icon="ic_define_diagrams" path={generatePath(Paths.defineDiagrams, { transactionId })}>
+              Define Diagrams
+            </BigButton>
+            <BigButton icon="ic_layout_plan_sheets" path={generatePath(Paths.layoutPlanSheets, { transactionId })}>
+              Layout Plan Sheets
+            </BigButton>
           </div>
-          <div className="LandingPage-options">
-            <Link className="LandingPage-option" to={generatePath(Paths.defineDiagrams, { transactionId })}>
-              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon name="ic_define_diagrams" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
-                <p>Define Diagrams</p>
-              </LuiShadow>
-            </Link>
-            <Link className="LandingPage-option" to={generatePath(Paths.layoutPlanSheets, { transactionId })}>
-              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon name="ic_layout_plan_sheets" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
-                <p>Layout Plan Sheets</p>
-              </LuiShadow>
-            </Link>
-          </div>
-          <div className="LandingPage-options">
-            <Link
-              className="LandingPage-option"
+          <div className="LandingPage-options-row">
+            <BigButton
+              icon="ic_layers"
               onClick={() => {
                 if (maintainSplitLoading) return;
                 if (!maintainDiagramsAllowed) {
@@ -74,17 +86,13 @@ const LandingPage = () => {
                   return;
                 }
                 openPanel("Maintain diagram layers", () => <MaintainDiagramsPanel transactionId={transactionId} />);
-                return false;
               }}
-              to=""
             >
-              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon name="ic_layers" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
-                <p>Maintain diagram layers</p>
-              </LuiShadow>
-            </Link>
-            <Link
-              className="LandingPage-option"
+              Maintain diagram layers
+            </BigButton>
+
+            <BigButton
+              icon="ic_label_settings"
               onClick={() => {
                 if (labelPrefsSplitLoading) return;
                 if (!labelPreferencesAllowed) {
@@ -92,25 +100,14 @@ const LandingPage = () => {
                   return;
                 }
                 openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
-                return false;
               }}
-              to=""
             >
-              <LuiShadow className="LandingPage-optionBtn" dropSize="sm">
-                <LuiIcon name="ic_label_settings" className="LandingPage-optionIcon" alt="" color={luiColors.sea} />
-                <p>Label preferences</p>
-              </LuiShadow>
-            </Link>
+              Label preferences
+            </BigButton>
           </div>
         </div>
-        <div className="LandingPage-footer">
-          <LuiIcon name="ic_info_outline" size="md" alt="Info" color="#6b6966" />
-          <span className="LandingPage-infoText">
-            Find Maintain Diagram Layers and Preferences in Define Diagrams and Layout Plan Sheets
-          </span>
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 

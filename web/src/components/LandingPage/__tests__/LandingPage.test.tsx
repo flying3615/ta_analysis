@@ -17,9 +17,6 @@ describe("LandingPage", () => {
     expect(await screen.findByRole("heading", { name: "Plan generation" })).toBeInTheDocument();
     expect(screen.getByText(/^Define Diagrams$/)).toBeTruthy();
     expect(screen.getByText(/^Layout Plan Sheets$/)).toBeTruthy();
-    expect(
-      screen.getByText(/Find Maintain Diagram Layers and Preferences in Define Diagrams and Layout Plan Sheets/),
-    ).toBeTruthy();
   });
 
   it("should go to Define Diagrams on click", async () => {
