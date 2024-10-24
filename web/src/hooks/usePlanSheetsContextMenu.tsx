@@ -1,4 +1,4 @@
-import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 import { useContext } from "react";
@@ -14,13 +14,19 @@ import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProp
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
-import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
-import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import {
+  getUpdatedDiagrams,
+  restoreOriginalPosition,
+  TargetPositionLookup,
+} from "@/modules/plan/LookupOriginalPosition";
+import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
+import { selectActiveDiagrams, selectLookupGraphData } from "@/modules/plan/selectGraphData";
+import {
+  getOriginalPositions,
   getPlanMode,
   getPreviousAttributesForDiagram,
+  replaceDiagrams,
   setDiagramIdToMove,
-  setPlanProperty,
 } from "@/redux/planSheets/planSheetsSlice";
 
 export const usePlanSheetsContextMenu = () => {
@@ -28,6 +34,8 @@ export const usePlanSheetsContextMenu = () => {
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
+  const originalPositions = useAppSelector(getOriginalPositions);
+  const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
@@ -55,14 +63,14 @@ export const usePlanSheetsContextMenu = () => {
     if (!cy) return;
     const elementTypes = [
       PlanElementType.LINES,
-      PlanElementType.LABELS,
       PlanElementType.LINE_LABELS,
+      PlanElementType.LABELS,
       PlanElementType.COORDINATE_LABELS,
       PlanElementType.CHILD_DIAGRAM_LABELS,
       PlanElementType.PARCEL_LABELS,
     ];
     const data = target?.data() as IGraphDataProperties;
-    if (data?.elementType && position && elementTypes.includes(data.elementType)) {
+    if (data.elementType && position && elementTypes.includes(data.elementType)) {
       const planProperty: PlanPropertyPayload =
         planMode === PlanMode.SelectLine
           ? {
@@ -75,9 +83,7 @@ export const usePlanSheetsContextMenu = () => {
               data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesData),
               position: { ...position },
             };
-      // NOTE: why is this dispatching instead of opening the Property panel with data !?
-      dispatch(setPlanProperty(planProperty));
-      openPanel("Plan element property", () => <PlanElementProperty />);
+      openPanel("Plan element property", () => <PlanElementProperty property={planProperty} />);
     }
   };
 
@@ -98,9 +104,43 @@ export const usePlanSheetsContextMenu = () => {
       );
     };
 
+    const originalLocation = (event: {
+      target: NodeSingular | EdgeSingular | null;
+      cy: cytoscape.Core | undefined;
+      position?: cytoscape.Position;
+    }) => {
+      const { target, cy } = event;
+      if (!cy || !target || !activeDiagrams || !originalPositions) return;
+
+      const data = target.data() as Record<string, string | number | boolean | undefined>;
+
+      const updateDiagrams = (positions: cytoscape.Position[], elementType: keyof DiagramDTO, ids: number[]) => {
+        const updatedDiagrams = getUpdatedDiagrams(activeDiagrams, data, elementType, positions, ids);
+        dispatch(replaceDiagrams(updatedDiagrams));
+      };
+
+      if (target.isNode?.()) {
+        const position = restoreOriginalPosition(originalPositions, target.data() as TargetPositionLookup);
+        if (position) updateDiagrams([position], data["elementType"] as keyof DiagramDTO, [Number(data["id"])]);
+      } else if (target.isEdge?.()) {
+        const coordRefs = [Number(data["source"]), Number(data["target"])];
+        const positions = coordRefs
+          .map((id) => {
+            const newData = {
+              id: id,
+              elementType: PlanElementType.COORDINATES,
+              diagramId: data["diagramId"],
+            } as unknown as TargetPositionLookup;
+            return restoreOriginalPosition(originalPositions, newData);
+          })
+          .filter((pos): pos is cytoscape.Position => pos !== null);
+        updateDiagrams(positions, PlanElementType.COORDINATES as keyof DiagramDTO, coordRefs);
+      }
+    };
+
     const buildLineMenus = (targetLine: EdgeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
       return [
-        { title: "Original location", callback: getProperties },
+        { title: "Original location", callback: originalLocation },
         {
           title: "Show",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
@@ -174,7 +214,7 @@ export const usePlanSheetsContextMenu = () => {
     const buildLabelMenus = (targetLabel: NodeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
       const singleSelected = selectedCollection && selectedCollection?.size() === 1;
       return [
-        { title: "Original location", callback: getProperties },
+        { title: "Original location", callback: originalLocation },
         { title: "Show", hideWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE },
         { title: "Properties", callback: getProperties },
         {
@@ -207,7 +247,7 @@ export const usePlanSheetsContextMenu = () => {
     };
 
     const nodeMenus: MenuItem[] = [
-      { title: "Original location", callback: getProperties },
+      { title: "Original location", callback: originalLocation },
       {
         title: "Show",
         hideWhen: (e) =>

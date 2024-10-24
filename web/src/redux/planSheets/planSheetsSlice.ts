@@ -2,8 +2,8 @@ import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/surv
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
-import { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { LookupOriginalPosition, PositionLookup } from "@/modules/plan/LookupOriginalPosition";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 
 export interface PlanSheetsState {
@@ -14,13 +14,13 @@ export interface PlanSheetsState {
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
   planMode: PlanMode;
-  planProperty?: PlanPropertyPayload | undefined;
   diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
   // undo buffer
   previousHasChanges?: boolean;
   previousDiagrams: DiagramDTO[] | null;
   previousPages: PageDTO[] | null;
+  originalPositions?: PositionLookup;
 }
 
 const initialState: PlanSheetsState = {
@@ -37,6 +37,7 @@ const initialState: PlanSheetsState = {
   previousDiagramAttributesMap: {},
   previousDiagrams: null,
   previousPages: null,
+  originalPositions: {},
 };
 
 /**
@@ -76,6 +77,7 @@ const planSheetsSlice = createSlice({
           state.activePageNumbers[type] = 1;
         }
       });
+      state.originalPositions = LookupOriginalPosition(action.payload.diagrams);
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       onDataChanging(state);
@@ -114,9 +116,6 @@ const planSheetsSlice = createSlice({
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
-    },
-    setPlanProperty: (state, action: PayloadAction<PlanPropertyPayload | undefined>) => {
-      state.planProperty = action.payload;
     },
     setDiagramIdToMove: (state, action: PayloadAction<number | undefined>) => {
       state.diagramIdToMove = action.payload;
@@ -209,9 +208,9 @@ const planSheetsSlice = createSlice({
         totalPages: filteredPages.length,
       };
     },
+    getOriginalPositions: (state) => state.originalPositions,
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
-    getPlanProperty: (state) => state.planProperty,
     getDiagramIdToMove: (state) => state.diagramIdToMove,
     getPreviousAttributesForDiagram:
       (state) =>
@@ -232,7 +231,6 @@ export const {
   setDiagramPageRef,
   updatePages,
   setPlanMode,
-  setPlanProperty,
   setDiagramIdToMove,
   setSymbolHide,
   setPreviousDiagramAttributes,
@@ -254,9 +252,9 @@ export const {
   getActivePageRefFromPageNumber,
   getActivePageNumber,
   getFilteredPages,
+  getOriginalPositions,
   hasChanges,
   getPlanMode,
-  getPlanProperty,
   getDiagramIdToMove,
   getPreviousAttributesForDiagram,
   canUndo,

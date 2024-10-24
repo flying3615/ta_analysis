@@ -7,10 +7,12 @@ import React, { useContext, useState } from "react";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { getPlanProperty, setPlanProperty } from "@/redux/planSheets/planSheetsSlice";
 
-export type PlanElementPropertyMode = Extract<PlanMode, PlanMode.SelectLabel | PlanMode.SelectLine>;
+export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
+
+interface PlanElementPropertyProps {
+  property: PlanPropertyPayload;
+}
 
 interface PlanLabelProperty {
   mode: PlanMode.SelectLabel;
@@ -24,11 +26,7 @@ interface PlanLineProperty {
   position: { x: number; y: number };
 }
 
-export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
-
-const PlanElementProperty = () => {
-  const dispatch = useAppDispatch();
-  const planElementProperty = useAppSelector(getPlanProperty);
+const PlanElementProperty = ({ property }: PlanElementPropertyProps) => {
   const [saveFunction, setSaveFunction] = useState<() => void>();
   const [isSaveEnabled, setSaveEnabled] = useState<boolean>(false);
 
@@ -36,7 +34,7 @@ const PlanElementProperty = () => {
     switch (mode) {
       case PlanMode.SelectLabel:
         return {
-          component: <LabelProperties {...{ data, setSaveFunction, setSaveEnabled }} />,
+          component: <LabelProperties data={data} setSaveFunction={setSaveFunction} setSaveEnabled={setSaveEnabled} />,
           headerContent: {
             icon: "ic_format_lines_text",
             title: "Label properties",
@@ -55,12 +53,10 @@ const PlanElementProperty = () => {
     }
   };
 
-  const { component, headerContent, startHeight } = planModeConfig(planElementProperty as PlanPropertyPayload);
+  const { component, headerContent, startHeight } = planModeConfig(property);
   const minPanelHeight: number = 400;
   const maxPanelWidth: number = 320;
   const { panelClose } = useContext(PanelInstanceContext);
-
-  if (!planElementProperty) return;
 
   // Adjusts the position to ensure it fits within the window's height.
   const adjustPosition = (pos: { x: number; y: number }) => {
@@ -73,11 +69,8 @@ const PlanElementProperty = () => {
       y: pos.y + newHeight > windowHeight ? windowHeight - newHeight : pos.y,
     };
   };
-  const closeFloatingWindow = () => {
-    dispatch(setPlanProperty(undefined));
-    panelClose();
-  };
-  const initialPosition = adjustPosition(planElementProperty.position);
+
+  const initialPosition = adjustPosition(property.position);
 
   return (
     <Panel
@@ -93,7 +86,7 @@ const PlanElementProperty = () => {
       <PanelHeader icon={headerContent.icon} disablePopout={true} />
       <PanelContent>{component}</PanelContent>
       <div className="footer">
-        <LuiButton onClick={closeFloatingWindow} size="lg" level="tertiary">
+        <LuiButton onClick={panelClose} size="lg" level="tertiary">
           Cancel
         </LuiButton>
         <LuiButton
@@ -103,7 +96,7 @@ const PlanElementProperty = () => {
           onClick={() => {
             if (saveFunction) {
               saveFunction();
-              closeFloatingWindow();
+              panelClose();
             }
           }}
         >

@@ -77,8 +77,6 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       }
       const clickedElement = event.target;
 
-      console.log(`click: ${event.originalEvent.clientX}, ${event.originalEvent.clientY}`);
-
       const selected = cyto.elements(":selected");
       if (!selected.contains(clickedElement)) {
         // allow normal selection to occur
