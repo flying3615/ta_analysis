@@ -184,7 +184,7 @@ export const getEdgeData = (edge: cytoscape.EdgeSingular): IEdgeData => {
   } as IEdgeData;
 };
 
-const diagramLabelNodePositioner = (
+const labelNodePositioner = (
   node: INodeData,
   cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
   nodePositionPixels: cytoscape.Position,
@@ -231,13 +231,13 @@ export const nodePositionFromData = (
       throw new Error(`nodePositionsFromData: Node ${node.id} is missing diagramId in properties`);
     }
     nodePositionPixels = cytoscapeCoordinateMapper.groundCoordToCytoscape(node.position, diagramId);
-    //for diagram labels, we want the node to be positioned in the middle of the label
-    if (node.label && node.properties.textAlignment && !node.properties.symbolId) {
-      const { x, y } = { ...nodePositionPixels };
-      diagramLabelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
-      node.properties.offsetX = nodePositionPixels.x - x;
-      node.properties.offsetY = nodePositionPixels.y - y;
-    }
+  }
+
+  if (node.label && node.properties.textAlignment && !node.properties.symbolId) {
+    const { x, y } = { ...nodePositionPixels };
+    labelNodePositioner(node, cytoscapeCoordinateMapper, nodePositionPixels);
+    node.properties.offsetX = nodePositionPixels.x - x;
+    node.properties.offsetY = nodePositionPixels.y - y;
   }
 
   return nodePositionPixels;
