@@ -191,9 +191,9 @@ const PlanSheets = () => {
           )}
           {[PlanMode.AddLabel, PlanMode.SelectLabel].includes(planMode) && <PageLabelInput />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
-          {(planMode === PlanMode.SelectCoordinates || planMode === PlanMode.SelectLine) && (
-            <SelectElementHandler mode={planMode} />
-          )}
+          {(planMode === PlanMode.SelectCoordinates ||
+            planMode === PlanMode.SelectLine ||
+            planMode === PlanMode.SelectLabel) && <SelectElementHandler mode={planMode} />}
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />
           <PageNumberTooltips />

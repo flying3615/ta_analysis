@@ -13,6 +13,7 @@ import {
 } from "cytoscape";
 import { useEffect } from "react";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
@@ -130,7 +131,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       if (updateMove(event)) {
         let movedElements = movingElements;
         if (moveStartPositions) {
-          movedElements = updateMovedElements(movedElements, adjacentEdges, moveStartPositions);
+          movedElements = updateMovedElements(movedElements, adjacentEdges, moveStartPositions, cytoCoordMapper);
           // TODO: ensure elements within bounds
         }
         updateActiveDiagramsAndPageFromCytoData(movedElements);
@@ -203,10 +204,11 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
  *     - if move starts on mark, highlight mark move vector
  *     - if move starts on line, create move vector from initial position
 
- * @param elements
  *   collection of elements being moved.
  * @returns
  *   collection of move controls.
+ * @param movingElements
+ * @param adjacentEdges
  */
 function getMoveControlElements(
   movingElements: CollectionReturnValue,
@@ -352,10 +354,28 @@ function setPositions(
 
 function updateMovedElements(
   movedElements: CollectionReturnValue,
-  _adjacentEdges: CollectionReturnValue,
-  _startPositions: Record<string, Position>,
+  adjacentEdges: CollectionReturnValue,
+  startPositions: Record<string, Position>,
+  cytoCoordMapper: CytoscapeCoordinateMapper,
 ): CollectionReturnValue {
-  /*
+  movedElements.forEach((ele) => {
+    const movedEleStartPosition = startPositions[ele.id()];
+    if (ele.data("label") && movedEleStartPosition && !ele.data("symbolId")) {
+      let pointOffset, anchorAngle;
+      const isDiagramLabel = !!ele.data("diagramId");
+      if (isDiagramLabel) {
+        ({ pointOffset, anchorAngle } = cytoCoordMapper.diagramLabelPositionToOffsetAndAngle(
+          ele,
+          movedEleStartPosition,
+        ));
+      } else {
+        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele));
+      }
+
+      ele.data({ pointOffset, anchorAngle, ignorePositionChange: isDiagramLabel });
+    }
+  });
+
   adjacentEdges.forEach((edge) => {
     const id = edge.id();
     const startPosition = startPositions[id];
@@ -378,7 +398,6 @@ function updateMovedElements(
 
     movedElements.merge(labels);
   });
-  */
 
   return movedElements;
 }

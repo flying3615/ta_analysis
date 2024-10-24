@@ -69,3 +69,19 @@ export const wrapText = (
  * For pluralisation, returns "s" if array is bigger than 1
  */
 export const s = (arr: unknown[]) => (arr.length > 1 ? "s" : "");
+
+/**
+ * Converts a radian or degree in string to a degree within -180 to 180
+ * @return
+ *  a degree from -180 to 180
+ * @param input radian in string
+ */
+export const convertToDegrees = (input: string) => {
+  let value = parseFloat(input);
+  if (input.includes("rad")) {
+    // Convert radians to degrees
+    value = value * (180 / Math.PI);
+    value = ((value + 180) % 360) - 180;
+  }
+  return value;
+};

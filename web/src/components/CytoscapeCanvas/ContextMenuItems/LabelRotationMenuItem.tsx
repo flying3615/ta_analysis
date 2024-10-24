@@ -1,9 +1,10 @@
 import "./LabelRotationMenuItem.scss";
 
 import { NodeSingular } from "cytoscape";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
+import { convertToDegrees } from "@/util/stringUtil";
 
 const ANTI_CLOCKWISE_MAX = -90;
 const CLOCKWISE_MAX = 90;
@@ -12,17 +13,7 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
   const { updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
 
   const currentAngle = (props.targetLabel.style("text-rotation") as string) ?? "0";
-  const degConverter = useCallback((input: string) => {
-    let value = parseFloat(input);
-    if (input.includes("rad")) {
-      // Convert radians to degrees
-      value = value * (180 / Math.PI);
-      value = ((value + 180) % 360) - 180;
-    }
-    return Math.round(value);
-  }, []);
-
-  const [labelAngle, setLabelAngle] = useState<number>(degConverter(currentAngle));
+  const [labelAngle, setLabelAngle] = useState<number>(Math.round(convertToDegrees(currentAngle)));
 
   return (
     <div className="rotate-slider-menu">

@@ -1,6 +1,9 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
+import { degreesToRadians, radiansToDegrees } from "@turf/helpers";
 import { BoundingBox12 } from "cytoscape";
 import { keyBy } from "lodash-es";
+
+import { pointsPerCm } from "@/util/cytoscapeUtil";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
@@ -91,11 +94,11 @@ export class CytoscapeCoordinateMapper {
       throw new Error(`Diagram with id ${diagramId} not found`);
     }
 
-    const xPosCm = this.cytoscapeToPlanCm(position.x - this.pixelMargin);
-    const yPosCm = this.cytoscapeToPlanCm(this.pixelMargin - position.y);
+    const xPosMeter = this.cytoscapeToPlanMeter(position.x - this.pixelMargin);
+    const yPosMeter = this.cytoscapeToPlanMeter(this.pixelMargin - position.y);
     return {
-      x: this.round((xPosCm / 100 - diagram.originPageOffset.x) * diagram.zoomScale),
-      y: this.round((yPosCm / 100 - diagram.originPageOffset.y) * diagram.zoomScale),
+      x: this.round((xPosMeter - diagram.originPageOffset.x) * diagram.zoomScale),
+      y: this.round((yPosMeter - diagram.originPageOffset.y) * diagram.zoomScale),
     };
   }
 
@@ -121,8 +124,8 @@ export class CytoscapeCoordinateMapper {
     const xPosInMetres = position.x;
     const yPosInMetres = position.y;
     return {
-      x: this.planCmToCytoscape(xPosInMetres * 100) + this.pixelMargin,
-      y: -this.planCmToCytoscape(yPosInMetres * 100) + this.pixelMargin,
+      x: this.planMeterToCytoscape(xPosInMetres) + this.pixelMargin,
+      y: -this.planMeterToCytoscape(yPosInMetres) + this.pixelMargin,
     };
   }
 
@@ -132,12 +135,54 @@ export class CytoscapeCoordinateMapper {
    * @returns Page label coordinates.
    */
   pageLabelCytoscapeToCoord(position: cytoscape.Position): GroundMetresPosition {
-    const xPosCm = this.cytoscapeToPlanCm(position.x - this.pixelMargin);
-    const yPosCm = this.cytoscapeToPlanCm(-position.y + this.pixelMargin);
+    const xPosMeter = this.cytoscapeToPlanMeter(position.x - this.pixelMargin);
+    const yPosMeter = this.cytoscapeToPlanMeter(-position.y + this.pixelMargin);
     return {
-      x: xPosCm / 100,
-      y: yPosCm / 100,
+      x: xPosMeter,
+      y: yPosMeter,
     };
+  }
+
+  /**
+   * Calculate moved label element's new pointOffset and anchorAngle based on its new position.
+   * @param movedElement
+   * @param startPosition
+   */
+  diagramLabelPositionToOffsetAndAngle(movedElement: cytoscape.NodeSingular, startPosition: cytoscape.Position) {
+    const anchorAngleDegs = Number(movedElement.data("anchorAngle"));
+    const angleRadsAntiClockwise = degreesToRadians(anchorAngleDegs);
+    const currentPointOffset = Number(movedElement.data("pointOffset"));
+
+    const offsetCytoscape = this.pointToCytoscape(currentPointOffset);
+
+    const oxCytoscape = Math.cos(angleRadsAntiClockwise) * offsetCytoscape;
+    const oyCytoscape = Math.sin(angleRadsAntiClockwise) * offsetCytoscape;
+
+    // note that cytoscape is y down, so we have to invert here
+    const dxCytoscape = movedElement.position().x - startPosition.x;
+    const dyCytoscape = -(movedElement.position().y - startPosition.y);
+
+    const movedToXCytoscape = dxCytoscape + oxCytoscape;
+    const movedToYCytoscape = dyCytoscape + oyCytoscape;
+
+    const pointOffset = this.cytoscapeToPoint(
+      Math.sqrt(movedToXCytoscape * movedToXCytoscape + movedToYCytoscape * movedToYCytoscape),
+    );
+
+    const anchorAngle = (radiansToDegrees(Math.atan2(movedToYCytoscape, movedToXCytoscape)) + 360) % 360;
+
+    return { pointOffset, anchorAngle };
+  }
+
+  pageLabelPositionsToOffsetAndAngle(movedElement: cytoscape.NodeSingular) {
+    const movedToXCytoscape = movedElement.position().x;
+    const movedToYCytoscape = movedElement.position().y;
+
+    const pointOffset = this.cytoscapeToPlanMeter(
+      Math.sqrt(movedToXCytoscape * movedToXCytoscape + movedToYCytoscape * movedToYCytoscape),
+    );
+    const anchorAngle = (radiansToDegrees(Math.atan2(movedToYCytoscape, movedToXCytoscape)) + 360) % 360;
+    return { pointOffset, anchorAngle };
   }
 
   /**
@@ -168,6 +213,38 @@ export class CytoscapeCoordinateMapper {
       y1: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitOriginY)) - pixelMargin,
       y2: this.planCmToCytoscape(Math.abs(CytoscapeCoordinateMapper.diagramLimitBottomRightY)) - pixelMargin,
     };
+  }
+
+  /**
+   * Convert cytoscape pixels into points
+   * @param cy
+   */
+  cytoscapeToPoint(cy: number): number {
+    return this.cytoscapeToPlanCm(cy) * pointsPerCm;
+  }
+
+  /**
+   * Convert cytoscape pixels into meters
+   * @param cy
+   */
+  cytoscapeToPlanMeter(cy: number): number {
+    return this.cytoscapeToPlanCm(cy) / 100;
+  }
+
+  /**
+   * Convert meters into cytoscape pixels
+   * @param meters
+   */
+  planMeterToCytoscape(meters: number): number {
+    return this.planCmToCytoscape(meters * 100);
+  }
+
+  /**
+   * Convert points into cytoscape pixels
+   * @param points
+   */
+  pointToCytoscape(points: number): number {
+    return this.planCmToCytoscape(points / pointsPerCm);
   }
 
   /**

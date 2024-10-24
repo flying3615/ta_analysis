@@ -6,6 +6,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import {
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
+  multiSelectAndDrag,
   selectAndDrag,
   sleep,
   tabletLandscapeParameters,
@@ -59,6 +60,28 @@ export const MoveDiagramNode: Story & Required<Pick<Story, "play">> = {
     await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
       clientX: position.clientX + 100,
       clientY: position.clientY + 100,
+    });
+  },
+};
+
+export const MoveDiagramLabel: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+
+    // Location of a label (Label 14: {213,213}, Label13: {303, 240}) in cytoscape pixels
+    const position1 = { clientX: 213 + cyOffsetX, clientY: 213 + cyOffsetY };
+    const position2 = { clientX: 303 + cyOffsetX, clientY: 240 + cyOffsetY };
+
+    await multiSelectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), [position1, position2], {
+      clientX: position2.clientX + 50,
+      clientY: position2.clientY + 100,
     });
   },
 };

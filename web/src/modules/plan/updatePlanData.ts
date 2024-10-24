@@ -132,11 +132,12 @@ const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
   const pointOffset = updated.pointOffset ?? label.pointOffset;
   const textAlignment = updated.textAlignment ?? label.textAlignment;
   const displayState = updated.displayState ?? label.displayState;
+  const ignorePositionChange = updated["ignorePositionChange"];
 
   return {
     ...label,
     displayText: updatedNode.label ?? label.displayText,
-    position: updatedNode.position,
+    ...(ignorePositionChange ? {} : { position: updatedNode.position }),
     rotationAngle,
     anchorAngle,
     pointOffset,

@@ -1,4 +1,4 @@
-import { s, wrapText } from "@/util/stringUtil";
+import { convertToDegrees, s, wrapText } from "@/util/stringUtil";
 
 describe("Pluralise", () => {
   test("s", () => {
@@ -35,5 +35,20 @@ describe("wrapText", () => {
     const expectedResult = "This \nis \na \nlong \n...";
 
     expect(result).toBe(expectedResult);
+  });
+});
+
+describe("convertToDegrees", () => {
+  test("should convert radians to degrees correctly", () => {
+    expect(convertToDegrees("0rad")).toBeCloseTo(0, 4);
+    expect(convertToDegrees(`${Math.PI / 2}rad`)).toBeCloseTo(90, 4);
+    expect(convertToDegrees(`${Math.PI}rad`)).toBeCloseTo(-180, 4);
+    expect(convertToDegrees(`${(3 * Math.PI) / 2}rad`)).toBeCloseTo(-90, 4);
+    expect(convertToDegrees(`${2 * Math.PI}rad`)).toBeCloseTo(0, 4);
+  });
+
+  test("should handle non-radian inputs correctly", () => {
+    expect(convertToDegrees("180")).toBeCloseTo(180, 4);
+    expect(convertToDegrees("-90")).toBeCloseTo(-90, 4);
   });
 });

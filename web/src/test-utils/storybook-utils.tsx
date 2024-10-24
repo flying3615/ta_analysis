@@ -254,3 +254,43 @@ export async function selectAndDrag(element: HTMLElement, from: MousePosition, t
   }
   fireEvent.mouseUp(element, positions[positions.length - 1]);
 }
+
+export async function multiSelectAndDrag(
+  canvas: HTMLElement,
+  positions: MousePosition[],
+  dragTo: MousePosition,
+  numSteps = 2,
+) {
+  // Multi-select positions by holding Ctrl key
+  for (const position of positions) {
+    fireEvent.mouseDown(canvas, { ...position, ctrlKey: true });
+    fireEvent.mouseUp(canvas, { ...position, ctrlKey: true });
+  }
+  await sleep(500);
+
+  if (positions.length === 0) {
+    return;
+  }
+
+  // Drag the first selected position
+  const from = positions[0];
+  if (!from) {
+    return;
+  }
+  const steps: MousePosition[] = [from];
+  const stepDx = (dragTo.clientX - from.clientX) / numSteps;
+  const stepDy = (dragTo.clientY - from.clientY) / numSteps;
+  for (let step = 1; step <= numSteps; step++) {
+    steps.push({
+      clientX: from.clientX + step * stepDx,
+      clientY: from.clientY + step * stepDy,
+    });
+  }
+
+  fireEvent.mouseDown(canvas, from);
+  for (const step of steps) {
+    fireEvent.mouseMove(canvas, step);
+    await sleep(100);
+  }
+  fireEvent.mouseUp(canvas, steps[steps.length - 1]);
+}
