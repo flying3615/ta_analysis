@@ -26,7 +26,12 @@ import {
   PlanSheetTypeObject,
 } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
+import {
+  extractDiagramEdges,
+  extractDiagramNodes,
+  extractPageEdges,
+  extractPageNodes,
+} from "@/modules/plan/extractGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
 import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil";
@@ -177,7 +182,9 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
-          const currentPageId = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber)?.id;
+          const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
+          const currentPageId = currentPage?.id;
+          const currentPageNodes = currentPage ? extractPageNodes([currentPage]) : [];
 
           if (!currentPageId) {
             continue;
@@ -201,8 +208,12 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           }
 
           const diagramEdgeData = extractDiagramEdges(currentPageDiagrams);
+          const currentPageEdges = extractPageEdges([currentPage]);
 
-          if (diagramNodeData.length === 0 && diagramEdgeData.length === 0) {
+          const nodeData = [...diagramNodeData, ...currentPageNodes];
+          const edgeData = [...diagramEdgeData, ...currentPageEdges];
+
+          if (nodeData.length === 0 && edgeData.length === 0) {
             // generate a blank 100x100 white image for empty page
             const blob = await generateBlankJpegBlob(100, 100);
             imageFiles.push({ name: imageName, blob: blob });
@@ -210,15 +221,15 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           }
 
           cyRefCurrent.add({
-            nodes: nodeDefinitionsFromData(diagramNodeData, cyMapperCurrent),
-            edges: edgeDefinitionsFromData(diagramEdgeData),
+            nodes: nodeDefinitionsFromData(nodeData, cyMapperCurrent),
+            edges: edgeDefinitionsFromData(edgeData),
           });
 
           cyRefCurrent
             .layout({
               name: "preset",
               fit: false,
-              positions: nodePositionsFromData(diagramNodeData, cyMapperCurrent),
+              positions: nodePositionsFromData(nodeData, cyMapperCurrent),
             })
             .run();
 

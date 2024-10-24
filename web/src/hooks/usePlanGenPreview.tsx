@@ -17,7 +17,12 @@ import {
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
+import {
+  extractDiagramEdges,
+  extractDiagramNodes,
+  extractPageEdges,
+  extractPageNodes,
+} from "@/modules/plan/extractGraphData";
 import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
@@ -145,7 +150,8 @@ export const usePlanGenPreview = (props: {
       let firstTimeExport = true;
       for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
         const imageName = `${sheetName}-${currentPageNumber}.jpg`;
-        const currentPageId = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber)?.id;
+        const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
+        const currentPageId = currentPage?.id;
 
         if (!currentPageId) {
           continue;
@@ -173,7 +179,7 @@ export const usePlanGenPreview = (props: {
           maxPageNumber,
         );
 
-        const diagramNodeData = [
+        const nodeData = [
           ...surveyInfoNodes, // survey info text nodes
           ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
           ...extractDiagramNodes(currentPageDiagrams).filter(
@@ -182,6 +188,7 @@ export const usePlanGenPreview = (props: {
                 node.properties.displayState?.valueOf() ?? "",
               ),
           ), // filter out hidden diagram nodes
+          ...extractPageNodes([currentPage]), // page labels & coordinates
         ];
 
         const sheetType = activeSheet === PlanSheetType.TITLE ? "T" : "S";
@@ -196,23 +203,24 @@ export const usePlanGenPreview = (props: {
             )
           : undefined;
 
-        if (pageInfoNode) diagramNodeData.push(pageInfoNode);
+        if (pageInfoNode) nodeData.push(pageInfoNode);
 
-        const diagramEdgeData = [
+        const edgeData = [
           ...(props.pageConfigsEdgeData ?? []), // page frame edges
           ...extractDiagramEdges(currentPageDiagrams), // diagram edges
+          ...extractPageEdges([currentPage]), // page lines
         ];
 
         cyRefCurrent.add({
-          nodes: nodeDefinitionsFromData(diagramNodeData, cyMapperCurrent),
-          edges: edgeDefinitionsFromData(diagramEdgeData),
+          nodes: nodeDefinitionsFromData(nodeData, cyMapperCurrent),
+          edges: edgeDefinitionsFromData(edgeData),
         });
 
         cyRefCurrent
           .layout({
             name: "preset",
             fit: false,
-            positions: nodePositionsFromData(diagramNodeData, cyMapperCurrent),
+            positions: nodePositionsFromData(nodeData, cyMapperCurrent),
           })
           .run();
 
