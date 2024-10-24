@@ -783,10 +783,10 @@ export const SelectLineAndLinkedLabel: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135);
+    clickAtCoordinates(cytoscapeNodeLayer, 411, 366);
     await sleep(500);
 
-    await checkElementProperties("#1001_0", "rgb(248,27,239)", "line-color", "element-move-control");
+    await checkElementProperties("#1006_0", "rgb(248,27,239)", "line-color", "element-move-control");
     await checkElementProperties("#13", "rgb(248,27,239)", "text-background-color", "related-element-selected");
   },
 };

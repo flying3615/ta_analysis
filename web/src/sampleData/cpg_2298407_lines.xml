@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CPG_XML01 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" transactionId="2297244">
+<CPG_XML01 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" transactionId="2298407">
     <Diagram id="1" diagramType="sysGenPrimaryDiag" listOrder="1" zoomScale="233.00" originPageOffset="0.015 -0.015"
-             bottomRightPoint="58.330 -57.355" displayState="systemDisplay" pageRef="17">
+             bottomRightPoint="58.330 -57.355" displayState="systemDisplay" pageRef="1">
         <Coordinate id="10001" coordType="node" lolId="2" lolIdSource="ZMRK" originalCoord="52.508 -33.987"
-                    userEdited="false">52.508 -33.987
-            <Label id="2" labelType="markName" displayText="1 DP 4061813" font="Tahoma" fontSize="10"
-                   fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0"
-                   textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">52.508 -33.987
+                    userEdited="false">78.261518072289 -49.920831325301
+            <Label id="2" labelType="markName" displayText="1 DP 7441" font="Tahoma" fontSize="10" fontStyle="regular"
+                   rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none"
+                   displayState="display" userEdited="false">78.261518072289 -49.920831325301
             </Label>
-            <Label id="3" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular"
+            <Label id="3" labelType="nodeSymbol1" displayText="µ" font="LOLsymbols" fontSize="12" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo"
-                   symbolType="lolSymbols" displayState="display" userEdited="false">52.508 -33.987
+                   symbolType="lolSymbols" displayState="display" userEdited="false">78.261518072289 -49.920831325301
             </Label>
-            <Label id="4" labelType="nodeSymbol2" displayText="181" font="LOLsymbols" fontSize="10" fontStyle="regular"
+            <Label id="4" labelType="nodeSymbol2" displayText="µ" font="LOLsymbols" fontSize="10" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="none"
-                   symbolType="lolSymbols" displayState="systemHide" userEdited="false">52.508 -33.987
+                   symbolType="lolSymbols" displayState="systemHide" userEdited="false">78.261518072289 -49.920831325301
             </Label>
         </Coordinate>
         <Coordinate id="10002" coordType="node" lolId="3" lolIdSource="ZMRK" originalCoord="19.401 -7.827"
-                    userEdited="false">19.401 -7.827
+                    userEdited="false">45.154518072289 -23.760831325301
             <Label id="5" labelType="markName" displayText="XL DP 7441" font="Tahoma" fontSize="10" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none"
-                   displayState="display" userEdited="false">19.401 -7.827
+                   displayState="display" userEdited="false">45.154518072289 -23.760831325301
             </Label>
-            <Label id="6" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular"
+            <Label id="6" labelType="nodeSymbol1" displayText="µ" font="LOLsymbols" fontSize="12" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo"
-                   symbolType="lolSymbols" displayState="display" userEdited="false">19.401 -7.827
+                   symbolType="lolSymbols" displayState="display" userEdited="false">45.154518072289 -23.760831325301
             </Label>
-            <Label id="7" labelType="nodeSymbol2" displayText="181" font="LOLsymbols" fontSize="10" fontStyle="regular"
+            <Label id="7" labelType="nodeSymbol2" displayText="µ" font="LOLsymbols" fontSize="10" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="none"
-                   symbolType="lolSymbols" displayState="systemHide" userEdited="false">19.401 -7.827
+                   symbolType="lolSymbols" displayState="systemHide" userEdited="false">45.154518072289 -23.760831325301
             </Label>
         </Coordinate>
         <Coordinate id="10003" coordType="node" lolId="4" lolIdSource="ZMRK" originalCoord="5.817 -24.648"
@@ -67,31 +67,33 @@
             <CoordRefs>10002 10001</CoordRefs>
             <Label id="14" labelType="obsBearing" displayText="308°18'30&quot;" font="Tahoma" fontSize="10"
                    fontStyle="regular" rotationAngle="321.7" pointOffset="2.0" anchorAngle="51.7"
-                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">35.954 -20.906
+                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">61.70722381636
+                -36.840203731889
             </Label>
             <Label id="15" labelType="obsDistance" displayText="42.19" font="Tahoma" fontSize="10" fontStyle="regular"
                    rotationAngle="321.7" pointOffset="2.0" anchorAngle="231.7" textAlignment="topCenter" effect="halo"
-                   displayState="display" userEdited="false">35.954 -20.906
+                   displayState="display" userEdited="false">61.70722381636 -36.840203731889
             </Label>
             <Label id="16" labelType="obsCode" displayText="ob1" font="Tahoma" fontSize="10" fontStyle="regular"
                    rotationAngle="321.7" pointOffset="2.0" anchorAngle="51.7" textAlignment="bottomCenter" effect="halo"
-                   displayState="hide" userEdited="false">35.954 -20.906
+                   displayState="hide" userEdited="false">61.70722381636 -36.840203731889
             </Label>
         </Line>
         <Line id="1002" lineType="observation" lolId="3" lolIdSource="ZOBN" lineSegment="1" style="solid"
               pointWidth="2.0" displayState="systemDisplay" userEdited="false">
             <CoordRefs>10003 10002</CoordRefs>
             <Label id="17" labelType="obsBearing" displayText="218°55'00&quot;" font="Tahoma" fontSize="10"
-                   fontStyle="regular" rotationAngle="51.1" pointOffset="2.0" anchorAngle="141.1"
-                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">12.609 -16.238
+                   fontStyle="regular" rotationAngle="1.3" pointOffset="2.0" anchorAngle="141.1"
+                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">25.485051304018
+                -24.204431623947
             </Label>
             <Label id="18" labelType="obsDistance" displayText="21.62" font="Tahoma" fontSize="10" fontStyle="regular"
-                   rotationAngle="51.1" pointOffset="2.0" anchorAngle="321.1" textAlignment="topCenter" effect="halo"
-                   displayState="display" userEdited="false">12.609 -16.238
+                   rotationAngle="1.3" pointOffset="2.0" anchorAngle="321.1" textAlignment="topCenter" effect="halo"
+                   displayState="display" userEdited="false">25.485051304018 -24.204431623947
             </Label>
             <Label id="19" labelType="obsCode" displayText="ob2" font="Tahoma" fontSize="10" fontStyle="regular"
-                   rotationAngle="51.1" pointOffset="2.0" anchorAngle="141.1" textAlignment="bottomCenter" effect="halo"
-                   displayState="hide" userEdited="false">12.609 -16.238
+                   rotationAngle="1.3" pointOffset="2.0" anchorAngle="141.1" textAlignment="bottomCenter" effect="halo"
+                   displayState="hide" userEdited="false">25.485051304018 -24.204431623947
             </Label>
         </Line>
         <Line id="1003" lineType="observation" lolId="4" lolIdSource="ZOBN" lineSegment="1" style="solid"
@@ -114,16 +116,17 @@
               pointWidth="2.0" displayState="systemDisplay" userEdited="false">
             <CoordRefs>10004 10001</CoordRefs>
             <Label id="23" labelType="obsBearing" displayText="33°24'45&quot;" font="Tahoma" fontSize="10"
-                   fontStyle="regular" rotationAngle="56.6" pointOffset="2.0" anchorAngle="146.6"
-                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">47.375 -41.764
+                   fontStyle="regular" rotationAngle="359.4" pointOffset="2.0" anchorAngle="146.6"
+                   textAlignment="bottomCenter" effect="halo" displayState="display" userEdited="false">60.253372055674
+                -49.731932582625
             </Label>
             <Label id="24" labelType="obsDistance" displayText="18.64" font="Tahoma" fontSize="10" fontStyle="regular"
-                   rotationAngle="56.6" pointOffset="2.0" anchorAngle="326.6" textAlignment="topCenter" effect="halo"
-                   displayState="display" userEdited="false">47.375 -41.764
+                   rotationAngle="359.4" pointOffset="2.0" anchorAngle="326.6" textAlignment="topCenter" effect="halo"
+                   displayState="display" userEdited="false">60.253372055674 -49.731932582625
             </Label>
             <Label id="25" labelType="obsCode" displayText="ob5" font="Tahoma" fontSize="10" fontStyle="regular"
-                   rotationAngle="56.6" pointOffset="2.0" anchorAngle="146.6" textAlignment="bottomCenter" effect="halo"
-                   displayState="hide" userEdited="false">47.375 -41.764
+                   rotationAngle="359.4" pointOffset="2.0" anchorAngle="146.6" textAlignment="bottomCenter"
+                   effect="halo" displayState="hide" userEdited="false">60.253372055674 -49.731932582625
             </Label>
         </Line>
         <ParcelLabel id="1" lolId="1" lolIdSource="ZPLB">
@@ -136,13 +139,13 @@
                    displayState="display" userEdited="false">29.518 -28.746
             </Label>
         </ParcelLabel>
-        <Label id="1" labelType="diagram" displayText="System Generated Primary Diagram" font="Tahoma" fontSize="14"
-               fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter"
+        <Label id="1" labelType="diagram" displayText="System Generated Primary Diagram" font="Tahoma" fontSize="16"
+               fontStyle="bold" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter"
                effect="none" displayState="systemHide" userEdited="false">29.165 0.000
         </Label>
     </Diagram>
     <Diagram id="2" diagramType="sysGenTraverseDiag" listOrder="1" zoomScale="232.00" originPageOffset="0.015 -0.015"
-             bottomRightPoint="73.158 -57.288" displayState="systemDisplay" pageRef="20">
+             bottomRightPoint="73.158 -57.288" displayState="systemDisplay" pageRef="2">
         <Coordinate id="10005" coordType="node" lolId="1" lolIdSource="ZMRK" originalCoord="69.278 -22.343"
                     userEdited="false">69.278 -22.343
             <Label id="29" labelType="markName" displayText="IS IX DP 7441" font="Tahoma" fontSize="10"
@@ -156,9 +159,9 @@
         </Coordinate>
         <Coordinate id="10006" coordType="node" lolId="2" lolIdSource="ZMRK" originalCoord="52.508 -33.920"
                     userEdited="false">52.508 -33.920
-            <Label id="31" labelType="markName" displayText="1 DP 4061813" font="Tahoma" fontSize="10"
-                   fontStyle="regular" rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0"
-                   textAlignment="bottomLeft" effect="none" displayState="display" userEdited="false">52.508 -33.920
+            <Label id="31" labelType="markName" displayText="1 DP 7441" font="Tahoma" fontSize="10" fontStyle="regular"
+                   rotationAngle="0.0" pointOffset="1.0" anchorAngle="45.0" textAlignment="bottomLeft" effect="none"
+                   displayState="display" userEdited="false">52.508 -33.920
             </Label>
             <Label id="32" labelType="nodeSymbol1" displayText="181" font="LOLsymbols" fontSize="12" fontStyle="regular"
                    rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="centerCenter" effect="halo"
@@ -230,11 +233,13 @@
                    displayState="hide" userEdited="false">55.760 -35.909
             </Label>
         </Line>
-        <Label id="28" labelType="diagram" displayText="System Generated Traverse Diagram" font="Tahoma" fontSize="14"
-               fontStyle="regular" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter"
+        <Label id="28" labelType="diagram" displayText="System Generated Traverse Diagram" font="Tahoma" fontSize="16"
+               fontStyle="bold" rotationAngle="0.0" pointOffset="0.0" anchorAngle="0.0" textAlignment="bottomCenter"
                effect="none" displayState="systemHide" userEdited="false">36.579 0.000
         </Label>
     </Diagram>
+    <Page id="1" pageType="title" pageNumber="1"/>
+    <Page id="2" pageType="survey" pageNumber="1"/>
     <ConfigData>
         <ElementTypeConfig element="Label" elementType="parcelAppellation">
             <NonModifiableAttribList>displayText</NonModifiableAttribList>
@@ -382,7 +387,7 @@
             <NonModifiableAttribList>none</NonModifiableAttribList>
             <AttribDefault attribute="displayState" defaultValue="display"/>
             <AttribDefault attribute="font" defaultValue="Tahoma"/>
-            <AttribDefault attribute="fontSize" defaultValue="12"/>
+            <AttribDefault attribute="fontSize" defaultValue="14"/>
             <AttribDefault attribute="fontStyle" defaultValue="italic"/>
             <AttribDefault attribute="rotationAngle" defaultValue="0.0"/>
             <AttribDefault attribute="pointOffset" defaultValue="0.0"/>
@@ -499,16 +504,8 @@
                    imageOrigin="1013" imageBottomRight="1014"/>
         </PageConfig>
         <MaxElemId element="Coordinate" maxId="10009"/>
-        <MaxElemId element="Page" maxId="23"/>
+        <MaxElemId element="Page" maxId="2"/>
         <MaxElemId element="Line" maxId="1006"/>
-        <MaxElemId element="Label" maxId="46"/>
+        <MaxElemId element="Label" maxId="44"/>
     </ConfigData>
-    <Page id="20" pageType="survey" pageNumber="3"/>
-    <Page id="21" pageType="survey" pageNumber="4"/>
-    <Page id="22" pageType="survey" pageNumber="2"/>
-    <Page id="23" pageType="survey" pageNumber="1"/>
-    <Page id="16" pageType="title" pageNumber="1"/>
-    <Page id="17" pageType="title" pageNumber="2"/>
-    <Page id="18" pageType="title" pageNumber="3"/>
-    <Page id="19" pageType="title" pageNumber="4"/>
 </CPG_XML01>

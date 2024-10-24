@@ -77,6 +77,8 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       }
       const clickedElement = event.target;
 
+      console.log(`click: ${event.originalEvent.clientX}, ${event.originalEvent.clientY}`);
+
       const selected = cyto.elements(":selected");
       if (!selected.contains(clickedElement)) {
         // allow normal selection to occur
@@ -139,14 +141,12 @@ function getSelector(mode?: SelectHandlerMode) {
 function getRelatedElements(ele: EdgeSingular | NodeSingular): CollectionReturnValue | undefined {
   if (ele.isEdge() && ele.data("lineId")) {
     // include related broken/irregular segments
-    const relatedSegments = ele.cy().$(`edge[lineId='${ele.data("lineId")}']`);
-    return relatedSegments;
+    return ele.cy().$(`edge[lineId='${ele.data("lineId")}']`);
   }
 
   if (ele.isNode() && ele.data("featureId") && ele.data("symbolId")) {
     // include coordinate for symbol
-    const coordinate = ele.cy().$id((ele.data("featureId") as number).toString());
-    return coordinate;
+    return ele.cy().$id((ele.data("featureId") as number).toString());
   }
 
   return;

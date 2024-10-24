@@ -354,6 +354,8 @@ export class PlanDataBuilder {
     anchorAngle: number = 0,
     pointOffset: number = 0,
     symbolType: string | undefined = undefined,
+    featureId?: number,
+    featureType?: string,
   ) {
     if (this.planData.diagrams.length === 0) {
       throw new Error(
@@ -376,6 +378,8 @@ export class PlanDataBuilder {
       font,
       fontSize,
       symbolType,
+      featureId,
+      featureType,
     } as LabelDTO;
 
     if (intoWhere === "parcelLabels") {

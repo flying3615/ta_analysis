@@ -9,6 +9,7 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
+import { Position } from "@/util/positionUtil";
 
 import { calculateTextAlignmentPolar, rotatedMargin, textDimensions, textRotationMathRads } from "./styleNodeMethods";
 
@@ -75,10 +76,7 @@ export interface IGraphData {
   classes?: string | string[];
 }
 
-export interface GroundMetresPosition {
-  x: number;
-  y: number;
-}
+export interface GroundMetresPosition extends Position {}
 
 export interface INodeData extends IGraphData {
   image?: string;

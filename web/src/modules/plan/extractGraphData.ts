@@ -32,7 +32,7 @@ const setElementType =
     return node;
   };
 
-const labelToNode = (label: LabelDTO): INodeData => {
+export const labelToNode = (label: LabelDTO): INodeData => {
   return {
     id: label.id.toString(),
     position: label.position,
@@ -62,7 +62,7 @@ const labelToNode = (label: LabelDTO): INodeData => {
   };
 };
 
-const coordinateToNode = (coordinate: CoordinateDTO): INodeData => {
+export const coordinateToNode = (coordinate: CoordinateDTO): INodeData => {
   return {
     id: coordinate.id.toString(),
     position: coordinate.position,

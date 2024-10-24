@@ -120,7 +120,7 @@ export const mockPlanData = new PlanDataBuilder()
   .addLine(3004, [30007, 30008, 30009, 30010], 1.5, "observation", "peckDot1")
   .addLabel("coordinateLabels", 11, "Label 11", { x: 55, y: -10 }, 10001, "mark", "markName", "Times New Roman", 10)
   .addSymbolLabel(12, "96", { x: 20, y: -10 }, 10, 10001)
-  .addLabel("lineLabels", 13, "Label 13", { x: 52, y: -40 }, 1001, "line", "lineDescription", "Arial", 14)
+  .addRotatedLabel("lineLabels", 13, "Label 13", { x: 20, y: -40 }, "Arial", 14, 270, 0, 14, undefined, 1006, "Line")
   .addLabel("parcelLabels", 14, "Label 14", { x: 35, y: -35 }, 1, "parcel", "parcelAppellation", "Tahoma", 16)
   .addLabel(
     "labels",

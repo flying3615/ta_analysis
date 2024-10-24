@@ -1,0 +1,75 @@
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface Delta {
+  dx: number;
+  dy: number;
+}
+
+export const atanDegrees360 = (delta: Delta) => {
+  const angle = Math.atan2(delta.dy, delta.dx) * (180 / Math.PI);
+  return angle < 0 ? angle + 360 : angle;
+};
+
+export function midPoint<T extends Delta | Position>(start: T, end: T): T {
+  if ("x" in start && "x" in end) {
+    return {
+      x: (start.x + end.x) / 2,
+      y: (start.y + end.y) / 2,
+    } as T;
+  }
+  if ("dx" in start && "dx" in end) {
+    return {
+      dx: (start.dx + end.dx) / 2,
+      dy: (start.dy + end.dy) / 2,
+    } as T;
+  }
+  throw new Error("Invalid arguments to midPoint ${start} ${end}");
+}
+
+export function asCoord(point: Delta | Position): [number, number] {
+  if ("x" in point) {
+    return [point.x, point.y];
+  }
+  if ("dx" in point) {
+    return [point.dx, point.dy];
+  }
+  throw new Error("Invalid arguments to asCoord ${point}");
+}
+
+export function asPosition(coord: [number, number]): Position {
+  return {
+    x: coord[0],
+    y: coord[1],
+  };
+}
+
+export function asDelta(coord: [number, number]): Delta {
+  return {
+    dx: coord[0],
+    dy: coord[1],
+  };
+}
+
+export function addIntoPosition(a: Position, b: Delta | Position): Position {
+  const coordB = asCoord(b);
+  return asPosition([a.x + coordB[0], a.y + coordB[1]]);
+}
+
+export function addIntoDelta(a: Delta, b: Delta | Position): Delta {
+  const coordB = asCoord(b);
+  return asDelta([a.dx + coordB[0], a.dy + coordB[1]]);
+}
+
+export function subtractIntoPosition(a: Position, b: Delta | Position): Position {
+  const coordB = asCoord(b);
+  return asPosition([a.x - coordB[0], a.y - coordB[1]]);
+}
+
+export function subtractIntoDelta(a: Delta | Position, b: Delta | Position): Delta {
+  const coordA = asCoord(a);
+  const coordB = asCoord(b);
+  return asDelta([coordA[0] - coordB[0], coordA[1] - coordB[1]]);
+}

@@ -88,12 +88,12 @@ describe("extractGraphData", () => {
     const labelNode13 = extractedNodeMap["13"];
     expect(labelNode13?.id).toBe("13");
     expect(labelNode13?.label).toBe("Label 13");
-    expect(labelNode13?.position).toStrictEqual({ x: 52, y: -40 });
+    expect(labelNode13?.position).toStrictEqual({ x: 20, y: -40 });
     expect(labelNode13?.properties?.["diagramId"]).toBe(1);
     expect(labelNode13?.properties?.["elementType"]).toBe("lineLabels");
-    expect(labelNode13?.properties?.["labelType"]).toBe("lineDescription");
-    expect(labelNode13?.properties?.["featureId"]).toBe(1001);
-    expect(labelNode13?.properties?.["featureType"]).toBe("line");
+    expect(labelNode13?.properties?.["labelType"]).toBe("markName");
+    expect(labelNode13?.properties?.["featureId"]).toBe(1006);
+    expect(labelNode13?.properties?.["featureType"]).toBe("Line");
     expect(labelNode13?.properties?.["font"]).toBe("Arial");
     expect(labelNode13?.properties?.["fontColor"]).not.toBe("black");
     expect(labelNode13?.properties?.["fontSize"]).toBe(14);

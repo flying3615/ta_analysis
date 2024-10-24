@@ -9,14 +9,16 @@ import {
   EventObjectNode,
   InputEventObject,
   NodeDefinition,
-  Position,
+  Position as CytoscapePosition,
 } from "cytoscape";
 import { useEffect } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { useLabelAdjust } from "@/hooks/useLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
+import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 
 import { moveExtent } from "./moveAndResizeUtil";
 import { getRelatedLabels } from "./selectUtil";
@@ -42,7 +44,6 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  * for beginMove(mousedown), updateMove(mousemove), and endMove(mouseup)
  *
  * When move is complete a collection of all edges/nodes affected by the move is built
- * and updateMovedElements() makes any additional changes (eventually re-align labels)
  * before "collection:changed" event is emitted.
  *
  * Internal design:
@@ -69,7 +70,16 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  *
  */
 export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) {
-  const { cyto, cytoCanvas, cytoCoordMapper, updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
+  const {
+    cyto,
+    cytoCanvas,
+    cytoCoordMapper,
+    updateActiveDiagramsAndPageFromCytoData,
+    cytoDataToNodeAndEdgeData,
+    updateActiveDiagramsAndPage,
+  } = usePlanSheetsDispatch();
+  const diagrams = useAppSelector(selectActiveDiagrams);
+  const adjustLabels = useLabelAdjust();
 
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
@@ -84,8 +94,8 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
 
     let moveControls: CollectionReturnValue | undefined;
     let moveElementsExtent: BoundingBox12 | undefined;
-    let moveStart: Position | undefined;
-    let moveStartPositions: Record<string, Position> | undefined;
+    let moveStart: CytoscapePosition | undefined;
+    let moveStartPositions: Record<string, CytoscapePosition> | undefined;
 
     const addContainerClass = () => {
       cytoCanvas.classList.add(CONTAINER_CLASS_MOVABLE);
@@ -129,12 +139,14 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
 
     const endMove = (event: InputEventObject) => {
       if (updateMove(event)) {
-        let movedElements = movingElements;
-        if (moveStartPositions) {
-          movedElements = updateMovedElements(movedElements, adjacentEdges, moveStartPositions, cytoCoordMapper);
-          // TODO: ensure elements within bounds
-        }
-        updateActiveDiagramsAndPageFromCytoData(movedElements);
+        const movingData = cytoDataToNodeAndEdgeData(movingElements);
+
+        const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
+        const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
+
+        const adjustedLabels = adjustLabels(movedNodesById);
+
+        updateActiveDiagramsAndPage({ nodes: [...movingData.nodes, ...adjustedLabels], edges: movingData.edges });
       }
       cleanupMove();
     };
@@ -147,10 +159,10 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     };
 
     /**
-     * @param active diagram move/resize position event.
-     * @returns Position representing (page-constrained) dx/dy move vector.
+     * @param event diagram move/resize position event.
+     * @returns CytoscapePosition representing (page-constrained) dx/dy move vector.
      */
-    const updateMove = (event: InputEventObject): Position | undefined => {
+    const updateMove = (event: InputEventObject): CytoscapePosition | undefined => {
       if (!moveElementsExtent || !moveStart || !moveStartPositions) {
         return;
       }
@@ -189,7 +201,17 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).grabify();
       removeContainerClass();
     };
-  }, [cyto, cytoCanvas, cytoCoordMapper, selectedElements, updateActiveDiagramsAndPageFromCytoData]);
+  }, [
+    cyto,
+    cytoCanvas,
+    cytoCoordMapper,
+    selectedElements,
+    updateActiveDiagramsAndPageFromCytoData,
+    adjustLabels,
+    cytoDataToNodeAndEdgeData,
+    diagrams,
+    updateActiveDiagramsAndPage,
+  ]);
 
   return <></>;
 }
@@ -204,11 +226,12 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
  *     - if move starts on mark, highlight mark move vector
  *     - if move starts on line, create move vector from initial position
 
+ * @param movingElements
  *   collection of elements being moved.
+ *   @param adjacentEdges
+ *    collection of edges adjacent to elements
  * @returns
  *   collection of move controls.
- * @param movingElements
- * @param adjacentEdges
  */
 function getMoveControlElements(
   movingElements: CollectionReturnValue,
@@ -309,8 +332,8 @@ function getMoveControlElements(
  * @param elements elements to index.
  * @returns Record<element id, cloned position>
  */
-function getPositions(elements: CollectionReturnValue): Record<string, Position> {
-  const positions: Record<string, Position> = {};
+function getPositions(elements: CollectionReturnValue): Record<string, CytoscapePosition> {
+  const positions: Record<string, CytoscapePosition> = {};
   elements.forEach((ele) => {
     const id = ele.id();
     if (ele.isEdge()) {
@@ -331,12 +354,12 @@ function getPositions(elements: CollectionReturnValue): Record<string, Position>
 /**
  * @param elements elements to update.
  * @param positions starting position of each element
- * @param dx: relative x
- * @param dy: relative y
+ * @param dx relative x
+ * @param dy relative y
  */
 function setPositions(
   elements: CollectionReturnValue,
-  positions: Record<string, Position>,
+  positions: Record<string, CytoscapePosition>,
   dx: number,
   dy: number,
 ): void {
@@ -350,54 +373,4 @@ function setPositions(
       y: position.y + dy,
     };
   });
-}
-
-function updateMovedElements(
-  movedElements: CollectionReturnValue,
-  adjacentEdges: CollectionReturnValue,
-  startPositions: Record<string, Position>,
-  cytoCoordMapper: CytoscapeCoordinateMapper,
-): CollectionReturnValue {
-  movedElements.forEach((ele) => {
-    const movedEleStartPosition = startPositions[ele.id()];
-    if (ele.data("label") && movedEleStartPosition && !ele.data("symbolId")) {
-      let pointOffset, anchorAngle;
-      const isDiagramLabel = !!ele.data("diagramId");
-      if (isDiagramLabel) {
-        ({ pointOffset, anchorAngle } = cytoCoordMapper.diagramLabelPositionToOffsetAndAngle(
-          ele,
-          movedEleStartPosition,
-        ));
-      } else {
-        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele));
-      }
-
-      ele.data({ pointOffset, anchorAngle, ignorePositionChange: isDiagramLabel });
-    }
-  });
-
-  adjacentEdges.forEach((edge) => {
-    const id = edge.id();
-    const startPosition = startPositions[id];
-    if (!startPosition) {
-      return;
-    }
-    const labels = adjacentEdges.cy().$(`[featureId=${edge.data("lineId")}]`);
-    const newMidpoint = edge.midpoint();
-    const midpointDx = newMidpoint.x - startPosition.x;
-    const midpointDy = newMidpoint.y - startPosition.y;
-
-    labels.positions((label) => {
-      // TODO (SJ-1804): more, better, faster
-      const position = label.position();
-      return {
-        x: position.x + midpointDx,
-        y: position.y + midpointDy,
-      };
-    });
-
-    movedElements.merge(labels);
-  });
-
-  return movedElements;
 }
