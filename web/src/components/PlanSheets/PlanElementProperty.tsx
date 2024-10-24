@@ -2,10 +2,10 @@ import "./PlanElementProperty.scss";
 
 import { LuiButton } from "@linzjs/lui";
 import { Panel, PanelContent, PanelHeader, PanelInstanceContext } from "@linzjs/windows";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import LabelProperties, { LabelPropertiesProps } from "@/components/PlanSheets/properties/LabelProperties";
+import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { getPlanProperty, setPlanProperty } from "@/redux/planSheets/planSheetsSlice";
@@ -14,7 +14,7 @@ export type PlanElementPropertyMode = Extract<PlanMode, PlanMode.SelectLabel | P
 
 interface PlanLabelProperty {
   mode: PlanMode.SelectLabel;
-  data: LabelPropertiesProps[];
+  data: LabelPropertiesData[];
   position: { x: number; y: number };
 }
 
@@ -26,32 +26,35 @@ interface PlanLineProperty {
 
 export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
 
-const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
-  switch (mode) {
-    case PlanMode.SelectLabel:
-      return {
-        component: <LabelProperties data={data} />,
-        headerContent: {
-          icon: "ic_format_lines_text",
-          title: "Label properties",
-        },
-        startHeight: 705,
-      };
-    default:
-      return {
-        component: <LineProperties data={data} />,
-        headerContent: {
-          icon: "ic_format_lines_text",
-          title: "Line properties",
-        },
-        startHeight: 430,
-      };
-  }
-};
-
 const PlanElementProperty = () => {
   const dispatch = useAppDispatch();
   const planElementProperty = useAppSelector(getPlanProperty);
+  const [saveFunction, setSaveFunction] = useState<() => void>();
+  const [isSaveEnabled, setSaveEnabled] = useState<boolean>(false);
+
+  const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
+    switch (mode) {
+      case PlanMode.SelectLabel:
+        return {
+          component: <LabelProperties {...{ data, setSaveFunction, setSaveEnabled }} />,
+          headerContent: {
+            icon: "ic_format_lines_text",
+            title: "Label properties",
+          },
+          startHeight: 705,
+        };
+      default:
+        return {
+          component: <LineProperties data={data} />,
+          headerContent: {
+            icon: "ic_format_lines_text",
+            title: "Line properties",
+          },
+          startHeight: 430,
+        };
+    }
+  };
+
   const { component, headerContent, startHeight } = planModeConfig(planElementProperty as PlanPropertyPayload);
   const minPanelHeight: number = 400;
   const maxPanelWidth: number = 320;
@@ -93,7 +96,17 @@ const PlanElementProperty = () => {
         <LuiButton onClick={closeFloatingWindow} size="lg" level="tertiary">
           Cancel
         </LuiButton>
-        <LuiButton disabled={true} size="lg" level="primary">
+        <LuiButton
+          disabled={!isSaveEnabled}
+          size="lg"
+          level="primary"
+          onClick={() => {
+            if (saveFunction) {
+              saveFunction();
+              closeFloatingWindow();
+            }
+          }}
+        >
           OK
         </LuiButton>
       </div>

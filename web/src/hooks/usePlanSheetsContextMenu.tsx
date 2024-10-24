@@ -9,7 +9,7 @@ import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { LabelPropertiesProps } from "@/components/PlanSheets/properties/LabelProperties";
+import { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
@@ -72,7 +72,7 @@ export const usePlanSheetsContextMenu = () => {
             }
           : {
               mode: PlanMode.SelectLabel,
-              data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesProps),
+              data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesData),
               position: { ...position },
             };
       // NOTE: why is this dispatching instead of opening the Property panel with data !?

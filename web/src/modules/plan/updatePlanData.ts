@@ -10,6 +10,7 @@ import {
 
 import { IDiagramNodeData, IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { LabelPropsToUpdate, LabelPropsToUpdateWithElemType } from "@/components/PlanSheets/properties/LabelProperties";
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
@@ -86,14 +87,58 @@ export const addPageLabel = (
   };
 };
 
-export const updatePageLabel = (
-  page: PageDTO,
-  labelProps: Pick<LabelDTO, "displayText" | "id"> & Partial<LabelDTO>,
-) => {
+export const updatePageLabels = (page: PageDTO, labelPropsArray: LabelPropsToUpdate[]): PageDTO => {
   return {
     ...page,
-    labels: page.labels?.map((label) => (label.id === labelProps.id ? { ...label, ...labelProps } : label)),
+    labels: page.labels?.map((label) => {
+      const updatedProps = labelPropsArray.find((props) => props.id === label.id);
+      return updatedProps ? { ...label, ...updatedProps } : label;
+    }),
   };
+};
+
+export const updateDiagramLabels = (
+  diagrams: DiagramDTO[],
+  labelArray: LabelPropsToUpdateWithElemType[],
+): DiagramDTO[] => {
+  return diagrams.map((diagram) => {
+    const updatedLabels = labelArray.filter((label) => Number(label.type.diagramId) === diagram.id);
+    if (updatedLabels.length === 0) {
+      return diagram;
+    }
+
+    let updatedDiagram = { ...diagram };
+
+    updatedLabels.forEach((updatedLabel) => {
+      const elemType = updatedLabel.type.elementType as
+        | PlanElementType.LABELS
+        | PlanElementType.COORDINATE_LABELS
+        | PlanElementType.LINE_LABELS
+        | PlanElementType.PARCEL_LABELS;
+
+      if (elemType === PlanElementType.PARCEL_LABELS) {
+        updatedDiagram = {
+          ...updatedDiagram,
+          parcelLabelGroups: updatedDiagram.parcelLabelGroups?.map((group) => {
+            return {
+              ...group,
+              labels: group.labels.map((label) =>
+                label.id === updatedLabel.data.id ? { ...label, ...updatedLabel.data } : label,
+              ),
+            };
+          }),
+        };
+      } else {
+        updatedDiagram = {
+          ...updatedDiagram,
+          [elemType]: updatedDiagram[elemType].map((label) =>
+            label.id === updatedLabel.data.id ? { ...label, ...updatedLabel.data } : label,
+          ),
+        };
+      }
+    });
+    return updatedDiagram;
+  });
 };
 
 export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {

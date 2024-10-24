@@ -30,6 +30,9 @@
             background-color: lui.$lily;
           }
         }
+        .errorMessage {
+          margin-top: 1px;
+        }
       }
     }
 
@@ -42,6 +45,10 @@
       span {
         font-weight: 400;
       }
+    }
+
+    .LuiTextInput-error {
+      color: lui.$charcoal;
     }
 
     .svg-container {

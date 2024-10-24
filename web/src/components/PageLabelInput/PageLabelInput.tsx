@@ -1,19 +1,24 @@
 import "./PageLabelInput.scss";
 
-import { LuiIcon } from "@linzjs/lui";
 import clsx from "clsx";
 import cytoscape, { NodeSingular } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import {
+  getTextLengthErrorMessage,
+  specialCharsRegex,
+  textLengthLimit,
+} from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { selectMaxPlanId } from "@/modules/plan/selectGraphData";
-import { addPageLabel, updatePageLabel } from "@/modules/plan/updatePlanData";
+import { addPageLabel, updatePageLabels } from "@/modules/plan/updatePlanData";
 import { getActivePage, getPlanMode, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
@@ -30,6 +35,8 @@ export const PageLabelInput = () => {
   const [labelPosition, setLabelPosition] = useState<cytoscape.Position | null>(null);
   const [labelText, setLabelText] = useState("");
   const labelRef = useRef<{ id: string; label: string } | null>(null);
+  const inputWidth = 250;
+
   const dispatch = useAppDispatch();
   useEscapeKey({
     callback: () => {
@@ -38,12 +45,7 @@ export const PageLabelInput = () => {
     },
   });
 
-  const inputWidth = 250;
-  const textLengthLimit = 2048;
-  const specialCharsRegex = /[\u00B2\u00BA\u00B0]/; // ², º, °
-  const textLengthErrorMessage = `${labelText.length - textLengthLimit} characters over the limit`;
-  const invalidCharactersErrorMessage = "Invalid character(s) entered";
-
+  const textLengthErrorMessage = getTextLengthErrorMessage(labelText.length - textLengthLimit);
   const hasError = labelText.length > textLengthLimit || specialCharsRegex.test(labelText);
 
   const resetInput = () => {
@@ -107,7 +109,7 @@ export const PageLabelInput = () => {
     if (planMode === PlanMode.SelectLabel) {
       if (labelText && labelText !== labelRef.current?.label) {
         dispatch(
-          replacePage(updatePageLabel(activePage, { id: Number(labelRef.current?.id), displayText: labelText })),
+          replacePage(updatePageLabels(activePage, [{ id: Number(labelRef.current?.id), displayText: labelText }])),
         );
         dispatch(setPlanMode(PlanMode.Cursor));
       }
@@ -150,18 +152,7 @@ export const PageLabelInput = () => {
           }}
           onBlur={saveLabel}
         />
-        {hasError && (
-          <div className="PageLabelInput-error">
-            <LuiIcon alt="error" name="ic_error" className="PageLabelInput-error-icon" size="sm" status="error" />
-            <span>
-              {specialCharsRegex.test(labelText)
-                ? invalidCharactersErrorMessage
-                : labelText.length > textLengthLimit
-                  ? textLengthErrorMessage
-                  : ""}
-            </span>
-          </div>
-        )}
+        {hasError && <LabelTextErrorMessage labelText={labelText} textLengthErrorMessage={textLengthErrorMessage} />}
       </div>
     )
   );

@@ -1,11 +1,38 @@
-import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
-import { SelectOptions } from "@linzjs/lui/dist/components/LuiFormElements/LuiSelectInput/LuiSelectInput";
 import clsx from "clsx";
-import { uniq } from "lodash-es";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
-export interface LabelPropertiesProps {
+import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
+import { getActivePage, getDiagrams, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+
+import {
+  allHave00,
+  anyHasDisplayState,
+  areAllPageLabels,
+  borderWidthOptions,
+  createLabelPropsToBeSaved,
+  fontOptions,
+  fontSizeOptions,
+  getCommonPropertyValue,
+  getTextLengthErrorMessage,
+  labelTypeOptions,
+  someButNotAllHavePropertyValue,
+  specialCharsRegex,
+  textLengthLimit,
+} from "./LabelPropertiesUtils";
+
+interface LabelPropertiesProps {
+  data: LabelPropertiesData[];
+  setSaveFunction: React.Dispatch<React.SetStateAction<(() => void) | undefined>>;
+  setSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface LabelPropertiesData {
+  id: string;
   displayState: string;
   labelType: LabelDTOLabelTypeEnum;
   fontStyle: string | undefined;
@@ -16,105 +43,92 @@ export interface LabelPropertiesProps {
   borderWidth: string | undefined;
   textAlignment: string;
   diagramId: string | undefined;
+  elementType: PlanElementType;
 }
 
-const labelTypeOptions: SelectOptions[] = [
-  { value: LabelDTOLabelTypeEnum.arcRadius, label: "Arc radius" },
-  { value: LabelDTOLabelTypeEnum.childDiagram, label: "Child diagram" },
-  { value: LabelDTOLabelTypeEnum.childDiagramPage, label: "Child diagram page" },
-  { value: LabelDTOLabelTypeEnum.diagram, label: "Diagram" },
-  { value: LabelDTOLabelTypeEnum.diagramType, label: "Diagram type" },
-  { value: LabelDTOLabelTypeEnum.markDescription, label: "Mark description" },
-  { value: LabelDTOLabelTypeEnum.markName, label: "Mark name" },
-  { value: LabelDTOLabelTypeEnum.nodeSymbol1, label: "Node symbol 1" },
-  { value: LabelDTOLabelTypeEnum.nodeSymbol2, label: "Node symbol 2" },
-  { value: LabelDTOLabelTypeEnum.obsBearing, label: "Observation bearing" },
-  { value: LabelDTOLabelTypeEnum.obsCode, label: "Observation code" },
-  { value: LabelDTOLabelTypeEnum.obsDistance, label: "Observation distance" },
-  { value: LabelDTOLabelTypeEnum.parcelAppellation, label: "Parcel appellation" },
-  { value: LabelDTOLabelTypeEnum.parcelArea, label: "Parcel area" },
-  { value: LabelDTOLabelTypeEnum.userAnnotation, label: "User annotation" },
-  { value: LabelDTOLabelTypeEnum.lineDescription, label: "Line description" },
-  { value: LabelDTOLabelTypeEnum.lineLongDescription, label: "Line long description" },
-];
-
-const fontOptions: SelectOptions[] = [
-  { value: "Tahoma", label: "Tahoma" },
-  { value: "Arial", label: "Arial" },
-  { value: "Times New Roman", label: "Times New Roman" },
-];
-
-const fontSizeOptions: SelectOptions[] = [
-  { value: "8", label: "8" },
-  { value: "10", label: "10" },
-  { value: "12", label: "12" },
-  { value: "14", label: "14" },
-  { value: "16", label: "16" },
-];
-
-const borderWidthOptions: SelectOptions[] = [
-  { value: "0.7", label: "0.7" },
-  { value: "1", label: "1" },
-  { value: "1.4", label: "1.4" },
-  { value: "2", label: "2" },
-];
-
-const getCommonPropertyValue = <T extends keyof LabelPropertiesProps>(
-  arr: LabelPropertiesProps[],
-  property: T,
-): string | undefined => {
-  const values = arr.map((item) => item[property]);
-  const uniqueValues = uniq(values);
-  return uniqueValues.length === 1 ? uniqueValues[0] : undefined;
+export type PanelValuesToUpdate = {
+  displayState?: string;
+  isBold?: boolean;
+  labelText?: string;
+  hide00?: boolean;
+  font?: string;
+  fontSize?: string;
+  textRotation?: string;
+  justify?: string;
+  hasBorder?: boolean;
+  borderWidth?: string;
 };
 
-const someButNotAllHavePropertyValue = <T extends keyof LabelPropertiesProps>(
-  arr: LabelPropertiesProps[],
-  property: T,
-  value: string | undefined,
-  checkIncludes?: boolean,
-) => {
-  let hasValue = false;
-  let notAllHaveValue = false;
-  if (checkIncludes && value) {
-    hasValue = arr.some((obj) => obj[property]?.includes(value));
-    notAllHaveValue = !arr.every((obj) => obj[property]?.includes(value));
-  } else {
-    hasValue = arr.some((obj) => obj[property] === value);
-    notAllHaveValue = !arr.every((obj) => obj[property] === value);
-  }
-  return hasValue && notAllHaveValue;
-};
+export type LabelPropsToUpdate = Pick<LabelDTO, "id"> & Partial<LabelDTO>;
+export type LabelElementTypeProps = { elementType?: PlanElementType; diagramId?: string };
+export type LabelPropsToUpdateWithElemType = { data: LabelPropsToUpdate; type: LabelElementTypeProps };
 
-const areAllPageLabels = (arr: LabelPropertiesProps[]) => {
-  return arr.every((item) => item.diagramId === undefined);
-};
+const LabelProperties = (props: LabelPropertiesProps) => {
+  const selectedLabels = props.data;
 
-const allHave00 = (arr: LabelPropertiesProps[]) => {
-  return arr.every((item) => item.label.includes('00"'));
-};
+  const dispatch = useAppDispatch();
+  const activePage = useAppSelector(getActivePage);
+  const diagrams = useAppSelector(getDiagrams);
+  const [panelValuesToUpdate, setPanelValuesToUpdate] = useState<PanelValuesToUpdate>();
 
-const anyHasDisplayState = (arr: LabelPropertiesProps[], displayStates: string[]) => {
-  return arr.some((item) => displayStates.includes(item.displayState));
-};
+  // Save function
+  const save = useCallback(() => {
+    if (!activePage || !panelValuesToUpdate) return;
 
-const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
-  const labelType = getCommonPropertyValue(props.data, "labelType");
+    const labelsToUpdate: LabelPropsToUpdate[] = selectedLabels.map((label) =>
+      createLabelPropsToBeSaved(panelValuesToUpdate, label),
+    );
+
+    // Update page labels
+    const pageLabelsToUpdate = labelsToUpdate.filter((label) =>
+      selectedLabels.some(
+        (selectedLabel) => selectedLabel.id === label.id.toString() && selectedLabel.diagramId === undefined,
+      ),
+    );
+    dispatch(replacePage(updatePageLabels(activePage, pageLabelsToUpdate)));
+
+    // Update diagram labels
+    const diagramLabelsToUpdate = labelsToUpdate.filter((label) => !pageLabelsToUpdate.includes(label));
+    const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabelsToUpdate.map((label) => {
+      const selectedLabel = selectedLabels.find((selected) => selected.id === label.id.toString());
+      return {
+        data: label,
+        type: {
+          elementType: selectedLabel?.elementType,
+          diagramId: selectedLabel?.diagramId,
+        },
+      };
+    });
+    dispatch(replaceDiagrams(updateDiagramLabels(diagrams, diagramLabelsToUpdateWithElemType)));
+  }, [panelValuesToUpdate, activePage, diagrams, selectedLabels, dispatch]);
+
+  useEffect(() => {
+    props.setSaveFunction(() => save);
+  }, [props, save]);
+
+  useEffect(() => {
+    panelValuesToUpdate && props.setSaveEnabled(true);
+  }, [panelValuesToUpdate, props]);
+
+  // declare state variables
+  const labelType = getCommonPropertyValue(selectedLabels, "labelType");
   const [displayState, setDisplayState] = useState<string | undefined>(
-    getCommonPropertyValue(props.data, "displayState"),
+    getCommonPropertyValue(selectedLabels, "displayState"),
   );
   const [isBold, setIsBold] = useState<boolean>();
-  const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(props.data, "label"));
+  const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
   const [hide00, setHide00] = useState<boolean>(false);
-  const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(props.data, "font"));
-  const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(props.data, "fontSize"));
+  const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "font"));
+  const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "fontSize"));
   const [textRotation, setTextRotation] = useState<string | undefined>(
-    getCommonPropertyValue(props.data, "textRotation"),
+    getCommonPropertyValue(selectedLabels, "textRotation"),
   );
   const [textRotationError, setTextRotationError] = useState<string>();
   const [justify, setJustify] = useState(1);
-  const [hasBorder, setHasBorder] = useState<boolean>(props.data.some((item) => item.borderWidth !== undefined));
-  const [borderWidth, setBorderWidth] = useState<string | undefined>(getCommonPropertyValue(props.data, "borderWidth"));
+  const [hasBorder, setHasBorder] = useState<boolean>(selectedLabels.some((item) => item.borderWidth !== undefined));
+  const [borderWidth, setBorderWidth] = useState<string | undefined>(
+    getCommonPropertyValue(selectedLabels, "borderWidth"),
+  );
 
   const validateTextRotationInput = (value: string) => {
     const regex = /^[0-9]*\.?[0-9]*$/; // allows only decimal numbers
@@ -122,6 +136,9 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
       ? setTextRotationError("Text rotation must be in decimal degrees")
       : setTextRotationError(undefined);
   };
+
+  const textLengthErrorMessage = labelText ? getTextLengthErrorMessage(labelText.length - textLengthLimit) : "";
+  const hasError = labelText && (labelText.length > textLengthLimit || specialCharsRegex.test(labelText));
 
   return (
     <div className="plan-element-properties">
@@ -131,16 +148,22 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
           <span style={{ flex: "1 1 50%" }}>
             <LuiCheckboxInput
               // if any of the elements has displayState as systemHide or systemDisplay, disable the checkbox
-              isDisabled={anyHasDisplayState(props.data, [DisplayStateEnum.systemHide, DisplayStateEnum.systemDisplay])}
+              isDisabled={anyHasDisplayState(selectedLabels, [
+                DisplayStateEnum.systemHide,
+                DisplayStateEnum.systemDisplay,
+              ])}
               label="Hide"
               value=""
               onChange={(e) => {
-                e.target.checked ? setDisplayState(DisplayStateEnum.hide) : setDisplayState(DisplayStateEnum.display);
+                const isChecked = e.target.checked;
+                const newValue = isChecked ? DisplayStateEnum.hide : DisplayStateEnum.display;
+                setDisplayState(newValue);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, displayState: newValue });
               }}
               isIndeterminate={!displayState}
               isChecked={
                 displayState === undefined
-                  ? anyHasDisplayState(props.data, [DisplayStateEnum.systemHide, DisplayStateEnum.hide])
+                  ? anyHasDisplayState(selectedLabels, [DisplayStateEnum.systemHide, DisplayStateEnum.hide])
                   : displayState === DisplayStateEnum.hide
               }
             />
@@ -149,14 +172,16 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
             <LuiCheckboxInput
               // if any of the elements has the substring "bold" in fontStyle, but not all, show indeterminate state
               isIndeterminate={
-                someButNotAllHavePropertyValue(props.data, "fontStyle", "bold", true) && isBold === undefined
+                someButNotAllHavePropertyValue(selectedLabels, "fontStyle", "bold", true) && isBold === undefined
               }
               label="Bold"
               value=""
               onChange={(e) => {
-                setIsBold(e.target.checked);
+                const isChecked = e.target.checked;
+                setIsBold(isChecked);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, isBold: isChecked });
               }}
-              isChecked={isBold ?? props.data.some((item) => item.fontStyle?.includes("bold"))}
+              isChecked={isBold ?? selectedLabels.some((item) => item.fontStyle?.includes("bold"))}
             />
           </span>
         </div>
@@ -186,15 +211,24 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
                 />
               </div>
             ) : (
-              <textarea
-                disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
-                value={props.data.length === 1 ? labelText : ""}
-                onChange={(e) => {
-                  setLabelText(e.target.value);
-                }}
-                className={clsx("PageLabelInput labelTextarea", { error: false })}
-                data-testid="label-textarea"
-              />
+              <div>
+                <textarea
+                  disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
+                  value={props.data.length === 1 ? labelText : ""}
+                  onChange={(e) => {
+                    setLabelText(e.target.value);
+                  }}
+                  className={clsx("PageLabelInput labelTextarea", { error: hasError })}
+                  data-testid="label-textarea"
+                />
+                {hasError && (
+                  <LabelTextErrorMessage
+                    labelText={labelText}
+                    textLengthErrorMessage={textLengthErrorMessage}
+                    className="errorMessage"
+                  />
+                )}
+              </div>
             )}
           </span>
           {labelType === LabelDTOLabelTypeEnum.obsBearing && (
@@ -203,10 +237,12 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
                 label="Hide 00"
                 value=""
                 onChange={(e) => {
-                  setHide00(e.target.checked);
+                  const newValue = e.target.checked;
+                  setHide00(newValue);
+                  setPanelValuesToUpdate({ ...panelValuesToUpdate, hide00: newValue });
                 }}
                 isChecked={hide00}
-                isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(props.data)}
+                isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(selectedLabels)}
               />
             </span>
           )}
@@ -224,7 +260,9 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
               options={fontOptions}
               value={font ?? ""}
               onChange={(e) => {
-                setFont(e.target.value);
+                const newValue = e.target.value;
+                setFont(newValue);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, font: newValue });
               }}
             />
           </span>
@@ -237,7 +275,9 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
               options={fontSizeOptions}
               value={fontSize ?? ""}
               onChange={(e) => {
-                setFontSize(e.target.value);
+                const newValue = e.target.value;
+                setFontSize(newValue);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, fontSize: newValue });
               }}
             />
           </span>
@@ -251,8 +291,10 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
           hideLabel
           value={textRotation}
           onChange={(e) => {
-            validateTextRotationInput(e.target.value);
-            setTextRotation(e.target.value);
+            const newValue = e.target.value;
+            validateTextRotationInput(newValue);
+            setTextRotation(newValue);
+            setPanelValuesToUpdate({ ...panelValuesToUpdate, textRotation: newValue });
           }}
           error={textRotationError}
         />
@@ -262,23 +304,32 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
         <span className="LuiTextInput-label-text">Justify</span>
         <LuiButtonGroup>
           <LuiButton
-            onClick={() => setJustify(1)}
+            onClick={() => {
+              setJustify(1);
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "left" });
+            }}
             className={clsx(`lui-button lui-button-secondary`, justify === 1 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(props.data)}
+            disabled={!areAllPageLabels(selectedLabels)}
           >
             Left
           </LuiButton>
           <LuiButton
-            onClick={() => setJustify(2)}
+            onClick={() => {
+              setJustify(2);
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "center" });
+            }}
             className={clsx(`lui-button lui-button-secondary`, justify === 2 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(props.data)}
+            disabled={!areAllPageLabels(selectedLabels)}
           >
             Center
           </LuiButton>
           <LuiButton
-            onClick={() => setJustify(3)}
+            onClick={() => {
+              setJustify(3);
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "right" });
+            }}
             className={clsx(`lui-button lui-button-secondary`, justify === 3 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(props.data)}
+            disabled={!areAllPageLabels(selectedLabels)}
           >
             Right
           </LuiButton>
@@ -292,13 +343,16 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
             <LuiCheckboxInput
               //if any of the elements has borderWidth undefined, but not all, show indeterminate state
               isIndeterminate={
-                someButNotAllHavePropertyValue(props.data, "borderWidth", undefined) && borderWidth === undefined
+                someButNotAllHavePropertyValue(selectedLabels, "borderWidth", undefined) && borderWidth === undefined
               }
               label="Border"
               value=""
               onChange={(e) => {
-                setHasBorder(e.target.checked);
-                e.target.checked ? setBorderWidth("0.7") : setBorderWidth(undefined);
+                const isChecked = e.target.checked;
+                const newValue = isChecked ? "0.7" : undefined;
+                setHasBorder(isChecked);
+                setBorderWidth(newValue);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, hasBorder: isChecked, borderWidth: newValue });
               }}
               isChecked={hasBorder}
             />
@@ -312,7 +366,9 @@ const LabelProperties = (props: { data: LabelPropertiesProps[] }) => {
               selectProps={{ disabled: !hasBorder }}
               value={borderWidth ?? ""}
               onChange={(e) => {
-                setBorderWidth(e.target.value);
+                const newValue = e.target.value;
+                setBorderWidth(newValue);
+                setPanelValuesToUpdate({ ...panelValuesToUpdate, borderWidth: newValue });
               }}
             />
           </span>

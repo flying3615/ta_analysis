@@ -3,45 +3,50 @@ import { Panel, PanelContent, PanelHeader, PanelsContextProvider } from "@linzjs
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { within } from "@storybook/test";
+import { Provider } from "react-redux";
 
 import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
+import { setupStore } from "@/redux/store";
+import { mockStore } from "@/test-utils/store-mock";
 import { PanelInstanceContextMock } from "@/test-utils/storybook-utils";
-
-import LabelProperties, { LabelPropertiesProps } from "../LabelProperties";
 
 export default {
   title: "PlanSheets/Properties/LabelPropertiesPanel/LabelPropertiesValidation",
   component: PlanElementProperty,
 } as Meta<typeof PlanElementProperty>;
 
-const PanelTemplate = ({ data }: { data: LabelPropertiesProps[] }) => {
+const PanelTemplate = ({ data }: { data: LabelPropertiesData[] }) => {
   return (
-    <PanelsContextProvider>
-      <PanelInstanceContextMock>
-        <Panel
-          title="Label properties"
-          size={{ width: 320, height: 705 }}
-          position={{ x: 0, y: 0 }}
-          maxWidth={320}
-          minWidth={320}
-          className="PlanElement-container"
-          modal={true}
-        >
-          <PanelHeader icon="ic_format_lines_text" disablePopout={true} />
-          <PanelContent>
-            <LabelProperties data={data} />
-            <div className="footer">
-              <LuiButton onClick={() => {}} size="lg" level="tertiary">
-                Cancel
-              </LuiButton>
-              <LuiButton disabled={true} size="lg" level="primary">
-                OK
-              </LuiButton>
-            </div>
-          </PanelContent>
-        </Panel>
-      </PanelInstanceContextMock>
-    </PanelsContextProvider>
+    <Provider store={setupStore({ ...mockStore })}>
+      <PanelsContextProvider>
+        <PanelInstanceContextMock>
+          <Panel
+            title="Label properties"
+            size={{ width: 320, height: 705 }}
+            position={{ x: 0, y: 0 }}
+            maxWidth={320}
+            minWidth={320}
+            className="PlanElement-container"
+            modal={true}
+          >
+            <PanelHeader icon="ic_format_lines_text" disablePopout={true} />
+            <PanelContent>
+              <LabelProperties data={data} setSaveEnabled={() => {}} setSaveFunction={() => {}} />
+              <div className="footer">
+                <LuiButton onClick={() => {}} size="lg" level="tertiary">
+                  Cancel
+                </LuiButton>
+                <LuiButton disabled={true} size="lg" level="primary">
+                  OK
+                </LuiButton>
+              </div>
+            </PanelContent>
+          </Panel>
+        </PanelInstanceContextMock>
+      </PanelsContextProvider>
+    </Provider>
   );
 };
 
@@ -58,8 +63,10 @@ export const Default: Story = {
   },
 };
 
-const pageLabelBold: LabelPropertiesProps[] = [
+const pageLabelBold: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LABELS,
     displayState: "display",
     labelType: "userAnnotation",
     fontStyle: "boldItalic",
@@ -96,8 +103,10 @@ export const PageLabelBold: Story = {
   },
 };
 
-const diagramLabelWithBorder: LabelPropertiesProps[] = [
+const diagramLabelWithBorder: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.PARCEL_LABELS,
     displayState: "display",
     labelType: "parcelAppellation",
     fontStyle: "regular",
@@ -135,8 +144,10 @@ export const DiagramLabelWithBorder: Story = {
   },
 };
 
-const observationBearingDiagramLabelWith00Precision: LabelPropertiesProps[] = [
+const observationBearingDiagramLabelWith00Precision: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",
@@ -174,8 +185,10 @@ export const ObservationBearingDiagramLabelWith00Precision: Story = {
   },
 };
 
-const observationBearingDiagramLabelWithout00Precision: LabelPropertiesProps[] = [
+const observationBearingDiagramLabelWithout00Precision: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",
@@ -213,8 +226,10 @@ export const ObservationBearingDiagramLabelWithout00Precision: Story = {
   },
 };
 
-const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesProps[] = [
+const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LABELS,
     displayState: "display",
     labelType: "userAnnotation",
     fontStyle: "bold",
@@ -227,6 +242,8 @@ const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesProps[] = [
     diagramId: undefined,
   },
   {
+    id: "2",
+    elementType: PlanElementType.PARCEL_LABELS,
     displayState: "display",
     labelType: "parcelAppellation",
     fontStyle: "regular",
@@ -261,8 +278,10 @@ export const PageAndDiagramLabelWithPartialCheckbox: Story = {
   },
 };
 
-const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesProps[] = [
+const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LABELS,
     displayState: "display",
     labelType: "userAnnotation",
     fontStyle: "boldItalic",
@@ -275,6 +294,8 @@ const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesProps[] = [
     diagramId: undefined,
   },
   {
+    id: "2",
+    elementType: PlanElementType.LABELS,
     displayState: "display",
     labelType: "userAnnotation",
     fontStyle: "boldItalic",
@@ -308,8 +329,10 @@ export const MultiplePageLabelsWithDifferentFieldValues: Story = {
   },
 };
 
-const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesProps[] = [
+const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",
@@ -322,6 +345,8 @@ const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesProp
     diagramId: "1",
   },
   {
+    id: "2",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",
@@ -353,8 +378,10 @@ export const MultipleObservationBearingDiagramLabelWith00Precision: Story = {
   },
 };
 
-const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelPropertiesProps[] = [
+const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelPropertiesData[] = [
   {
+    id: "1",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",
@@ -367,6 +394,8 @@ const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelProp
     diagramId: "1",
   },
   {
+    id: "2",
+    elementType: PlanElementType.LINE_LABELS,
     displayState: "display",
     labelType: "obsBearing",
     fontStyle: "regular",

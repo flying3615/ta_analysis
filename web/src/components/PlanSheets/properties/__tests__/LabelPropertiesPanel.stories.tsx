@@ -1,3 +1,4 @@
+import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -58,5 +59,30 @@ export const ShowLabelPropertiesPanel: Story = {
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
     await sleep(500);
+  },
+};
+
+export const UpdateLabelProperties: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const labelPosition = { clientX: 484, clientY: 269 };
+    clickAtCoordinates(target, labelPosition.clientX, labelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const propertiesButton = await within(contextMenu).findByText("Properties");
+    await userEvent.click(propertiesButton);
+    await sleep(500);
+    const okButton = canvas.getByRole("button", { name: "OK" });
+    await expect(okButton).toBeDisabled();
+    const boldCheckbox = await canvas.findByLabelText("Bold");
+    await userEvent.click(boldCheckbox);
+    const borderCheckbox = await canvas.findByLabelText("Border");
+    await userEvent.click(borderCheckbox);
+    await expect(okButton).toBeEnabled();
+    await userEvent.click(okButton);
   },
 };
