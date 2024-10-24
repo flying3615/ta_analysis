@@ -61,7 +61,7 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => {
       </MenuItem>
       <MenuItem href={`${hostProtoForApplication(8080)}/survey/${transactionId}`}>
         <LuiIcon name="ic_survey" alt="Survey Icon" size="md" />
-        Survey Capture
+        <span className="HeaderToggle__text">Survey Capture</span>
       </MenuItem>
     </Menu>
   );

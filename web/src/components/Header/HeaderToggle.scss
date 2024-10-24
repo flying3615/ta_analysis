@@ -1,3 +1,5 @@
+@use "@linzjs/lui/dist/scss/Foundation/Variables/ColorVars.scss" as colours;
+
 .HeaderToggle {
   &__dropdownIcon {
     // needed to override specificity in lui
@@ -10,4 +12,8 @@
 
 .HeaderToggle__button {
   white-space: nowrap;
+}
+
+.HeaderToggle__text {
+  color: colours.$charcoal;
 }

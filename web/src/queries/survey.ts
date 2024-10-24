@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { surveyApiConfig } from "./apiConfig";
-import { getPlanQueryKey } from "./plan";
 import { PlanGenQuery } from "./types";
 
 type TransactionTitleDTO = {
@@ -22,9 +21,15 @@ export type ExternalSurveyInfoDto = {
   systemCodeDescription: string;
 };
 
-export const useGetPlanKeyQuery: PlanGenQuery<TransactionTitleDTO> = ({ transactionId }) => {
+export const getSurveyTitleQueryKey = (transactionId: number) => ["survey-title", transactionId];
+
+export interface useGetSurveyTitleQueryProps {
+  transactionId: number;
+}
+
+export const useGetSurveyTitleQuery = ({ transactionId }: useGetSurveyTitleQueryProps) => {
   return useQuery({
-    queryKey: getPlanQueryKey(transactionId),
+    queryKey: getSurveyTitleQueryKey(transactionId),
     queryFn: async () => {
       const response = await getSurveyTitle(transactionId);
       const { surveyNo, surveyReference } = response;
