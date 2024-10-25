@@ -8,7 +8,7 @@ import { MapColors } from "@/components/DefineDiagrams/mapColors";
 // Constant styles
 
 export const lineStyles_ct = new Style({
-  stroke: new Stroke({ width: 3, lineDash: [8, 6, 2, 6], color: MapColors.black }),
+  stroke: new Stroke({ width: 3, lineDash: [8, 8, 2, 8], color: MapColors.black }),
 });
 
 export const lineStyle_selectable = new Style({
