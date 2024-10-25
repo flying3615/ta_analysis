@@ -101,6 +101,6 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
 
   return {
     isLoading,
-    lockPreviouslyHeld: lockPreviouslyHeldRef.current,
+    lockPreviouslyHeld: lockPreviouslyHeldRef.current || !maintainLocksAllowed,
   };
 };

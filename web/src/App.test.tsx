@@ -4,7 +4,9 @@ import { screen } from "@testing-library/react";
 
 import { PlangenApp } from "@/App";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
+import { setMockedSplitFeatures } from "@/setupTests";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags";
 
 import { renderWithReduxProvider } from "./test-utils/jest-utils";
 
@@ -22,7 +24,7 @@ const renderPlangenApp = () => {
   );
 };
 
-describe("Verify rendering of application", () => {
+const verifyAllRoutesRender = (before?: () => void) => {
   const validRoutes = [
     ["/plan-generation/123", "Plan generation"],
     ["/plan-generation/123/define-diagrams", "Diagrams"],
@@ -31,8 +33,21 @@ describe("Verify rendering of application", () => {
     ["/plan-", "This page does not exist, please check the url and try again."],
   ];
   test.each(validRoutes)("verify route with %s", async (route, expected) => {
+    before?.();
     window.history.pushState({}, "Test page", route);
     renderPlangenApp();
     expect(await screen.findByText(expected)).toBeTruthy();
+  });
+};
+
+describe("Verify rendering of application", () => {
+  verifyAllRoutesRender();
+});
+
+describe("Verify when locking is disabled app renders", () => {
+  verifyAllRoutesRender(() => {
+    setMockedSplitFeatures({
+      [FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS]: TREATMENTS.OFF,
+    });
   });
 });
