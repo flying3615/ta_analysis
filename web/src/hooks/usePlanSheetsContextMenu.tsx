@@ -29,6 +29,8 @@ import {
   setDiagramIdToMove,
 } from "@/redux/planSheets/planSheetsSlice";
 
+import { useDeleteLines } from "./useDeleteLines";
+
 export const usePlanSheetsContextMenu = () => {
   const dispatch = useAppDispatch();
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
@@ -39,6 +41,7 @@ export const usePlanSheetsContextMenu = () => {
   const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
+  const deletePageLines = useDeleteLines();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page...", callback: movetoPage }];
@@ -171,6 +174,15 @@ export const usePlanSheetsContextMenu = () => {
             } else {
               getProperties(event);
             }
+          },
+        },
+        {
+          title: "Delete",
+          className: "delete-item",
+          hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
+            element.data("lineType") !== "userDefined",
+          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+            deletePageLines([event.target as EdgeSingular]);
           },
         },
         // { title: "Cut", disabled: true },

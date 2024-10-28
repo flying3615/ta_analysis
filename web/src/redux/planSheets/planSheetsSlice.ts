@@ -154,6 +154,22 @@ const planSheetsSlice = createSlice({
 
       lineToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
     },
+    removePageLines: (state, action: PayloadAction<{ lineIds: string[] }>) => {
+      const { lineIds } = action.payload;
+
+      onDataChanging(state);
+
+      state.pages.forEach((page) => {
+        const linesToRemove = page.lines?.filter((line) => lineIds.includes(line.id.toString())) ?? [];
+        page.lines = page.lines?.filter((line) => !linesToRemove.includes(line));
+
+        //also remove any page coordinates from the removed lines that are not referenced by any other lines
+        const coordinatesToRemove = linesToRemove
+          .flatMap((line) => line.coordRefs)
+          .filter((coordRef) => !page.lines?.some((line) => line.coordRefs.includes(coordRef)));
+        page.coordinates = page.coordinates?.filter((coord) => !coordinatesToRemove.includes(coord.id));
+      });
+    },
     undo: (state) => {
       if (!state.previousDiagrams || !state.previousPages) return;
 
@@ -235,6 +251,7 @@ export const {
   setSymbolHide,
   setPreviousDiagramAttributes,
   setLineHide,
+  removePageLines,
   undo,
   clearUndo,
 } = planSheetsSlice.actions;

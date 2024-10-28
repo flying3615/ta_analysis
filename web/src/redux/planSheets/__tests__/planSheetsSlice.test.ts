@@ -1,4 +1,4 @@
-import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -20,6 +20,7 @@ import planSheetsSlice, {
   getPlanMode,
   hasChanges,
   PlanSheetsState,
+  removePageLines,
   replaceDiagrams,
   setActivePageNumber,
   setActiveSheet,
@@ -331,6 +332,76 @@ describe("planSheetsSlice", () => {
     store.dispatch(setLineHide({ id: "1011", hide: true }));
 
     expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBe("hide");
+  });
+
+  test("removePageLines should set the displayState on the line in store", () => {
+    const pagesWithLines = emptyDiagramsBuilder()
+      .addUserCoordinate({
+        id: 101,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 20,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 102,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 25,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 103,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 15,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 104,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 30,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 105,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 35,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 106,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 40,
+          y: -10,
+        },
+      })
+      .addUserLine({ id: 1011, coordRefs: [101, 102, 103], lineType: "userDefined", style: "arrowhead" })
+      .addUserLine({ id: 1012, coordRefs: [103, 106], lineType: "userDefined", style: "arrowhead" })
+      .addUserLine({ id: 1013, coordRefs: [104, 105], lineType: "userDefined", style: "arrowhead" })
+      .build().pages;
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        pages: pagesWithLines,
+      },
+    });
+
+    store.dispatch(removePageLines({ lineIds: ["1011", "1013"] }));
+
+    expect(store.getState().planSheets.pages[2]?.lines?.length).toBe(1);
+    expect(store.getState().planSheets.pages[2]?.lines?.[0]?.id).toBe(1012);
+    expect(store.getState().planSheets.pages[2]?.coordinates?.length).toBe(2);
+    expect(store.getState().planSheets.pages[2]?.coordinates?.[0]?.id).toBe(103);
+    expect(store.getState().planSheets.pages[2]?.coordinates?.[1]?.id).toBe(106);
   });
 
   test("previousDiagrams reflects last change in store", () => {

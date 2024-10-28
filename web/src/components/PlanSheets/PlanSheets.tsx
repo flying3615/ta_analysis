@@ -37,6 +37,7 @@ import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
 import { getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
 
+import { DeleteKeyHandler } from "./interactions/DeleteKeyHandler";
 import { ElementHover } from "./interactions/ElementHover";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips";
 import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler";
@@ -194,6 +195,7 @@ const PlanSheets = () => {
           {(planMode === PlanMode.SelectCoordinates ||
             planMode === PlanMode.SelectLine ||
             planMode === PlanMode.SelectLabel) && <SelectElementHandler mode={planMode} />}
+          {planMode === PlanMode.SelectLine && <DeleteKeyHandler mode={planMode} />}
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />
           <PageNumberTooltips />

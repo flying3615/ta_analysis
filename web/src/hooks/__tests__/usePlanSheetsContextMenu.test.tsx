@@ -134,6 +134,26 @@ describe("PlanSheetsContextMenu", () => {
     );
   });
 
+  test("getMenuItemsForPlanMode for Select line shows Delete option when line is userDefined", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "1001", lineType: "userDefined", elementType: PlanElementType.LINES })[key],
+    } as unknown as NodeSingular;
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        targetElement={mockNode}
+        expectations={(lineMenuItems) => {
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+            "Original location",
+            "Hide",
+            "Properties",
+            "Delete",
+          ]);
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectLine),
+    );
+  });
+
   test("getMenuItemsForPlanMode for Select line disables hide option when line is systemDisplay", () => {
     const mockNode = {
       data: (key: string) =>

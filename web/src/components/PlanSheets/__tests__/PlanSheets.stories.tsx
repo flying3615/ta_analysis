@@ -730,6 +730,25 @@ export const ShowLineMenu: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
     clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
     await sleep(500);
+    await expect(canvas.queryByRole("menuitem", { name: "Delete" })).not.toBeInTheDocument();
+  },
+};
+
+export const DeletePageLine: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    await userEvent.click(await canvas.findByText("Delete"));
+    await sleep(500);
+    await expect(await canvas.findByRole("button", { name: "Undo" })).toBeEnabled();
   },
 };
 

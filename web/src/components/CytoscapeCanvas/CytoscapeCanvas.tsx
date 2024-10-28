@@ -88,7 +88,7 @@ const CytoscapeCanvas = ({
   }
   const labelTypesWithRelatedElements = [PlanElementType.COORDINATE_LABELS, PlanElementType.LINE_LABELS];
 
-  // NOTE: onSelected is called once for _every_ feature that is deselected
+  // NOTE: onSelected is called once for _every_ feature that is selected
   const onSelected = (event: cytoscape.EventObjectEdge | cytoscape.EventObjectNode) => {
     const { elementType, featureId } = event.target.data() as Partial<SelectRelatedData>;
     if (!elementType || !featureId) {
