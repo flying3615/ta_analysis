@@ -63,33 +63,34 @@ export const Default: Story = {
   },
 };
 
-const pageLabelBold: LabelPropertiesData[] = [
+const pageLabel: LabelPropertiesData[] = [
   {
     id: "1",
     elementType: PlanElementType.LABELS,
     displayState: "display",
     labelType: "userAnnotation",
     fontStyle: "boldItalic",
-    label: "My label blabla",
+    label: "My label blabla\nwith line break",
     font: "Arial",
     fontSize: "12",
     textRotation: "0",
     borderWidth: undefined,
-    textAlignment: "centerCenter",
+    textAlignment: "centerCenter textRight",
     diagramId: undefined,
+    displayFormat: undefined,
   },
 ];
 
-export const PageLabelBold: Story = {
+export const PageLabel: Story = {
   render: PanelTemplate,
-  args: { data: pageLabelBold },
+  args: { data: pageLabel },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByLabelText("Hide")).not.toBeChecked();
     await expect(await canvas.findByLabelText("Bold")).toBeChecked();
     await expect(await canvas.findByDisplayValue("User annotation")).toBeDisabled();
     await expect(await canvas.findByTestId("label-textarea")).toBeEnabled();
-    await expect(await canvas.findByTestId("label-textarea")).toHaveValue("My label blabla");
+    await expect(await canvas.findByTestId("label-textarea")).toHaveValue("My label blabla\nwith line break");
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
     await expect(await canvas.findByDisplayValue("Arial")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("12")).toBeEnabled();
@@ -117,6 +118,7 @@ const diagramLabelWithBorder: LabelPropertiesData[] = [
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: undefined,
   },
 ];
 
@@ -158,6 +160,7 @@ const observationBearingDiagramLabelWith00Precision: LabelPropertiesData[] = [
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: "suppressSeconds",
   },
 ];
 
@@ -172,6 +175,7 @@ export const ObservationBearingDiagramLabelWith00Precision: Story = {
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toBeDisabled();
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("327°12'00\"");
     await expect(await canvas.findByLabelText("Hide 00")).toBeEnabled();
+    await expect(await canvas.findByLabelText("Hide 00")).toBeChecked();
     await expect(await canvas.findByDisplayValue("Times New Roman")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("12")).toBeEnabled();
     canvas
@@ -199,6 +203,7 @@ const observationBearingDiagramLabelWithout00Precision: LabelPropertiesData[] = 
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: undefined,
   },
 ];
 
@@ -240,6 +245,7 @@ const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
     borderWidth: undefined,
     textAlignment: "centerCenter",
     diagramId: undefined,
+    displayFormat: undefined,
   },
   {
     id: "2",
@@ -254,6 +260,7 @@ const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: undefined,
   },
 ];
 
@@ -292,6 +299,7 @@ const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesData[] = [
     borderWidth: undefined,
     textAlignment: "centerCenter",
     diagramId: undefined,
+    displayFormat: undefined,
   },
   {
     id: "2",
@@ -306,6 +314,7 @@ const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesData[] = [
     borderWidth: undefined,
     textAlignment: "centerCenter",
     diagramId: undefined,
+    displayFormat: undefined,
   },
 ];
 
@@ -343,11 +352,12 @@ const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesData
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: "suppressSeconds",
   },
   {
     id: "2",
     elementType: PlanElementType.LINE_LABELS,
-    displayState: "display",
+    displayState: "hide",
     labelType: "obsBearing",
     fontStyle: "regular",
     label: "57°29'00\"",
@@ -357,6 +367,7 @@ const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesData
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: undefined,
   },
 ];
 
@@ -369,6 +380,9 @@ export const MultipleObservationBearingDiagramLabelWith00Precision: Story = {
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toBeDisabled();
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("");
     await expect(await canvas.findByLabelText("Hide 00")).toBeEnabled();
+    await expect(await canvas.findByLabelText("Hide 00")).toBeChecked();
+    await expect(await canvas.findAllByLabelText("Indeterminate Check")).toHaveLength(2);
+    ("suppressSeconds");
     canvas
       .getByTestId("button-group")
       .querySelectorAll("button")
@@ -392,6 +406,7 @@ const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelProp
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: "suppressSeconds",
   },
   {
     id: "2",
@@ -406,6 +421,7 @@ const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelProp
     borderWidth: "1.4",
     textAlignment: "centerCenter",
     diagramId: "1",
+    displayFormat: undefined,
   },
 ];
 

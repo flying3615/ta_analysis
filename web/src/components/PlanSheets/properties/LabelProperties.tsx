@@ -1,6 +1,7 @@
 import { DisplayStateEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
 import clsx from "clsx";
+import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
@@ -18,10 +19,12 @@ import {
   fontOptions,
   fontSizeOptions,
   getCommonPropertyValue,
+  getTextAlignmentValues,
   getTextLengthErrorMessage,
   labelTypeOptions,
   someButNotAllHavePropertyValue,
   specialCharsRegex,
+  textAlignmentEnum,
   textLengthLimit,
 } from "./LabelPropertiesUtils";
 
@@ -44,6 +47,7 @@ export interface LabelPropertiesData {
   textAlignment: string;
   diagramId: string | undefined;
   elementType: PlanElementType;
+  displayFormat: string | undefined;
 }
 
 export type PanelValuesToUpdate = {
@@ -117,25 +121,22 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   );
   const [isBold, setIsBold] = useState<boolean>();
   const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
-  const [hide00, setHide00] = useState<boolean>(false);
+  const [hide00, setHide00] = useState<boolean>();
   const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "font"));
   const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "fontSize"));
   const [textRotation, setTextRotation] = useState<string | undefined>(
     getCommonPropertyValue(selectedLabels, "textRotation"),
   );
-  const [textRotationError, setTextRotationError] = useState<string>();
-  const [justify, setJustify] = useState(1);
+  const textAlignemntValues = getTextAlignmentValues(selectedLabels);
+  const [justify, setJustify] = useState(
+    isEmpty(textAlignemntValues) || isNil(textAlignemntValues[0])
+      ? 1 // if no textAlignemtValues, default to left
+      : textAlignmentEnum[textAlignemntValues[0] as keyof typeof textAlignmentEnum],
+  );
   const [hasBorder, setHasBorder] = useState<boolean>(selectedLabels.some((item) => item.borderWidth !== undefined));
   const [borderWidth, setBorderWidth] = useState<string | undefined>(
     getCommonPropertyValue(selectedLabels, "borderWidth"),
   );
-
-  const validateTextRotationInput = (value: string) => {
-    const regex = /^[0-9]*\.?[0-9]*$/; // allows only decimal numbers
-    !regex.test(value)
-      ? setTextRotationError("Text rotation must be in decimal degrees")
-      : setTextRotationError(undefined);
-  };
 
   const textLengthErrorMessage = labelText ? getTextLengthErrorMessage(labelText.length - textLengthLimit) : "";
   const hasError = labelText && (labelText.length > textLengthLimit || specialCharsRegex.test(labelText));
@@ -234,6 +235,11 @@ const LabelProperties = (props: LabelPropertiesProps) => {
           {labelType === LabelDTOLabelTypeEnum.obsBearing && (
             <span style={{ flex: "1 1 35%", marginLeft: "8px" }}>
               <LuiCheckboxInput
+                // if any of the elements has displayFormat "suppressSeconds", but not all, show indeterminate state
+                isIndeterminate={
+                  someButNotAllHavePropertyValue(selectedLabels, "displayFormat", "suppressSeconds") &&
+                  hide00 === undefined
+                }
                 label="Hide 00"
                 value=""
                 onChange={(e) => {
@@ -241,8 +247,8 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                   setHide00(newValue);
                   setPanelValuesToUpdate({ ...panelValuesToUpdate, hide00: newValue });
                 }}
-                isChecked={hide00}
-                isDisabled={labelType !== LabelDTOLabelTypeEnum.obsBearing || !allHave00(selectedLabels)}
+                isChecked={hide00 ?? selectedLabels.some((item) => item.displayFormat?.includes("suppressSeconds"))}
+                isDisabled={!allHave00(selectedLabels)}
               />
             </span>
           )}
@@ -287,16 +293,15 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Text angle (degrees)</span>
         <LuiTextInput
+          inputProps={{ type: "number", step: "any" }}
           label=""
           hideLabel
           value={textRotation}
           onChange={(e) => {
             const newValue = e.target.value;
-            validateTextRotationInput(newValue);
             setTextRotation(newValue);
             setPanelValuesToUpdate({ ...panelValuesToUpdate, textRotation: newValue });
           }}
-          error={textRotationError}
         />
       </div>
 
@@ -306,7 +311,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
           <LuiButton
             onClick={() => {
               setJustify(1);
-              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "left" });
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textLeft" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 1 ? `lui-button-active` : "")}
             disabled={!areAllPageLabels(selectedLabels)}
@@ -316,7 +321,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
           <LuiButton
             onClick={() => {
               setJustify(2);
-              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "center" });
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textCenter" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 2 ? `lui-button-active` : "")}
             disabled={!areAllPageLabels(selectedLabels)}
@@ -326,7 +331,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
           <LuiButton
             onClick={() => {
               setJustify(3);
-              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "right" });
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textRight" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 3 ? `lui-button-active` : "")}
             disabled={!areAllPageLabels(selectedLabels)}

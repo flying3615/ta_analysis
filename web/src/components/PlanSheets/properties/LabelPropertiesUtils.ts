@@ -45,6 +45,12 @@ export const borderWidthOptions: SelectOptions[] = [
   { value: "2", label: "2" },
 ];
 
+export const textAlignmentEnum = {
+  textLeft: 1,
+  textCenter: 2,
+  textRight: 3,
+};
+
 export const getCommonPropertyValue = <T extends keyof LabelPropertiesData>(
   arr: LabelPropertiesData[],
   property: T,
@@ -84,6 +90,17 @@ export const anyHasDisplayState = (arr: LabelPropertiesData[], displayStates: st
   return arr.some((item) => displayStates.includes(item.displayState));
 };
 
+export const getTextAlignmentValues = (arr: LabelPropertiesData[]) => {
+  return ["textRight", "textCenter"].filter((value) => arr.some((item) => item.textAlignment.includes(value)));
+};
+
+const cleanTextAlignment = (textAlignment: string) => {
+  return textAlignment
+    .replace(/textLeft|textCenter|textRight/g, "") // remove textLeft, textCenter, textRight
+    .replace(/^,+|,+$/g, "") // trim commas from start and end
+    .trim();
+};
+
 export const createLabelPropsToBeSaved = (
   panelValuesToUpdate: PanelValuesToUpdate,
   selectedLabel: LabelPropertiesData,
@@ -96,7 +113,9 @@ export const createLabelPropsToBeSaved = (
   if ("displayState" in panelValuesToUpdate) {
     newObj.displayState = panelValuesToUpdate.displayState as DisplayStateEnum;
   }
-
+  if ("hide00" in panelValuesToUpdate) {
+    newObj.displayFormat = panelValuesToUpdate.hide00 ? "suppressSeconds" : undefined;
+  }
   if ("isBold" in panelValuesToUpdate) {
     newObj.fontStyle = panelValuesToUpdate.isBold
       ? selectedLabel.fontStyle === "italic"
@@ -112,12 +131,19 @@ export const createLabelPropsToBeSaved = (
   if ("fontSize" in panelValuesToUpdate) {
     newObj.fontSize = Number(panelValuesToUpdate.fontSize);
   }
-  // if ("rotationAngle" in panelValuesToUpdate) {
-  //   newObj.rotationAngle = Number(panelValuesToUpdate.textRotation);
-  // }
-  // if ("justify" in panelValuesToUpdate) {
-  //   newObj.textAlignment = panelValuesToUpdate.justify;
-  // }
+  if ("textRotation" in panelValuesToUpdate) {
+    const textRotation = Number(panelValuesToUpdate.textRotation);
+    const rotationAngle = ((textRotation % 360) + 360) % 360; // normalize angle to a value between 0 and 360
+    newObj.rotationAngle = parseFloat(rotationAngle.toFixed(4));
+  }
+  if ("justify" in panelValuesToUpdate) {
+    if (panelValuesToUpdate.justify === "textLeft") {
+      newObj.textAlignment = cleanTextAlignment(selectedLabel.textAlignment);
+    }
+    if (["textCenter", "textRight"].includes(panelValuesToUpdate.justify ?? "")) {
+      newObj.textAlignment = `${cleanTextAlignment(selectedLabel.textAlignment)},${panelValuesToUpdate.justify}`;
+    }
+  }
   if ("borderWidth" in panelValuesToUpdate) {
     newObj.borderWidth = panelValuesToUpdate.borderWidth ? Number(panelValuesToUpdate.borderWidth) : undefined;
   }

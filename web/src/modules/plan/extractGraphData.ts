@@ -55,6 +55,7 @@ export const labelToNode = (label: LabelDTO): INodeData => {
       textAlignment: label.textAlignment,
       borderWidth: label.borderWidth,
       displayState: label.displayState,
+      displayFormat: label.displayFormat,
       featureId: label.featureId,
       featureType: label.featureType,
       ...(isSymbol(label) && { symbolId: label.displayText }),
