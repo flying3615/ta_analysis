@@ -43,6 +43,22 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
   return { processedBlob, name: imageFile.name };
 };
 
+/*
+  Compress the image file to 1MB
+
+ */
+export const compressImage = async (imageFile: ImageFile) => {
+  const file = new File([imageFile.blob], imageFile.name, { type: imageFile.blob.type });
+  // Compress the Blob using browser-image-compression
+  const options = {
+    maxSizeMB: 1, // Maximum file size in MB
+    fileType: "image/jpeg", // Output file type
+    useWebWorker: true,
+  };
+  const compressedImage = await imageCompression(file, options);
+  return { compressedImage, name: imageFile.name };
+};
+
 /**
  * This function generates a blank jpeg image with the specified width and height.
  *

@@ -4,7 +4,6 @@ import { DisplayStateEnum, LabelDTOLabelTypeEnum, PlanCompileRequest } from "@li
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
 import { useToast } from "@linzjs/lui";
-import { wait } from "@linzjs/step-ag-grid";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
@@ -34,7 +33,7 @@ import {
 } from "@/modules/plan/extractGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
-import { convertImageDataTo1Bit, generateBlankJpegBlob } from "@/util/imageUtil";
+import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
 
 export interface PlanGenCompilation {
   startCompile: () => Promise<void>;
@@ -91,7 +90,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
   useEffect(() => {
     if (compilePlanIsSuccess) {
-      console.log("Compile plan process has successfully been initiated.");
+      console.log("Compile plan process has successfully completed.");
     }
   }, [compilePlanIsSuccess]);
 
@@ -147,11 +146,11 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   };
 
   const startCompile = async () => {
+    setCompiling(true);
     const preCheckPassed = await preCheckResult();
     if (preCheckPassed) {
       if (preCheckPassed.hasPlanGenRanBefore) {
         if (await showPrefabModal(warning126024_planGenHasRunBefore)) {
-          await wait(0);
           await continueCompile();
         }
       } else {
@@ -159,11 +158,14 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
       }
     } else {
       console.log("Pre-compile plan check failed.");
+      setCompiling(false);
       return;
     }
+    setCompiling(false);
   };
 
   const continueCompile = async () => {
+    console.log("Compile plan process has started.");
     if (!cyRef.current || !cyMapper.current) {
       console.error("cytoscape instance is not available");
       return;
@@ -171,14 +173,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
     try {
-      setCompiling(true);
-
-      const processFilesGroupPromises = Object.values(PlanSheetTypeObject).map(async (obj) => {
+      const processFilesGroup = Object.values(PlanSheetTypeObject).map((obj): ImageFile[] => {
         const imageFiles: ImageFile[] = [];
         const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
-
-        let firstTimeExport = true;
 
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
@@ -215,8 +213,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           if (nodeData.length === 0 && edgeData.length === 0) {
             // generate a blank 100x100 white image for empty page
-            const blob = await generateBlankJpegBlob(100, 100);
-            imageFiles.push({ name: imageName, blob: blob });
+            void generateBlankJpegBlob(100, 100).then((blob) => {
+              imageFiles.push({ name: imageName, blob: blob });
+            });
+
             continue;
           }
 
@@ -240,40 +240,29 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             quality: 1,
           });
 
-          // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
-          // so here we just rerun the export for each pages
-          if (firstTimeExport) {
-            currentPageNumber--;
-            firstTimeExport = false;
-            continue;
-          }
-
           imageFiles.push({ name: imageName, blob: jpg });
-          firstTimeExport = true;
-
           cyRefCurrent.remove(cyRefCurrent.elements());
           cyRefCurrent?.removeAllListeners();
         }
         return imageFiles;
       });
 
-      const imageFiles = (await Promise.all(processFilesGroupPromises)).flat();
-      await generateCompilation(imageFiles);
+      await generateCompilation(processFilesGroup.flat());
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
       console.error(e);
-      setCompiling(false);
     } finally {
       cyRef.current?.off("add");
+      setCompiling(false);
     }
   };
 
   const generateCompilation = async (imageFiles: ImageFile[]) => {
     try {
-      const processUploadJobs = imageFiles.map(async (f) => {
+      const processUploadJobs = imageFiles.map(async (imageFile) => {
         try {
-          const file = await convertImageDataTo1Bit(f);
-          return await secureFileUploadClient.uploadFile(file.processedBlob);
+          const image = await compressImage(imageFile);
+          return await secureFileUploadClient.uploadFile(image.compressedImage);
         } catch (e) {
           return Promise.reject(e);
         }
@@ -300,13 +289,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
         await compilePlan(planCompilationRequest);
       } else {
-        setCompiling(false);
         console.error("Failed to get access token");
       }
     } catch (e) {
       console.error(e);
-    } finally {
-      setCompiling(false);
     }
   };
 
