@@ -319,3 +319,9 @@ export const svgDataForSymbolFun =
       nodeShape: symbolSvg.nodeShape,
     };
   };
+
+export const getLabelText = (ele: cytoscape.NodeSingular) => {
+  return ele.data("labelType") === "obsBearing" && ele.data("displayFormat") === "suppressSeconds"
+    ? (ele.data("label") as string).replace(/00"/, "")
+    : (ele.data("label") as string);
+};

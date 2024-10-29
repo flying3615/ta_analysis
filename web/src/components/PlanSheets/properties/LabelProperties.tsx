@@ -83,16 +83,12 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       createLabelPropsToBeSaved(panelValuesToUpdate, label),
     );
 
-    // Update page labels
-    const pageLabelsToUpdate = labelsToUpdate.filter((label) =>
+    // Update diagram labels
+    const diagramLabelsToUpdate = labelsToUpdate.filter((label) =>
       selectedLabels.some(
-        (selectedLabel) => selectedLabel.id === label.id.toString() && selectedLabel.diagramId === undefined,
+        (selectedLabel) => selectedLabel.id === label.id.toString() && !isNil(selectedLabel.diagramId),
       ),
     );
-    dispatch(replacePage(updatePageLabels(activePage, pageLabelsToUpdate)));
-
-    // Update diagram labels
-    const diagramLabelsToUpdate = labelsToUpdate.filter((label) => !pageLabelsToUpdate.includes(label));
     const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabelsToUpdate.map((label) => {
       const selectedLabel = selectedLabels.find((selected) => selected.id === label.id.toString());
       return {
@@ -104,6 +100,12 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       };
     });
     dispatch(replaceDiagrams(updateDiagramLabels(diagrams, diagramLabelsToUpdateWithElemType)));
+
+    // Update page labels (do not apply onDataChanging as it is already done in replaceDiagrams, so the undo button works correctly)
+    const pageLabelsToUpdate = labelsToUpdate.filter((label) => !diagramLabelsToUpdate.includes(label));
+    dispatch(
+      replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
+    );
   }, [panelValuesToUpdate, activePage, diagrams, selectedLabels, dispatch]);
 
   useEffect(() => {

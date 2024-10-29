@@ -8,6 +8,7 @@ import {
   circleLabel,
   fontStyle,
   fontWeight,
+  getLabelText,
   LABEL_PADDING_PX,
   scaledFontSize,
   svgDataForSymbolFun,
@@ -47,7 +48,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   const hotPink = "rgba(248, 27, 239, 1)";
 
   const labelBaseStyle = {
-    label: "data(label)",
+    label: (ele: cytoscape.NodeSingular) => getLabelText(ele),
     "line-height": 1,
     "text-wrap": "wrap",
     "text-max-width": "8000px",

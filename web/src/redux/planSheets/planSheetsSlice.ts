@@ -86,10 +86,11 @@ const planSheetsSlice = createSlice({
         state.diagrams[index] = diagram;
       });
     },
-    replacePage: (state, action: PayloadAction<PageDTO>) => {
-      onDataChanging(state);
-      const index = state.pages.findIndex((page) => page.id === action.payload.id);
-      state.pages[index] = action.payload;
+    replacePage: (state, action: PayloadAction<{ updatedPage: PageDTO; applyOnDataChanging?: boolean }>) => {
+      const { updatedPage, applyOnDataChanging } = action.payload;
+      (applyOnDataChanging ?? true) && onDataChanging(state);
+      const index = state.pages.findIndex((page) => page.id === updatedPage.id);
+      state.pages[index] = updatedPage;
     },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;

@@ -109,14 +109,20 @@ export const PageLabelInput = () => {
     if (planMode === PlanMode.SelectLabel) {
       if (labelText && labelText !== labelRef.current?.label) {
         dispatch(
-          replacePage(updatePageLabels(activePage, [{ id: Number(labelRef.current?.id), displayText: labelText }])),
+          replacePage({
+            updatedPage: updatePageLabels(activePage, [{ id: Number(labelRef.current?.id), displayText: labelText }]),
+          }),
         );
         dispatch(setPlanMode(PlanMode.Cursor));
       }
     } else if (planMode === PlanMode.AddLabel) {
       if (labelText && labelPosition) {
         const position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
-        dispatch(replacePage(addPageLabel(activePage, { id: maxPlanId + 1, displayText: labelText, position })));
+        dispatch(
+          replacePage({
+            updatedPage: addPageLabel(activePage, { id: maxPlanId + 1, displayText: labelText, position }),
+          }),
+        );
         dispatch(setPlanMode(PlanMode.Cursor));
       }
     }

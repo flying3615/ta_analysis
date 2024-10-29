@@ -79,7 +79,7 @@ export function usePlanSheetsDispatch(): PlanSheetsDispatch {
         dispatch(replaceDiagrams(updatedDiagrams));
       }
       if (updatedPage && updatedPage !== activePage) {
-        dispatch(replacePage(updatedPage));
+        dispatch(replacePage({ updatedPage }));
       }
     },
     [activeDiagrams, activePage, dispatch],
