@@ -244,7 +244,7 @@ export class PlanDataBuilder {
     effect: string = "none",
     displayState: DisplayStateEnum = DisplayStateEnum.display,
     symbolType: string | undefined = undefined,
-    textAlignment: string | undefined = undefined,
+    textAlignment: string | undefined = "centerCenter",
     borderWidth: number | undefined = undefined,
   ) {
     if (this.planData.diagrams.length === 0) {

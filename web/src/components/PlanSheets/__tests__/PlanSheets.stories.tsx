@@ -561,6 +561,10 @@ const COORDINATE_10001_Y = 136;
 
 const COORDINATE_10004_X = 733;
 const COORDINATE_10004_Y = 456;
+
+const LABEL_14_X = 493;
+const LABEL_14_Y = 269;
+
 export const SelectDiagram: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -825,5 +829,30 @@ export const SelectMarkAndLinkedLabel: Story = {
 
     await checkElementProperties("#10001", "rgb(248,27,239)", "outline-color", "related-label-selected");
     await checkElementProperties("#11", "rgb(248,27,239)", "text-background-color", "related-element-selected");
+  },
+};
+
+export const RotateDiagramLabel: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    clickAtCoordinates(cytoscapeNodeLayer, LABEL_14_X, LABEL_14_Y, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const rotateLabelMenuItem = await canvas.findByText("Rotate label");
+    await userEvent.hover(rotateLabelMenuItem);
+    await sleep(500);
+
+    const rangeInput = await canvas.findByRole("slider");
+
+    fireEvent.change(rangeInput, { target: { value: 50 } });
+    fireEvent.mouseOut(rotateLabelMenuItem);
   },
 };
