@@ -12,8 +12,8 @@ INSERT INTO crs_survey (wrk_id, ldt_loc_id, dataset_series, dataset_id, type_of_
                         certified_date, registered_date, chf_sur_amnd_date, dlr_amnd_date, cadastral_surv_acc,
                         prior_wrk_id, abey_prior_status, fhr_id, pnx_id_submitted, audit_id, usr_id_sol_firm, sig_id,
                         xml_uploaded, xsv_id, alt_survey_no)
-VALUES (5000062, 1011, 'LT', '5100035', 'SRVY', 'ESUR', 1, NULL, 'PlangenE2EFresh61', '5',
-        'Plangen E2E test fresh data 2', NULL, NULL, NULL, NULL, NULL, NULL, 'Y', NULL, NULL, NULL, NULL, 50000620,
+VALUES (5000062, 1011, 'LT', '5100036', 'SRVY', 'ESUR', 1, NULL, 'PlangenE2EFresh62', '5',
+        'Plangen E2E test fresh data 3', NULL, NULL, NULL, NULL, NULL, NULL, 'Y', NULL, NULL, NULL, NULL, 50000620,
         NULL, NULL, 'Y', NULL, NULL);
 
 INSERT INTO cpl_transaction (id, status, last_edited, usr_id_created, crs_sur_wrk_id, alt_id, audit_id, regen_state,
@@ -233,15 +233,15 @@ VALUES (5000062, 1027);
 
 INSERT INTO crs_lw_rel_editor (id, usr_id_related, related_person_typ, related_category, ttin_id, zsur_ztrn_id,
                                usr_id_rel_firm, related_role, related_multi_role_id)
-VALUES (52100950, 'extsurv1', 'SURV', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
+VALUES (52100953, 'extsurv1', 'SURV', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
 
 INSERT INTO crs_lw_rel_editor (id, usr_id_related, related_person_typ, related_category, ttin_id, zsur_ztrn_id,
                                usr_id_rel_firm, related_role, related_multi_role_id)
-VALUES (52100951, 'extsurv1', 'ENBL', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
+VALUES (52100954, 'extsurv1', 'ENBL', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
 
 INSERT INTO crs_lw_rel_editor (id, usr_id_related, related_person_typ, related_category, ttin_id, zsur_ztrn_id,
                                usr_id_rel_firm, related_role, related_multi_role_id)
-VALUES (52100952, 'extsurv1', 'PCNT', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
+VALUES (52100955, 'extsurv1', 'PCNT', 'SURV', NULL, 5000062, 'firm4', NULL, 1);
 
 -- Note no cpg_xml_file rows
 
