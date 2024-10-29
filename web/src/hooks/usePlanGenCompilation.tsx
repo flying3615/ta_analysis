@@ -55,6 +55,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   const transactionId = useTransactionId();
   const { showPrefabModal } = useLuiModalPrefab();
 
+  const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const {
     mutateAsync: compilePlan,
     isSuccess: compilePlanIsSuccess,
@@ -151,6 +153,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     if (preCheckPassed) {
       if (preCheckPassed.hasPlanGenRanBefore) {
         if (await showPrefabModal(warning126024_planGenHasRunBefore)) {
+          await wait(10); // wait for the modal to close, allow the event loop to run
           await continueCompile();
         }
       } else {
@@ -173,11 +176,12 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
     try {
-      const processFilesGroup = Object.values(PlanSheetTypeObject).map((obj): ImageFile[] => {
+      const processFilesGroup = Object.values(PlanSheetTypeObject).map(async (obj): Promise<ImageFile[]> => {
         const imageFiles: ImageFile[] = [];
         const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
 
+        let firstTimeExport = true;
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
@@ -240,14 +244,23 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             quality: 1,
           });
 
+          // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
+          // so here we just rerun the export for each pages
+          await wait(10); // wait for the event loop to run
+          if (firstTimeExport) {
+            currentPageNumber--;
+            firstTimeExport = false;
+            continue;
+          }
           imageFiles.push({ name: imageName, blob: jpg });
+          firstTimeExport = true;
           cyRefCurrent.remove(cyRefCurrent.elements());
           cyRefCurrent?.removeAllListeners();
         }
         return imageFiles;
       });
-
-      await generateCompilation(processFilesGroup.flat());
+      const imageFiles = (await Promise.all(processFilesGroup)).flat();
+      await generateCompilation(imageFiles);
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
       console.error(e);
