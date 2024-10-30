@@ -54,9 +54,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   const processingModal = useRef<PromiseWithResolve<boolean>>();
   const transactionId = useTransactionId();
   const { showPrefabModal } = useLuiModalPrefab();
-
-  const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const {
     mutateAsync: compilePlan,
     isSuccess: compilePlanIsSuccess,
@@ -153,7 +150,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     if (preCheckPassed) {
       if (preCheckPassed.hasPlanGenRanBefore) {
         if (await showPrefabModal(warning126024_planGenHasRunBefore)) {
-          await wait(10); // wait for the modal to close, allow the event loop to run
           await continueCompile();
         }
       } else {
@@ -176,7 +172,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
     try {
-      const processFilesGroup = Object.values(PlanSheetTypeObject).map(async (obj): Promise<ImageFile[]> => {
+      const processFilesGroup = Object.values(PlanSheetTypeObject).map((obj): ImageFile[] => {
         const imageFiles: ImageFile[] = [];
         const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
@@ -246,7 +242,6 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           // This is a workaround to fix the issue sometimes the first exported image doesn't have bg images rendered in cytoscape
           // so here we just rerun the export for each pages
-          await wait(10); // wait for the event loop to run
           if (firstTimeExport) {
             currentPageNumber--;
             firstTimeExport = false;
@@ -259,7 +254,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
         }
         return imageFiles;
       });
-      const imageFiles = (await Promise.all(processFilesGroup)).flat();
+      const imageFiles = processFilesGroup.flat();
       await generateCompilation(imageFiles);
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
