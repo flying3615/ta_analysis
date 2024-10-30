@@ -319,6 +319,7 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Align label to line",
               "Move to page",
               "Rotate label",
@@ -327,7 +328,7 @@ describe("PlanSheetsContextMenu", () => {
               "Paste",
               "Delete",
             ]);
-            expect(labelMenuItems?.[9]?.disabled).toBeFalsy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeFalsy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
@@ -365,13 +366,14 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
               "Paste",
               "Delete",
             ]);
-            expect(labelMenuItems?.[8]?.disabled).toBeFalsy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeFalsy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
@@ -407,6 +409,7 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Align label to line",
               "Move to page",
               "Rotate label",
@@ -415,7 +418,7 @@ describe("PlanSheetsContextMenu", () => {
               "Paste",
               "Delete",
             ]);
-            expect(labelMenuItems?.[9]?.disabled).toBeTruthy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
@@ -455,14 +458,14 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
               "Paste",
               "Delete",
             ]);
-            //Delete item is disabled
-            expect(labelMenuItems?.[7]?.disabled).toBeTruthy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
@@ -502,14 +505,14 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
               "Paste",
               "Delete",
             ]);
-            //Delete item is disabled
-            expect(labelMenuItems?.[7]?.disabled).toBeTruthy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
@@ -544,14 +547,14 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
+              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
               "Paste",
               "Delete",
             ]);
-            //Delete item is disabled
-            expect(labelMenuItems?.[7]?.disabled).toBeTruthy();
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),

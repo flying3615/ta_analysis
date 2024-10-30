@@ -232,7 +232,19 @@ export const usePlanSheetsContextMenu = () => {
         { title: "Original location", callback: originalLocation },
         { title: "Show", hideWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE },
         { title: "Properties", callback: getProperties },
-        ...(singleSelected ? [{ title: "Align label to line", divider: true, callback: alignLabelToLine }] : []),
+        {
+          title: "Select (coming soon)",
+          divider: true,
+          disabled: true,
+          // submenu: [
+          // { title: "Observation distance" },
+          // { title: "Observation bearing" },
+          // { title: "Observation code" },
+          // { title: "All" },
+          // ],
+        },
+        // Add the "Rotate label" menu item only if singleSelected is true
+        ...(singleSelected ? [{ title: "Align label to line", callback: alignLabelToLine }] : []),
         { title: "Move to page", callback: movetoPage },
         ...(singleSelected
           ? [{ title: "Rotate label", submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }] }]

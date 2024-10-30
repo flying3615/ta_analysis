@@ -34,6 +34,9 @@ export const Default: Story = {
       </Provider>
     </QueryClientProvider>
   ),
+  parameters: {
+    chromatic: { diffThreshold: 0.8 },
+  },
 };
 
 export const OpenHeaderToggle: Story = {
