@@ -136,6 +136,7 @@ export const LabelsManagementGrid = ({
   return (
     <>
       <Grid
+        sizeColumns="none"
         selectable={false}
         singleClickEdit={true}
         rowSelection="single"

@@ -124,6 +124,6 @@ export const MaintainIndividualUserDefinedDiagramsDefault: Story = {
   },
 };
 MaintainIndividualUserDefinedDiagramsDefault.play = async () => {
-  const maintainIndividualUserDefinedDiagramsTab = await screen.findByText("Maintain individual user defined diagrams");
+  const maintainIndividualUserDefinedDiagramsTab = await screen.findByText("Individual user-defined diagram");
   await userEvent.click(maintainIndividualUserDefinedDiagramsTab);
 };

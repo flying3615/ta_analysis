@@ -43,9 +43,10 @@ export const MaintainDiagramsPanel = ({ transactionId, selectedDiagramIds }: Mai
   return (
     <LuiTabsContext.Provider value={{ activePanel, setActivePanel }}>
       <Panel
-        title="Maintain diagram layers"
+        title="Maintain diagram layers by"
         position="center"
         size={{ width: 860, height: 650 }}
+        maxHeight="90%"
         className="MaintainDiagramsPanel"
         modal={true}
       >
@@ -56,9 +57,9 @@ export const MaintainDiagramsPanel = ({ transactionId, selectedDiagramIds }: Mai
           disableClose={true}
           extraLeft={
             <LuiTabsGroup ariaLabel="Tabs">
-              <LuiTabsPanelSwitch targetPanel={maintainDiagramsByType}>Diagrams</LuiTabsPanelSwitch>
+              <LuiTabsPanelSwitch targetPanel={maintainDiagramsByType}>Diagram type</LuiTabsPanelSwitch>
               <LuiTabsPanelSwitch targetPanel={maintainDiagramsById}>
-                Maintain individual user defined diagrams
+                Individual user-defined diagram
               </LuiTabsPanelSwitch>
             </LuiTabsGroup>
           }

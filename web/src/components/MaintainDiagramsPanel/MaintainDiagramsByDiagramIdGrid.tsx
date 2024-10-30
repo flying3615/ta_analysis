@@ -179,6 +179,7 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
         />
       </div>
       <Grid
+        sizeColumns="none"
         loading={diagramLoading || isEmpty(diagramsById)}
         selectable={false}
         singleClickEdit={true}

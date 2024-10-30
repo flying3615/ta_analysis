@@ -1,8 +1,9 @@
 import "./LabelPreferencesPanel.scss";
 
-import { LuiLoadingSpinner, LuiTabs, LuiTabsGroup, LuiTabsPanel, LuiTabsPanelSwitch } from "@linzjs/lui";
+import { LuiLoadingSpinner, LuiTabsContext, LuiTabsGroup, LuiTabsPanel, LuiTabsPanelSwitch } from "@linzjs/lui";
 import { GridContextProvider, GridUpdatingContextProvider } from "@linzjs/step-ag-grid";
 import { Panel, PanelContent, PanelHeader } from "@linzjs/windows";
+import { useState } from "react";
 
 import { useUserLabelPreferences } from "@/components/LabelPreferencesPanel/labelPreferences";
 import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
@@ -15,16 +16,19 @@ export interface LabelPreferencesPanelProps {
 }
 
 export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelProps) => {
+  const [activePanel, setActivePanel] = useState(labelsForThisPlan);
+
   const { data: queryData, isLoading } = useUserLabelPreferences({ transactionId });
 
   return !queryData || isLoading ? (
     <LuiLoadingSpinner />
   ) : (
-    <LuiTabs defaultPanel={labelsForThisPlan}>
+    <LuiTabsContext.Provider value={{ activePanel, setActivePanel }}>
       <Panel
         title="Label preferences"
         position="center"
         size={{ width: 860, height: 802 }}
+        maxHeight="90%"
         className="LabelPreferencesPanel"
         modal={true}
       >
@@ -67,6 +71,6 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
           </LuiTabsPanel>
         </PanelContent>
       </Panel>
-    </LuiTabs>
+    </LuiTabsContext.Provider>
   );
 };

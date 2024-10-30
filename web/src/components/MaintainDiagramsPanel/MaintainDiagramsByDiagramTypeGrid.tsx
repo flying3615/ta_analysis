@@ -151,6 +151,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
         />
       </div>
       <Grid
+        sizeColumns="none"
         loading={diagramByTypeLoading || isEmpty(diagramsByType)}
         selectable={false}
         singleClickEdit={true}
