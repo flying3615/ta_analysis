@@ -219,7 +219,9 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                   disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
                   value={props.data.length === 1 ? labelText : ""}
                   onChange={(e) => {
-                    setLabelText(e.target.value);
+                    const newValue = e.target.value;
+                    setLabelText(newValue);
+                    setPanelValuesToUpdate({ ...panelValuesToUpdate, labelText: newValue });
                   }}
                   className={clsx("PageLabelInput labelTextarea", { error: hasError })}
                   data-testid="label-textarea"
