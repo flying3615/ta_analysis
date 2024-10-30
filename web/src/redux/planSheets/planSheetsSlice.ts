@@ -14,6 +14,7 @@ export interface PlanSheetsState {
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
   planMode: PlanMode;
+  alignedLabelNodeId?: string;
   diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
   // undo buffer
@@ -117,6 +118,9 @@ const planSheetsSlice = createSlice({
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
+    },
+    setAlignedLabelNodeId: (state, action: PayloadAction<{ nodeId: string }>) => {
+      state.alignedLabelNodeId = action.payload.nodeId;
     },
     setDiagramIdToMove: (state, action: PayloadAction<number | undefined>) => {
       state.diagramIdToMove = action.payload;
@@ -237,6 +241,7 @@ const planSheetsSlice = createSlice({
     getOriginalPositions: (state) => state.originalPositions,
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
+    getAlignedLabelNodeId: (state) => state.alignedLabelNodeId,
     getDiagramIdToMove: (state) => state.diagramIdToMove,
     getPreviousAttributesForDiagram:
       (state) =>
@@ -257,6 +262,7 @@ export const {
   setDiagramPageRef,
   updatePages,
   setPlanMode,
+  setAlignedLabelNodeId,
   setDiagramIdToMove,
   setSymbolHide,
   setPreviousDiagramAttributes,
@@ -283,6 +289,7 @@ export const {
   getOriginalPositions,
   hasChanges,
   getPlanMode,
+  getAlignedLabelNodeId,
   getDiagramIdToMove,
   getPreviousAttributesForDiagram,
   canUndo,

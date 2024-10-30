@@ -622,7 +622,7 @@ export const MoveDiagramToPage: Story = {
     clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
-    const menuLink = await canvas.findByText("Move to page...");
+    const menuLink = await canvas.findByText("Move to page");
     await userEvent.click(menuLink);
     await sleep(500);
   },

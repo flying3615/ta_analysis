@@ -16,7 +16,13 @@ import {
   textRotationClockwiseFromH,
 } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK, GREYED_FOREGROUND_COLOUR } from "@/modules/plan/styling";
+import {
+  ELEMENT_HOVERED_COLOR,
+  ELEMENT_SELECTED_COLOR,
+  FOREGROUND_COLOUR,
+  FOREGROUND_COLOUR_BLACK,
+  GREYED_FOREGROUND_COLOUR,
+} from "@/modules/plan/styling";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
@@ -44,8 +50,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     width: widthPixels,
     height: heightPixels,
   };
-
-  const hotPink = "rgba(248, 27, 239, 1)";
 
   const labelBaseStyle = {
     label: (ele: cytoscape.NodeSingular) => getLabelText(ele),
@@ -126,7 +130,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         "outline-width": 2,
         "outline-offset": 2,
-        "outline-color": hotPink,
+        "outline-color": ELEMENT_SELECTED_COLOR,
         "outline-opacity": 0.5,
         "background-image-containment": "over",
       },
@@ -197,9 +201,9 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "edge:selected, edge.related-label-selected",
       style: {
-        "line-color": hotPink,
-        "source-arrow-color": hotPink,
-        "target-arrow-color": hotPink,
+        "line-color": ELEMENT_SELECTED_COLOR,
+        "source-arrow-color": ELEMENT_SELECTED_COLOR,
+        "target-arrow-color": ELEMENT_SELECTED_COLOR,
       },
     },
   ] as Stylesheet[];
@@ -235,7 +239,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       // Node with label selected
       selector: "node:selected.selectable-label, node[label].related-element-selected",
       style: {
-        "text-background-color": hotPink,
+        "text-background-color": ELEMENT_SELECTED_COLOR,
         "text-background-opacity": 0.5,
         "text-background-shape": "roundrectangle",
         "text-outline-opacity": 0.8,
@@ -244,7 +248,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: "node[label][^symbolId].selectable-label.hover",
       style: {
-        color: "#0099FF",
+        color: ELEMENT_HOVERED_COLOR,
       },
     },
     {
@@ -338,14 +342,22 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       selector: `edge.diagram-control`,
       style: {
-        "line-color": hotPink,
+        "line-color": ELEMENT_SELECTED_COLOR,
+        width: 1,
+      },
+    },
+    // hover edge
+    {
+      selector: `edge.hover`,
+      style: {
+        "line-color": ELEMENT_HOVERED_COLOR,
         width: 1,
       },
     },
     {
       selector: `node.diagram-control`,
       style: {
-        "background-color": hotPink,
+        "background-color": ELEMENT_SELECTED_COLOR,
         "background-opacity": 1,
         height: 8,
         width: 8,
@@ -355,7 +367,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: `.selected-diagram`,
       style: {
         "background-opacity": 0.2,
-        "background-color": hotPink,
+        "background-color": ELEMENT_SELECTED_COLOR,
         height: "data(height)",
         shape: "rectangle",
         width: "data(width)",

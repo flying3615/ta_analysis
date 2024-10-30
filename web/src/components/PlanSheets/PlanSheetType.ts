@@ -24,6 +24,7 @@ export enum PlanMode {
   AddLine = "Add line",
   FormatLinesText = "Format lines text",
   SelectRectangle = "Select Rectangle",
+  SelectTargetLine = "Select Target Line",
 }
 
 export enum PlanStyleClassName {

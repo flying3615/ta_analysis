@@ -180,10 +180,10 @@ const PlanSheets = () => {
               nodeData={nodeData}
               edgeData={edgeData}
               diagrams={activeDiagrams}
+              selectionSelector={selectionSelector}
               getContextMenuItems={(element, selectedCollection) =>
                 getMenuItemsForPlanElement(element, selectedCollection)
               }
-              selectionSelector={selectionSelector}
               applyClasses={applyClasses}
               data-testid="MainCytoscapeCanvas"
             />
@@ -194,7 +194,8 @@ const PlanSheets = () => {
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
           {(planMode === PlanMode.SelectCoordinates ||
             planMode === PlanMode.SelectLine ||
-            planMode === PlanMode.SelectLabel) && <SelectElementHandler mode={planMode} />}
+            planMode === PlanMode.SelectLabel ||
+            planMode === PlanMode.SelectTargetLine) && <SelectElementHandler mode={planMode} />}
           {(planMode === PlanMode.SelectLine || planMode === PlanMode.SelectLabel) && (
             <DeleteKeyHandler mode={planMode} />
           )}

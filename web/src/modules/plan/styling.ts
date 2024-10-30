@@ -22,6 +22,8 @@ const LABEL_SYMBOL_CIRCLE = "circle";
 export const GREYED_FOREGROUND_COLOUR = "#B0B0F0";
 export const FOREGROUND_COLOUR = "#000";
 export const FOREGROUND_COLOUR_BLACK = "#000";
+export const ELEMENT_SELECTED_COLOR = "rgba(248, 27, 239, 1)";
+export const ELEMENT_HOVERED_COLOR = "#0099FF";
 
 enum LabelEffect {
   NONE = "none",

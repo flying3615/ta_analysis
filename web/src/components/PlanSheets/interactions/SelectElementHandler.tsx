@@ -1,14 +1,20 @@
-import { CollectionReturnValue, EdgeSingular, EventObjectEdge, EventObjectNode, NodeSingular } from "cytoscape";
+import { CollectionReturnValue, EventObjectEdge, EventObjectNode } from "cytoscape";
 import { ReactElement, useEffect, useState } from "react";
 
+import { Tooltips } from "@/components/PlanSheets/interactions/Tooltips";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { useSelectTargetLine } from "@/hooks/useSelectTargetLine";
 
 import { MoveSelectedHandler } from "./MoveSelectedHandler";
-import { getRelatedLabels } from "./selectUtil";
+import { getRelatedElements, getRelatedLabels } from "./selectUtil";
 
-export type SelectHandlerMode = PlanMode.SelectCoordinates | PlanMode.SelectLabel | PlanMode.SelectLine;
+export type SelectHandlerMode =
+  | PlanMode.SelectCoordinates
+  | PlanMode.SelectLabel
+  | PlanMode.SelectLine
+  | PlanMode.SelectTargetLine;
 
 const CLASS_RELATED_ELEMENT_SELECTED = "related-element-selected"; // select related label
 
@@ -35,6 +41,7 @@ export interface SelectElementHandlerProps {
  */
 export function SelectElementHandler({ mode }: SelectElementHandlerProps): ReactElement {
   const { cyto } = useCytoscapeContext();
+  const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
 
   // track selection
@@ -75,9 +82,16 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
         return;
       }
+
+      if (mode === PlanMode.SelectTargetLine) {
+        event.target.isEdge() && handleLabelAlignment(event.target);
+        return;
+      }
+
       const clickedElement = event.target;
 
       const selected = cyto.elements(":selected");
+
       if (!selected.contains(clickedElement)) {
         // allow normal selection to occur
         return;
@@ -104,7 +118,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, mode]);
+  }, [cyto, handleLabelAlignment, mode]);
 
   // highlight related labels
   useEffect(() => {
@@ -120,7 +134,12 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     };
   }, [cyto, selected]);
 
-  return <>{selected && <MoveSelectedHandler selectedElements={selected} />}</>;
+  return (
+    <>
+      {selected && <MoveSelectedHandler selectedElements={selected} />}
+      <Tooltips mode={mode} />
+    </>
+  );
 }
 
 function getSelector(mode?: SelectHandlerMode) {
@@ -130,22 +149,10 @@ function getSelector(mode?: SelectHandlerMode) {
     return SELECTOR_LABELS;
   } else if (mode === PlanMode.SelectLine) {
     return SELECTOR_LINES;
+  } else if (mode === PlanMode.SelectTargetLine) {
+    return SELECTOR_LINES;
   }
 
   // TODO: "generic" to allow all types for first, then restrict?
   throw new Error(`SelectElementHandler mode=${mode} not implemented yet`);
-}
-
-function getRelatedElements(ele: EdgeSingular | NodeSingular): CollectionReturnValue | undefined {
-  if (ele.isEdge() && ele.data("lineId")) {
-    // include related broken/irregular segments
-    return ele.cy().$(`edge[lineId='${ele.data("lineId")}']`);
-  }
-
-  if (ele.isNode() && ele.data("featureId") && ele.data("symbolId")) {
-    // include coordinate for symbol
-    return ele.cy().$id((ele.data("featureId") as number).toString());
-  }
-
-  return;
 }

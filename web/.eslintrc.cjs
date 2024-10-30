@@ -75,6 +75,17 @@ module.exports = {
         ],
       },
     },
+    {
+      // Apply these settings to test files
+      files: ["**/__tests__/**/*.ts", "**/*.test.ts"],
+      env: {
+        jest: true, // Enable Jest global variables
+      },
+      rules: {
+        "@typescript-eslint/unbound-method": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+      },
+    },
   ],
   settings: {
     react: {

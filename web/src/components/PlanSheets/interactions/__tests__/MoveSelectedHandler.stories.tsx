@@ -4,9 +4,11 @@ import { userEvent, within } from "@storybook/testing-library";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import {
+  clickAtCoordinates,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   multiSelectAndDrag,
+  RIGHT_MOUSE_BUTTON,
   selectAndDrag,
   sleep,
   tabletLandscapeParameters,
@@ -83,5 +85,32 @@ export const MoveDiagramLabel: Story = {
       clientX: position2.clientX + 50,
       clientY: position2.clientY + 100,
     });
+  },
+};
+
+export const AlignLabelToLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+
+    // Location of a label (Label 14: {213,213}) in cytoscape pixels
+    clickAtCoordinates(cytoscapeNodeLayer, 213 + cyOffsetX, 213 + cyOffsetY, RIGHT_MOUSE_BUTTON);
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText("Align label to line");
+    await userEvent.click(propertiesMenuItem);
+    await sleep(500);
+
+    const middlePoint = { x: 98 + cyOffsetX, y: 183 + cyOffsetY };
+
+    // TODO: WIP fix mouse not move here...
+    clickAtCoordinates(cytoscapeNodeLayer, middlePoint.x, middlePoint.y);
+    await sleep(500);
   },
 };
