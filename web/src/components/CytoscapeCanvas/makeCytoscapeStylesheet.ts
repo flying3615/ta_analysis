@@ -212,13 +212,16 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     {
       // Node with label, circled
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]",
-      style: {
-        ...labelBaseStyle,
-        "background-image": (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
-        height: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).width,
-        width: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).height,
-        ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 12 }),
-      },
+      style: (() => {
+        return {
+          ...labelBaseStyle,
+          "background-image": (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).svg,
+          width: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).width,
+          height: (ele: cytoscape.NodeSingular) => circleLabel(ele, cytoscapeCoordinateMapper).height,
+          label: "",
+          ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 12 }),
+        };
+      })(),
     },
     {
       // Node with label

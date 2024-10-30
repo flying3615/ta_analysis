@@ -10,6 +10,7 @@ import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 export const LABEL_PADDING_PX = 1;
 export const CIRCLE_FACTOR = 1.1;
+const PIXELS_PER_CM = 37.79;
 
 const radiusForSquare = Math.sqrt(2.0);
 
@@ -28,6 +29,34 @@ export interface StyleData {
 function getStyleData(ele: cytoscape.NodeSingular): StyleData {
   return ele.data() as StyleData;
 }
+
+export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
+  const { font, fontSize, label } = getStyleData(ele);
+  if (!font || !fontSize || !label) {
+    return { height: 0, width: 0 };
+  }
+
+  const lines = label.split("\n");
+  // Use the presumed cytoscape canvas to measure
+  // text size in context
+  const cyCanvas = document.querySelector('canvas[data-id="layer2-node"]') as HTMLCanvasElement;
+  const cyContext = cyCanvas?.getContext("2d");
+
+  if (cyContext) {
+    cyContext.font = `${fontSize}px ${font}`; // order matters here
+    const lineSizes = lines.map((l: string) => cyContext.measureText(l));
+
+    const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
+    const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent - ls.fontBoundingBoxDescent));
+
+    return { height: height / PIXELS_PER_CM, width: width / PIXELS_PER_CM };
+  }
+
+  // Fallback if we couldn't get the canvas contex
+  const height = lines.length * fontSize;
+  const width = (max(lines.map((l: string) => l.length)) ?? 0) * fontSize;
+  return { height: height / PIXELS_PER_CM, width: width / PIXELS_PER_CM };
+};
 
 export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
   const { font, fontSize, label } = getStyleData(ele);
@@ -58,8 +87,8 @@ export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
   return { height, width };
 };
 
-export const textDiameter = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
-  const { height, width } = textDimensions(ele, cytoscapeCoordinateMapper);
+export const textDiameterCm = (ele: cytoscape.NodeSingular) => {
+  const { height, width } = textDimensionsCm(ele);
   const longestSide = max([height, width]) ?? 0;
 
   return 2 * (longestSide / radiusForSquare) * CIRCLE_FACTOR;
@@ -238,54 +267,47 @@ export const calculateTextAlignmentPolar = (
   return { textRadiusDist, textThetaRads };
 };
 
-export const calculateCircleSvgParams = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, circleSize: number) => {
-  const circleEdgePadding = 2; // pad to stop edge of SVG clipping circle
-
-  // Conversion from measured pixels to cytoscape coordinates
-  // Removes the effect of browser oom
-  const measurePixelsToCytoscape = cytoscapeCoordinateMapper.fontScaleFactor();
+export const calculateCircleSvgParamsCm = (diameterCm: number) => {
+  const circleEdgePadding = 2 / PIXELS_PER_CM; // pad to stop edge of SVG clipping circle
 
   // Calculate the width and height of the SVG in measured pixels without text alignment
   // The SVG is centred on the node and has to have room for the circle, hence the *2
-  const unscaledWidth = circleEdgePadding * 2 + circleSize;
-  const unscaledHeight = circleEdgePadding * 2 + circleSize;
-
-  // Scale these into cytoscape coordinates
-  const svgWidth = measurePixelsToCytoscape * unscaledWidth;
-  const svgHeight = measurePixelsToCytoscape * unscaledHeight;
-
-  // Calculate the centre of the circle in measured pixels without text alignment
-  const unscaledTextCentreX = unscaledWidth / 2;
-  const unscaledTextCentreY = unscaledHeight / 2;
-
-  // Scale the circle centre into cytoscape coordinates
-  const svgCentreX = measurePixelsToCytoscape * unscaledTextCentreX;
-  const svgCentreY = measurePixelsToCytoscape * unscaledTextCentreY;
+  const unscaledDiameter = circleEdgePadding * 2 + diameterCm;
 
   // Calculate the required circle radius with scale
-  const unscaledSvgCircleRadius = circleSize / 2;
-  const scaledSvgCircleRadius = measurePixelsToCytoscape * unscaledSvgCircleRadius;
-  return { svgWidth, svgHeight, svgCentreX, svgCentreY, scaledSvgCircleRadius };
+  const unscaledSvgCircleRadius = diameterCm / 2;
+
+  // Calculate the centre of the circle in measured pixels without text alignment
+  const unscaledTextCentre = unscaledDiameter / 2;
+
+  return {
+    svgWidth: unscaledDiameter,
+    svgHeight: unscaledDiameter,
+    svgCentreX: unscaledTextCentre,
+    svgCentreY: unscaledTextCentre,
+    svgCircleRadius: unscaledSvgCircleRadius,
+  };
 };
 
 export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
-  const circleSize = textDiameter(ele, cytoscapeCoordinateMapper);
-  const { svgWidth, svgHeight, svgCentreX, svgCentreY, scaledSvgCircleRadius } = calculateCircleSvgParams(
-    cytoscapeCoordinateMapper,
-    circleSize,
-  );
+  const diameterCm = textDiameterCm(ele);
+  const { svgWidth, svgHeight, svgCentreX, svgCentreY, svgCircleRadius } = calculateCircleSvgParamsCm(diameterCm);
 
-  return makeScaledSVG(
-    CircleSVG,
-    svgWidth,
-    svgHeight,
-    "black",
-    svgWidth,
-    svgHeight,
-    svgCentreX,
-    svgCentreY,
-    scaledSvgCircleRadius,
-  );
+  return {
+    svg: makeScaledSVG({
+      symbolSvg: CircleSVG,
+      centre: { x: svgCentreX, y: svgCentreY },
+      viewport: { width: svgWidth, height: svgWidth },
+      svg: { width: svgWidth, height: svgHeight },
+      radius: svgCircleRadius,
+      lineColor: "black",
+      ...getStyleData(ele),
+      fontScaleFactor: cytoscapeCoordinateMapper.fontScaleFactor(),
+      scaleFactor: cytoscapeCoordinateMapper.scalePixelsPerCm,
+    }),
+    width: svgWidth,
+    height: svgHeight,
+  };
 };
 
 export const scaledFontSize = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
@@ -315,7 +337,13 @@ export const svgDataForSymbolFun =
     );
 
     return {
-      ...makeScaledSVG(symbolSvg.svg, widthPixels, heightPixels, FOREGROUND_COLOUR),
+      svg: makeScaledSVG({
+        symbolSvg: symbolSvg.svg,
+        svg: { width: widthPixels, height: heightPixels },
+        lineColor: FOREGROUND_COLOUR,
+      }),
+      width: widthPixels,
+      height: heightPixels,
       nodeShape: symbolSvg.nodeShape,
     };
   };

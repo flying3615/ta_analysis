@@ -543,7 +543,7 @@ const addOffsetLabel = (
       y,
     },
     "Tahoma",
-    40,
+    24,
     0,
     anchorAngle,
     pointOffset,
@@ -589,11 +589,13 @@ const addRotatedLabel = (
   rotationAngle: number,
   textAlignment: string,
   circle: boolean,
+  hasSymbol: boolean = true,
 ) => {
-  builder.addSymbolLabel(idBase * 100 + 1, "63", {
-    x,
-    y,
-  });
+  hasSymbol &&
+    builder.addSymbolLabel(idBase * 100 + 1, "63", {
+      x,
+      y,
+    });
   builder.addLabel("labels", {
     id: idBase * 100,
     displayText: label,
@@ -602,7 +604,7 @@ const addRotatedLabel = (
       y,
     },
     font: "Tahoma",
-    fontSize: 40,
+    fontSize: 24,
     rotationAngle,
     textAlignment,
     symbolType: circle ? "circle" : undefined,
@@ -620,6 +622,59 @@ export const RendersRotatedCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
     addRotatedLabel(builder, 6, "B", 20, -10, 135, "centerLeft", true);
     addRotatedLabel(builder, 7, "C", 20, -15, 225, "centerRight", true);
     addRotatedLabel(builder, 8, "D", 20, -20, 270, "topLeft", true);
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersRotatedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    addRotatedLabel(builder, 9, "II", 15, -10, 45, "centerCenter", true, false);
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    const startDegrees = 0;
+    const endDegrees = 360;
+    const maxColumns = 16;
+    const step = (endDegrees - startDegrees) / maxColumns;
+    const letters = ["A", "W", "Q", "D", "O", "I", "G", "X", "L", "U", "P", "T", "M"];
+
+    const rowSpacing = 2;
+    const columnSpacing = 2;
+
+    let id = 1;
+    for (let column = 0; column <= maxColumns; column++) {
+      letters.forEach((letter, row) =>
+        addRotatedLabel(
+          builder,
+          id++,
+          letter,
+          (column + 1) * columnSpacing,
+          (row + 1) * rowSpacing * -1,
+          column * step,
+          "centerCenter",
+          true,
+          false,
+        ),
+      );
+    }
+
     return <CanvasFromMockData data={builder.build()} />;
   },
   parameters: {
@@ -710,8 +765,8 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
   render: () => {
     const startX = 5;
     const startY = -5;
-    const xStep = 12;
-    const yStep = 8;
+    const xStep = 3;
+    const yStep = 3;
     const numColumns = 3;
 
     const textAlignments = [
@@ -735,7 +790,7 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
       builder.addLabel(
         "labels",
         idx,
-        textAlignment.replace(",", "\n"),
+        "I",
         { x, y },
         undefined,
         undefined,

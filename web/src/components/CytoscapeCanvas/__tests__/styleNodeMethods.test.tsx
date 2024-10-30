@@ -2,11 +2,12 @@ import { render, screen } from "@testing-library/react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
-  calculateCircleSvgParams,
+  calculateCircleSvgParamsCm,
   circleLabel,
   rotatedMargin,
-  textDiameter,
+  textDiameterCm,
   textDimensions,
+  textDimensionsCm,
   textHAlign,
   textJustification,
   textRotationClockwiseFromH,
@@ -33,11 +34,16 @@ describe("styleNodeMethods", () => {
     expect(dimensions.width).toBe(12); // jest-mock is not very good at measure
   });
 
-  test("textDiameter should return calculated diameter", () => {
+  test(`textDimensionsCm should measure single line text`, () => {
     renderDummyCanvas();
-    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
-    const diam = textDiameter(testEle, cytoscapeCoordinateMapper);
-    expect(diam).toBeCloseTo(18.7, 1);
+    const dimensions = textDimensionsCm(testEle);
+    expect(dimensions.width).toBeCloseTo(0.31, 1); // jest-mock is not very good at measure
+  });
+
+  test("textDiameterCm should return calculated diameter", () => {
+    renderDummyCanvas();
+    const diameter = textDiameterCm(testEle);
+    expect(diameter).toBeCloseTo(0.5, 1);
   });
 
   test("circleLabel should return an SVG circle scaled around label", () => {
@@ -47,8 +53,8 @@ describe("styleNodeMethods", () => {
     // We don't get the actual SVG because of jest
     // this is covered in SB
     expect(circle.svg).toBe("data:image/svg+xml;utf8,circle.svg");
-    expect(circle.height).toBeCloseTo(0.14, 1);
-    expect(circle.width).toBeCloseTo(0.14, 1);
+    expect(circle.height).toBeCloseTo(0.6, 1);
+    expect(circle.width).toBeCloseTo(0.6, 1);
   });
 
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
@@ -79,31 +85,23 @@ describe("styleNodeMethods", () => {
 
   describe(`calculateCircleSvgParams`, () => {
     test(`Centers circle on text for a default label`, () => {
-      const cytoscapeCoordinateMapper = {
-        fontScaleFactor: () => 1.2,
-      } as unknown as CytoscapeCoordinateMapper;
+      const params = calculateCircleSvgParamsCm(42);
 
-      const params = calculateCircleSvgParams(cytoscapeCoordinateMapper, 42);
-
-      expect(params.svgWidth).toBeCloseTo(55.2, 1);
-      expect(params.svgHeight).toBeCloseTo(55.2, 1);
-      expect(params.svgCentreX).toBeCloseTo(27.6, 1);
-      expect(params.svgCentreY).toBeCloseTo(27.6, 1);
-      expect(params.scaledSvgCircleRadius).toBeCloseTo(25.2, 1);
+      expect(params.svgWidth).toBeCloseTo(42.1, 1);
+      expect(params.svgHeight).toBeCloseTo(42.1, 1);
+      expect(params.svgCentreX).toBeCloseTo(21.1, 1);
+      expect(params.svgCentreY).toBeCloseTo(21.1, 1);
+      expect(params.svgCircleRadius).toBeCloseTo(21, 1);
     });
 
-    test(`Corrects for changes to window or browser zoom`, () => {
-      const cytoscapeCoordinateMapper = {
-        fontScaleFactor: () => 2.4,
-      } as unknown as CytoscapeCoordinateMapper;
+    test(`does not change with window or browser zoom`, () => {
+      const params = calculateCircleSvgParamsCm(42);
 
-      const params = calculateCircleSvgParams(cytoscapeCoordinateMapper, 42);
-
-      expect(params.svgWidth).toBeCloseTo(110.4, 1);
-      expect(params.svgHeight).toBeCloseTo(110.4, 1);
-      expect(params.svgCentreX).toBeCloseTo(55.2, 1);
-      expect(params.svgCentreY).toBeCloseTo(55.2, 1);
-      expect(params.scaledSvgCircleRadius).toBeCloseTo(50.4, 1);
+      expect(params.svgWidth).toBeCloseTo(42.1, 1);
+      expect(params.svgHeight).toBeCloseTo(42.1, 1);
+      expect(params.svgCentreX).toBeCloseTo(21.1, 1);
+      expect(params.svgCentreY).toBeCloseTo(21.1, 1);
+      expect(params.svgCircleRadius).toBeCloseTo(21, 1);
     });
   });
 
