@@ -70,28 +70,35 @@ export const lineStyleValues = {
   [LineStyle.DOUBLE_ARROW_1]: {},
 } as { [key: string]: StyledLineStyle };
 
-const arrowStyles = (line: LineDTO) => {
-  if ([LineStyle.ARROW1, LineStyle.DOUBLE_ARROW_1].map((s) => s.valueOf()).includes(line.style)) {
-    switch (line.style) {
-      case LineStyle.DOUBLE_ARROW_1:
-        return { sourceArrowShape: CYTOSCAPE_ARROW_TRIANGLE, targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
-      case LineStyle.ARROW1:
-        return { targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
-      default:
-        return { targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
-    }
+const arrowStyles = (line: LineDTO, segmentIndex: number) => {
+  const lastSegmentIndex = line.coordRefs.length - 2;
+
+  if (line.style === LineStyle.DOUBLE_ARROW_1) {
+    //single segment line so arrows as both ends
+    if (segmentIndex === 0 && segmentIndex === lastSegmentIndex)
+      return { sourceArrowShape: CYTOSCAPE_ARROW_TRIANGLE, targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
+    //first segment of a multi-segment line so arrow at the source end
+    if (segmentIndex === 0) return { sourceArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
+    //last segment of a multi-segment line so arrow at the target end
+    if (segmentIndex === lastSegmentIndex) return { targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
   }
+
+  //arrow at the target end of the last segment (will also catch lines with only one 'segment')
+  if (line.style === LineStyle.ARROW1 && segmentIndex === lastSegmentIndex) {
+    return { targetArrowShape: CYTOSCAPE_ARROW_TRIANGLE };
+  }
+
   return {};
 };
 
-export const getEdgeStyling = (line: LineDTO) => {
+export const getEdgeStyling = (line: LineDTO, index: number) => {
   let applyStyle = lineStyleValues[line.style];
   if (!applyStyle) {
     console.warn(`extractEdges: line ${line.id} has unsupported style ${line.style} - will use solid`);
     applyStyle = {};
   }
 
-  const { sourceArrowShape, targetArrowShape } = arrowStyles(line);
+  const { sourceArrowShape, targetArrowShape } = arrowStyles(line, index);
   return {
     pointWidth: line.pointWidth ?? 1,
     dashStyle: applyStyle?.dashStyle,

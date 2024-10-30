@@ -175,8 +175,23 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "edge[sourceArrowShape]",
       style: {
         ...lineBaseStyle,
+        "curve-style": "straight", // needed to render arrows
         "source-arrow-shape": "data(sourceArrowShape)",
         "source-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
+      },
+    },
+    {
+      selector: "edge[targetArrowShape][^sourceArrowShape]",
+      style: {
+        ...lineBaseStyle,
+        "source-endpoint": "inside-to-node",
+      },
+    },
+    {
+      selector: "edge[sourceArrowShape][^targetArrowShape]",
+      style: {
+        ...lineBaseStyle,
+        "target-endpoint": "inside-to-node",
       },
     },
     {

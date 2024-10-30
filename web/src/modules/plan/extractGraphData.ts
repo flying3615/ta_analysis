@@ -318,7 +318,7 @@ const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
         sourceNodeId: sourceNodeId?.toString(),
         destNodeId: destNodeId?.toString(),
         properties: {
-          ...getEdgeStyling(line),
+          ...getEdgeStyling(line, index),
           elementType: "lines",
           lineId: `${line.id}`,
           lineType: line.lineType,
@@ -349,7 +349,7 @@ const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
     sourceNodeId,
     destNodeId: `${line.id}_M1`,
     properties: {
-      ...getEdgeStyling(line),
+      ...getEdgeStyling(line, 0),
       diagramId: diagram.id,
       elementType: PlanElementType.LINES,
       [BROKEN_LINE_COORD]: destNodeId,
@@ -364,7 +364,7 @@ const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
     sourceNodeId: `${line.id}_M2`,
     destNodeId,
     properties: {
-      ...getEdgeStyling(line),
+      ...getEdgeStyling(line, 0),
       diagramId: diagram.id,
       elementType: "lines",
       [BROKEN_LINE_COORD]: sourceNodeId,
