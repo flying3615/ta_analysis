@@ -48,7 +48,7 @@ const PlanElementProperty = ({ property }: PlanElementPropertyProps) => {
             icon: "ic_format_lines_text",
             title: "Line properties",
           },
-          startHeight: 430,
+          startHeight: 715,
         };
     }
   };

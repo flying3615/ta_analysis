@@ -5,7 +5,10 @@ import React, { useState } from "react";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { LineStyle } from "@/modules/plan/styling";
 import { getActiveSheet } from "@/redux/planSheets/planSheetsSlice";
+
+import { borderWidthOptions } from "./LabelPropertiesUtils";
 
 export interface LinePropertiesProps {
   displayState: DisplayStateEnum;
@@ -18,22 +21,31 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
   const initialDisplayState = data[0]?.displayState || DisplayStateEnum.display;
   const [displayState, setDisplayState] = useState<DisplayStateEnum>(initialDisplayState);
   const activeSheet = useAppSelector(getActiveSheet);
-  const elem = data[0];
-  if (!elem) return;
-  const { lineType = "observation", pointWidth = 1.0, originalStyle = "brokenSolid1" } = elem;
+
+  const lineType = data[0]?.lineType ?? "observation";
+  const [lineStyle, setLineStyle] = useState(data[0]?.originalStyle ?? LineStyle.SOLID);
+  const [pointWidth, setPointWidth] = useState(data[0]?.pointWidth ?? 1.0);
+
+  const lineStyles = [
+    LineStyle.PECK_DOT1,
+    LineStyle.DOUBLE_ARROW_1,
+    LineStyle.ARROW1,
+    LineStyle.PECK1,
+    LineStyle.SOLID,
+  ];
 
   const onVisibilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDisplayState(e.target.checked ? DisplayStateEnum.hide : DisplayStateEnum.display);
   };
 
   // render an SVG for a specific line type
-  function renderLabelFor() {
-    const svgContent = lineSymbolSvgs[originalStyle] || lineSymbolSvgs["solid"] || "";
+  function renderLabelFor(lineStyle: string) {
+    const svgContent = lineSymbolSvgs[lineStyle] || lineSymbolSvgs[LineStyle.SOLID] || "";
     const svg = "data:image/svg+xml;utf8," + encodeURIComponent(svgContent);
 
     return (
       <div className="svg-container">
-        <img src={svg} alt={originalStyle} className="svg-image" />
+        <img src={svg} alt={lineStyle} className="svg-image" />
       </div>
     );
   }
@@ -63,9 +75,10 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
           label="Hide"
           onChange={onVisibilityChange}
           isDisabled={
-            activeSheet === PlanSheetType.TITLE ||
-            displayState === DisplayStateEnum.systemHide ||
-            displayState === DisplayStateEnum.systemDisplay
+            lineType !== "userDefined" &&
+            (activeSheet === PlanSheetType.TITLE ||
+              displayState === DisplayStateEnum.systemHide ||
+              displayState === DisplayStateEnum.systemDisplay)
           }
           isChecked={displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay}
         />
@@ -84,19 +97,23 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Line style</span>
         <LuiRadioInput
-          options={[originalStyle]}
-          isOptionDisabled={() => true}
-          onChange={() => false}
-          selectedValue={originalStyle}
+          options={lineStyles}
+          onChange={(e) => {
+            setLineStyle(e.target.value);
+          }}
+          isOptionDisabled={() => lineType !== "userDefined"}
+          selectedValue={lineStyle}
           renderLabelFor={renderLabelFor}
         />
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Width (pts)</span>
         <LuiRadioInput
-          options={[pointWidth.toString()]}
-          isOptionDisabled={() => true}
-          onChange={() => false}
+          options={borderWidthOptions.map((o) => o.value)}
+          onChange={(e) => {
+            setPointWidth(Number(e.target.value));
+          }}
+          isOptionDisabled={() => lineType !== "userDefined"}
           selectedValue={pointWidth.toString()}
         />
       </div>

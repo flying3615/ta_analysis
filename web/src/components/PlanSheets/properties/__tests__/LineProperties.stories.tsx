@@ -57,7 +57,7 @@ export const ShowLineMenu: Story = {
     await sleep(500);
   },
 };
-export const ShowLineMenuProperties: Story = {
+export const ShowDiagramLineMenuProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -67,6 +67,22 @@ export const ShowLineMenuProperties: Story = {
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
     clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
+    await userEvent.click(propertiesMenuItem);
+  },
+};
+export const ShowPageLineMenuProperties: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
