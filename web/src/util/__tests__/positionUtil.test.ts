@@ -1,6 +1,7 @@
 import {
   addIntoDelta,
   addIntoPosition,
+  angleDegrees360,
   asCoord,
   asDelta,
   asPosition,
@@ -27,6 +28,30 @@ describe("atanDegrees360", () => {
 
   test("returns zero for a horizontal line", () => {
     expect(atanDegrees360({ dx: 1, dy: 0 })).toBe(0);
+  });
+});
+
+describe("angleDegrees360", () => {
+  test("returns a positive angle", () => {
+    expect(angleDegrees360(30)).toBe(30);
+  });
+
+  test("corrects a negative angle", () => {
+    expect(angleDegrees360(-60)).toBe(300);
+  });
+
+  test("corrects a large angle", () => {
+    expect(angleDegrees360(750)).toBe(30);
+  });
+
+  test("corrects a large negative angle", () => {
+    expect(angleDegrees360(-3610)).toBe(350);
+  });
+
+  test("Passes through zero, null, undefined", () => {
+    expect(angleDegrees360(0)).toBe(0);
+    expect(angleDegrees360(null)).toBeNull();
+    expect(angleDegrees360(undefined)).toBeUndefined();
   });
 });
 

@@ -106,7 +106,7 @@ describe("useLabelAdjust", () => {
     expect(adjustedLabels[1]?.position?.x).toBeCloseTo(35);
     expect(adjustedLabels[1]?.position?.y).toBeCloseTo(-12.5);
     expect(adjustedLabels[1]?.properties?.["textRotation"]).toBeCloseTo(236, 0);
-    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(-34, 0);
+    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(326, 0);
   });
 
   test("returns adjusted label nodes when two nodes moved", () => {

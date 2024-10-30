@@ -6,7 +6,15 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { labelToNode } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { addIntoPosition, atanDegrees360, Delta, midPoint, Position, subtractIntoDelta } from "@/util/positionUtil";
+import {
+  addIntoPosition,
+  angleDegrees360,
+  atanDegrees360,
+  Delta,
+  midPoint,
+  Position,
+  subtractIntoDelta,
+} from "@/util/positionUtil";
 
 export const useLabelAdjust = () => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
@@ -27,8 +35,8 @@ export const useLabelAdjust = () => {
     // Note that in common with legacy the label can be flipped on its back here
     const anticlockwiseAngle = atanDegrees360(lineDelta);
 
-    const angleChange = anticlockwiseAngle - label.rotationAngle;
-    const adjustedAnchorAngle = label.anchorAngle + angleChange;
+    const angleChange = anticlockwiseAngle - label.rotationAngle; // Note delta angles *can* be negative
+    const adjustedAnchorAngle = angleDegrees360(label.anchorAngle + angleChange);
 
     return {
       ...label,

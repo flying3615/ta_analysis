@@ -10,8 +10,13 @@ export interface Delta {
 
 export const atanDegrees360 = (delta: Delta) => {
   const angle = Math.atan2(delta.dy, delta.dx) * (180 / Math.PI);
-  return angle < 0 ? angle + 360 : angle;
+  return angleDegrees360(angle);
 };
+
+export function angleDegrees360<T extends number | null | undefined>(angle: T): T {
+  if (!angle) return angle;
+  return (angle < 0 ? -(-angle % 360) + 360 : angle % 360) as T;
+}
 
 export function midPoint<T extends Delta | Position>(start: T, end: T): T {
   if ("x" in start && "x" in end) {
