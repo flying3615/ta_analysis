@@ -1,5 +1,5 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { CollectionReturnValue, NodeSingular } from "cytoscape";
+import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -127,7 +127,42 @@ describe("PlanSheetsContextMenu", () => {
       <PlanSheetsContextMenuWrapComponent
         targetElement={mockNode}
         expectations={(lineMenuItems) => {
-          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide", "Properties"]);
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+            "Original location",
+            "Hide",
+            "Properties",
+            "Delete",
+          ]);
+          expect(lineMenuItems?.[3]?.disabled).toBeTruthy();
+        }}
+      />,
+      mockedStateForPlanMode(PlanMode.SelectLine),
+    );
+  });
+
+  test("getMenuItemsForPlanMode for Select line shows enabled Delete option when line is userDefined", () => {
+    const mockNode = {
+      data: (key: string) => ({ id: "1001", lineType: "userDefined", elementType: PlanElementType.LINES })[key],
+    } as unknown as EdgeSingular;
+    const selectedElements = [mockNode];
+
+    const selectedCollectionReturnValue = {
+      size: () => selectedElements.length,
+      edges: () => selectedElements,
+    } as unknown as CollectionReturnValue;
+
+    renderWithReduxProvider(
+      <PlanSheetsContextMenuWrapComponent
+        selectedCollection={selectedCollectionReturnValue}
+        targetElement={mockNode}
+        expectations={(lineMenuItems) => {
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+            "Original location",
+            "Hide",
+            "Properties",
+            "Delete",
+          ]);
+          expect(lineMenuItems?.[3]?.disabled).toBeFalsy();
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
@@ -163,7 +198,12 @@ describe("PlanSheetsContextMenu", () => {
       <PlanSheetsContextMenuWrapComponent
         targetElement={mockNode}
         expectations={(lineMenuItems) => {
-          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual(["Original location", "Hide", "Properties"]);
+          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
+            "Original location",
+            "Hide",
+            "Properties",
+            "Delete",
+          ]);
           expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
         }}
       />,

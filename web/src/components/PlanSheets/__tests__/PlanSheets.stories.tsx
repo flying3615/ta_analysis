@@ -734,7 +734,7 @@ export const ShowLineMenu: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
     clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
     await sleep(500);
-    await expect(canvas.queryByRole("menuitem", { name: "Delete" })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
   },
 };
 

@@ -195,7 +195,9 @@ const PlanSheets = () => {
           {(planMode === PlanMode.SelectCoordinates ||
             planMode === PlanMode.SelectLine ||
             planMode === PlanMode.SelectLabel) && <SelectElementHandler mode={planMode} />}
-          {planMode === PlanMode.SelectLine && <DeleteKeyHandler mode={planMode} />}
+          {(planMode === PlanMode.SelectLine || planMode === PlanMode.SelectLabel) && (
+            <DeleteKeyHandler mode={planMode} />
+          )}
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />
           <PageNumberTooltips />

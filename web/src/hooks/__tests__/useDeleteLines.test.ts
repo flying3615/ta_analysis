@@ -9,11 +9,12 @@ describe("useDeleteLines", () => {
     jest.doMock("@/redux/planSheets/planSheetsSlice.ts", () => ({ removePageLines }));
 
     const targets = [
-      { data: (key: string) => ({ id: "1_1", lineId: "1" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "1_2", lineId: "1" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "1_3", lineId: "1" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "2_1", lineId: "2" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "2_2", lineId: "2" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "1_1", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "1_2", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "1_3", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "2_1", lineId: "2", lineType: "userDefined" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "2_2", lineId: "2", lineType: "userDefined" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "3_1", lineId: "3", lineType: "observation" })[key] } as EdgeSingular,
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -24,7 +25,5 @@ describe("useDeleteLines", () => {
 
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(removePageLines).toHaveBeenCalledWith({ lineIds: ["1", "2"] });
-
-    jest.clearAllMocks();
   });
 });

@@ -12,7 +12,16 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
-import { click, getCytoCanvas, sleep, StorybookRouter, TestCanvas } from "@/test-utils/storybook-utils";
+import {
+  click,
+  clickAtCoordinates,
+  clickMultipleCoordinates,
+  getCytoCanvas,
+  RIGHT_MOUSE_BUTTON,
+  sleep,
+  StorybookRouter,
+  TestCanvas,
+} from "@/test-utils/storybook-utils";
 
 export default {
   title: "PageLabelInput",
@@ -47,6 +56,8 @@ const PlanSheetsTemplate = () => {
 
 const diagramLabelPosition = { clientX: 585, clientY: 296 };
 const diagramLabel2Position = { clientX: 490, clientY: 270 };
+const pageLabelPosition = { clientX: 900, clientY: 200 };
+const pageLabel2Position = { clientX: 800, clientY: 300 };
 const whiteSpace = { clientX: 585, clientY: 296 + 30 };
 
 export const Default: Story = {
@@ -95,7 +106,11 @@ export const InputLabelValidation: Story = {
   },
 };
 
-const addLabel = async (canvasElement: HTMLElement, labelPosition: { clientX: number; clientY: number }) => {
+const addLabel = async (
+  canvasElement: HTMLElement,
+  labelPosition: { clientX: number; clientY: number },
+  labelText: string = "My Page Label",
+) => {
   const canvas = within(canvasElement);
   await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
   await sleep(500);
@@ -103,7 +118,7 @@ const addLabel = async (canvasElement: HTMLElement, labelPosition: { clientX: nu
 
   await click(target, labelPosition);
   const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
-  void fireEvent.input(addLabelTextBox, { target: { value: "My page label" } });
+  void fireEvent.input(addLabelTextBox, { target: { value: labelText } });
 };
 
 export const AddLabel: Story = {
@@ -279,4 +294,69 @@ export const DeselectMultipleLabels: Story = {
     });
     await test.click(whiteSpace); // label is deselected
   },
+};
+
+export const DeletePageLabel: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    // setup - add a page label
+    const canvas = within(canvasElement);
+    await addPageLabel(canvasElement, pageLabelPosition, "My page label");
+
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    // right click on diagram label, context menu shows delete menu disabled
+    clickAtCoordinates(target, diagramLabel2Position.clientX, diagramLabel2Position.clientY, RIGHT_MOUSE_BUTTON);
+    await expect(await canvas.findByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
+
+    // delete the page label
+    clickAtCoordinates(target, pageLabelPosition.clientX, pageLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    await userEvent.click(await canvas.findByRole("menuitem", { name: "Delete" }));
+    await sleep(500);
+  },
+};
+
+export const DeleteMultiplePageLabels: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    // setup - add a page label
+    const canvas = within(canvasElement);
+    await addPageLabel(canvasElement, pageLabelPosition, "My page label 1");
+    await addPageLabel(canvasElement, pageLabel2Position, "My page label 2");
+
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    // select two page label and one diagram label
+    clickMultipleCoordinates(target, [
+      { x: pageLabelPosition.clientX, y: pageLabelPosition.clientY },
+      { x: pageLabel2Position.clientX, y: pageLabel2Position.clientY },
+      { x: diagramLabel2Position.clientX, y: diagramLabel2Position.clientY },
+    ]);
+    // right click on diagram label, context menu shows delete menu disabled
+    clickAtCoordinates(target, diagramLabel2Position.clientX, diagramLabel2Position.clientY, RIGHT_MOUSE_BUTTON);
+    await expect(await canvas.findByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
+
+    await userEvent.keyboard("{Escape}"); // close context menu
+    await userEvent.keyboard("{Delete}"); // delete the selected labels, only page label deleted and diagram label remains
+    await sleep(500);
+  },
+};
+
+const addPageLabel = async (
+  canvasElement: HTMLElement,
+  labelPosition: { clientX: number; clientY: number },
+  pageLabel: string,
+) => {
+  const canvas = within(canvasElement);
+  await sleep(500);
+  await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
+  await sleep(500);
+  const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+  await addLabel(canvasElement, labelPosition, pageLabel);
+  await click(target, whiteSpace); // click outside the textarea to save the label
+  await sleep(500);
 };

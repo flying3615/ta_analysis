@@ -171,6 +171,15 @@ const planSheetsSlice = createSlice({
         page.coordinates = page.coordinates?.filter((coord) => !coordinatesToRemove.includes(coord.id));
       });
     },
+    removePageLabels: (state, action: PayloadAction<{ labelIds: string[] }>) => {
+      const { labelIds } = action.payload;
+
+      onDataChanging(state);
+
+      state.pages.forEach((page) => {
+        page.labels = page.labels?.filter((label) => !labelIds.includes(label.id.toString()));
+      });
+    },
     undo: (state) => {
       if (!state.previousDiagrams || !state.previousPages) return;
 
@@ -253,6 +262,7 @@ export const {
   setPreviousDiagramAttributes,
   setLineHide,
   removePageLines,
+  removePageLabels,
   undo,
   clearUndo,
 } = planSheetsSlice.actions;

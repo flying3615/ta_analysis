@@ -29,6 +29,7 @@ import {
   setDiagramIdToMove,
 } from "@/redux/planSheets/planSheetsSlice";
 
+import { useDeleteLabels } from "./useDeleteLabels";
 import { useDeleteLines } from "./useDeleteLines";
 
 export const usePlanSheetsContextMenu = () => {
@@ -42,6 +43,7 @@ export const usePlanSheetsContextMenu = () => {
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
   const deletePageLines = useDeleteLines();
+  const deletePageLabels = useDeleteLabels();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page...", callback: movetoPage }];
@@ -179,10 +181,9 @@ export const usePlanSheetsContextMenu = () => {
         {
           title: "Delete",
           className: "delete-item",
-          hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
-            element.data("lineType") !== "userDefined",
-          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-            deletePageLines([event.target as EdgeSingular]);
+          disableWhen: () => selectedCollection?.edges().some((ele) => ele.data("lineType") !== "userDefined") ?? true,
+          callback: () => {
+            deletePageLines([...(selectedCollection?.edges() ?? [])]);
           },
         },
         // { title: "Cut", disabled: true },
@@ -253,6 +254,9 @@ export const usePlanSheetsContextMenu = () => {
           disableWhen: () =>
             selectedCollection?.nodes().some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation) ??
             true,
+          callback: () => {
+            deletePageLabels([...(selectedCollection?.nodes() ?? [])]);
+          },
         },
         ...(singleSelected ? [{ title: "Align label to line" }] : []),
       ];
