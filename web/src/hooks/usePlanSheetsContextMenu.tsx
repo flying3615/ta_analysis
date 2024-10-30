@@ -9,7 +9,11 @@ import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
+import {
+  LabelPropertiesData,
+  LabelPropsToUpdate,
+  LabelPropsToUpdateWithElemType,
+} from "@/components/PlanSheets/properties/LabelProperties";
 import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
@@ -21,11 +25,14 @@ import {
 } from "@/modules/plan/LookupOriginalPosition";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectActiveDiagrams, selectLookupGraphData } from "@/modules/plan/selectGraphData";
+import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import {
+  getActivePage,
   getOriginalPositions,
   getPlanMode,
   getPreviousAttributesForDiagram,
   replaceDiagrams,
+  replacePage,
   setAlignedLabelNodeId,
   setDiagramIdToMove,
   setPlanMode,
@@ -40,6 +47,7 @@ export const usePlanSheetsContextMenu = () => {
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
   const originalPositions = useAppSelector(getOriginalPositions);
+  const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
@@ -228,9 +236,27 @@ export const usePlanSheetsContextMenu = () => {
 
     const buildLabelMenus = (targetLabel: NodeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
       const singleSelected = selectedCollection && selectedCollection?.size() === 1;
+      const selectedLabels = selectedCollection?.nodes();
+      if (!selectedLabels) return [];
+      const selectedNonSystemLabels = filterNonSystemLabels(selectedLabels);
       return [
         { title: "Original location", callback: originalLocation },
-        { title: "Show", hideWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE },
+        {
+          title: "Show",
+          hideWhen: () =>
+            selectedNonSystemLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.display) &&
+            selectedNonSystemLabels.length !== 0,
+          disableWhen: () => selectedLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.systemDisplay),
+          callback: () => updateLabelsDisplayState(selectedLabels, "display"),
+        },
+        {
+          title: "Hide",
+          hideWhen: () =>
+            selectedNonSystemLabels.some((ele) => ele.data("displayState") === DisplayStateEnum.hide) ||
+            selectedNonSystemLabels.length === 0,
+          disableWhen: () => selectedLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.systemHide),
+          callback: () => updateLabelsDisplayState(selectedLabels, "hide"),
+        },
         { title: "Properties", callback: getProperties },
         {
           title: "Select (coming soon)",
@@ -256,10 +282,9 @@ export const usePlanSheetsContextMenu = () => {
           title: "Delete",
           className: "delete-item",
           disableWhen: () =>
-            selectedCollection?.nodes().some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation) ??
-            true,
+            selectedLabels.some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
           callback: () => {
-            deletePageLabels([...(selectedCollection?.nodes() ?? [])]);
+            deletePageLabels([...selectedLabels]);
           },
         },
       ];
@@ -325,6 +350,42 @@ export const usePlanSheetsContextMenu = () => {
       return;
     }
     dispatch(setDiagramIdToMove(diagramId));
+  };
+
+  const filterNonSystemLabels = (labels: cytoscape.NodeCollection) => {
+    return labels.filter((ele) => {
+      const displayState = ele.data("displayState") as string;
+      return !([DisplayStateEnum.systemDisplay, DisplayStateEnum.systemHide] as string[]).includes(displayState);
+    });
+  };
+
+  const updateLabelsDisplayState = (labels: cytoscape.NodeCollection | undefined, displayState: "display" | "hide") => {
+    if (!labels || !activePage) return;
+    const nonSystemLabels = filterNonSystemLabels(labels);
+    const diagramLabels = nonSystemLabels?.filter((label) => label.data("diagramId") !== undefined);
+    const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabels.map((label) => {
+      const labelData = label.data() as IGraphDataProperties;
+      return {
+        data: {
+          id: Number(labelData.id),
+          displayState,
+        },
+        type: {
+          elementType: labelData.elementType,
+          diagramId: labelData.diagramId?.toString(),
+        },
+      };
+    });
+    dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdateWithElemType)));
+
+    const pageLabels = nonSystemLabels.filter((label) => label.data("diagramId") === undefined);
+    const pageLabelsToUpdate: LabelPropsToUpdate[] = pageLabels.map((label) => ({
+      id: Number(label.data("id")),
+      displayState,
+    }));
+    dispatch(
+      replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
+    );
   };
 
   const alignLabelToLine = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {

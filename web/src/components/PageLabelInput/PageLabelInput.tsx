@@ -1,5 +1,6 @@
 import "./PageLabelInput.scss";
 
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import clsx from "clsx";
 import cytoscape, { NodeSingular } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +8,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
-import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   getTextLengthErrorMessage,
@@ -59,16 +59,15 @@ export const PageLabelInput = () => {
       if (hasError || !activePage || !cyto || !cytoCoordMapper) return;
 
       if (planMode === PlanMode.SelectLabel) {
-        // NOTE: this should possibly be a _separate handler_ from AddLabel
-        // and use onSelect.  Also, edit not currently repositioning if out of bounds.
+        // NOTE: this should possibly be a _separate handler_ from AddLabel and use onSelect
 
         if (event.originalEvent.ctrlKey) return; // prevent from showing input when ctrl is pressed
         if (event.target === event.cy) {
           return;
         }
         const target = event.target as NodeSingular;
-        const { id, label, elementType } = target.data() as IGraphDataProperties;
-        if (id && label && elementType === PlanElementType.LABELS && target.selected()) {
+        const { id, label, labelType } = target.data() as IGraphDataProperties;
+        if (id && label && labelType === LabelDTOLabelTypeEnum.userAnnotation && target.selected()) {
           labelRef.current = { id, label };
           setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
           setLabelText(label || "");

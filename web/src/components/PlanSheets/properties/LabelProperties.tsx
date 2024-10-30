@@ -7,8 +7,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
-import { getActivePage, getDiagrams, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
 
 import {
   allHave00,
@@ -72,7 +73,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
 
   const dispatch = useAppDispatch();
   const activePage = useAppSelector(getActivePage);
-  const diagrams = useAppSelector(getDiagrams);
+  const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const [panelValuesToUpdate, setPanelValuesToUpdate] = useState<PanelValuesToUpdate>();
 
   // Save function
@@ -99,14 +100,14 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         },
       };
     });
-    dispatch(replaceDiagrams(updateDiagramLabels(diagrams, diagramLabelsToUpdateWithElemType)));
+    dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdateWithElemType)));
 
     // Update page labels (do not apply onDataChanging as it is already done in replaceDiagrams, so the undo button works correctly)
     const pageLabelsToUpdate = labelsToUpdate.filter((label) => !diagramLabelsToUpdate.includes(label));
     dispatch(
       replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
     );
-  }, [panelValuesToUpdate, activePage, diagrams, selectedLabels, dispatch]);
+  }, [panelValuesToUpdate, activePage, activeDiagrams, selectedLabels, dispatch]);
 
   useEffect(() => {
     props.setSaveFunction(() => save);

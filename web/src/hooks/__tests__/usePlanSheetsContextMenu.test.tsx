@@ -301,7 +301,12 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+            ({
+              id: "1001",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.hide,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -344,11 +349,21 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+            ({
+              id: "1001",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.display,
+            })[key],
         } as NodeSingular,
         {
           data: (key: string) =>
-            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+            ({
+              id: "1002",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.display,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -364,7 +379,7 @@ describe("PlanSheetsContextMenu", () => {
           expectations={(labelMenuItems) => {
             expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
               "Original location",
-              "Show",
+              "Hide",
               "Properties",
               "Select (coming soon)",
               "Move to page",
@@ -389,9 +404,12 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
-              key
-            ],
+            ({
+              id: "1001",
+              elementType: PlanElementType.LINE_LABELS,
+              labelType: LabelDTOLabelTypeEnum.lineDescription,
+              displayState: DisplayStateEnum.display,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -407,7 +425,7 @@ describe("PlanSheetsContextMenu", () => {
           expectations={(labelMenuItems) => {
             expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
               "Original location",
-              "Show",
+              "Hide",
               "Properties",
               "Select (coming soon)",
               "Align label to line",
@@ -434,13 +452,21 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.markName })[key],
+            ({
+              id: "1001",
+              elementType: PlanElementType.COORDINATE_LABELS,
+              labelType: LabelDTOLabelTypeEnum.markName,
+              displayState: DisplayStateEnum.hide,
+            })[key],
         } as NodeSingular,
         {
           data: (key: string) =>
-            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
-              key
-            ],
+            ({
+              id: "1002",
+              elementType: PlanElementType.LINE_LABELS,
+              labelType: LabelDTOLabelTypeEnum.lineDescription,
+              displayState: DisplayStateEnum.hide,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -481,13 +507,21 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+            ({
+              id: "1001",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.hide,
+            })[key],
         } as NodeSingular,
         {
           data: (key: string) =>
-            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
-              key
-            ],
+            ({
+              id: "1002",
+              elementType: PlanElementType.LINE_LABELS,
+              labelType: LabelDTOLabelTypeEnum.lineDescription,
+              displayState: DisplayStateEnum.display,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -523,13 +557,62 @@ describe("PlanSheetsContextMenu", () => {
       const selectedElements = [
         {
           data: (key: string) =>
-            ({ id: "1001", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+            ({
+              id: "1001",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.display,
+            })[key],
         } as NodeSingular,
         {
           data: (key: string) =>
-            ({ id: "1002", elementType: PlanElementType.LABELS, labelType: LabelDTOLabelTypeEnum.lineDescription })[
-              key
-            ],
+            ({
+              id: "1002",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.lineDescription,
+              displayState: DisplayStateEnum.display,
+            })[key],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={undefined}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Hide",
+              "Properties",
+              "Select (coming soon)",
+              "Move to page",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for system label", () => {
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({
+              id: "1001",
+              elementType: PlanElementType.CHILD_DIAGRAM_LABELS,
+              labelType: LabelDTOLabelTypeEnum.childDiagram,
+              displayState: DisplayStateEnum.systemDisplay,
+            })[key],
         } as NodeSingular,
       ];
 
@@ -548,13 +631,16 @@ describe("PlanSheetsContextMenu", () => {
               "Show",
               "Properties",
               "Select (coming soon)",
+              "Align label to line",
               "Move to page",
+              "Rotate label",
               "Cut",
               "Copy",
               "Paste",
               "Delete",
             ]);
             expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
+            expect(labelMenuItems?.find((item) => item.title === "Show")?.disabled).toBeTruthy();
           }}
         />,
         mockedStateForPlanMode(PlanMode.SelectLabel),
