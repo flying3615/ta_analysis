@@ -3,13 +3,13 @@ import { Page } from "playwright-core";
 
 export class DefineDiagramsPage {
   readonly page: Page;
-  readonly definePrimaryDiagramButton: Locator;
-  readonly definePrimaryDiagramByRectangle: Locator;
+  readonly definePrimaryDiagramByRectangleButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.definePrimaryDiagramButton = page.getByRole("button", { name: "Define primary diagram" });
-    this.definePrimaryDiagramByRectangle = page.getByRole("menuitem", { name: "Define primary diagram by rectangle" });
+    this.definePrimaryDiagramByRectangleButton = page.getByRole("button", {
+      name: "Define primary diagram (Rectangle)",
+    });
   }
 
   /* eslint-disable */

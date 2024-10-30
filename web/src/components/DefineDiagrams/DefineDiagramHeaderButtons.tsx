@@ -8,7 +8,6 @@ import { CommonButtons } from "@/components/CommonButtons";
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram";
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
-import { ActionHeaderMenu } from "@/components/Header/ActionHeaderMenu";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
 import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
@@ -87,6 +86,31 @@ export const DefineDiagramMenuButtons = () => {
     transactionId,
   });
 
+  const primaryDiagramTitle =
+    disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_primary_diagram_polygon")
+      ? "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
+      : "Define primary diagram";
+  const nonPrimaryDiagramTitle =
+    disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_nonprimary_diagram_polygon")
+      ? "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
+      : "Define non-primary diagram";
+  const surveyDiagramTitle =
+    disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_survey_diagram_polygon")
+      ? "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey"
+      : "Define survey diagram";
+  const primaryDiagramDisabled =
+    disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_primary_diagram_polygon");
+  const nonPrimaryDisabled =
+    disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_nonprimary_diagram_polygon");
+  const surveyDiagramDisabled =
+    disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
+    disabledDiagramIds.includes("define_survey_diagram_polygon");
+
   useEscapeKey({ callback: () => dispatch(setActiveAction("idle")) });
 
   return (
@@ -126,95 +150,59 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderButton title="Draw RT line" icon="ic_draw_rt_bdry" disabled={true} />
       <ActionHeaderButton title="Select line" icon="ic_select_line" action="select_line" />
       <VerticalSpacer />
-      <ActionHeaderMenu
-        title={
-          disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_primary_diagram_polygon")
-            ? "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
-            : "Define primary diagram"
-        }
+      <ActionHeaderButton
+        title={primaryDiagramDisabled ? primaryDiagramTitle : `${primaryDiagramTitle} (Rectangle)`}
+        icon="ic_define_primary_diagram_rectangle"
+        action="define_primary_diagram_rectangle"
         className="DefineDiagram__Icon--primary"
-        defaultAction="define_primary_diagram_rectangle"
-        loading={insertDiagramLoading}
-        disabled={
-          insertDiagramLoading ||
-          disabledDiagramIds.includes("define_primary_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_primary_diagram_polygon")
-        }
-        options={[
-          {
-            label: "Rectangle",
-            title: "Define primary diagram by rectangle",
-            action: "define_primary_diagram_rectangle",
-            iconClassName: "DefineDiagram__Icon--primary",
-          },
-          {
-            label: "Polygon",
-            title: "Define primary diagram by polygon",
-            action: "define_primary_diagram_polygon",
-            iconClassName: "DefineDiagram__Icon--primary",
-          },
-        ]}
+        testid="tid_define_primary_diagram_rectangle"
+        loading={insertDiagramLoading && activeAction.includes("define_primary_diagram_rectangle")}
+        disabled={insertDiagramLoading || primaryDiagramDisabled}
       />
-      <ActionHeaderMenu
-        title={
-          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_nonprimary_diagram_polygon")
-            ? "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey"
-            : "Define non-primary diagram"
-        }
-        defaultAction="define_nonprimary_diagram_rectangle"
-        loading={insertDiagramLoading}
+      <ActionHeaderButton
+        title={primaryDiagramDisabled ? primaryDiagramTitle : `${primaryDiagramTitle} (Polygon)`}
+        icon="ic_define_primary_diagram_polygon"
+        action="define_primary_diagram_polygon"
+        className="DefineDiagram__Icon--primary"
+        testid="tid_define_primary_diagram_polygon"
+        loading={insertDiagramLoading && activeAction.includes("define_primary_diagram_polygon")}
+        disabled={insertDiagramLoading || primaryDiagramDisabled}
+      />
+      <ActionHeaderButton
+        title={nonPrimaryDisabled ? nonPrimaryDiagramTitle : `${nonPrimaryDiagramTitle} (Rectangle)`}
+        icon="ic_define_nonprimary_diagram_rectangle"
+        action="define_nonprimary_diagram_rectangle"
         className="DefineDiagram__Icon--non-primary"
-        disabled={
-          insertDiagramLoading ||
-          disabledDiagramIds.includes("define_nonprimary_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_nonprimary_diagram_polygon")
-        }
-        options={[
-          {
-            label: "Rectangle",
-            title: "Define non-primary diagram by rectangle",
-            action: "define_nonprimary_diagram_rectangle",
-            iconClassName: "DefineDiagram__Icon--non-primary",
-          },
-          {
-            label: "Polygon",
-            title: "Define non-primary diagram by polygon",
-            action: "define_nonprimary_diagram_polygon",
-            iconClassName: "DefineDiagram__Icon--non-primary",
-          },
-        ]}
+        testid="tid_define_nonprimary_diagram_rectangle"
+        loading={insertDiagramLoading && activeAction.includes("define_nonprimary_diagram_rectangle")}
+        disabled={insertDiagramLoading || nonPrimaryDisabled}
       />
-      <ActionHeaderMenu
-        title={
-          disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_survey_diagram_polygon")
-            ? "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey"
-            : "Define survey diagram"
-        }
-        defaultAction="define_survey_diagram_rectangle"
-        loading={insertDiagramLoading}
+      <ActionHeaderButton
+        title={nonPrimaryDisabled ? nonPrimaryDiagramTitle : `${nonPrimaryDiagramTitle} (Polygon)`}
+        icon="ic_define_nonprimary_diagram_polygon"
+        action="define_nonprimary_diagram_polygon"
+        className="DefineDiagram__Icon--non-primary"
+        testid="tid_define_nonprimary_diagram_polygon"
+        loading={insertDiagramLoading && activeAction.includes("define_nonprimary_diagram_polygon")}
+        disabled={insertDiagramLoading || nonPrimaryDisabled}
+      />
+      <ActionHeaderButton
+        title={surveyDiagramDisabled ? surveyDiagramTitle : `${surveyDiagramTitle} (Rectangle)`}
+        icon="ic_define_survey_diagram_rectangle"
+        action="define_survey_diagram_rectangle"
         className="DefineDiagram__Icon--survey"
-        disabled={
-          insertDiagramLoading ||
-          disabledDiagramIds.includes("define_survey_diagram_rectangle") ||
-          disabledDiagramIds.includes("define_survey_diagram_polygon")
-        }
-        options={[
-          {
-            label: "Rectangle",
-            title: "Define survey diagram by rectangle",
-            action: "define_survey_diagram_rectangle",
-            iconClassName: "DefineDiagram__Icon--survey",
-          },
-          {
-            label: "Polygon",
-            title: "Define survey diagram by polygon",
-            action: "define_survey_diagram_polygon",
-            iconClassName: "DefineDiagram__Icon--survey",
-          },
-        ]}
+        testid="tid_define_survey_diagram_rectangle"
+        loading={insertDiagramLoading && activeAction.includes("define_survey_diagram_rectangle")}
+        disabled={insertDiagramLoading || surveyDiagramDisabled}
+      />
+      <ActionHeaderButton
+        title={surveyDiagramDisabled ? surveyDiagramTitle : `${surveyDiagramTitle} (Polygon)`}
+        icon="ic_define_survey_diagram_polygon"
+        action="define_survey_diagram_polygon"
+        className="DefineDiagram__Icon--survey"
+        testid="tid_define_survey_diagram_polygon"
+        loading={insertDiagramLoading && activeAction.includes("define_survey_diagram_polygon")}
+        disabled={insertDiagramLoading || surveyDiagramDisabled}
       />
       <ActionHeaderButton
         title="Select Diagrams"
@@ -223,47 +211,44 @@ export const DefineDiagramMenuButtons = () => {
         disabled={insertDiagramLoading || resizeDiagramLoading || removeDiagramLoading}
       />
       <VerticalSpacer />
-      <ActionHeaderMenu
-        title={selectedDiagramIds.length <= 1 ? "Enlarge diagram" : "To enlarge a diagram, select only one diagram"}
-        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
-        defaultAction="enlarge_diagram_rectangle"
+      <ActionHeaderButton
+        title={
+          selectedDiagramIds.length <= 1
+            ? "Enlarge diagram (Rectangle)"
+            : "To enlarge a diagram, select only one diagram"
+        }
+        icon="ic_zoomin_snippet_rectangle"
+        action="enlarge_diagram_rectangle"
         loading={resizeDiagramLoading}
-        options={[
-          {
-            label: "Rectangle",
-            icon: "ic_zoomin_snippet_rectangle",
-            title: "Enlarge by rectangle",
-            action: "enlarge_diagram_rectangle",
-          },
-          {
-            label: "Polygon",
-            icon: "ic_zoomin_snippet_polygon",
-            title: "Enlarge by polygon",
-            action: "enlarge_diagram_polygon",
-          },
-        ]}
-      />
-      <ActionHeaderMenu
-        title={selectedDiagramIds.length <= 1 ? "Reduce diagram" : "To reduce a diagram, select only one diagram"}
         disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
-        defaultAction="reduce_diagram_rectangle"
-        loading={resizeDiagramLoading}
-        options={[
-          {
-            label: "Rectangle",
-            icon: "ic_zoomout_snippet_rectangle",
-            title: "Reduce by rectangle",
-            action: "reduce_diagram_rectangle",
-          },
-          {
-            label: "Polygon",
-            icon: "ic_zoomout_snippet_polygon",
-            title: "Reduce by polygon",
-            action: "reduce_diagram_polygon",
-          },
-        ]}
       />
-
+      <ActionHeaderButton
+        title={
+          selectedDiagramIds.length <= 1 ? "Enlarge diagram (Polygon)" : "To enlarge a diagram, select only one diagram"
+        }
+        icon="ic_zoomin_snippet_polygon"
+        action="enlarge_diagram_polygon"
+        loading={resizeDiagramLoading}
+        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
+      />
+      <ActionHeaderButton
+        title={
+          selectedDiagramIds.length <= 1 ? "Reduce diagram (Rectangle)" : "To reduce a diagram, select only one diagram"
+        }
+        icon="ic_zoomout_snippet_rectangle"
+        action="reduce_diagram_rectangle"
+        loading={resizeDiagramLoading}
+        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
+      />
+      <ActionHeaderButton
+        title={
+          selectedDiagramIds.length <= 1 ? "Reduce diagram (Polygon)" : "To reduce a diagram, select only one diagram"
+        }
+        icon="ic_zoomout_snippet_polygon"
+        action="reduce_diagram_polygon"
+        loading={resizeDiagramLoading}
+        disabled={selectedDiagramIds.length !== 1 || resizeDiagramLoading}
+      />
       <div className="CommonButtons__fill" />
       <ActionHeaderButton
         title="Maintain diagram layers"

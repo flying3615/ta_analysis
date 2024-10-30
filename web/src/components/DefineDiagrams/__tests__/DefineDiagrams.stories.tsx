@@ -179,12 +179,8 @@ export const DrawPrimaryDiagramByRectangle: Story = {
 
 DrawPrimaryDiagramByRectangle.play = async () => {
   await waitForInitialMapLoadsToComplete();
-  const primaryDiagramButton = await screen.findByLabelText("Define primary diagram");
-  await userEvent.click(primaryDiagramButton);
-  const primaryDiagramByRectangleButton = await screen.findByRole("menuitem", {
-    name: /Rectangle/,
-  });
-  await userEvent.click(primaryDiagramByRectangleButton);
+  const primaryDiagramRectangleButton = await screen.findByLabelText("Define primary diagram (Rectangle)");
+  await userEvent.click(primaryDiagramRectangleButton);
 
   const drawRectangle: Coordinate[] = [
     [19461942.908835247, -5057781.164343697],
@@ -223,14 +219,48 @@ export const DrawButtonsDisabled: Story = {
 
 DrawButtonsDisabled.play = async () => {
   await waitForInitialMapLoadsToComplete();
-  await screen.findByLabelText(
-    "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_primary_diagram_rectangle")).findByLabelText(
+        "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+      ),
+    { timeout: 20000 },
   );
-  await screen.findByLabelText(
-    "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_primary_diagram_polygon")).findByLabelText(
+        "Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+      ),
+    { timeout: 20000 },
   );
-  await screen.findByLabelText(
-    "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey",
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_nonprimary_diagram_rectangle")).findByLabelText(
+        "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+      ),
+    { timeout: 20000 },
+  );
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_nonprimary_diagram_polygon")).findByLabelText(
+        "Non Primary user defined diagrams cannot be created, as there is no boundary information included in this survey",
+      ),
+    { timeout: 20000 },
+  );
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_survey_diagram_rectangle")).findByLabelText(
+        "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey",
+      ),
+    { timeout: 20000 },
+  );
+  await waitFor(
+    () =>
+      within(screen.getByTestId("tid_define_survey_diagram_polygon")).findByLabelText(
+        "User defined survey diagrams cannot be created, as there is no non boundary information included in this survey",
+      ),
+    { timeout: 20000 },
   );
 };
 
@@ -247,13 +277,8 @@ export const DrawNonPrimaryDiagramByPolygon: Story = {
 
 DrawNonPrimaryDiagramByPolygon.play = async () => {
   await waitForInitialMapLoadsToComplete();
-  const nonPrimaryDiagramButton = await screen.findByLabelText("Define non-primary diagram");
-  await userEvent.click(nonPrimaryDiagramButton);
-  const nonPrimaryDiagramByPolygonButton = await screen.findByRole("menuitem", {
-    name: /Polygon/,
-  });
-  await userEvent.click(nonPrimaryDiagramByPolygonButton);
-
+  const nonPrimaryDiagramPolygonButton = await screen.findByLabelText("Define non-primary diagram (Polygon)");
+  await userEvent.click(nonPrimaryDiagramPolygonButton);
   const drawPolygon: Coordinate[] = [
     [19461563.508509796, -5057886.183127218],
     [19461498.683984406, -5057952.186280345],
@@ -280,12 +305,8 @@ export const DrawSurveyDiagramByPolygon: Story = {
 
 DrawSurveyDiagramByPolygon.play = async () => {
   await waitForInitialMapLoadsToComplete();
-  const surveyDiagramButton = await screen.findByLabelText("Define survey diagram");
-  await userEvent.click(surveyDiagramButton);
-  const surveyDiagramByPolygonButton = await screen.findByRole("menuitem", {
-    name: /Polygon/,
-  });
-  await userEvent.click(surveyDiagramByPolygonButton);
+  const surveyDiagramPolygonButton = await screen.findByLabelText("Define survey diagram (Polygon)");
+  await userEvent.click(surveyDiagramPolygonButton);
 
   const drawPolygon: Coordinate[] = [
     [19461563.508509796, -5057886.183127218],
@@ -595,40 +616,24 @@ const selectDiagram = async (coordinatesToClick: Coordinate[]) => {
 };
 
 const enlargeRectangle = async (coordinatesToClick: Coordinate[]) => {
-  const enlargeDiagramButton = await screen.findByLabelText("Enlarge diagram");
-  await userEvent.click(enlargeDiagramButton);
-  const rectangleMenuItem = await screen.findByRole("menuitem", {
-    name: /Rectangle/,
-  });
-  await userEvent.click(rectangleMenuItem);
+  const enlargeDiagramRectangleButton = await screen.findByLabelText("Enlarge diagram (Rectangle)");
+  await userEvent.click(enlargeDiagramRectangleButton);
   await drawOnMap(coordinatesToClick);
 };
 
 const enlargePolygon = async (coordinatesToClick: Coordinate[]) => {
-  const enlargeDiagramButton = await screen.findByLabelText("Enlarge diagram");
-  await userEvent.click(enlargeDiagramButton);
-  const polygonMenuItem = await screen.findByRole("menuitem", {
-    name: /Polygon/,
-  });
-  await userEvent.click(polygonMenuItem);
+  const enlargeDiagramPolygonButton = await screen.findByLabelText("Enlarge diagram (Polygon)");
+  await userEvent.click(enlargeDiagramPolygonButton);
   await drawOnMap(coordinatesToClick);
 };
 
 const reduceRectangle = async (coordinatesToClick: Coordinate[]) => {
-  const reduceDiagramButton = await screen.findByLabelText("Reduce diagram");
-  await userEvent.click(reduceDiagramButton);
-  const rectangleMenuItem = await screen.findByRole("menuitem", {
-    name: /Rectangle/,
-  });
-  await userEvent.click(rectangleMenuItem);
+  const reduceDiagramRectangleButton = await screen.findByLabelText("Reduce diagram (Rectangle)");
+  await userEvent.click(reduceDiagramRectangleButton);
   await drawOnMap(coordinatesToClick);
 };
 const reducePolygon = async (coordinatesToClick: Coordinate[]) => {
-  const reduceDiagramButton = await screen.findByLabelText("Reduce diagram");
-  await userEvent.click(reduceDiagramButton);
-  const polygonMenuItem = await screen.findByRole("menuitem", {
-    name: /Polygon/,
-  });
-  await userEvent.click(polygonMenuItem);
+  const reduceDiagramPolygonButton = await screen.findByLabelText("Reduce diagram (Polygon)");
+  await userEvent.click(reduceDiagramPolygonButton);
   await drawOnMap(coordinatesToClick);
 };

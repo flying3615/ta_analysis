@@ -17,8 +17,7 @@ test.describe("Define diagrams", () => {
     const originalNumberOfDiagrams = originalDiagrams.length;
 
     //Draw a primary diagram rectangle
-    await defineDiagramsPage.definePrimaryDiagramButton.click();
-    await defineDiagramsPage.definePrimaryDiagramByRectangle.click();
+    await defineDiagramsPage.definePrimaryDiagramByRectangleButton.click();
     await page.locator(".diagrams > canvas").click({
       position: {
         x: 823,
@@ -49,8 +48,7 @@ test.describe("Define diagrams", () => {
     expect(await defineDiagramsPage.getDiagrams()).toHaveLength(originalNumberOfDiagrams + 1);
 
     //Draw another primary diagram rectangle
-    await defineDiagramsPage.definePrimaryDiagramButton.click();
-    await defineDiagramsPage.definePrimaryDiagramByRectangle.click();
+    await defineDiagramsPage.definePrimaryDiagramByRectangleButton.click();
     await page.locator(".diagrams > canvas").click({
       //Without the force click, Playwright throws the following error if a diagram has already been drawn:
       //"subtree intercepts pointer events - retrying click action"
