@@ -13,6 +13,7 @@ import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
+import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
 export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactionId];
 
@@ -21,9 +22,15 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
   return useQuery({
     queryKey: getPlanQueryKey(transactionId),
     queryFn: async () => {
-      const response = await new PlanControllerApi(apiConfig()).getPlan({ transactionId });
-      const adjustedResponse = adjustLoadedPlanData(response);
-      dispatch(setPlanData(adjustedResponse));
+      const response = await performanceMeasure("getPlanData", transactionId, {
+        workflow: "loadPlanXML",
+      })(async () => new PlanControllerApi(apiConfig()).getPlan({ transactionId }));
+      const adjustedResponse = await performanceMeasure("adjustedResponse", transactionId, {
+        workflow: "loadPlanXML",
+      })(() => Promise.resolve(adjustLoadedPlanData(response)));
+      await performanceMeasure("setPlanData", transactionId, {
+        workflow: "loadPlanXML",
+      })(() => Promise.resolve(dispatch(setPlanData(adjustedResponse))));
       return response;
     },
     enabled,
