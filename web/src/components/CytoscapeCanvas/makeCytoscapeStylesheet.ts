@@ -170,6 +170,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "edge[targetArrowShape]",
       style: {
         ...lineBaseStyle,
+        "arrow-scale": "data(arrowScale)",
         "curve-style": "straight", // needed to render arrows
         "target-arrow-shape": "data(targetArrowShape)",
         "target-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,
@@ -179,6 +180,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: "edge[sourceArrowShape]",
       style: {
         ...lineBaseStyle,
+        "arrow-scale": "data(arrowScale)",
         "curve-style": "straight", // needed to render arrows
         "source-arrow-shape": "data(sourceArrowShape)",
         "source-arrow-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : FOREGROUND_COLOUR,

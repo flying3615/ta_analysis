@@ -106,6 +106,7 @@ export const getEdgeStyling = (line: LineDTO, index: number) => {
     dashStyle: applyStyle?.dashStyle,
     sourceArrowShape,
     targetArrowShape,
+    arrowScale: 0.6,
     originalStyle: line.style,
   };
 };
