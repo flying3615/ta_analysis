@@ -170,36 +170,32 @@ describe("PlanSheetsFooter", () => {
     expect(successToast).toHaveClass("success");
 
     expect(requestSpy).toHaveBeenCalledTimes(2);
-    expect(requestSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
-          _bodyText: JSON.stringify({
-            diagrams: [
-              {
-                id: 1,
-                originPageOffset: { x: 0, y: 0 },
-                bottomRightPoint: { x: 1500, y: -1000 },
-                diagramType: "sysGenPrimaryDiag",
-                zoomScale: 100,
-                pageRef: 1,
-                displayState: DisplayStateEnum.display,
-                coordinates: [],
-                lines: [],
-                labels: [],
-                parcelLabels: [],
-                parcelLabelGroups: [],
-                coordinateLabels: [],
-                lineLabels: [],
-                listOrder: 1,
-              },
-            ],
-            pages: [],
-          }),
-        }) as unknown,
-      }),
-    );
+    const requests = requestSpy.mock.calls[0] as { request: Request }[];
+    const saveRequest = requests[0]?.request;
+    expect(saveRequest?.method).toBe("PUT");
+    expect(saveRequest?.url).toBe("http://localhost/api/v1/generate-plans/123/plan");
+    expect(await saveRequest?.json()).toStrictEqual({
+      diagrams: [
+        {
+          id: 1,
+          originPageOffset: { x: 0, y: 0 },
+          bottomRightPoint: { x: 1500, y: -1000 },
+          diagramType: "sysGenPrimaryDiag",
+          zoomScale: 100,
+          pageRef: 1,
+          displayState: DisplayStateEnum.display,
+          coordinates: [],
+          lines: [],
+          labels: [],
+          parcelLabels: [],
+          parcelLabelGroups: [],
+          coordinateLabels: [],
+          lineLabels: [],
+          listOrder: 1,
+        },
+      ],
+      pages: [],
+    });
 
     expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
   });
@@ -818,18 +814,14 @@ describe("PlanSheetsFooter", () => {
     await userEvent.click(screen.getByRole("menuitem", { name: new RegExp(menuItemName, "i") }));
 
     await userEvent.click(await screen.findByText("Save layout"));
-    expect(requestSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          method: "PUT",
-          url: "http://localhost/api/v1/generate-plans/123/plan",
-          _bodyText: JSON.stringify({
-            diagrams: [],
-            pages: expected,
-          }),
-        }) as unknown,
-      }),
-    );
+    const requests = requestSpy.mock.calls[0] as { request: Request }[];
+    const saveRequest = requests[0]?.request;
+    expect(saveRequest?.method).toBe("PUT");
+    expect(saveRequest?.url).toBe("http://localhost/api/v1/generate-plans/123/plan");
+    expect(await saveRequest?.json()).toStrictEqual({
+      diagrams: [],
+      pages: expected,
+    });
     expect(await screen.findByText("Layout saved successfully")).toBeInTheDocument();
   });
 

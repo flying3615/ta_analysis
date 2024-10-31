@@ -57,7 +57,10 @@ export const useUpdatePlanMutation = (transactionId: number) => {
 
   return useMutation({
     mutationKey: updatePlanQueryKey(transactionId),
-    mutationFn: () => new PlanControllerApi(apiConfig()).updatePlan({ transactionId, updatePlanRequestDTO: planData }),
+    mutationFn: () => {
+      const body = new Blob([JSON.stringify(planData)], { type: "application/json" });
+      return new PlanControllerApi(apiConfig()).updatePlan({ transactionId, body });
+    },
     // Explicitly don't invalidate the plan data here, as the async task won't have completed yet
   });
 };

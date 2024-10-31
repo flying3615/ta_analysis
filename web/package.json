@@ -53,7 +53,7 @@
     "@linz/lol-auth-js": "^2.2.0",
     "@linz/luck-syscodes": "^12.9.0",
     "@linz/secure-file-upload": "^v3.3.0",
-    "@linz/survey-plan-generation-api-client": "^0.55.0",
+    "@linz/survey-plan-generation-api-client": "^0.56.1",
     "@linzjs/landonline-openlayers-map": "^6.2.1",
     "@linzjs/lui": "^21.49.0",
     "@linzjs/step-ag-grid": "^22.2.4",
