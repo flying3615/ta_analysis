@@ -12,4 +12,5 @@ declare interface Window {
   };
   cyRef: cytoscape.Core;
   isStorybook?: true | undefined;
+  newrelic: typeof newrelic | undefined;
 }
