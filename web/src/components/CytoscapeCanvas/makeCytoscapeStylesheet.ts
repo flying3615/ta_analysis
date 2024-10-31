@@ -210,6 +210,13 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
+      selector: `edge.hover`,
+      style: {
+        "line-color": ELEMENT_HOVERED_COLOR,
+        width: 1,
+      },
+    },
+    {
       selector: "edge:selected, edge.related-label-selected",
       style: {
         "line-color": ELEMENT_SELECTED_COLOR,
@@ -348,14 +355,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: `edge.diagram-control`,
       style: {
         "line-color": ELEMENT_SELECTED_COLOR,
-        width: 1,
-      },
-    },
-    // hover edge
-    {
-      selector: `edge.hover`,
-      style: {
-        "line-color": ELEMENT_HOVERED_COLOR,
         width: 1,
       },
     },

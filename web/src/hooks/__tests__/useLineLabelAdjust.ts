@@ -5,10 +5,10 @@ import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { coordinateToNode } from "@/modules/plan/extractGraphData";
 
 interface UseLabelAdjustInterface {
-  useLabelAdjust: () => (movedNodesById: Record<number, INodeData>) => INodeData[];
+  useLineLabelAdjust: () => (movedNodesById: Record<number, INodeData>) => INodeData[];
 }
 
-describe("useLabelAdjust", () => {
+describe("useLineLabelAdjust", () => {
   const mockPlan = new PlanDataBuilder()
     .addDiagram(
       {
@@ -88,14 +88,14 @@ describe("useLabelAdjust", () => {
     jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppSelector }));
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useLabelAdjust } = require("../useLabelAdjust") as UseLabelAdjustInterface;
+    const { useLineLabelAdjust } = require("../useLineLabelAdjust") as UseLabelAdjustInterface;
 
-    const adjustLabels = useLabelAdjust();
+    const adjustLabelsWithLine = useLineLabelAdjust();
 
     const movedNode = coordinateToNode(mockPlan?.diagrams?.[0]?.coordinates[1] as CoordinateDTO);
     movedNode.position = { x: 40, y: -5 };
 
-    const adjustedLabels = adjustLabels({ 10002: movedNode });
+    const adjustedLabels = adjustLabelsWithLine({ 10002: movedNode });
     expect(adjustedLabels).toHaveLength(2);
     expect(adjustedLabels[0]?.id).toBe("2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);
@@ -114,16 +114,16 @@ describe("useLabelAdjust", () => {
     jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppSelector }));
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useLabelAdjust } = require("../useLabelAdjust") as UseLabelAdjustInterface;
+    const { useLineLabelAdjust } = require("../useLineLabelAdjust") as UseLabelAdjustInterface;
 
-    const adjustLabels = useLabelAdjust();
+    const adjustLabelsWithLine = useLineLabelAdjust();
 
     const movedNode10002 = coordinateToNode(mockPlan?.diagrams?.[0]?.coordinates[1] as CoordinateDTO);
     const movedNode10003 = coordinateToNode(mockPlan?.diagrams?.[0]?.coordinates[2] as CoordinateDTO);
     movedNode10002.position = { x: 40, y: -5 };
     movedNode10003.position = { x: 40, y: -15 };
 
-    const adjustedLabels = adjustLabels({ 10003: movedNode10003, 10002: movedNode10002 });
+    const adjustedLabels = adjustLabelsWithLine({ 10003: movedNode10003, 10002: movedNode10002 });
     expect(adjustedLabels).toHaveLength(3);
     expect(adjustedLabels[0]?.id).toBe("2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);

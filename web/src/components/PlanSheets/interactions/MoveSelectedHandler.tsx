@@ -20,7 +20,7 @@ import {
   INodeDataProperties,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { useLabelAdjust } from "@/hooks/useLabelAdjust";
+import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
@@ -85,7 +85,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     updateActiveDiagramsAndPage,
   } = usePlanSheetsDispatch();
   const diagrams = useAppSelector(selectActiveDiagrams);
-  const adjustLabels = useLabelAdjust();
+  const adjustLabelsWithLine = useLineLabelAdjust();
 
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
@@ -160,7 +160,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
         const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
-        const adjustedLabels = adjustLabels(movedNodesById);
+        const adjustedLabels = adjustLabelsWithLine(movedNodesById);
 
         updateActiveDiagramsAndPage({ nodes: [...movingData.nodes, ...adjustedLabels], edges: movingData.edges });
       }
@@ -201,7 +201,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     };
 
     addContainerClass();
-    selectedElements.addClass(ELEMENT_CLASS_MOVE_CONTROL).ungrabify();
+    selectedElements.addClass(ELEMENT_CLASS_MOVE_CONTROL).grabify();
 
     cyto.on("mousedown", ELEMENT_SELECTOR_MOVE_CONTROL, beginMove);
     cyto.on("mouseout", ELEMENT_SELECTOR_MOVE_CONTROL, removeContainerClass);
@@ -214,7 +214,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       cyto.off("mouseout", ELEMENT_SELECTOR_MOVE_CONTROL, removeContainerClass);
       cyto.off("mouseover", ELEMENT_SELECTOR_MOVE_CONTROL, addContainerClass);
 
-      selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).grabify();
+      selectedElements.removeClass(ELEMENT_CLASS_MOVE_CONTROL).ungrabify();
       removeContainerClass();
     };
   }, [
@@ -223,7 +223,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     cytoCoordMapper,
     selectedElements,
     updateActiveDiagramsAndPageFromCytoData,
-    adjustLabels,
+    adjustLabelsWithLine,
     cytoDataToNodeAndEdgeData,
     diagrams,
     updateActiveDiagramsAndPage,

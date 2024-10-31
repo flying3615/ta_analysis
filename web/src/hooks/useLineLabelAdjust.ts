@@ -1,4 +1,4 @@
-import { CoordinateDTO, LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
 
 import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -16,15 +16,15 @@ import {
   subtractIntoDelta,
 } from "@/util/positionUtil";
 
-export const useLabelAdjust = () => {
-  const activeDiagrams = useAppSelector(selectActiveDiagrams);
+interface ShiftParams {
+  startPosition: Position;
+  endPosition: Position;
+  startDelta: Delta;
+  endDelta: Delta;
+}
 
-  interface ShiftParams {
-    startPosition: Position;
-    endPosition: Position;
-    startDelta: Delta;
-    endDelta: Delta;
-  }
+export const useLineLabelAdjust = () => {
+  const activeDiagrams = useAppSelector(selectActiveDiagrams);
 
   const applyShiftParams = (label: LabelDTO, shiftParams: ShiftParams) => {
     const { startPosition, endPosition, startDelta, endDelta } = shiftParams;
@@ -46,7 +46,34 @@ export const useLabelAdjust = () => {
     };
   };
 
-  const adjustLabels = (movedNodesById: Record<number, INodeData>): INodeData[] => {
+  const shiftParamsForLabel = (
+    affectedLine: LineDTO | undefined,
+    affectedCoordinatesById: Record<string, CoordinateDTO>,
+    movedNodesById: Record<number, INodeData>,
+  ) => {
+    const lineStartId = affectedLine?.coordRefs?.[0] as number;
+    const lineEndId = last(affectedLine?.coordRefs) as number;
+    const lineStartCoord = affectedCoordinatesById[lineStartId] as CoordinateDTO;
+    const lineEndCoord = affectedCoordinatesById[lineEndId] as CoordinateDTO;
+    const lineStartPosition = movedNodesById[lineStartId]?.position ?? lineStartCoord?.position;
+    const lineEndPosition = movedNodesById[lineEndId]?.position ?? lineEndCoord?.position;
+
+    if (!lineStartPosition || !lineEndPosition) {
+      throw new Error(`Line ${affectedLine?.id} must have start and end coordinates`);
+    }
+
+    const originalStartPosition = lineStartCoord.position;
+    const originalEndPosition = lineEndCoord.position;
+
+    return {
+      startPosition: lineStartPosition,
+      endPosition: lineEndPosition,
+      startDelta: subtractIntoDelta(lineStartPosition, originalStartPosition),
+      endDelta: subtractIntoDelta(lineEndPosition, originalEndPosition),
+    };
+  };
+
+  const adjustLabelsWithLine = (movedNodesById: Record<number, INodeData>): INodeData[] => {
     const activeLines = activeDiagrams.flatMap((diagram) => diagram?.lines);
     const affectedLines = activeLines.filter((line) => {
       return (
@@ -64,38 +91,14 @@ export const useLabelAdjust = () => {
     );
 
     const affectedLineIds = affectedLines.map((line) => line?.id);
-
-    const affectedLabels = activeDiagrams
+    const affectedLineLabels = activeDiagrams
       .flatMap((diagram) => diagram?.lineLabels)
       .filter((label) => label.featureType === "Line" && affectedLineIds.includes(label?.featureId ?? -1));
 
-    const shiftParamsForLabel = (label: LabelDTO) => {
-      const line = activeLines.find((line) => line?.id === label?.featureId);
-      const lineStartId = line?.coordRefs?.[0] as number;
-      const lineEndId = last(line?.coordRefs) as number;
-      const lineStartCoord = affectedCoordinatesById[lineStartId] as CoordinateDTO;
-      const lineEndCoord = affectedCoordinatesById[lineEndId] as CoordinateDTO;
-      const lineStartPosition = movedNodesById[lineStartId]?.position ?? lineStartCoord?.position;
-      const lineEndPosition = movedNodesById[lineEndId]?.position ?? lineEndCoord?.position;
-
-      if (!lineStartPosition || !lineEndPosition) {
-        throw new Error(`Line ${line?.id} must have start and end coordinates`);
-      }
-
-      const originalStartPosition = lineStartCoord.position;
-      const originalEndPosition = lineEndCoord.position;
-
-      return {
-        startPosition: lineStartPosition,
-        endPosition: lineEndPosition,
-        startDelta: subtractIntoDelta(lineStartPosition, originalStartPosition),
-        endDelta: subtractIntoDelta(lineEndPosition, originalEndPosition),
-      };
-    };
-
-    return affectedLabels.map((label) => {
+    return affectedLineLabels.map((label) => {
+      const affectedLine = activeLines.find((line) => line?.id === label?.featureId);
       const labelDiagram = activeDiagrams.find((diagram) => diagram.lineLabels.some((l) => l.id === label.id));
-      const shiftParams = shiftParamsForLabel(label);
+      const shiftParams = shiftParamsForLabel(affectedLine, affectedCoordinatesById, movedNodesById);
       const labelDTO = applyShiftParams(label, shiftParams);
 
       const node = labelToNode(labelDTO);
@@ -105,5 +108,5 @@ export const useLabelAdjust = () => {
     });
   };
 
-  return adjustLabels;
+  return adjustLabelsWithLine;
 };
