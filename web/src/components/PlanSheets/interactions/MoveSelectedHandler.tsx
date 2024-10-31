@@ -13,12 +13,18 @@ import {
 } from "cytoscape";
 import { useEffect } from "react";
 
-import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import {
+  IEdgeDataProperties,
+  IGraphDataProperties,
+  INodeDataProperties,
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useLabelAdjust } from "@/hooks/useLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
+import { Position } from "@/util/positionUtil";
 
 import { moveExtent } from "./moveAndResizeUtil";
 import { getRelatedLabels } from "./selectUtil";
@@ -139,7 +145,17 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
 
     const endMove = (event: InputEventObject) => {
       if (updateMove(event)) {
-        const movingData = cytoDataToNodeAndEdgeData(movingElements);
+        if (!moveStartPositions) {
+          console.error("moveStartPositions is undefined at endMove");
+          return;
+        }
+        const movingElementsOffsetCoords = convertMovedCoordinateLabelsToOffsets(
+          cytoCoordMapper,
+          movingElements,
+          moveStartPositions,
+        );
+
+        const movingData = cytoDataToNodeAndEdgeData(movingElementsOffsetCoords);
 
         const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
@@ -373,4 +389,36 @@ function setPositions(
       y: position.y + dy,
     };
   });
+}
+
+function convertMovedCoordinateLabelsToOffsets(
+  cytoCoordMapper: CytoscapeCoordinateMapper,
+  movedElements: CollectionReturnValue,
+  startPositions: Record<string, Position>,
+): CollectionReturnValue {
+  movedElements.forEach((ele) => {
+    if (!ele.isNode()) {
+      return;
+    }
+
+    const movedEleStartPosition = startPositions[ele.id()];
+    const data = ele.data() as INodeDataProperties;
+
+    if (data.label && movedEleStartPosition && !data.symbolId) {
+      let pointOffset, anchorAngle;
+      const isDiagramLabel = !!ele.data("diagramId");
+      if (isDiagramLabel) {
+        ({ pointOffset, anchorAngle } = cytoCoordMapper.diagramLabelPositionToOffsetAndAngle(
+          ele,
+          movedEleStartPosition,
+        ));
+      } else {
+        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele));
+      }
+
+      ele.data({ pointOffset, anchorAngle, ignorePositionChange: isDiagramLabel });
+    }
+  });
+
+  return movedElements;
 }
