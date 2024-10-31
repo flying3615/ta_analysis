@@ -136,6 +136,15 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
+      // A diagram selection node displays a rectangle with the same dimensions as the diagram
+      selector: `node[elementType='${PlanElementType.DIAGRAM}']`,
+      style: {
+        shape: "rectangle",
+        height: "data(height)",
+        width: "data(width)",
+      },
+    },
+    {
       // SelectedDiagram displays controls instead of default :selected style
       selector: `node[elementType='${PlanElementType.DIAGRAM}']:selected`,
       style: {
@@ -331,15 +340,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "font-size": "15px",
         "text-valign": "center",
         "text-halign": "center",
-      },
-    },
-
-    {
-      selector: ":parent",
-      style: {
-        "border-width": 0,
-        padding: 0,
-        label: "",
       },
     },
 

@@ -9,7 +9,7 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
-import { Position } from "@/util/positionUtil";
+import { midPoint, Position, subtractIntoDelta } from "@/util/positionUtil";
 
 import { calculateTextAlignmentPolar, rotatedMargin, textDimensions, textRotationMathRads } from "./styleNodeMethods";
 
@@ -100,6 +100,38 @@ export interface INodeAndEdgeData {
   nodes: INodeData[];
 }
 
+const makeDiagramSelectionNodeDefinition = (
+  cytoscapeCoordMapper: CytoscapeCoordinateMapper,
+  diagramNodeProperties: IDiagramNodeDataProperties,
+  nodeDataEntry: INodeData,
+) => {
+  const diagramBottomRightPixels = cytoscapeCoordMapper.groundCoordToCytoscape(
+    {
+      x: diagramNodeProperties.bottomRightX,
+      y: diagramNodeProperties.bottomRightY,
+    },
+    diagramNodeProperties.diagramId,
+  );
+  const diagramOriginPixels = cytoscapeCoordMapper.planCoordToCytoscape({
+    x: diagramNodeProperties.originPageX * 100,
+    y: diagramNodeProperties.originPageY * 100,
+  });
+
+  const { dx: width, dy: height } = subtractIntoDelta(diagramBottomRightPixels, diagramOriginPixels);
+  const position = midPoint(diagramBottomRightPixels, diagramOriginPixels);
+
+  return {
+    group: "nodes" as ElementGroup,
+    data: {
+      ...diagramNodeProperties,
+      id: nodeDataEntry.id,
+      width,
+      height,
+    },
+    position,
+  };
+};
+
 export const nodeDefinitionsFromData = (
   data: INodeData[],
   cytoscapeCoordMapper: CytoscapeCoordinateMapper,
@@ -107,8 +139,12 @@ export const nodeDefinitionsFromData = (
   return [
     { data: { id: "root", label: "" } },
     ...data.map((nodeDataEntry) => {
-      const nodePositionPixels = nodePositionFromData(nodeDataEntry, cytoscapeCoordMapper);
+      const diagramNodeProperties = nodeDataEntry.properties as IDiagramNodeDataProperties;
+      if (diagramNodeProperties.elementType === PlanElementType.DIAGRAM) {
+        return makeDiagramSelectionNodeDefinition(cytoscapeCoordMapper, diagramNodeProperties, nodeDataEntry);
+      }
 
+      const nodePositionPixels = nodePositionFromData(nodeDataEntry, cytoscapeCoordMapper);
       return {
         group: "nodes" as ElementGroup,
         data: {

@@ -182,13 +182,12 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
   return diagrams.flatMap((diagram) => {
     const diagramLabelToNode = (label: LabelDTO): INodeData => {
       const baseLabelToNode = labelToNode(label);
-      // Add diagram and parent ids
+      // Add diagram id
       return {
         ...baseLabelToNode,
         properties: {
           ...baseLabelToNode.properties,
           diagramId: diagram.id,
-          parent: `D${diagram.id}`,
         },
       };
     };
@@ -200,13 +199,12 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
         label.labelType === "childDiagramPage" && pageNumber !== undefined
           ? label.displayText.replace("?", pageNumber.toString())
           : label.displayText;
-      // Add diagram and parent ids
+      // Add diagram id
       return {
         ...baseLabelToNode,
         properties: {
           ...baseLabelToNode.properties,
           diagramId: diagram.id,
-          parent: `D${diagram.id}`,
         },
       };
     };
@@ -236,7 +234,6 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
         properties: {
           ...baseCoordinate.properties,
           diagramId: diagram.id,
-          parent: `D${diagram.id}`,
         },
       };
     });
@@ -254,12 +251,14 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
 
     const parentNode: IDiagramNodeData = {
       id: `D${diagram.id}`,
-      // as a parent node, position
-      position: { x: 1, y: -1 },
+      // dummy position, actual is computed in `nodeDefinitionsFromData`
+      // using the diagram parameters
+      position: { x: 1, y: 1 },
       properties: {
         diagramId: diagram.id,
         elementType: PlanElementType.DIAGRAM,
         // these data define relative coordinate system (even if user has edited diagram)
+        // because the user edits the scaling, not the underlying geography
         bottomRightX: diagram.bottomRightPoint.x,
         bottomRightY: diagram.bottomRightPoint.y,
         originPageX: diagram.originPageOffset.x,
@@ -420,7 +419,6 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
         elementType: PlanElementType.COORDINATES,
         invisible: true,
         lineId: `${line.id}`,
-        parent: `D${diagramId}`,
       },
     },
     {
@@ -432,7 +430,6 @@ const breakLineNodes = (line: LineDTO, coordinates: CoordinateDTO[], diagramId: 
         elementType: PlanElementType.COORDINATES,
         invisible: true,
         lineId: `${line.id}`,
-        parent: `D${diagramId}`,
       },
     },
   ];

@@ -97,4 +97,22 @@ describe("makeCytoscapeStylesheet", () => {
     const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
     expect(styleEntry["text-background-color"]).toBe("rgba(248, 27, 239, 1)");
   });
+
+  test("has style for unselected diagram node", () => {
+    const selectedNodeStyle = stylesheet.find(
+      (s) => s.selector === "node[elementType='diagram']",
+    ) as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
+    expect(styleEntry["shape"]).toBe("rectangle");
+    expect(styleEntry["height"]).toBe("data(height)");
+    expect(styleEntry["width"]).toBe("data(width)");
+  });
+
+  test("has style for selected diagram node", () => {
+    const selectedNodeStyle = stylesheet.find(
+      (s) => s.selector === "node[elementType='diagram']:selected",
+    ) as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
+    expect(styleEntry["outline-opacity"]).toBe(0);
+  });
 });

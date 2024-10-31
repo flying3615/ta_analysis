@@ -11,6 +11,7 @@ import {
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { edgeSingular, nodeSingular } from "@/test-utils/cytoscape-utils";
 
 const inputNodes = [
@@ -182,5 +183,41 @@ describe("nodePositionsFromData", () => {
     expect(cytoscapePositions["node1"]?.y).toBeCloseTo(513.5, 1);
     expect(cytoscapePositions["node2"]?.x).toBeCloseTo(1033.8, 1);
     expect(cytoscapePositions["node2"]?.y).toBeCloseTo(206.6, 1);
+  });
+
+  test("nodeDefinitionsFromData maps diagram to a hidden rectangle node", () => {
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
+      { clientWidth: 500, clientHeight: 300 } as HTMLElement,
+      diagrams,
+    );
+    const diagramNodes = [
+      {
+        id: "D1",
+        properties: {
+          diagramId: 1,
+          elementType: PlanElementType.DIAGRAM,
+          bottomRightX: 100.0,
+          bottomRightY: 50.0,
+          originPageX: 0.015,
+          originPageY: -0.015,
+        },
+        position: { x: 1, y: 1 },
+      },
+    ];
+
+    const cytoscapeNodes = nodeDefinitionsFromData(diagramNodes, cytoscapeCoordinateMapper);
+
+    expect(cytoscapeNodes?.[1]?.group).toBe("nodes");
+    const diagramNode = cytoscapeNodes[1] as cytoscape.NodeDefinition;
+    expect(diagramNode.data?.["id"]).toBe("D1");
+    expect(diagramNode.data?.["diagramId"]).toBe(1);
+    expect(diagramNode.data?.["elementType"]).toBe("diagram");
+    expect(diagramNode.data?.["bottomRightX"]).toBe(100);
+    expect(diagramNode.data?.["originPageX"]).toBe(0.015);
+    expect(diagramNode.data?.["originPageY"]).toBe(-0.015);
+    expect(diagramNode.data?.["width"]).toBeCloseTo(1028, 0);
+    expect(diagramNode.data?.["height"]).toBeCloseTo(-538, 0);
+    expect(diagramNode.position?.x).toBeCloseTo(520, 0);
+    expect(diagramNode.position?.y).toBeCloseTo(-263, 0);
   });
 });
