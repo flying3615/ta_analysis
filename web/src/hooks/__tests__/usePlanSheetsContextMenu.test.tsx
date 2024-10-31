@@ -292,7 +292,7 @@ describe("PlanSheetsContextMenu", () => {
   });
 
   describe("getMenuItemsForPlanMode for Select Label", () => {
-    test("for single page label selection menu", () => {
+    test("for single page label selection menu (hide)", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
@@ -340,7 +340,7 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for multiple page label selection menu", (/**/) => {
+    test("for multiple page label selection menu (both display)", (/**/) => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
@@ -395,7 +395,7 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for single diagram label selection menu", () => {
+    test("for single diagram label selection menu (display)", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
@@ -443,7 +443,7 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for multiple diagram label selection menu", () => {
+    test("for multiple diagram label selection menu (both hide)", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
@@ -498,7 +498,7 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for combination label selection menu", () => {
+    test("for combination label selection menu (hide, display)", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
@@ -553,7 +553,7 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for combination label selection menu while click elsewhere", () => {
+    test("for combination label selection menu (system display, display)", () => {
       const selectedElements = [
         {
           data: (key: string) =>
@@ -561,7 +561,7 @@ describe("PlanSheetsContextMenu", () => {
               id: "1001",
               elementType: PlanElementType.LABELS,
               labelType: LabelDTOLabelTypeEnum.userAnnotation,
-              displayState: DisplayStateEnum.display,
+              displayState: DisplayStateEnum.systemDisplay,
             })[key],
         } as NodeSingular,
         {
@@ -603,7 +603,57 @@ describe("PlanSheetsContextMenu", () => {
       );
     });
 
-    test("for system label", () => {
+    test("for combination label selection menu (system display, hide)", () => {
+      const selectedElements = [
+        {
+          data: (key: string) =>
+            ({
+              id: "1001",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.userAnnotation,
+              displayState: DisplayStateEnum.systemDisplay,
+            })[key],
+        } as NodeSingular,
+        {
+          data: (key: string) =>
+            ({
+              id: "1002",
+              elementType: PlanElementType.LABELS,
+              labelType: LabelDTOLabelTypeEnum.lineDescription,
+              displayState: DisplayStateEnum.hide,
+            })[key],
+        } as NodeSingular,
+      ];
+
+      const selectedCollectionReturnValue = {
+        size: () => selectedElements.length,
+        nodes: () => selectedElements,
+      } as unknown as CollectionReturnValue;
+
+      renderWithReduxProvider(
+        <PlanSheetsContextMenuWrapComponent
+          targetElement={undefined}
+          selectedCollection={selectedCollectionReturnValue}
+          expectations={(labelMenuItems) => {
+            expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
+              "Original location",
+              "Show",
+              "Properties",
+              "Select (coming soon)",
+              "Move to page",
+              "Cut",
+              "Copy",
+              "Paste",
+              "Delete",
+            ]);
+            expect(labelMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
+          }}
+        />,
+        mockedStateForPlanMode(PlanMode.SelectLabel),
+      );
+    });
+
+    test("for single diagram label (system display)", () => {
       const selectedElements = [
         {
           data: (key: string) =>
