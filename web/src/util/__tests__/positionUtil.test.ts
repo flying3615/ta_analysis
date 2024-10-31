@@ -8,6 +8,7 @@ import {
   atanDegrees360,
   Delta,
   midPoint,
+  normalizeAngle,
   Position,
   subtractIntoDelta,
   subtractIntoPosition,
@@ -124,5 +125,42 @@ describe("subtractIntoDelta", () => {
 
   test("Subtracts Delta to Position", () => {
     expect(subtractIntoDelta({ dx: 8, dy: 11 }, { x: 3, y: 5 })).toStrictEqual({ dx: 5, dy: 6 });
+  });
+});
+
+describe("normalizeAngle", () => {
+  test("normalizes angle to range -90 to 90", () => {
+    expect(normalizeAngle(0)).toBe(0);
+    expect(normalizeAngle(45)).toBe(45);
+    expect(normalizeAngle(90)).toBe(90);
+    expect(normalizeAngle(135)).toBe(-45);
+    expect(normalizeAngle(180)).toBe(0);
+    expect(normalizeAngle(225)).toBe(45);
+    expect(normalizeAngle(270)).toBe(-90);
+    expect(normalizeAngle(315)).toBe(-45);
+    expect(normalizeAngle(360)).toBe(0);
+  });
+
+  test("normalizes negative angles to range -90 to 90", () => {
+    expect(normalizeAngle(-45)).toBe(-45);
+    expect(normalizeAngle(-90)).toBe(-90);
+    expect(normalizeAngle(-135)).toBe(45);
+    expect(normalizeAngle(-180)).toBe(0);
+    expect(normalizeAngle(-225)).toBe(-45);
+    expect(normalizeAngle(-270)).toBe(90);
+    expect(normalizeAngle(-315)).toBe(45);
+    expect(normalizeAngle(-360)).toBe(0);
+  });
+
+  test("normalizes large positive angles", () => {
+    expect(normalizeAngle(450)).toBe(90);
+    expect(normalizeAngle(540)).toBe(0);
+    expect(normalizeAngle(630)).toBe(-90);
+  });
+
+  test("normalizes large negative angles", () => {
+    expect(normalizeAngle(-450)).toBe(-90);
+    expect(normalizeAngle(-540)).toBe(0);
+    expect(normalizeAngle(-630)).toBe(-90);
   });
 });
