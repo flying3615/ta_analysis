@@ -94,7 +94,7 @@ export const getTextAlignmentValues = (arr: LabelPropertiesData[]) => {
   return ["textRight", "textCenter"].filter((value) => arr.some((item) => item.textAlignment.includes(value)));
 };
 
-const cleanTextAlignment = (textAlignment: string) => {
+export const cleanTextAlignment = (textAlignment: string) => {
   return textAlignment
     .replace(/textLeft|textCenter|textRight/g, "") // remove textLeft, textCenter, textRight
     .replace(/^,+|,+$/g, "") // trim commas from start and end

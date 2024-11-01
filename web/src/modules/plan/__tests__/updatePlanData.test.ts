@@ -3,13 +3,20 @@ import {
   DisplayStateEnum,
   LabelDTO,
   LabelDTOLabelTypeEnum,
+  PageDTO,
 } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
-import { updateDiagramsWithEdge, updateDiagramsWithNode } from "../updatePlanData";
+import {
+  addPageLabel,
+  updateDiagramLabels,
+  updateDiagramsWithEdge,
+  updateDiagramsWithNode,
+  updatePageLabels,
+} from "../updatePlanData";
 
 describe("updatePlanData", () => {
   const diagrams = new PlanDataBuilder()
@@ -135,5 +142,226 @@ describe("updatePlanData", () => {
 
     const result = updateDiagramsWithEdge(diagrams, updatedEdge);
     expect(result).toStrictEqual(diagrams);
+  });
+
+  test("updateDiagramLabels should return diagrams with updated label data", () => {
+    const labelArray = [
+      {
+        type: {
+          diagramId: "2",
+          elementType: PlanElementType.COORDINATE_LABELS,
+        },
+        data: {
+          id: 2,
+          displayText: "Updated Label 3",
+          fontStyle: "bold",
+          borderWidth: 1,
+          rotationAngle: 45,
+        },
+      },
+    ];
+
+    const result = updateDiagramLabels(diagrams, labelArray);
+    expect(result).toStrictEqual([
+      diagrams[0],
+      {
+        ...diagrams[1],
+        coordinateLabels: [
+          {
+            anchorAngle: 0,
+            displayState: DisplayStateEnum.display,
+            effect: "none",
+            pointOffset: 0,
+            rotationAngle: 45,
+            userEdited: false,
+            id: 2,
+            displayText: "Updated Label 3",
+            position: {
+              x: 55,
+              y: -10,
+            },
+            labelType: LabelDTOLabelTypeEnum.markDescription,
+            font: "Arial",
+            fontSize: 12,
+            fontStyle: "bold",
+            featureId: 10001,
+            featureType: "mark",
+            textAlignment: "centerCenter",
+            borderWidth: 1,
+            symbolType: undefined,
+          } satisfies LabelDTO,
+        ],
+      },
+    ]);
+  });
+
+  test("updateDiagramLabels should return diagrams unchanged if no matching labels", () => {
+    const labelArray = [
+      {
+        type: {
+          diagramId: "1",
+          elementType: PlanElementType.COORDINATE_LABELS,
+        },
+        data: {
+          id: 3,
+          displayText: "Non-existent Label",
+          position: { x: 100, y: -100 },
+          rotationAngle: 45,
+        },
+      },
+    ];
+
+    const result = updateDiagramLabels(diagrams, labelArray);
+    expect(result).toStrictEqual(diagrams);
+  });
+
+  test("updatePageLabels should return page with updated label data", () => {
+    const page = {
+      labels: [
+        {
+          id: 1,
+          displayText: "Label 1",
+          position: { x: 10, y: 10 },
+          rotationAngle: 0,
+        },
+        {
+          id: 2,
+          displayText: "Label 2",
+          position: { x: 20, y: 20 },
+          rotationAngle: 0,
+        },
+      ],
+    } as PageDTO;
+
+    const labelPropsArray = [
+      {
+        id: 1,
+        displayText: "Updated Label 1",
+        position: { x: 15, y: 15 },
+        rotationAngle: 45,
+      },
+    ];
+
+    const result = updatePageLabels(page, labelPropsArray);
+    expect(result).toStrictEqual({
+      ...page,
+      labels: [
+        {
+          id: 1,
+          displayText: "Updated Label 1",
+          position: { x: 15, y: 15 },
+          rotationAngle: 45,
+        },
+        {
+          id: 2,
+          displayText: "Label 2",
+          position: { x: 20, y: 20 },
+          rotationAngle: 0,
+        },
+      ],
+    });
+  });
+
+  test("updatePageLabels should return page unchanged if no matching labels", () => {
+    const page = {
+      labels: [
+        {
+          id: 1,
+          displayText: "Label 1",
+          position: { x: 10, y: 10 },
+          rotationAngle: 0,
+        },
+        {
+          id: 2,
+          displayText: "Label 2",
+          position: { x: 20, y: 20 },
+          rotationAngle: 0,
+        },
+      ],
+    } as PageDTO;
+
+    const labelPropsArray = [
+      {
+        id: 3,
+        displayText: "Non-existent Label",
+        position: { x: 100, y: 100 },
+        rotationAngle: 45,
+      },
+    ];
+
+    const result = updatePageLabels(page, labelPropsArray);
+    expect(result).toStrictEqual(page);
+  });
+
+  test("addPageLabel should add a new label to the page", () => {
+    const page = {
+      labels: [
+        {
+          id: 1,
+          displayText: "Label 1",
+          position: { x: 10, y: 10 },
+          rotationAngle: 0,
+        },
+      ],
+    } as PageDTO;
+
+    const labelProps = {
+      id: 2,
+      displayText: "New Label",
+      position: { x: 20, y: 20 },
+    };
+
+    const result = addPageLabel(page, labelProps);
+    expect(result).toStrictEqual({
+      ...page,
+      labels: [
+        ...(page.labels ?? []),
+        {
+          anchorAngle: 0,
+          displayState: DisplayStateEnum.display,
+          effect: "none",
+          font: "Tahoma",
+          fontSize: 14,
+          fontStyle: "italic",
+          labelType: LabelDTOLabelTypeEnum.userAnnotation,
+          pointOffset: 0,
+          rotationAngle: 0,
+          textAlignment: "centerCenter",
+          userEdited: false,
+          ...labelProps,
+        },
+      ],
+    });
+  });
+
+  test("addPageLabel should add a new label to an empty page", () => {
+    const page = {} as PageDTO;
+
+    const labelProps = {
+      id: 1,
+      displayText: "New Label",
+      position: { x: 20, y: 20 },
+    };
+
+    const result = addPageLabel(page, labelProps);
+    expect(result).toStrictEqual({
+      ...page,
+      labels: [
+        {
+          anchorAngle: 0,
+          displayState: DisplayStateEnum.display,
+          effect: "none",
+          font: "Tahoma",
+          fontSize: 14,
+          fontStyle: "italic",
+          labelType: LabelDTOLabelTypeEnum.userAnnotation,
+          pointOffset: 0,
+          rotationAngle: 0,
+          textAlignment: "centerCenter",
+          userEdited: false,
+          ...labelProps,
+        },
+      ],
+    });
   });
 });
