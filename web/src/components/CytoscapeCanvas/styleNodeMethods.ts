@@ -9,10 +9,7 @@ import { FOREGROUND_COLOUR } from "@/modules/plan/styling";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 export const LABEL_PADDING_PX = 1;
-export const CIRCLE_FACTOR = 1.1;
 const PIXELS_PER_CM = 37.79;
-
-const radiusForSquare = Math.sqrt(2.0);
 
 export interface StyleData {
   anchorAngle?: number;
@@ -47,7 +44,7 @@ export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
     const lineSizes = lines.map((l: string) => cyContext.measureText(l));
 
     const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
-    const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent - ls.fontBoundingBoxDescent));
+    const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
 
     return { height: height / PIXELS_PER_CM, width: width / PIXELS_PER_CM };
   }
@@ -91,7 +88,7 @@ export const textDiameterCm = (ele: cytoscape.NodeSingular) => {
   const { height, width } = textDimensionsCm(ele);
   const longestSide = max([height, width]) ?? 0;
 
-  return 2 * (longestSide / radiusForSquare) * CIRCLE_FACTOR;
+  return Math.sqrt(2) * longestSide;
 };
 
 export const textRotationClockwiseFromH = (ele: cytoscape.NodeSingular) => {
@@ -297,8 +294,8 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
     svg: makeScaledSVG({
       symbolSvg: CircleSVG,
       centre: { x: svgCentreX, y: svgCentreY },
+      svg: { width: svgWidth * 0.8, height: svgHeight * 0.8 },
       viewport: { width: svgWidth, height: svgWidth },
-      svg: { width: svgWidth, height: svgHeight },
       radius: svgCircleRadius,
       lineColor: "black",
       ...getStyleData(ele),

@@ -43,7 +43,7 @@ describe("styleNodeMethods", () => {
   test("textDiameterCm should return calculated diameter", () => {
     renderDummyCanvas();
     const diameter = textDiameterCm(testEle);
-    expect(diameter).toBeCloseTo(0.5, 1);
+    expect(diameter).toBeCloseTo(0.44, 1);
   });
 
   test("circleLabel should return an SVG circle scaled around label", () => {
