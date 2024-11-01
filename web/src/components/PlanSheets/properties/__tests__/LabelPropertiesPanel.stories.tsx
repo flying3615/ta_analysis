@@ -51,6 +51,17 @@ export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
 };
 
+export const ShowLabelContextMenu: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON); // screenshot verify context menu
+  },
+};
+
 export const ShowLabelPropertiesPanel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
