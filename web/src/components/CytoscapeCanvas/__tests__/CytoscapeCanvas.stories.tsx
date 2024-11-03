@@ -822,16 +822,6 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
 const renderBoxedUserText = () => {
   const builder = fromBuilder();
 
-  builder.addCooordinate(1, { x: 23.24, y: -14.45 });
-  builder.addCooordinate(2, { x: 23.24, y: -14.12 });
-  builder.addCooordinate(3, { x: 25.01, y: -14.12 });
-  builder.addCooordinate(4, { x: 25.01, y: -14.45 });
-
-  builder.addLine(10, [1, 2]);
-  builder.addLine(11, [2, 3]);
-  builder.addLine(12, [3, 4]);
-  builder.addLine(13, [4, 1]);
-
   builder.addLabel(
     "labels",
     100,
@@ -846,6 +836,7 @@ const renderBoxedUserText = () => {
     undefined,
     undefined,
     "centerCenter",
+    1,
   );
 
   return <CanvasFromMockData data={builder.build()} />;

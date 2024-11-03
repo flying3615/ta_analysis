@@ -8,7 +8,7 @@ import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
 import { FOREGROUND_COLOUR } from "@/modules/plan/styling";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
-export const LABEL_PADDING_PX = 1;
+export const LABEL_PADDING_PX = 4;
 const PIXELS_PER_CM = 37.79;
 
 export interface StyleData {

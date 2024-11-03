@@ -79,7 +79,7 @@ describe("styleNodeMethods", () => {
     const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(screen.getByTestId("dummyCanvas"), []);
     const margin = rotatedMargin(testEle, cytoscapeCoordinateMapper);
 
-    expect(margin.x).toBeCloseTo(1.1, 1);
+    expect(margin.x).toBeCloseTo(4.1, 1);
     expect(margin.y).toBeCloseTo(0, 1);
   });
 

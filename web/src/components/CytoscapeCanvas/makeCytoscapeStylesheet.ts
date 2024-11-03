@@ -69,6 +69,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-background-opacity": "data(textBackgroundOpacity)",
     "text-border-opacity": "data(textBorderOpacity)",
     "text-border-width": "data(textBorderWidth)",
+    "text-border-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
     "text-background-padding": LABEL_PADDING_PX,
     "text-rotation": textRotationClockwiseFromH,
     "background-clip": "none",
