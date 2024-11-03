@@ -83,7 +83,6 @@ export const useMaintainDiagramsGridColDefs = ({ refreshGrid, rows }: useMaintai
       }),
       GridEditBoolean(
         {
-          field: "hideLabels",
           colId: "label",
           valueGetter: ({ data }) => !data.hideLabels,
           valueSetter: ({ data, newValue }) => (data.hideLabels = !newValue),

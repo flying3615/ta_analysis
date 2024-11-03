@@ -1,4 +1,5 @@
 import {
+  DiagramLayerPreferenceDTO,
   DiagramLayerPreferencesDTO,
   GetDiagramLayerPreferencesByDiagramRequest,
   MaintainDiagramsControllerApi,
@@ -13,9 +14,10 @@ import type {
   GetDiagramNamesResponseDTO,
   GetDiagramTypesResponseDTO,
 } from "@linz/survey-plan-generation-api-client/src/models";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";
+import { useShowToast } from "@/util/showToast";
 
 export const diagramNamesQueryKey = (transactionId: number) => ["diagramNames", transactionId];
 
@@ -83,4 +85,48 @@ export const useDiagramLayerPreferencesByDiagramTypeQuery = (
         diagramTypeCode,
       }),
     enabled: options.enabled,
+    refetchOnMount: true,
   });
+
+export interface UpdateDiagramPreferencesProps {
+  transactionId: number;
+  diagramTypeCode: string;
+}
+export interface UpdateDiagramPreferencesMutationProps {
+  diagramsByType: Array<DiagramLayerPreferenceDTO & { id: number }>;
+}
+/**
+ * Update diagram preferences mutation.
+ */
+export const useUpdateLayerPreferencesByDiagramTypeMutation = ({
+  transactionId,
+  diagramTypeCode,
+}: UpdateDiagramPreferencesProps) => {
+  const queryClient = useQueryClient();
+  const { showErrorToast } = useShowToast();
+
+  return useMutation({
+    mutationFn: (props: UpdateDiagramPreferencesMutationProps) => {
+      return new MaintainDiagramsControllerApi(apiConfig()).updateDiagramLayerPreferencesByDiagramType({
+        transactionId,
+        diagramTypeCode,
+        updateDiagramLayerPreferencesRequestDTO: {
+          diagramLayerPreferences: props.diagramsByType.map((r) => ({
+            pldfId: r.pldfId,
+            hideLabels: r.hideLabels,
+            hideFeature: r.hideFeature,
+            selected: r.selected,
+          })),
+        },
+      });
+    },
+    onError: () => {
+      showErrorToast("Error updating diagram layer preferences");
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
+      });
+    },
+  });
+};

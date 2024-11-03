@@ -3,7 +3,7 @@ import "./MaintainDiagramsGrid.scss";
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
 import { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
-import { Grid, wait } from "@linzjs/step-ag-grid";
+import { Grid } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext, useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty, isEqual } from "lodash-es";
@@ -13,6 +13,7 @@ import {
   allDiagramLayerPreferencesQueryKey,
   useDiagramLayerPreferencesByDiagramTypeQuery,
   useDiagramTypesQuery,
+  useUpdateLayerPreferencesByDiagramTypeMutation,
 } from "@/components/LabelPreferencesPanel/maintainDiagram";
 import { layerChangesWillOverwriteModal } from "@/components/MaintainDiagramsPanel/LayerChangesWillOverwriteModal";
 import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridColDefs";
@@ -41,6 +42,10 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   const [saving, setSaving] = useState<boolean>();
   const [diagramTypeCode, setDiagramTypeCode] = useState<string>(CpgDiagramType.SYSP);
   const [diagramsByType, setDiagramsByType] = useState<(DiagramLayerPreferenceDTO & { id: number })[]>([]);
+  const [diagramsByTypeInitialState, setDiagramsByTypeInitialState] = useState<
+    (DiagramLayerPreferenceDTO & { id: number })[]
+  >([]);
+  const [hasChanged, setHasChanged] = useState(false);
 
   /**
    * Load diagram preferences
@@ -57,12 +62,14 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   /**
    * Copy the initial preferences state for change detection and initialisation.
    */
-  const diagramsByTypeInitialState = useMemo(
-    () => withId(diagramLayerByType?.diagramLayerByTypePreferences, "pldfId") ?? [],
-    [diagramLayerByType?.diagramLayerByTypePreferences],
-  );
 
-  const hasChanged = !isEqual(diagramsByType, diagramsByTypeInitialState);
+  useEffect(() => {
+    setDiagramsByTypeInitialState(withId(diagramLayerByType?.diagramLayerByTypePreferences, "pldfId") ?? []);
+  }, [diagramLayerByType?.diagramLayerByTypePreferences]);
+
+  useEffect(() => {
+    setHasChanged(!isEqual(diagramsByType, diagramsByTypeInitialState));
+  }, [diagramsByType, diagramsByTypeInitialState]);
 
   const resetDiagrams = useCallback(() => {
     setDiagramsByType(diagramsByTypeInitialState.map((r) => ({ ...r })));
@@ -73,18 +80,23 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
    */
   useEffect(resetDiagrams, [resetDiagrams]);
 
+  const updateLayerPreferencesByDiagramTypeMutation = useUpdateLayerPreferencesByDiagramTypeMutation({
+    transactionId,
+    diagramTypeCode,
+  });
+  /**
+   * Save the preference changes
+   */
   const save = useCallback(async () => {
     const result = await showPrefabModal(layerChangesWillOverwriteModal);
     if (!result) {
       return false;
     }
-
     setSaving(true);
-    console.log("Save not implemented yet");
-    await wait(1000);
+    await updateLayerPreferencesByDiagramTypeMutation.mutateAsync({ diagramsByType });
     setSaving(false);
     return true;
-  }, [showPrefabModal]);
+  }, [diagramsByType, updateLayerPreferencesByDiagramTypeMutation, showPrefabModal]);
 
   /**
    * If grid has changed ask if save required and save.
@@ -160,6 +172,8 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
         rowData={diagramsByType}
       />
       <MaintainDiagramsPanelFooter hasChanged={hasChanged} saving={saving} save={save} cancel={cancel} />
+      {/* Overlay div that appears when saving is true */}
+      {saving && <div className="MaintainDiagrams__overlay" />}
     </>
   );
 });

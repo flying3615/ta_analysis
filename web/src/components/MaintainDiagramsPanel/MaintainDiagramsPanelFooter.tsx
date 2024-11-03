@@ -24,7 +24,7 @@ export const MaintainDiagramsPanelFooter = ({ saving, hasChanged, cancel, save }
       )}
       <div style={{ flex: 1 }} />
       <LuiButton level="secondary" onClick={() => void cancel()}>
-        Cancel
+        {hasChanged ? "Cancel" : "Close"}
       </LuiButton>
       <LuiButton level="primary" disabled={!hasChanged} onClick={() => void save()}>
         Save
