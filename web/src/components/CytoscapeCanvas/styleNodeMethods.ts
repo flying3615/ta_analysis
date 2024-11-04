@@ -5,7 +5,7 @@ import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
-import { FOREGROUND_COLOUR } from "@/modules/plan/styling";
+import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling";
 import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
 
 export const LABEL_PADDING_PX = 4;
@@ -297,7 +297,7 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
       svg: { width: svgWidth * 0.8, height: svgHeight * 0.8 },
       viewport: { width: svgWidth, height: svgWidth },
       radius: svgCircleRadius,
-      lineColor: "black",
+      lineColor: (ele.data("fontColor") ?? FOREGROUND_COLOUR_BLACK) as string,
       ...getStyleData(ele),
       fontScaleFactor: cytoscapeCoordinateMapper.fontScaleFactor(),
       scaleFactor: cytoscapeCoordinateMapper.scalePixelsPerCm,
