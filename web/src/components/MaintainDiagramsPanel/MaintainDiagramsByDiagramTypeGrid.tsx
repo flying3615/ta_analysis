@@ -20,7 +20,7 @@ import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPan
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
 import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter";
 import { unsavedChangesModal } from "@/components/MaintainDiagramsPanel/UnsavedChangesModal";
-import { withId } from "@/util/queryUtil";
+import { withIdUndef } from "@/util/queryUtil";
 
 export interface MaintainDiagramsByDiagramTypeGridProps {
   transactionId: number;
@@ -64,7 +64,7 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
    */
 
   useEffect(() => {
-    setDiagramsByTypeInitialState(withId(diagramLayerByType?.diagramLayerByTypePreferences, "pldfId") ?? []);
+    setDiagramsByTypeInitialState(withIdUndef(diagramLayerByType?.diagramLayerByTypePreferences, "pldfId") ?? []);
   }, [diagramLayerByType?.diagramLayerByTypePreferences]);
 
   useEffect(() => {

@@ -2,92 +2,112 @@ import type {
   LabelPreferenceDTO,
   LabelPreferencesResponseDTOFontsInner,
 } from "@linz/survey-plan-generation-api-client";
-import { LuiButton } from "@linzjs/lui";
-import { ColDefT, Grid } from "@linzjs/step-ag-grid";
-import { PanelInstanceContext } from "@linzjs/windows";
-import { useQueryClient } from "@tanstack/react-query";
-import { useContext, useMemo, useState } from "react";
+import { FontEnum } from "@linz/survey-plan-generation-api-client";
+import { ColDefT, Grid, GridButton, GridCell, GridEditBoolean, GridPopoverEditDropDown } from "@linzjs/step-ag-grid";
+import { ICellEditorParams } from "ag-grid-community";
+import { fromPairs } from "lodash-es";
+import { useCallback, useMemo } from "react";
 
 import {
+  LabelPreferenceDefaultDTOWithId,
   LabelPreferenceDTOWithId,
-  userLabelPreferencesQueryKey,
 } from "@/components/LabelPreferencesPanel/labelPreferences";
 
 export interface LabelsForThisPlanProps {
-  transactionId: number;
   fonts: LabelPreferencesResponseDTOFontsInner[];
-  defaults: LabelPreferenceDTO[];
+  defaults: LabelPreferenceDefaultDTOWithId[];
   labelPreferences: LabelPreferenceDTOWithId[];
-  readOnly?: boolean;
+  setLabelPreferences: (prefs: LabelPreferenceDTOWithId[]) => void;
 }
 
-export const LabelsManagementGrid = ({ transactionId, labelPreferences, readOnly = false }: LabelsForThisPlanProps) => {
-  const queryClient = useQueryClient();
-  const { panelClose } = useContext(PanelInstanceContext);
-  const [list] = useState(labelPreferences);
+export const LabelsManagementGrid = ({
+  fonts,
+  defaults,
+  labelPreferences,
+  setLabelPreferences,
+}: LabelsForThisPlanProps) => {
+  const defaultMap = useMemo(() => fromPairs(defaults.map((d) => [d.labelType, d])), [defaults]);
 
-  const close = () => {
-    void queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) });
-    panelClose();
-  };
+  /**
+   * Compare label preference with default
+   *
+   * @return true if no difference.
+   */
+  const notDefault = useCallback(
+    (labelPreference: LabelPreferenceDTOWithId): boolean => {
+      const m = defaultMap[labelPreference.labelType];
+      return (
+        !!m &&
+        !(
+          m.defaultBold === labelPreference.bold &&
+          m.defaultFont === labelPreference.font &&
+          m.defaultFontSize === labelPreference.fontSize
+        )
+      );
+    },
+    [defaultMap],
+  );
 
-  const columnDefs: ColDefT<LabelPreferenceDTOWithId>[] = useMemo(() => {
-    //const fontMap = fromPairs(fonts.map((f) => [f.code, f.description]));
+  const updateLabelPreferences = useCallback(
+    (selectedRowIds: string[], update: Partial<LabelPreferenceDTO>): void => {
+      setLabelPreferences(
+        labelPreferences.map((row) => (selectedRowIds.includes(row.id) ? { ...row, ...update } : row)),
+      );
+    },
+    [labelPreferences, setLabelPreferences],
+  );
+
+  const columnDefs: ColDefT<LabelPreferenceDTOWithId>[] = useMemo((): ColDefT<LabelPreferenceDTOWithId>[] => {
+    const fontMap = fromPairs(fonts.map((f) => [f.code, f.description]));
 
     return [
-      /*GridCell({
-        field: "description",
+      GridCell({
+        colId: "description",
         headerName: "Label type",
+        valueGetter: ({ data }) => defaultMap[data.id]?.description,
         flex: 1,
         resizable: false,
       }),
-      GridButton<LabelPreferenceDTOWithId>(
+      GridButton(
         {
           colId: "revert",
           headerName: "Revert",
         },
         {
-          visible: ({ data }: ICellEditorParams) => {
-            if (readOnly) return false;
-            const typedData = data as Partial<{ labelType: string; bold: boolean; font: string; fontSize: number }>;
-            const m = defaults.find((r) => r.labelType === typedData.labelType);
-            return !!(
-              m && !(m.bold === typedData.bold && m.font === typedData.font && m.fontSize === typedData.fontSize)
-            );
-          },
+          visible: ({ data }: ICellEditorParams<LabelPreferenceDTOWithId>) => notDefault(data),
           onClick: ({ selectedRowIds }) => {
-            setList(
-              list.map((r) => {
-                if (selectedRowIds.includes(r.labelType)) {
-                  const d = defaults.find((d) => d.labelType === r.labelType);
-                  if (!d) return r;
-                  return { ...d, id: d.labelType };
-                }
-                return r;
-              }),
-            );
+            const d = defaultMap[selectedRowIds[0]!];
+            if (!d) return;
+
+            updateLabelPreferences(selectedRowIds, {
+              labelType: d.labelType,
+              font: d.defaultFont,
+              fontSize: d.defaultFontSize,
+              bold: d.defaultBold,
+            });
           },
         },
       ),
-      GridPopoverEditDropDown(
+      GridPopoverEditDropDown<LabelPreferenceDTOWithId, keyof typeof FontEnum>(
         {
           minWidth: 190,
           field: "font",
           headerName: "Font",
-          valueFormatter: ({ value }) => {
-            return fontMap[value as string] ?? "";
-          },
+          valueFormatter: ({ value }) => fontMap[value] ?? "",
           resizable: false,
-          editable: !readOnly,
         },
         {
           multiEdit: false,
           editorParams: {
             options: fonts.map((f) => ({ value: f.code, label: f.description })),
+            onSelectedItem: ({ selectedRowIds, value }) => {
+              updateLabelPreferences(selectedRowIds, { font: FontEnum[value] });
+              return Promise.resolve();
+            },
           },
         },
       ),
-      GridPopoverEditDropDown(
+      GridPopoverEditDropDown<LabelPreferenceDTOWithId, number>(
         {
           field: "fontSize",
           headerName: "Size",
@@ -96,14 +116,26 @@ export const LabelsManagementGrid = ({ transactionId, labelPreferences, readOnly
           maxWidth: 64,
           headerClass: "GridHeaderAlignCenter",
           cellClass: "GridCellAlignCenter",
-          editable: !readOnly,
         },
         {
           multiEdit: false,
           editorParams: {
             className: "GridPopoverEditDropDown-containerAutoWidth",
-            options: (selectedRows) =>
-              (selectedRows[0]?.fontSizeOptions ?? []).map((r) => ({ value: r, label: "" + r })),
+            options: (selectedRows) => {
+              const id = selectedRows[0]?.id;
+              if (id == null) {
+                return [];
+              }
+              const m = defaultMap[id];
+              if (!m) {
+                return [];
+              }
+              return m.fontSizeOptions.map((fontSize) => ({ value: fontSize, label: "" + fontSize }));
+            },
+            onSelectedItem: ({ selectedRowIds, value }) => {
+              updateLabelPreferences(selectedRowIds, { fontSize: value });
+              return Promise.resolve();
+            },
           },
         },
       ),
@@ -112,36 +144,25 @@ export const LabelsManagementGrid = ({ transactionId, labelPreferences, readOnly
           field: "bold",
           headerClass: "GridHeaderAlignCenter",
           cellClass: "GridCellAlignCenter",
-          editable: !readOnly,
         },
         {
-          onClick: ({ selectedRows, checked }) => {
-            selectedRows.forEach((row) => (row.bold = checked));
-            setList([...list]);
+          onClick: ({ selectedRowIds, checked }) => {
+            updateLabelPreferences(selectedRowIds, { bold: checked });
             return Promise.resolve(true);
           },
         },
-      ),*/
+      ),
     ];
-  }, []);
+  }, [defaultMap, fonts, notDefault, updateLabelPreferences]);
 
   return (
-    <>
-      <Grid
-        sizeColumns="none"
-        selectable={false}
-        singleClickEdit={true}
-        rowSelection="single"
-        columnDefs={columnDefs}
-        rowData={list}
-        readOnly={readOnly}
-      />
-      <div className="LabelPreferencesPanel__Footer">
-        <LuiButton level="secondary" onClick={close}>
-          Cancel
-        </LuiButton>
-        <LuiButton level="primary">Save</LuiButton>
-      </div>
-    </>
+    <Grid
+      sizeColumns="none"
+      selectable={false}
+      singleClickEdit={true}
+      rowSelection="single"
+      columnDefs={columnDefs}
+      rowData={labelPreferences}
+    />
   );
 };

@@ -1,9 +1,6 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
 .PlanElement-container {
-  .WindowPanel-content {
-    flex-direction: column;
-  }
   .plan-element-properties {
     padding: 0 16px;
 

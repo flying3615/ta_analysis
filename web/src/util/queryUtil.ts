@@ -85,5 +85,8 @@ export const byId =
 /**
  * Adds an id column to data list such that it can work with step-ag-grid
  */
-export const withId = <T>(list: T[] | undefined, idField: keyof T): (T & { id: number })[] | undefined =>
-  list ? (list.map((r) => ({ ...r, id: r[idField] })) as (T & { id: number })[]) : undefined;
+export const withId = <T, K extends keyof T>(list: T[], idField: K) =>
+  list.map((r) => ({ ...r, id: r[idField] })) as (T & { id: T[K] })[];
+
+export const withIdUndef = <T, K extends keyof T>(list: T[] | undefined, idField: K) =>
+  list ? withId(list, idField) : undefined;

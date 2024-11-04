@@ -18,7 +18,7 @@ import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPan
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
 import { MaintainDiagramsPanelFooter } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanelFooter";
 import { unsavedChangesModal } from "@/components/MaintainDiagramsPanel/UnsavedChangesModal";
-import { withId } from "@/util/queryUtil";
+import { withIdUndef } from "@/util/queryUtil";
 
 export interface MaintainDiagramsByDiagramIdGridProps {
   transactionId: number;
@@ -76,7 +76,7 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
    * Copy the initial preferences state for change detection and initialisation.
    */
   const diagramPreferencesInitialState = useMemo(
-    () => withId(diagramLayerPreferencesByDiagram?.diagramLayerPreferences, "pldfId") ?? [],
+    () => withIdUndef(diagramLayerPreferencesByDiagram?.diagramLayerPreferences, "pldfId") ?? [],
     [diagramLayerPreferencesByDiagram],
   );
 

@@ -13,8 +13,19 @@
 
 .LabelPreferencesPanel__Footer {
   display: flex;
-  margin-left: auto;
+  align-items: center;
   padding: 16px;
+}
+
+.LabelPreferencesPanel__Saved {
+  gap: 4px;
+  display: flex;
+  margin-left: 4px;
+  font-weight: 400;
+
+  svg {
+    fill: colours.$success;
+  }
 }
 
 .LabelPreferencesPanel__Footer button.lui-button {

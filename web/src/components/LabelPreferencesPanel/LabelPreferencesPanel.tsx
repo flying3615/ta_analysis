@@ -1,12 +1,25 @@
 import "./LabelPreferencesPanel.scss";
 
-import { LuiLoadingSpinner, LuiTabsContext, LuiTabsGroup, LuiTabsPanel, LuiTabsPanelSwitch } from "@linzjs/lui";
+import {
+  LuiButton,
+  LuiIcon,
+  LuiLoadingSpinner,
+  LuiTabsContext,
+  LuiTabsGroup,
+  LuiTabsPanel,
+  LuiTabsPanelSwitch,
+} from "@linzjs/lui";
 import { GridContextProvider, GridUpdatingContextProvider } from "@linzjs/step-ag-grid";
-import { Panel, PanelContent, PanelHeader } from "@linzjs/windows";
-import { useState } from "react";
+import { Panel, PanelContent, PanelHeader, PanelInstanceContext } from "@linzjs/windows";
+import { cloneDeep, isEqual, pick } from "lodash-es";
+import { useContext, useEffect, useMemo, useState } from "react";
 
-import { useUserLabelPreferences } from "@/components/LabelPreferencesPanel/labelPreferences";
-// import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
+import {
+  LabelPreferenceDTOWithId,
+  useUpdateLabelPreferencesMutation,
+  useUserLabelPreferences,
+} from "@/components/LabelPreferencesPanel/labelPreferences";
+import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
 
 const labelsForThisPlan = "labelsForThisPlan";
 const labelsForNewPlans = "labelsForNewPlans";
@@ -15,10 +28,52 @@ export interface LabelPreferencesPanelProps {
   transactionId: number;
 }
 
+interface Preferences {
+  surveyLabelPreferences: LabelPreferenceDTOWithId[];
+  userLabelPreferences: LabelPreferenceDTOWithId[];
+}
+
 export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelProps) => {
+  const { panelClose } = useContext(PanelInstanceContext);
   const [activePanel, setActivePanel] = useState(labelsForThisPlan);
+  const [saving, setSaving] = useState<boolean>();
 
   const { data: queryData, isLoading } = useUserLabelPreferences({ transactionId });
+  const { mutateAsync } = useUpdateLabelPreferencesMutation(transactionId);
+
+  const [labelPreferences, setLabelPreferences] = useState<Preferences>({
+    surveyLabelPreferences: [],
+    userLabelPreferences: [],
+  });
+  const [initialLabelPreferences, setInitialLabelPreferences] = useState({
+    ...labelPreferences,
+  });
+
+  useEffect(() => {
+    if (!queryData) return;
+
+    const preferences = pick(queryData, ["surveyLabelPreferences", "userLabelPreferences"]);
+    setLabelPreferences(cloneDeep(preferences));
+    setInitialLabelPreferences(cloneDeep(preferences));
+  }, [queryData]);
+
+  const close = () => {
+    panelClose();
+  };
+
+  const save = async () => {
+    setSaving(true);
+    await mutateAsync(labelPreferences);
+    setSaving(false);
+  };
+
+  const hasChanged = useMemo(() => {
+    const r = !isEqual(labelPreferences, initialLabelPreferences);
+    if (r) {
+      setSaving(undefined);
+    }
+    return r;
+  }, [initialLabelPreferences, labelPreferences]);
 
   return !queryData || isLoading ? (
     <LuiLoadingSpinner />
@@ -32,6 +87,12 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
         className="LabelPreferencesPanel"
         modal={true}
       >
+        {saving && (
+          <>
+            <div className="MaintainDiagrams__overlay" />
+            <LuiLoadingSpinner />
+          </>
+        )}
         <PanelHeader
           icon="ic_label_settings"
           onHelpClick={() => alert("Help!!!")}
@@ -48,29 +109,46 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
           <LuiTabsPanel key={labelsForThisPlan} panel={labelsForThisPlan}>
             <GridUpdatingContextProvider>
               <GridContextProvider>
-                {/* SRVPUW-941 disabled so BE can merge
                 <LabelsManagementGrid
-                  transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
-                  labelPreferences={queryData.surveyLabelPreferences}
-                />*/}
+                  labelPreferences={labelPreferences.surveyLabelPreferences}
+                  setLabelPreferences={(prefs: LabelPreferenceDTOWithId[]) => {
+                    setLabelPreferences({ ...labelPreferences, surveyLabelPreferences: prefs });
+                  }}
+                />
               </GridContextProvider>
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
           <LuiTabsPanel key={labelsForNewPlans} panel={labelsForNewPlans}>
             <GridUpdatingContextProvider>
               <GridContextProvider>
-                {/* SRVPUW-941 disabled so BE can merge
                 <LabelsManagementGrid
-                  transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
-                  labelPreferences={queryData.userLabelPreferences}
-                />*/}
+                  labelPreferences={labelPreferences.userLabelPreferences}
+                  setLabelPreferences={(prefs: LabelPreferenceDTOWithId[]) => {
+                    setLabelPreferences({ ...labelPreferences, userLabelPreferences: prefs });
+                  }}
+                />
               </GridContextProvider>
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
+          <div className="LabelPreferencesPanel__Footer">
+            {saving === false && (
+              <div className="LabelPreferencesPanel__Saved">
+                <LuiIcon name="ic_check_circle_outline" size="md" alt="Saved" />
+                <div>All preferences up to date</div>
+              </div>
+            )}
+            <div style={{ flex: 1 }} />
+            <LuiButton level="secondary" onClick={close}>
+              {hasChanged ? "Cancel" : "Close"}
+            </LuiButton>
+            <LuiButton level="primary" onClick={() => void save()} disabled={!hasChanged}>
+              Save
+            </LuiButton>
+          </div>
         </PanelContent>
       </Panel>
     </LuiTabsContext.Provider>
