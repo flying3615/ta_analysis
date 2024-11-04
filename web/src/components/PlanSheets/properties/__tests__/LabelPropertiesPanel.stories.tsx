@@ -1,17 +1,22 @@
+import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
   click,
   clickAtCoordinates,
+  clickAtPosition,
   clickMultipleCoordinates,
   getCytoCanvas,
   ModalStoryWrapper,
@@ -19,6 +24,15 @@ import {
   sleep,
   StorybookRouter,
 } from "@/test-utils/storybook-utils";
+
+import {
+  diagramLabelObsBearingHide,
+  diagramLabelObsBearingSuppressSeconds,
+  diagramLabelParcelAppellation,
+  diagramLabelSystemDisplay,
+  pageLabelWithBorder,
+  pageLabelWithLineBreak,
+} from "./data/LabelsData";
 
 export default {
   title: "PlanSheets/Properties/LabelPropertiesPanel",
@@ -46,6 +60,10 @@ const PlanSheetsTemplate = () => {
 const pageLabelPosition = { clientX: 900, clientY: 200 };
 const diagramLabelPosition = { clientX: 484, clientY: 269 };
 const whiteSpace = { clientX: 585, clientY: 300 };
+const pageLabelWithLineBreakPosition = { clientX: 802, clientY: 478 };
+const hiddenDiagramLabelPosition = { clientX: 475, clientY: 344 };
+const hiddenPageLabelPosition = { clientX: 695, clientY: 589 };
+const diagramLabelSystemDisplayPosition = { clientX: 788, clientY: 89 };
 
 export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
@@ -190,6 +208,139 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
     await userEvent.click(okButton); // changes rendered
     await userEvent.click(await canvas.findByTitle(PlanMode.Undo)); // changes undone - final screenshot verify changes not rendered
     await sleep(500);
+  },
+};
+
+const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (customMockPlanData.pages[0]) {
+  customMockPlanData.pages[0].labels = [
+    ...(customMockPlanData.pages[0].labels ?? []),
+    pageLabelWithLineBreak,
+    pageLabelWithBorder,
+  ];
+}
+if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
+  customMockPlanData.diagrams[0].lineLabels = [
+    ...customMockPlanData.diagrams[0].lineLabels,
+    diagramLabelParcelAppellation,
+    diagramLabelObsBearingHide,
+    diagramLabelObsBearingSuppressSeconds,
+    diagramLabelSystemDisplay,
+  ];
+}
+
+export const CustomLabels: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(customMockPlanData, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        ...handlers,
+      ],
+    },
+  },
+};
+
+export const HidePageAndDiagramLabelsBothInDisplayState: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickMultipleCoordinates(target, [
+      { x: pageLabelWithLineBreakPosition.clientX, y: pageLabelWithLineBreakPosition.clientY },
+      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
+    ]);
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const hideButton = await within(contextMenu).findByText("Hide");
+    await userEvent.click(hideButton); // final screenshot verify labels hidden
+    await sleep(500);
+  },
+};
+
+export const ShowPageAndDiagramLabelsBothInHideState: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickMultipleCoordinates(target, [
+      { x: hiddenDiagramLabelPosition.clientX, y: hiddenDiagramLabelPosition.clientY },
+      { x: hiddenPageLabelPosition.clientX, y: hiddenPageLabelPosition.clientY },
+    ]);
+    clickAtPosition(target, hiddenPageLabelPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const showButton = await within(contextMenu).findByText("Show");
+    await userEvent.click(showButton); // final screenshot verify labels shown
+    await sleep(500);
+  },
+};
+
+export const ShowPageLabelInHideStateAndDiagramLabelInDisplayState: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickMultipleCoordinates(target, [
+      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
+      { x: hiddenPageLabelPosition.clientX, y: hiddenPageLabelPosition.clientY },
+    ]);
+    clickAtPosition(target, hiddenPageLabelPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const showButton = await within(contextMenu).findByText("Show");
+    await userEvent.click(showButton); // final screenshot verify labels shown
+    await sleep(500);
+  },
+};
+
+export const ShowDiagramLabelInSystemDisplayStateAndPageLabelInHideState: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickMultipleCoordinates(target, [
+      { x: diagramLabelSystemDisplayPosition.clientX, y: diagramLabelSystemDisplayPosition.clientY },
+      { x: hiddenPageLabelPosition.clientX, y: hiddenPageLabelPosition.clientY },
+    ]);
+    clickAtPosition(target, diagramLabelSystemDisplayPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const showButton = await within(contextMenu).findByText("Show");
+    await userEvent.click(showButton); // final screenshot verify labels shown
+    await sleep(500);
+  },
+};
+
+export const HidePageAndDiagramLabelsThenUndo: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickMultipleCoordinates(target, [
+      { x: pageLabelWithLineBreakPosition.clientX, y: pageLabelWithLineBreakPosition.clientY },
+      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
+    ]);
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const hideButton = await within(contextMenu).findByText("Hide");
+    await userEvent.click(hideButton); // changes rendered
+    await sleep(500);
+    await userEvent.click(await canvas.findByTitle(PlanMode.Undo));
+    await sleep(500); // final screenshot verify changes undone
+    await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
   },
 };
 

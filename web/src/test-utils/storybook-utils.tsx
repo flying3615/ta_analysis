@@ -115,6 +115,14 @@ export const tabletLandscapeParameters = {
 export const LEFT_MOUSE_BUTTON = 0; // default
 export const RIGHT_MOUSE_BUTTON = 2;
 
+export const clickAtPosition = (
+  cytoscapeNodeLayer: HTMLElement,
+  coordinates: { clientX: number; clientY: number },
+  button: number | undefined = undefined,
+) => {
+  clickAtCoordinates(cytoscapeNodeLayer, coordinates.clientX, coordinates.clientY, button);
+};
+
 export const clickAtCoordinates = (
   cytoscapeNodeLayer: HTMLElement,
   x: number,
