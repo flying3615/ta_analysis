@@ -286,9 +286,14 @@ export const calculateCircleSvgParamsCm = (diameterCm: number) => {
   };
 };
 
-export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
+export const circleLabel = (
+  ele: cytoscape.NodeSingular,
+  cytoscapeCoordinateMapper: CytoscapeCoordinateMapper,
+  params?: { backgroundColor?: string; labelColor?: string },
+) => {
   const diameterCm = textDiameterCm(ele);
   const { svgWidth, svgHeight, svgCentreX, svgCentreY, svgCircleRadius } = calculateCircleSvgParamsCm(diameterCm);
+  const { height, width } = textDimensionsCm(ele);
 
   return {
     svg: makeScaledSVG({
@@ -301,6 +306,14 @@ export const circleLabel = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapp
       ...getStyleData(ele),
       fontScaleFactor: cytoscapeCoordinateMapper.fontScaleFactor(),
       scaleFactor: cytoscapeCoordinateMapper.scalePixelsPerCm,
+      labelColor: params?.labelColor,
+      background: params?.backgroundColor
+        ? {
+            color: params.backgroundColor,
+            height,
+            width: width * 1.2, // adds x padding
+          }
+        : undefined,
     }),
     width: svgWidth,
     height: svgHeight,

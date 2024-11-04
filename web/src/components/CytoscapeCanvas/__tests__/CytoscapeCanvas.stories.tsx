@@ -34,6 +34,30 @@ import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";
 
 const mockedState = { ...mockStore };
 
+const selectAllLabels = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$(PlanElementSelector.Labels).selectify();
+  cy.$(PlanElementSelector.Labels).addClass("selectable-label");
+  cy.$("node").select();
+  await sleep(500);
+};
+
+const hoverAllLabels = async () => {
+  await sleep(500);
+  const cy = cyRef;
+  if (!cy) {
+    throw new Error("Cytoscape instance is not available");
+  }
+  cy.$(PlanElementSelector.Labels).selectify();
+  cy.$(PlanElementSelector.Labels).addClass("selectable-label");
+  cy.$(PlanElementSelector.Labels).addClass("hover");
+  await sleep(500);
+};
+
 export default {
   title: "CytoscapeCanvas",
   component: CytoscapeCanvas,
@@ -647,6 +671,21 @@ export const RendersRotatedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const RendersRotatedSelectedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    addRotatedLabel(builder, 9, "II", 15, -10, 45, "centerCenter", true, false);
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  play: selectAllLabels,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
 export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
@@ -686,6 +725,136 @@ export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> 
   },
 };
 
+export const RendersSelectedCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    const startDegrees = 0;
+    const endDegrees = 360;
+    const maxColumns = 4;
+    const step = (endDegrees - startDegrees) / maxColumns;
+    const letters = ["O", "I", "G", "X"];
+
+    const rowSpacing = 3;
+    const columnSpacing = 3;
+
+    let id = 1;
+    for (let column = 0; column <= maxColumns; column++) {
+      letters.forEach((letter, row) =>
+        addRotatedLabel(
+          builder,
+          id++,
+          letter,
+          (column + 1) * columnSpacing,
+          (row + 1) * rowSpacing * -1,
+          column * step,
+          "centerCenter",
+          true,
+          false,
+        ),
+      );
+    }
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  play: selectAllLabels,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+    const startDegrees = 0;
+    const endDegrees = 360;
+    const maxColumns = 4;
+    const step = (endDegrees - startDegrees) / maxColumns;
+    const letters = ["O", "I", "G", "X"];
+
+    const rowSpacing = 3;
+    const columnSpacing = 3;
+
+    let id = 1;
+    for (let column = 0; column <= maxColumns; column++) {
+      letters.forEach((letter, row) =>
+        addRotatedLabel(
+          builder,
+          id++,
+          letter,
+          (column + 1) * columnSpacing,
+          (row + 1) * rowSpacing * -1,
+          column * step,
+          "topLeft",
+          true,
+          false,
+        ),
+      );
+    }
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  play: selectAllLabels,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersHoveredCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+
+    const letters = ["O", "I", "G", "X"];
+
+    const rowSpacing = 3;
+    const columnSpacing = 3;
+
+    letters.forEach((letter, row) =>
+      addRotatedLabel(builder, row, letter, columnSpacing, (row + 1) * rowSpacing * -1, 0, "topLeft", true, false),
+    );
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  play: hoverAllLabels,
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
+
+export const RendersHoveredSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const builder = fromBuilder();
+
+    const letters = ["O", "I", "G", "X"];
+
+    const rowSpacing = 3;
+    const columnSpacing = 3;
+
+    letters.forEach((letter, row) =>
+      addRotatedLabel(builder, row, letter, columnSpacing, (row + 1) * rowSpacing * -1, 0, "topLeft", true, false),
+    );
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  play: async () => {
+    await selectAllLabels();
+    await hoverAllLabels();
+  },
+  parameters: {
+    viewport: {
+      defaultViewport: "tablet",
+      defaultOrientation: "landscape",
+    },
+  },
+};
 export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const startX = 5;

@@ -12,7 +12,14 @@ const circleSVG =
   "LINE_COLOR:%LINE_COLOR%" +
   "FONT_FAMILY:%FONT_FAMILY%" +
   "FONT_SIZE:%FONT_SIZE%" +
-  "LABEL:%LABEL%";
+  "LABEL:%LABEL%" +
+  "LABEL_COLOR:%LABEL_COLOR%" +
+  "BACKGROUND_X:%BACKGROUND_X%" +
+  "BACKGROUND_Y:%BACKGROUND_Y%" +
+  "BACKGROUND_WIDTH:%BACKGROUND_WIDTH%" +
+  "BACKGROUND_HEIGHT:%BACKGROUND_HEIGHT%" +
+  "BACKGROUND_COLOR:%BACKGROUND_COLOR%" +
+  "BACKGROUND_RADIUS:%BACKGROUND_RADIUS%";
 
 describe("makeScaledSvg", () => {
   test("Substitutes width and height", () => {
@@ -48,7 +55,14 @@ describe("makeScaledSvg", () => {
         "LINE_COLOR:black" +
         "FONT_FAMILY:" +
         "FONT_SIZE:12" +
-        "LABEL:",
+        "LABEL:" +
+        "LABEL_COLOR:black" +
+        "BACKGROUND_X:" +
+        "BACKGROUND_Y:" +
+        "BACKGROUND_WIDTH:" +
+        "BACKGROUND_HEIGHT:" +
+        "BACKGROUND_COLOR:" +
+        "BACKGROUND_RADIUS:",
     );
   });
 
@@ -78,7 +92,14 @@ describe("makeScaledSvg", () => {
         "LINE_COLOR:red" +
         "FONT_FAMILY:test" +
         "FONT_SIZE:24" +
-        "LABEL:T",
+        "LABEL:T" +
+        "LABEL_COLOR:red" +
+        "BACKGROUND_X:" +
+        "BACKGROUND_Y:" +
+        "BACKGROUND_WIDTH:" +
+        "BACKGROUND_HEIGHT:" +
+        "BACKGROUND_COLOR:" +
+        "BACKGROUND_RADIUS:",
     );
   });
 
@@ -110,7 +131,89 @@ describe("makeScaledSvg", () => {
         "LINE_COLOR:red" +
         "FONT_FAMILY:test" +
         "FONT_SIZE:12" +
-        "LABEL:T",
+        "LABEL:T" +
+        "LABEL_COLOR:red" +
+        "BACKGROUND_X:" +
+        "BACKGROUND_Y:" +
+        "BACKGROUND_WIDTH:" +
+        "BACKGROUND_HEIGHT:" +
+        "BACKGROUND_COLOR:" +
+        "BACKGROUND_RADIUS:",
+    );
+  });
+
+  test("CircleSVG different label color to line color", () => {
+    const scaledSvg = makeScaledSVG({
+      symbolSvg: circleSVG,
+      svg: { width: 10, height: 20 },
+      labelColor: "blue",
+    });
+    expect(decodeURIComponent(scaledSvg)).toBe(
+      "data:image/svg+xml;utf8," +
+        "WIDTH:10" +
+        "HEIGHT:20" +
+        "VIEWPORT_WIDTH:0" +
+        "VIEWPORT_HEIGHT:0" +
+        "ROTATION:0" +
+        "CENTRE_X:0" +
+        "CENTRE_Y:0" +
+        "RADIUS:1" +
+        "LINE_COLOR:black" +
+        "FONT_FAMILY:" +
+        "FONT_SIZE:12" +
+        "LABEL:" +
+        "LABEL_COLOR:blue" +
+        "BACKGROUND_X:" +
+        "BACKGROUND_Y:" +
+        "BACKGROUND_WIDTH:" +
+        "BACKGROUND_HEIGHT:" +
+        "BACKGROUND_COLOR:" +
+        "BACKGROUND_RADIUS:",
+    );
+  });
+
+  test("CircleSVG all params with background", () => {
+    const scaledSvg = makeScaledSVG({
+      symbolSvg: circleSVG,
+      svg: { width: 20, height: 20 },
+      viewport: { height: 22, width: 22 },
+      centre: { x: 10, y: 10 },
+      font: "test",
+      fontSize: 24,
+      label: "T",
+      lineColor: "red",
+      radius: 10,
+      textRotation: 45,
+      fontScaleFactor: 0.5,
+      scaleFactor: 0.5,
+      labelColor: "black",
+      background: {
+        color: "blue",
+        height: 10,
+        width: 5,
+      },
+    });
+    expect(decodeURIComponent(scaledSvg)).toBe(
+      "data:image/svg+xml;utf8," +
+        "WIDTH:10" +
+        "HEIGHT:10" +
+        "VIEWPORT_WIDTH:11" +
+        "VIEWPORT_HEIGHT:11" +
+        "ROTATION:45" +
+        "CENTRE_X:5" +
+        "CENTRE_Y:5" +
+        "RADIUS:5" +
+        "LINE_COLOR:red" +
+        "FONT_FAMILY:test" +
+        "FONT_SIZE:12" +
+        "LABEL:T" +
+        "LABEL_COLOR:black" +
+        "BACKGROUND_X:3.75" +
+        "BACKGROUND_Y:2.5" +
+        "BACKGROUND_WIDTH:2.5" +
+        "BACKGROUND_HEIGHT:5" +
+        "BACKGROUND_COLOR:blue" +
+        "BACKGROUND_RADIUS:0.5",
     );
   });
 });

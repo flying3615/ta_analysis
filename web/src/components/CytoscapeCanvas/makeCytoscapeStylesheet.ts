@@ -137,6 +137,12 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected",
+      style: {
+        "outline-opacity": 0,
+      },
+    },
+    {
       // A diagram selection node displays a rectangle with the same dimensions as the diagram
       selector: `node[elementType='${PlanElementType.DIAGRAM}']`,
       style: {
@@ -241,6 +247,32 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
           ...(isGreyScale ? { "background-clip": "none" } : { "bounds-expansion": 12 }),
         };
       })(),
+    },
+    {
+      selector:
+        "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId].selectable-label.hover",
+      style: {
+        "background-image": (ele: cytoscape.NodeSingular) =>
+          circleLabel(ele, cytoscapeCoordinateMapper, { labelColor: ELEMENT_HOVERED_COLOR }).svg,
+      },
+    },
+    {
+      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected",
+      style: {
+        "background-image": (ele: cytoscape.NodeSingular) =>
+          circleLabel(ele, cytoscapeCoordinateMapper, { backgroundColor: ELEMENT_SELECTED_COLOR }).svg,
+      },
+    },
+    {
+      selector:
+        "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected.selectable-label.hover",
+      style: {
+        "background-image": (ele: cytoscape.NodeSingular) =>
+          circleLabel(ele, cytoscapeCoordinateMapper, {
+            backgroundColor: ELEMENT_SELECTED_COLOR,
+            labelColor: ELEMENT_HOVERED_COLOR,
+          }).svg,
+      },
     },
     {
       // Node with label
