@@ -40,9 +40,9 @@ export const fontSizeOptions: SelectOptions[] = [
 
 export const borderWidthOptions: SelectOptions[] = [
   { value: "0.7", label: "0.7" },
-  { value: "1", label: "1" },
+  { value: "1.0", label: "1.0" },
   { value: "1.4", label: "1.4" },
-  { value: "2", label: "2" },
+  { value: "2.0", label: "2.0" },
 ];
 
 export const textAlignmentEnum = {

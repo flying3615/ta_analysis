@@ -2,16 +2,17 @@ import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { screen } from "@testing-library/react";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
+import LineProperties, { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { mockStore } from "@/test-utils/store-mock";
 
-const mockProps: LinePropertiesProps = {
+const mockProps: LinePropertiesData = {
+  lineId: 1001,
   displayState: DisplayStateEnum.display,
   lineType: "observation",
-  pointWidth: 0.75,
-  originalStyle: "brokenSolid1",
+  pointWidth: 0.7,
+  originalStyle: "solid",
 };
 const mockReduxStore = setupStore({
   planSheets: {
@@ -21,7 +22,9 @@ const mockReduxStore = setupStore({
 });
 
 const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
-  renderWithReduxProvider(<LineProperties data={props} />, { store: reduxStore });
+  renderWithReduxProvider(<LineProperties data={props} setSaveEnabled={jest.fn()} setSaveFunction={jest.fn()} />, {
+    store: reduxStore,
+  });
 
 describe("LineProperties", () => {
   it("renders correctly", () => {

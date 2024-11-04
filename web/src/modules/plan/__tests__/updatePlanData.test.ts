@@ -8,14 +8,17 @@ import {
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { LinePropsToUpdate } from "@/components/PlanSheets/properties/LineProperties";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 import {
   addPageLabel,
   updateDiagramLabels,
+  updateDiagramLines,
   updateDiagramsWithEdge,
   updateDiagramsWithNode,
   updatePageLabels,
+  updatePageLines,
   updatePageWithNode,
 } from "../updatePlanData";
 
@@ -82,6 +85,50 @@ describe("updatePlanData", () => {
       textAlignment: "",
       userEdited: false,
       id: 10002,
+    })
+    .addUserCoordinate({
+      id: 1011,
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: {
+        x: 20,
+        y: -10,
+      },
+    })
+    .addUserCoordinate({
+      id: 1012,
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: {
+        x: 20,
+        y: -10,
+      },
+    })
+    .addUserCoordinate({
+      id: 1013,
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: {
+        x: 20,
+        y: -10,
+      },
+    })
+    .addUserCoordinate({
+      id: 1014,
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: {
+        x: 20,
+        y: -10,
+      },
+    })
+    .addUserLine({
+      id: 1021,
+      coordRefs: [1011, 1012],
+      lineType: "userDefined",
+      style: "arrowhead",
+    })
+    .addUserLine({
+      id: 1022,
+      coordRefs: [1013, 1014],
+      lineType: "userDefined",
+      style: "solid",
     });
 
   const diagrams = planDataBuilder.build().diagrams;
@@ -428,5 +475,55 @@ describe("updatePlanData", () => {
         },
       ],
     });
+  });
+
+  test("updatePageLines should return diagrams with updated line data", () => {
+    const updatedLine = {
+      id: 3,
+      pointWidth: 2,
+      style: "peck1",
+    } as LinePropsToUpdate;
+
+    const result = updateDiagramLines(diagrams, [updatedLine]);
+    expect(result[1]?.lines).toStrictEqual([
+      {
+        id: 3,
+        coordRefs: [1, 2],
+        lineType: "observation",
+        pointWidth: 2,
+        style: "peck1",
+      },
+    ]);
+  });
+
+  test("updatePageLines should return pages with updated line data", () => {
+    const updatedLine = {
+      id: 1021,
+      pointWidth: 2,
+      style: "peck1",
+    } as LinePropsToUpdate;
+
+    const result = updatePageLines(pages[0]!, [updatedLine]);
+    expect(result.lines).toStrictEqual([
+      {
+        id: 2,
+        coordRefs: [10002, 10003],
+        lineType: "userDefined",
+        style: "solid",
+      },
+      {
+        id: 1021,
+        coordRefs: [1011, 1012],
+        lineType: "userDefined",
+        pointWidth: 2,
+        style: "peck1",
+      },
+      {
+        id: 1022,
+        coordRefs: [1013, 1014],
+        lineType: "userDefined",
+        style: "solid",
+      },
+    ]);
   });
 });

@@ -61,6 +61,7 @@
       .LuiRadioInput-fieldset {
         .LuiRadioInput-label {
           padding: 0.5rem 0 0.5rem 2.5rem;
+          font-weight: 400;
 
           &:before {
             left: 10px;
@@ -68,6 +69,7 @@
           &:after {
             left: 15px;
           }
+
           &--isSelected {
             background-color: #e2f3f7;
             border-color: #007198;
@@ -82,6 +84,12 @@
             &:after {
               background-color: #007198;
             }
+          }
+
+          &--isDisabled,
+          &:hover {
+            background-color: lui.$hint;
+            border-radius: 5px;
           }
         }
       }

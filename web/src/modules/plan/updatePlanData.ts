@@ -12,6 +12,7 @@ import { IDiagramNodeData, IEdgeData, INodeData } from "@/components/CytoscapeCa
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { LabelPropsToUpdate, LabelPropsToUpdateWithElemType } from "@/components/PlanSheets/properties/LabelProperties";
 import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
+import { LinePropsToUpdate } from "@/components/PlanSheets/properties/LineProperties";
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
@@ -88,6 +89,28 @@ export const addPageLabel = (
     ...page,
     labels: [...(page.labels ?? []), label],
   };
+};
+
+export const updatePageLines = (page: PageDTO, linePropsArray: LinePropsToUpdate[]): PageDTO => {
+  return {
+    ...page,
+    lines: page.lines?.map((line) => {
+      const updatedProps = linePropsArray.find((props) => props.id === line.id);
+      return updatedProps ? { ...line, ...updatedProps } : line;
+    }),
+  };
+};
+
+export const updateDiagramLines = (diagrams: DiagramDTO[], linePropsArray: LinePropsToUpdate[]): DiagramDTO[] => {
+  return diagrams.map((diagram) => {
+    return {
+      ...diagram,
+      lines: diagram.lines?.map((line) => {
+        const updatedProps = linePropsArray.find((props) => props.id === line.id);
+        return updatedProps ? { ...line, ...updatedProps } : line;
+      }),
+    };
+  });
 };
 
 export const updatePageLabels = (page: PageDTO, labelPropsArray: LabelPropsToUpdate[]): PageDTO => {

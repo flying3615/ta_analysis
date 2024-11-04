@@ -1,30 +1,60 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LineDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiCheckboxInput, LuiRadioInput, LuiTextInput } from "@linzjs/lui";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
-import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LineStyle } from "@/modules/plan/styling";
-import { getActiveSheet } from "@/redux/planSheets/planSheetsSlice";
+import { updateDiagramLines, updatePageLines } from "@/modules/plan/updatePlanData";
+import {
+  getActivePage,
+  getActiveSheet,
+  getDiagrams,
+  replaceDiagrams,
+  replacePage,
+} from "@/redux/planSheets/planSheetsSlice";
 
 import { borderWidthOptions } from "./LabelPropertiesUtils";
 
-export interface LinePropertiesProps {
+interface LinePropertiesProps {
+  data: LinePropertiesData[];
+  setSaveFunction: React.Dispatch<React.SetStateAction<(() => void) | undefined>>;
+  setSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface LinePropertiesData {
+  lineId: number;
   displayState: DisplayStateEnum;
   lineType: string;
   pointWidth: number;
   originalStyle: string;
 }
 
-const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
-  const initialDisplayState = data[0]?.displayState || DisplayStateEnum.display;
-  const [displayState, setDisplayState] = useState<DisplayStateEnum>(initialDisplayState);
-  const activeSheet = useAppSelector(getActiveSheet);
+type ValuesToUpdate = {
+  displayState?: DisplayStateEnum;
+  pointWidth?: number;
+  style?: string;
+};
 
-  const lineType = data[0]?.lineType ?? "observation";
-  const [lineStyle, setLineStyle] = useState(data[0]?.originalStyle ?? LineStyle.SOLID);
-  const [pointWidth, setPointWidth] = useState(data[0]?.pointWidth ?? 1.0);
+export type LinePropsToUpdate = Pick<LineDTO, "id"> & Partial<LineDTO>;
+
+const LineProperties = (props: LinePropertiesProps) => {
+  const selectedLine = useMemo(() => props.data[0] ?? ({} as LinePropertiesData), [props.data]);
+
+  const dispatch = useAppDispatch();
+  const activeSheet = useAppSelector(getActiveSheet);
+  const activePage = useAppSelector(getActivePage);
+  const diagrams = useAppSelector(getDiagrams);
+
+  const isUserDefinedLine = selectedLine.lineType === "userDefined";
+  const [displayState, setDisplayState] = useState<DisplayStateEnum>(
+    selectedLine.displayState || DisplayStateEnum.display,
+  );
+  const [lineStyle, setLineStyle] = useState(selectedLine.originalStyle);
+  const [pointWidth, setPointWidth] = useState(selectedLine.pointWidth);
+
+  const [valuesToUpdate, setValuesToUpdate] = useState<ValuesToUpdate>();
 
   const lineStyles = [
     LineStyle.PECK_DOT1,
@@ -35,8 +65,46 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
   ];
 
   const onVisibilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDisplayState(e.target.checked ? DisplayStateEnum.hide : DisplayStateEnum.display);
+    const newDisplayState = e.target.checked ? DisplayStateEnum.hide : DisplayStateEnum.display;
+    setDisplayState(newDisplayState);
+    setValuesToUpdate({ ...valuesToUpdate, displayState: newDisplayState });
   };
+
+  const onLineStyleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newLineStyle = e.target.value;
+    setLineStyle(newLineStyle);
+    setValuesToUpdate({ ...valuesToUpdate, style: newLineStyle });
+  };
+
+  const onPointWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPointWidth = Number(e.target.value);
+    setPointWidth(newPointWidth);
+    setValuesToUpdate({ ...valuesToUpdate, pointWidth: newPointWidth });
+  };
+
+  // Save function
+  const save = useCallback(() => {
+    if (!activePage || !valuesToUpdate) return;
+
+    const updateLineProps = {
+      ...valuesToUpdate,
+      id: Number(selectedLine.lineId),
+    } as LinePropsToUpdate;
+
+    if (isUserDefinedLine) {
+      dispatch(replacePage({ updatedPage: updatePageLines(activePage, [updateLineProps]) }));
+    } else {
+      dispatch(replaceDiagrams(updateDiagramLines(diagrams, [updateLineProps])));
+    }
+  }, [valuesToUpdate, activePage, diagrams, isUserDefinedLine, selectedLine, dispatch]);
+
+  useEffect(() => {
+    props.setSaveFunction(() => save);
+  }, [props, save]);
+
+  useEffect(() => {
+    valuesToUpdate && props.setSaveEnabled(true);
+  }, [valuesToUpdate, props]);
 
   // render an SVG for a specific line type
   function renderLabelFor(lineStyle: string) {
@@ -75,7 +143,7 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
           label="Hide"
           onChange={onVisibilityChange}
           isDisabled={
-            lineType !== "userDefined" &&
+            !isUserDefinedLine &&
             (activeSheet === PlanSheetType.TITLE ||
               displayState === DisplayStateEnum.systemHide ||
               displayState === DisplayStateEnum.systemDisplay)
@@ -85,10 +153,10 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
       </div>
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Type</span>
-        <div title={getLineTypeDisplayName(lineType)}>
+        <div title={getLineTypeDisplayName(selectedLine.lineType)}>
           <LuiTextInput
             label=""
-            value={getLineTypeDisplayName(lineType)}
+            value={getLineTypeDisplayName(selectedLine.lineType)}
             inputProps={{ disabled: true }}
             onChange={() => false}
           />
@@ -97,11 +165,9 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Line style</span>
         <LuiRadioInput
-          options={lineStyles}
-          onChange={(e) => {
-            setLineStyle(e.target.value);
-          }}
-          isOptionDisabled={() => lineType !== "userDefined"}
+          options={isUserDefinedLine ? lineStyles : [lineStyle]}
+          onChange={onLineStyleChange}
+          isOptionDisabled={() => !isUserDefinedLine}
           selectedValue={lineStyle}
           renderLabelFor={renderLabelFor}
         />
@@ -109,12 +175,10 @@ const LineProperties = ({ data }: { data: LinePropertiesProps[] }) => {
       <div className="property-wrap">
         <span className="LuiTextInput-label-text">Width (pts)</span>
         <LuiRadioInput
-          options={borderWidthOptions.map((o) => o.value)}
-          onChange={(e) => {
-            setPointWidth(Number(e.target.value));
-          }}
-          isOptionDisabled={() => lineType !== "userDefined"}
-          selectedValue={pointWidth.toString()}
+          options={isUserDefinedLine ? borderWidthOptions.map((o) => o.value) : [pointWidth.toFixed(1).toString()]}
+          onChange={onPointWidthChange}
+          isOptionDisabled={() => !isUserDefinedLine}
+          selectedValue={pointWidth.toFixed(1).toString()}
         />
       </div>
     </div>

@@ -220,6 +220,8 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       selector: `edge.hover`,
       style: {
         "line-color": ELEMENT_HOVERED_COLOR,
+        "source-arrow-color": ELEMENT_HOVERED_COLOR,
+        "target-arrow-color": ELEMENT_HOVERED_COLOR,
         width: 1,
       },
     },

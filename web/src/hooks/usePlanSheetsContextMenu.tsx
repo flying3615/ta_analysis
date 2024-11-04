@@ -15,7 +15,7 @@ import {
   LabelPropsToUpdateWithElemType,
 } from "@/components/PlanSheets/properties/LabelProperties";
 import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
-import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
+import { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
@@ -91,7 +91,7 @@ export const usePlanSheetsContextMenu = () => {
         planMode === PlanMode.SelectLine
           ? {
               mode: PlanMode.SelectLine,
-              data: cy.$("edge:selected").map((edge) => edge.data() as LinePropertiesProps),
+              data: cy.$("edge:selected").map((edge) => edge.data() as LinePropertiesData),
               position: { ...position },
             }
           : {

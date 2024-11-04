@@ -6,7 +6,7 @@ import React, { useContext, useState } from "react";
 
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
-import LineProperties, { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
+import LineProperties, { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 
 export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
 
@@ -22,7 +22,7 @@ interface PlanLabelProperty {
 
 interface PlanLineProperty {
   mode: PlanMode.SelectLine;
-  data: LinePropertiesProps[];
+  data: LinePropertiesData[];
   position: { x: number; y: number };
 }
 
@@ -43,12 +43,12 @@ const PlanElementProperty = ({ property }: PlanElementPropertyProps) => {
         };
       default:
         return {
-          component: <LineProperties data={data} />,
+          component: <LineProperties data={data} setSaveFunction={setSaveFunction} setSaveEnabled={setSaveEnabled} />,
           headerContent: {
             icon: "ic_format_lines_text",
             title: "Line properties",
           },
-          startHeight: 715,
+          startHeight: data.some((line) => line.lineType !== "userDefined") ? 435 : 715,
         };
     }
   };
