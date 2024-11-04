@@ -334,6 +334,7 @@ export class PlanDataBuilder {
   addUserLine(line: LineDTO) {
     if (line.lineType !== CoordinateDTOCoordTypeEnum.userDefined) {
       throw new Error(`Only userDefined line types supported as a child of page`);
+      // TODO: this is unlikely - CoordinateDTO?
     }
     const targetPage = last(this.planData.pages);
     if (targetPage && targetPage.lines === undefined) {

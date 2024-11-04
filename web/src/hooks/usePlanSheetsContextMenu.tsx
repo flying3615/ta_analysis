@@ -14,6 +14,7 @@ import {
   LabelPropsToUpdate,
   LabelPropsToUpdateWithElemType,
 } from "@/components/PlanSheets/properties/LabelProperties";
+import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { LinePropertiesProps } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
@@ -367,7 +368,7 @@ export const usePlanSheetsContextMenu = () => {
       const labelData = label.data() as IGraphDataProperties;
       return {
         data: {
-          id: Number(labelData.id),
+          id: cytoscapeLabelIdToPlanData(labelData.id),
           displayState,
         },
         type: {
@@ -380,7 +381,7 @@ export const usePlanSheetsContextMenu = () => {
 
     const pageLabels = nonSystemLabels.filter((label) => label.data("diagramId") === undefined);
     const pageLabelsToUpdate: LabelPropsToUpdate[] = pageLabels.map((label) => ({
-      id: Number(label.data("id")),
+      id: cytoscapeLabelIdToPlanData(label.data("id") as string),
       displayState,
     }));
     dispatch(

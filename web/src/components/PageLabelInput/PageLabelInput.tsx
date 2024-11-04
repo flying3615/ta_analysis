@@ -10,6 +10,7 @@ import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefi
 import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
+  cytoscapeLabelIdToPlanData,
   getTextLengthErrorMessage,
   specialCharsRegex,
   textLengthLimit,
@@ -109,7 +110,9 @@ export const PageLabelInput = () => {
       if (labelText && labelText !== labelRef.current?.label) {
         dispatch(
           replacePage({
-            updatedPage: updatePageLabels(activePage, [{ id: Number(labelRef.current?.id), displayText: labelText }]),
+            updatedPage: updatePageLabels(activePage, [
+              { id: cytoscapeLabelIdToPlanData(labelRef.current?.id), displayText: labelText },
+            ]),
           }),
         );
         dispatch(setPlanMode(PlanMode.Cursor));

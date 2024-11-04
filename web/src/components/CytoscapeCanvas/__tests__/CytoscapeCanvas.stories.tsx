@@ -1,4 +1,5 @@
 import {
+  CoordinateDTOCoordTypeEnum,
   DisplayStateEnum,
   LabelDTO,
   LabelDTOLabelTypeEnum,
@@ -1048,6 +1049,14 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
 
     allSymbolCodes.forEach((code, idx) => {
       // Codes can be ascii codes or characters
+      builder.addCooordinate(
+        (idx + 1) * 10,
+        {
+          x: 8 + idx * 5 * spacingPixels,
+          y: -7.5,
+        },
+        CoordinateDTOCoordTypeEnum.node,
+      );
       builder.addSymbolLabel((idx + 1) * 10, String.fromCharCode(code), {
         x: 8 + idx * 5 * spacingPixels,
         y: -7.5,
@@ -1056,6 +1065,14 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
         x: 8 + idx * 5 * spacingPixels,
         y: -7.5 - 5 * spacingPixels,
       });
+      builder.addCooordinate(
+        (idx + 1) * 10 + 1,
+        {
+          x: 8 + idx * 5 * spacingPixels,
+          y: -7.5 - 5 * spacingPixels,
+        },
+        CoordinateDTOCoordTypeEnum.node,
+      );
       builder.addLine((idx + 1) * 10 + 2, [(idx + 1) * 10, (idx + 1) * 10 + 1], 0.7);
       if (idx > 0) {
         builder.addLine((idx + 1) * 10 + 3, [idx * 10, (idx + 1) * 10], 0.7);

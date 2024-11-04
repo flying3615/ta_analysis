@@ -2,6 +2,7 @@ import { CoordinateDTO, DiagramDTO, LabelDTO, LineDTO, PlanResponseDTO } from "@
 import { cloneDeep, compact } from "lodash-es";
 
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 
 export interface LookupSourceResult {
   result: DiagramDTO | CoordinateDTO | LineDTO | LabelDTO;
@@ -68,21 +69,27 @@ export class LookupGraphData {
 
   lookupSource(planElementType: PlanElementType, idString: string): LookupSourceResult | undefined {
     // This parses the first int from the string, so line segs, e.g. 1001_2, will return 1001
-    const id = parseInt(idString, 10);
-    if (isNaN(id)) return undefined;
+    const idFromNumberString = (): number | undefined => {
+      const id = parseInt(idString, 10);
+      if (isNaN(id)) return undefined;
+      return id;
+    };
 
     let result;
     switch (planElementType) {
       case PlanElementType.DIAGRAM:
-        result = this.diagramsById[id];
+        if (!idFromNumberString()) return undefined;
+        result = this.diagramsById[idFromNumberString()!];
         if (!result) return undefined;
         return { resultType: "DiagramDTO", result };
       case PlanElementType.COORDINATES:
-        result = this.coordinatesById[id];
+        if (!idFromNumberString()) return undefined;
+        result = this.coordinatesById[idFromNumberString()!];
         if (!result) return undefined;
         return { resultType: "CoordinateDTO", result };
       case PlanElementType.LINES:
-        result = this.linesById[id];
+        if (!idFromNumberString()) return undefined;
+        result = this.linesById[idFromNumberString()!];
         if (!result) return undefined;
         return { resultType: "LineDTO", result };
       case PlanElementType.LABELS:
@@ -90,7 +97,7 @@ export class LookupGraphData {
       case PlanElementType.LINE_LABELS:
       case PlanElementType.PARCEL_LABELS:
       case PlanElementType.CHILD_DIAGRAM_LABELS:
-        result = this.labelsById[id];
+        result = this.labelsById[cytoscapeLabelIdToPlanData(idString)];
         if (!result) return undefined;
         return { resultType: "LabelDTO", result };
       default:

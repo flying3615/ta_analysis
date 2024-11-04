@@ -175,13 +175,13 @@ const planSheetsSlice = createSlice({
         page.coordinates = page.coordinates?.filter((coord) => !coordinatesToRemove.includes(coord.id));
       });
     },
-    removePageLabels: (state, action: PayloadAction<{ labelIds: string[] }>) => {
+    removePageLabels: (state, action: PayloadAction<{ labelIds: number[] }>) => {
       const { labelIds } = action.payload;
 
       onDataChanging(state);
 
       state.pages.forEach((page) => {
-        page.labels = page.labels?.filter((label) => !labelIds.includes(label.id.toString()));
+        page.labels = page.labels?.filter((label) => !labelIds.includes(label.id));
       });
     },
     undo: (state) => {

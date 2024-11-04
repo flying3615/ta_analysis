@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { getEdgeData, getNodeData, INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePagesWithNode } from "@/modules/plan/updatePlanData";
+import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePageWithNode } from "@/modules/plan/updatePlanData";
 import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
 
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
@@ -71,7 +71,7 @@ export function usePlanSheetsDispatch(): PlanSheetsDispatch {
         if (node.properties.diagramId) {
           updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
         } else if (updatedPage) {
-          updatedPage = updatePagesWithNode(updatedPage, node);
+          updatedPage = updatePageWithNode(updatedPage, node);
         }
       });
 

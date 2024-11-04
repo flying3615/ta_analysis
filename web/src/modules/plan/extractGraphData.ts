@@ -17,6 +17,7 @@ import {
   INodeDataProperties,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { planDataLabelIdToCytoscape } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { SYMBOLS_FONT } from "@/constants";
 import { createNewNode } from "@/util/mapUtil";
 
@@ -34,7 +35,7 @@ const setElementType =
 
 export const labelToNode = (label: LabelDTO): INodeData => {
   return {
-    id: label.id.toString(),
+    id: planDataLabelIdToCytoscape(label.id),
     position: label.position,
     label: label.editedText ?? label.displayText,
     properties: {

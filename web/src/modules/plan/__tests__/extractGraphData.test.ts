@@ -1,4 +1,4 @@
-import { LabelDTOLabelTypeEnum, LineDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum, LineDTO } from "@linz/survey-plan-generation-api-client";
 
 import { nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -58,8 +58,8 @@ describe("extractGraphData", () => {
     expect(extractedNodes).toHaveLength(45); // 5 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
-    const labelNode11 = extractedNodeMap["11"];
-    expect(labelNode11?.id).toBe("11");
+    const labelNode11 = extractedNodeMap["LAB_11"];
+    expect(labelNode11?.id).toBe("LAB_11");
     expect(labelNode11?.label).toBe("Label 11");
     expect(labelNode11?.position).toStrictEqual({ x: 55, y: -10 });
     expect(labelNode11?.properties?.["diagramId"]).toBe(1);
@@ -73,8 +73,8 @@ describe("extractGraphData", () => {
     expect(labelNode11?.properties?.["circled"]).toBeFalsy();
     expect(labelNode11?.properties?.["textBackgroundOpacity"]).toBe(0);
 
-    const labelNode12 = extractedNodeMap["12"];
-    expect(labelNode12?.id).toBe("12");
+    const labelNode12 = extractedNodeMap["LAB_12"];
+    expect(labelNode12?.id).toBe("LAB_12");
     expect(labelNode12?.label).toBe("96");
     expect(labelNode12?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode12?.properties?.["diagramId"]).toBe(1);
@@ -85,8 +85,8 @@ describe("extractGraphData", () => {
     expect(labelNode12?.properties?.["fontSize"]).toBe(10);
     expect(labelNode12?.properties?.["symbolId"]).toBe("96");
 
-    const labelNode13 = extractedNodeMap["13"];
-    expect(labelNode13?.id).toBe("13");
+    const labelNode13 = extractedNodeMap["LAB_13"];
+    expect(labelNode13?.id).toBe("LAB_13");
     expect(labelNode13?.label).toBe("Label 13");
     expect(labelNode13?.position).toStrictEqual({ x: 20, y: -40 });
     expect(labelNode13?.properties?.["diagramId"]).toBe(1);
@@ -100,8 +100,8 @@ describe("extractGraphData", () => {
     expect(labelNode13?.properties?.["circled"]).toBeFalsy();
     expect(labelNode13?.properties?.["textBackgroundOpacity"]).toBe(0);
 
-    const labelNode14 = extractedNodeMap["14"];
-    expect(labelNode14?.id).toBe("14");
+    const labelNode14 = extractedNodeMap["LAB_14"];
+    expect(labelNode14?.id).toBe("LAB_14");
     expect(labelNode14?.label).toBe("Label 14");
     expect(labelNode14?.position).toStrictEqual({ x: 35, y: -35 });
     expect(labelNode14?.properties?.["diagramId"]).toBe(1);
@@ -113,8 +113,8 @@ describe("extractGraphData", () => {
     expect(labelNode14?.properties?.["fontSize"]).toBe(16);
     expect(labelNode14?.properties?.["symbolId"]).toBeUndefined();
 
-    const labelNode21 = extractedNodeMap["21"];
-    expect(labelNode21?.id).toBe("21");
+    const labelNode21 = extractedNodeMap["LAB_21"];
+    expect(labelNode21?.id).toBe("LAB_21");
     expect(labelNode21?.label).toBe("Edited\nLine");
     expect(labelNode21?.position).toStrictEqual({ x: 85, y: -40 });
     expect(labelNode21?.properties?.["featureId"]).toBe(1001);
@@ -124,8 +124,8 @@ describe("extractGraphData", () => {
     expect(labelNode21?.properties?.["fontSize"]).toBe(14);
     expect(labelNode21?.properties?.["circled"]).toBeFalsy();
 
-    const labelNode23 = extractedNodeMap["23"];
-    expect(labelNode23?.id).toBe("23");
+    const labelNode23 = extractedNodeMap["LAB_23"];
+    expect(labelNode23?.id).toBe("LAB_23");
     expect(labelNode23?.label).toBe("A");
     expect(labelNode23?.position).toStrictEqual({ x: 20, y: -35 });
     expect(labelNode23?.properties?.["labelType"]).toBe(LabelDTOLabelTypeEnum.parcelAppellation);
@@ -154,12 +154,12 @@ describe("extractGraphData", () => {
     expect(extractedNodes).toHaveLength(26);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
-    const labelNode41 = extractedNodeMap["41"];
-    expect(labelNode41?.id).toBe("41");
+    const labelNode41 = extractedNodeMap["LAB_41"];
+    expect(labelNode41?.id).toBe("LAB_41");
     expect(labelNode41?.label).toBe("Diag. ACA");
 
-    const labelNode42 = extractedNodeMap["42"];
-    expect(labelNode42?.id).toBe("42");
+    const labelNode42 = extractedNodeMap["LAB_42"];
+    expect(labelNode42?.id).toBe("LAB_42");
     expect(labelNode42?.label).toBe("See T?");
   });
 
@@ -184,12 +184,12 @@ describe("extractGraphData", () => {
     expect(extractedNodes).toHaveLength(26);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
-    const labelNode41 = extractedNodeMap["41"];
-    expect(labelNode41?.id).toBe("41");
+    const labelNode41 = extractedNodeMap["LAB_41"];
+    expect(labelNode41?.id).toBe("LAB_41");
     expect(labelNode41?.label).toBe("Diag. ACA");
 
-    const labelNode42 = extractedNodeMap["42"];
-    expect(labelNode42?.id).toBe("42");
+    const labelNode42 = extractedNodeMap["LAB_42"];
+    expect(labelNode42?.id).toBe("LAB_42");
     expect(labelNode42?.label).toBe("See T5");
   });
 
@@ -240,6 +240,36 @@ describe("extractGraphData", () => {
     expect(extractedEdgeMap["3004_2"]?.id).toBe("3004_2");
     expect(extractedEdgeMap["3004_2"]?.sourceNodeId).toBe("30009");
     expect(extractedEdgeMap["3004_2"]?.destNodeId).toBe("30010");
+  });
+
+  test("Elements have unique ids", () => {
+    const plandata = new PlanDataBuilder()
+      .addDiagram({
+        bottomRightPoint: {
+          x: 80,
+          y: -90,
+        },
+        zoomScale: (100 * 90) / 20,
+        pageRef: 10,
+      })
+      .addCooordinate(10, { x: 21, y: -10 })
+      .addCooordinate(11, { x: 30, y: -10 })
+      .addLabel("coordinateLabels", 10, "Some Text", { x: 21, y: -10 })
+      .addSymbolLabel(11, "96", { x: 21, y: -10 }, 10)
+      .addLine(10, [10, 11], 1.0, "observation", "solid")
+      .addPage({ pageNumber: 1, pageType: "title", id: 10 })
+      .addUserCoordinate({ coordType: CoordinateDTOCoordTypeEnum.userDefined, id: 12, position: { x: 30, y: -5 } })
+      .addUserCoordinate({ coordType: CoordinateDTOCoordTypeEnum.userDefined, id: 13, position: { x: 30, y: -10 } })
+      .addUserLine({ lineType: "userDefined", id: 11, coordRefs: [12, 13], pointWidth: 1.0, style: "solid" })
+      .build();
+
+    const extractedNodes = extractDiagramNodes(plandata.diagrams);
+    const extractedEdges = extractDiagramEdges(plandata.diagrams);
+    const extractedPageNodes = extractPageNodes(plandata.pages);
+    const extractedPageEdges = extractPageEdges(plandata.pages);
+    const ids = [...extractedNodes, ...extractedEdges, ...extractedPageNodes, ...extractedPageEdges].map((e) => e.id);
+    const uniqueIds = new Set(ids);
+    expect(ids).toHaveLength(uniqueIds.size);
   });
 
   describe("For styled lines", () => {
@@ -339,7 +369,7 @@ describe("extractGraphData", () => {
     const extractedNodes = extractPageNodes(mockPlanData.pages);
     expect(extractedNodes).toHaveLength(3);
     const userAnnotationNode = extractedNodes[0];
-    expect(userAnnotationNode?.id).toBe("23");
+    expect(userAnnotationNode?.id).toBe("LAB_23");
     expect(userAnnotationNode?.position).toStrictEqual({ x: 13, y: -13 });
     expect(userAnnotationNode?.label).toBe("Rotated user added text");
     expect(userAnnotationNode?.properties?.["elementType"]).toBe("labels");

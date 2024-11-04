@@ -23,6 +23,7 @@ import {
   getTextAlignmentValues,
   getTextLengthErrorMessage,
   labelTypeOptions,
+  planDataLabelIdToCytoscape,
   someButNotAllHavePropertyValue,
   specialCharsRegex,
   textAlignmentEnum,
@@ -36,7 +37,7 @@ interface LabelPropertiesProps {
 }
 
 export interface LabelPropertiesData {
-  id: string;
+  id: string; // cytoscape ID ('LAB_')
   displayState: string;
   labelType: LabelDTOLabelTypeEnum;
   fontStyle: string | undefined;
@@ -64,6 +65,7 @@ export type PanelValuesToUpdate = {
   borderWidth?: string;
 };
 
+// id is plandata
 export type LabelPropsToUpdate = Pick<LabelDTO, "id"> & Partial<LabelDTO>;
 export type LabelElementTypeProps = { elementType?: PlanElementType; diagramId?: string };
 export type LabelPropsToUpdateWithElemType = { data: LabelPropsToUpdate; type: LabelElementTypeProps };
@@ -87,11 +89,11 @@ const LabelProperties = (props: LabelPropertiesProps) => {
     // Update diagram labels
     const diagramLabelsToUpdate = labelsToUpdate.filter((label) =>
       selectedLabels.some(
-        (selectedLabel) => selectedLabel.id === label.id.toString() && !isNil(selectedLabel.diagramId),
+        (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id) && !isNil(selectedLabel.diagramId),
       ),
     );
     const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabelsToUpdate.map((label) => {
-      const selectedLabel = selectedLabels.find((selected) => selected.id === label.id.toString());
+      const selectedLabel = selectedLabels.find((selected) => selected.id === planDataLabelIdToCytoscape(label.id));
       return {
         data: label,
         type: {

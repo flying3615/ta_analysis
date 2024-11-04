@@ -226,7 +226,7 @@ describe("createLabelPropsToBeSaved", () => {
     };
 
     const selectedLabel = {
-      id: "1",
+      id: "LAB_1",
       label: "Label1",
       textAlignment: "bottomCenter",
       displayState: "display",
@@ -258,7 +258,7 @@ describe("createLabelPropsToBeSaved", () => {
     const panelValuesToUpdate: PanelValuesToUpdate = {};
 
     const selectedLabel: LabelPropertiesData = {
-      id: "1",
+      id: "LAB_1",
       label: "Label1",
       fontStyle: "regular",
       textAlignment: "textLeft",

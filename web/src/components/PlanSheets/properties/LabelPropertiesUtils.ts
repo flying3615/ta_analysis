@@ -105,7 +105,7 @@ export const createLabelPropsToBeSaved = (
   panelValuesToUpdate: PanelValuesToUpdate,
   selectedLabel: LabelPropertiesData,
 ) => {
-  const newObj: LabelPropsToUpdate = { id: Number(selectedLabel.id) };
+  const newObj: LabelPropsToUpdate = { id: cytoscapeLabelIdToPlanData(selectedLabel.id) };
 
   if ("labelText" in panelValuesToUpdate) {
     newObj.displayText = panelValuesToUpdate.labelText;
@@ -155,3 +155,15 @@ export const textLengthLimit = 2048;
 export const specialCharsRegex = /[\u00B2\u00BA\u00B0]/; // ², º, °
 export const invalidCharactersErrorMessage = "Invalid character(s) entered";
 export const getTextLengthErrorMessage = (numberOverLimit: number) => `${numberOverLimit} characters over the limit`;
+
+export const cytoscapeLabelIdToPlanData = (cytoscapeLabelId: string | undefined): number => {
+  if (!cytoscapeLabelId) {
+    throw new Error("id is undefined for a cytoscape label");
+  }
+  if (!cytoscapeLabelId.match(new RegExp("LAB_\\d+"))) {
+    throw new Error(`labelCytoscapeIdToPlanData expects an id in the form LAB_NNN got ${cytoscapeLabelId}`);
+  }
+  return parseInt(cytoscapeLabelId.replace("LAB_", ""));
+};
+
+export const planDataLabelIdToCytoscape = (planDataLabelId: number) => `LAB_${planDataLabelId}`;

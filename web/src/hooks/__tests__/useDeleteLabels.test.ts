@@ -10,9 +10,13 @@ describe("useDeleteLabels", () => {
     jest.doMock("@/redux/planSheets/planSheetsSlice.ts", () => ({ removePageLabels }));
 
     const targets = [
-      { data: (key: string) => ({ id: "1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] } as NodeSingular,
-      { data: (key: string) => ({ id: "2", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] } as NodeSingular,
-      { data: (key: string) => ({ id: "3", labelType: LabelDTOLabelTypeEnum.obsBearing })[key] } as NodeSingular,
+      {
+        data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+      } as NodeSingular,
+      {
+        data: (key: string) => ({ id: "LAB_2", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
+      } as NodeSingular,
+      { data: (key: string) => ({ id: "LAB_3", labelType: LabelDTOLabelTypeEnum.obsBearing })[key] } as NodeSingular,
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -22,6 +26,6 @@ describe("useDeleteLabels", () => {
     deletePageLabels(targets);
 
     expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(removePageLabels).toHaveBeenCalledWith({ labelIds: ["1", "2"] });
+    expect(removePageLabels).toHaveBeenCalledWith({ labelIds: [1, 2] });
   });
 });

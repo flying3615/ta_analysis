@@ -47,31 +47,31 @@ describe("lookupSource", () => {
     expect((result?.result as LineDTO).lineType).toBe("observation");
   });
   test("finds a diagram label by type and id", () => {
-    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "1");
+    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_1");
     expect(result?.resultType).toBe("LabelDTO");
     expect(result?.result.id).toBe(1);
     expect((result?.result as LabelDTO).displayText).toBe("System Generated Primary Diagram");
   });
   test("finds a coordinate label by type and id", () => {
-    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "11");
+    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_11");
     expect(result?.resultType).toBe("LabelDTO");
     expect(result?.result.id).toBe(11);
     expect((result?.result as LabelDTO).displayText).toBe("Label 11");
   });
   test("finds a symbol label by type and id", () => {
-    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "12");
+    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_12");
     expect(result?.resultType).toBe("LabelDTO");
     expect(result?.result.id).toBe(12);
     expect((result?.result as LabelDTO).displayText).toBe("96");
   });
   test("finds a line label by type and id", () => {
-    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "13");
+    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_13");
     expect(result?.resultType).toBe("LabelDTO");
     expect(result?.result.id).toBe(13);
     expect((result?.result as LabelDTO).displayText).toBe("Label 13");
   });
   test("finds a parcel label by type and id", () => {
-    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "14");
+    const result = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_14");
     expect(result?.resultType).toBe("LabelDTO");
     expect(result?.result.id).toBe(14);
     expect((result?.result as LabelDTO).displayText).toBe("Label 14");
@@ -87,7 +87,7 @@ describe("findMarkSymbol", () => {
     expect(symbolLabel?.font).toBe("LOLsymbols");
   });
   test("finds the symbol label for a mark from the mark name", () => {
-    const markNameLabel = lookupGraphData.lookupSource(PlanElementType.LABELS, "12");
+    const markNameLabel = lookupGraphData.lookupSource(PlanElementType.LABELS, "LAB_12");
     const symbolLabel = lookupGraphData.findMarkSymbol(markNameLabel);
     expect(symbolLabel?.labelType).toBe("nodeSymbol1");
     expect(symbolLabel?.displayText).toBe("96");

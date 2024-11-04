@@ -11,6 +11,7 @@ import {
 import { IDiagramNodeData, IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { LabelPropsToUpdate, LabelPropsToUpdateWithElemType } from "@/components/PlanSheets/properties/LabelProperties";
+import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
@@ -42,7 +43,9 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
         parcelLabelGroups: diagram.parcelLabelGroups?.map((group) => {
           return {
             ...group,
-            labels: group.labels.map((label) => (label.id === parseInt(node.id) ? mergeLabelData(label, node) : label)),
+            labels: group.labels.map((label) =>
+              label.id === cytoscapeLabelIdToPlanData(node.id) ? mergeLabelData(label, node) : label,
+            ),
           };
         }),
       };
@@ -54,7 +57,7 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
       return {
         ...diagram,
         [elementType]: diagram[elementType].map((label) =>
-          label.id === parseInt(node.id) ? mergeLabelData(label, node) : label,
+          label.id === cytoscapeLabelIdToPlanData(node.id) ? mergeLabelData(label, node) : label,
         ),
       };
     } else {
@@ -141,7 +144,7 @@ export const updateDiagramLabels = (
   });
 };
 
-export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => {
+export const updatePageWithNode = (page: PageDTO, node: INodeData): PageDTO => {
   if (node.properties.elementType === PlanElementType.COORDINATES) {
     return {
       ...page,
@@ -152,7 +155,9 @@ export const updatePagesWithNode = (page: PageDTO, node: INodeData): PageDTO => 
   } else {
     return {
       ...page,
-      labels: page.labels?.map((label) => (label.id === parseInt(node.id) ? mergeLabelData(label, node) : label)),
+      labels: page.labels?.map((label) =>
+        label.id === cytoscapeLabelIdToPlanData(node.id) ? mergeLabelData(label, node) : label,
+      ),
     };
   }
 };
@@ -203,5 +208,6 @@ const mergeLineData = (line: LineDTO, _updatedEdge: IEdgeData): LineDTO => {
   return {
     ...line,
     // TODO: Handle updating line edge data
+    // ensure that on any labels, the cytoscape/plangen id conversion is used
   };
 };

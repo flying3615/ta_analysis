@@ -16,10 +16,11 @@ import {
   updateDiagramsWithEdge,
   updateDiagramsWithNode,
   updatePageLabels,
+  updatePageWithNode,
 } from "../updatePlanData";
 
 describe("updatePlanData", () => {
-  const diagrams = new PlanDataBuilder()
+  const planDataBuilder = new PlanDataBuilder()
     .addDiagram(
       {
         x: 80,
@@ -52,7 +53,39 @@ describe("updatePlanData", () => {
       12,
     )
     .addLine(3, [1, 2], 1.0, "observation")
-    .build().diagrams;
+    .addPage(1)
+    .addUserCoordinate({
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: { x: 15, y: 10 },
+      id: 10002,
+    })
+    .addUserCoordinate({
+      coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      position: { x: 15, y: 15 },
+      id: 10003,
+    })
+    .addUserLine({
+      lineType: "userDefined",
+      style: "solid",
+      id: 2,
+      coordRefs: [10002, 10003],
+    })
+    .addUserAnnotation({
+      anchorAngle: 0,
+      displayState: DisplayStateEnum.display,
+      displayText: "Hello!",
+      effect: "",
+      labelType: LabelDTOLabelTypeEnum.userAnnotation,
+      pointOffset: 0,
+      position: { x: 17, y: 12 },
+      rotationAngle: 0,
+      textAlignment: "",
+      userEdited: false,
+      id: 10002,
+    });
+
+  const diagrams = planDataBuilder.build().diagrams;
+  const pages = planDataBuilder.build().pages;
 
   test("updateDiagramsWithNode should return diagrams with updated coordinate data", () => {
     const updatedNode: INodeData = {
@@ -84,9 +117,41 @@ describe("updatePlanData", () => {
     ]);
   });
 
+  test("updatePagesWithNode should return page with updated coordinate data", () => {
+    const updatedNode: INodeData = {
+      id: "10002",
+      properties: {
+        elementType: PlanElementType.COORDINATES,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      },
+      position: { x: 99, y: -99 },
+    };
+
+    const result = updatePageWithNode(pages[0]!, updatedNode);
+    const modifiedCoordinate = result.coordinates?.find((c) => c.id === 10002);
+    expect(modifiedCoordinate?.position).toStrictEqual({ x: 99, y: -99 });
+  });
+
+  test("updatePagesWithNode should return page with updated label data", () => {
+    const updatedNode: INodeData = {
+      id: "LAB_10002",
+      label: "Edited",
+      properties: {
+        elementType: PlanElementType.LABELS,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+      },
+      position: { x: 88, y: -88 },
+    };
+
+    const result = updatePageWithNode(pages[0]!, updatedNode);
+    const modifiedLabel = result.labels?.find((c) => c.id === 10002);
+    expect(modifiedLabel?.position).toStrictEqual({ x: 88, y: -88 });
+    expect(modifiedLabel?.displayText).toBe("Edited");
+  });
+
   test("updateDiagramsWithNode should return diagrams with updated label data", () => {
     const updatedNode: INodeData = {
-      id: "2",
+      id: "LAB_2",
       label: "Label 2",
       properties: {
         diagramId: 2,
