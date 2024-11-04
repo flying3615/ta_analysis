@@ -87,9 +87,18 @@ export const usePlanGenPreview = (props: {
   const cyMapper = useRef<CytoscapeCoordinateMapper>();
 
   const [previewing, setPreviewing] = useState<boolean>(false);
-  let worker = new PreviewWorker();
+  const [previewWorker, setPreviewWorker] = useState<Worker | null>();
   const processingModal = useRef<PromiseWithResolve<boolean>>();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
+
+  useEffect(() => {
+    const newWorker = new PreviewWorker();
+    setPreviewWorker(newWorker);
+
+    return () => {
+      newWorker.terminate();
+    };
+  }, []);
 
   useEffect(() => {
     if (!previewing) {
@@ -274,8 +283,8 @@ export const usePlanGenPreview = (props: {
 
   const stopPreviewing = () => {
     // terminate the current worker and create a new one for next execution
-    worker.terminate();
-    worker = new PreviewWorker();
+    previewWorker?.terminate();
+    setPreviewWorker(new PreviewWorker());
     setPreviewing(false);
   };
 
@@ -296,20 +305,24 @@ export const usePlanGenPreview = (props: {
   };
 
   const generatePreviewPDF = async (imageFiles: ImageFile[]) => {
-    worker.postMessage({ type: "PREVIEW", ImageFiles: imageFiles });
-    worker.onmessage = async (e) => {
+    if(!previewWorker) {
+      console.error("No available preview web worker")
+      return;
+    }
+
+    previewWorker.postMessage({ type: "PREVIEW", ImageFiles: imageFiles });
+    previewWorker.onmessage = async (e) => {
       setPreviewing(false);
       const { payload } = e.data;
       window.open(payload, "_blank");
       if (isPlaywrightTest()) {
-        /* eslint-disable */
         // to download pdf in tests
         (window as any).pdfBlobUrl = payload;
       }
     };
-    worker.onerror = (e) => {
+    previewWorker.onerror = (e) => {
       console.error(e);
-      setPreviewing(false);
+      stopPreviewing()
     };
   };
 
