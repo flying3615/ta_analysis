@@ -350,6 +350,14 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "text-halign": "center",
       },
     },
+    {
+      selector: ":parent",
+      style: {
+        "border-width": 0,
+        padding: 0,
+        label: "",
+      },
+    },
 
     // select diagram
     {

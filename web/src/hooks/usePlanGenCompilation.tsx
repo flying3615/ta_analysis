@@ -191,7 +191,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
           // filter out hidden nodes
-          let diagramNodeData = extractDiagramNodes(currentPageDiagrams).filter(
+          let diagramNodeData = extractDiagramNodes(currentPageDiagrams, undefined, true).filter(
             (node) =>
               ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
                 node.properties.displayState?.valueOf() ?? "",

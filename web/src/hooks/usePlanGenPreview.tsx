@@ -182,7 +182,7 @@ export const usePlanGenPreview = (props: {
         const nodeData = [
           ...surveyInfoNodes, // survey info text nodes
           ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
-          ...extractDiagramNodes(currentPageDiagrams).filter(
+          ...extractDiagramNodes(currentPageDiagrams, undefined, true).filter(
             (node) =>
               ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
                 node.properties.displayState?.valueOf() ?? "",

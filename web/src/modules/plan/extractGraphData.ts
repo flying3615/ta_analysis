@@ -179,7 +179,11 @@ export interface IDiagramToPage {
   };
 }
 
-export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagramToPage | undefined): INodeData[] => {
+export const extractDiagramNodes = (
+  diagrams: DiagramDTO[],
+  lookupTbl?: IDiagramToPage | undefined,
+  forPreview?: true | undefined,
+): INodeData[] => {
   return diagrams.flatMap((diagram) => {
     const diagramLabelToNode = (label: LabelDTO): INodeData => {
       const baseLabelToNode = labelToNode(label);
@@ -189,6 +193,7 @@ export const extractDiagramNodes = (diagrams: DiagramDTO[], lookupTbl?: IDiagram
         properties: {
           ...baseLabelToNode.properties,
           diagramId: diagram.id,
+          parent: forPreview && `D${diagram.id}`,
         },
       };
     };
