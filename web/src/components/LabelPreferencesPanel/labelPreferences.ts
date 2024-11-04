@@ -1,20 +1,17 @@
 import type {
   GetSurveyLabelPreferenceRequest,
   LabelPreferenceDTO,
-  LabelPreferencesResponseDTO,
   LabelPreferencesResponseDTOFontsInner,
 } from "@linz/survey-plan-generation-api-client";
-import { LabelPreferencesControllerApi } from "@linz/survey-plan-generation-api-client";
 import { useQuery } from "@tanstack/react-query";
 
-import { apiConfig } from "@/queries/apiConfig";
 import { usePrepareDatasetQuery } from "@/queries/prepareDataset";
 
 export interface LabelPreferenceDTOWithId extends LabelPreferenceDTO {
   id: string;
 }
 
-export interface LabelPreferencesDTOWithId extends LabelPreferencesResponseDTO {
+export interface LabelPreferencesDTOWithId {
   fonts: Array<LabelPreferencesResponseDTOFontsInner>;
   defaults: Array<LabelPreferenceDTO>;
   surveyLabelPreferences: Array<LabelPreferenceDTOWithId>;
@@ -27,12 +24,14 @@ export const useUserLabelPreferences = ({ transactionId }: GetSurveyLabelPrefere
   return useQuery({
     queryKey: userLabelPreferencesQueryKey(transactionId),
     queryFn: async () => {
+      /* SRVPUW-941 disabled so BE can merge
       const r = (await new LabelPreferencesControllerApi(apiConfig()).getSurveyLabelPreference({
         transactionId,
       })) as LabelPreferencesDTOWithId;
       r.userLabelPreferences.forEach((u) => (u.id = u.labelType));
       r.surveyLabelPreferences.forEach((u) => (u.id = u.labelType));
-      return r;
+      return r;*/
+      return Promise.resolve([]);
     },
     enabled: usePrepareDatasetQuery({ transactionId }).isSuccess,
   });

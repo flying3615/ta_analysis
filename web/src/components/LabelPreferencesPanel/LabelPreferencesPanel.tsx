@@ -6,7 +6,7 @@ import { Panel, PanelContent, PanelHeader } from "@linzjs/windows";
 import { useState } from "react";
 
 import { useUserLabelPreferences } from "@/components/LabelPreferencesPanel/labelPreferences";
-import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
+// import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
 
 const labelsForThisPlan = "labelsForThisPlan";
 const labelsForNewPlans = "labelsForNewPlans";
@@ -48,24 +48,26 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
           <LuiTabsPanel key={labelsForThisPlan} panel={labelsForThisPlan}>
             <GridUpdatingContextProvider>
               <GridContextProvider>
+                {/* SRVPUW-941 disabled so BE can merge
                 <LabelsManagementGrid
                   transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
                   labelPreferences={queryData.surveyLabelPreferences}
-                />
+                />*/}
               </GridContextProvider>
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
           <LuiTabsPanel key={labelsForNewPlans} panel={labelsForNewPlans}>
             <GridUpdatingContextProvider>
               <GridContextProvider>
+                {/* SRVPUW-941 disabled so BE can merge
                 <LabelsManagementGrid
                   transactionId={transactionId}
                   fonts={queryData.fonts}
                   defaults={queryData.defaults}
                   labelPreferences={queryData.userLabelPreferences}
-                />
+                />*/}
               </GridContextProvider>
             </GridUpdatingContextProvider>
           </LuiTabsPanel>

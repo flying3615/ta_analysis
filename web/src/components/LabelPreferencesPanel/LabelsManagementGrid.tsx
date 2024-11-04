@@ -3,11 +3,9 @@ import type {
   LabelPreferencesResponseDTOFontsInner,
 } from "@linz/survey-plan-generation-api-client";
 import { LuiButton } from "@linzjs/lui";
-import { ColDefT, Grid, GridButton, GridCell, GridEditBoolean, GridPopoverEditDropDown } from "@linzjs/step-ag-grid";
+import { ColDefT, Grid } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
-import { ICellEditorParams } from "ag-grid-community";
-import { fromPairs } from "lodash-es";
 import { useContext, useMemo, useState } from "react";
 
 import {
@@ -23,16 +21,10 @@ export interface LabelsForThisPlanProps {
   readOnly?: boolean;
 }
 
-export const LabelsManagementGrid = ({
-  transactionId,
-  fonts,
-  defaults,
-  labelPreferences,
-  readOnly = false,
-}: LabelsForThisPlanProps) => {
+export const LabelsManagementGrid = ({ transactionId, labelPreferences, readOnly = false }: LabelsForThisPlanProps) => {
   const queryClient = useQueryClient();
   const { panelClose } = useContext(PanelInstanceContext);
-  const [list, setList] = useState(labelPreferences);
+  const [list] = useState(labelPreferences);
 
   const close = () => {
     void queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) });
@@ -40,10 +32,10 @@ export const LabelsManagementGrid = ({
   };
 
   const columnDefs: ColDefT<LabelPreferenceDTOWithId>[] = useMemo(() => {
-    const fontMap = fromPairs(fonts.map((f) => [f.code, f.description]));
+    //const fontMap = fromPairs(fonts.map((f) => [f.code, f.description]));
 
     return [
-      GridCell({
+      /*GridCell({
         field: "description",
         headerName: "Label type",
         flex: 1,
@@ -129,9 +121,9 @@ export const LabelsManagementGrid = ({
             return Promise.resolve(true);
           },
         },
-      ),
+      ),*/
     ];
-  }, [defaults, fonts, list, readOnly]);
+  }, []);
 
   return (
     <>
