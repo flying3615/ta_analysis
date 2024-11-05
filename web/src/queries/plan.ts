@@ -9,7 +9,7 @@ import { useToast } from "@linzjs/lui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { adjustLoadedPlanData } from "@/modules/plan/adjustLoadedPlanData";
+import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
@@ -19,6 +19,8 @@ export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactio
 
 export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, enabled }) => {
   const dispatch = useAppDispatch();
+  const adjustLoadedPlanData = useAdjustLoadedPlanData();
+
   return useQuery({
     queryKey: getPlanQueryKey(transactionId),
     queryFn: async () => {

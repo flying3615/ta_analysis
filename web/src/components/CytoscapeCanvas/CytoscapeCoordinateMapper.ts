@@ -1,15 +1,16 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { degreesToRadians, radiansToDegrees } from "@turf/helpers";
 import { BoundingBox12 } from "cytoscape";
-import { keyBy } from "lodash-es";
 
-import { pointsPerCm } from "@/util/cytoscapeUtil";
+import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
+import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
-export class CytoscapeCoordinateMapper {
+const CSS_PIXELS_PER_CM = 38.3;
+
+export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
   public readonly scalePixelsPerCm: number;
-  private readonly diagrams: Record<number, DiagramDTO>;
 
   // These are taken from PageConfig in the XML and are thought to be hardcoded in SQL
   // they define the page size in cm
@@ -28,7 +29,7 @@ export class CytoscapeCoordinateMapper {
     maxHeight = canvas.clientHeight,
     pixelMargin = 40 - 50, // this is negative as our frame has its own border of 1.5cm => 50px
   ) {
-    this.diagrams = keyBy(diagrams, "id");
+    super(diagrams);
     this.pixelMargin = pixelMargin;
 
     // The diagram limit is actually the page size in cm.
@@ -58,27 +59,11 @@ export class CytoscapeCoordinateMapper {
    * @param diagramId the id of the diagram, used to offset
    */
   groundCoordToCytoscape(position: GroundMetresPosition, diagramId: number): cytoscape.Position {
-    const diagram = this.diagrams[diagramId];
+    const { x, y } = this.groundCoordToCm(diagramId, position);
 
-    if (!diagram || !diagram.zoomScale) {
-      throw new Error(`Diagram with id ${diagramId} not found`);
-    }
-
-    if (
-      position.x < 0 ||
-      position.x > diagram.bottomRightPoint.x ||
-      position.y > 0 ||
-      position.y < diagram.bottomRightPoint.y
-    ) {
-      console.warn(
-        `groundCoordToCytoscape has position ${JSON.stringify(position)} outside range (x: 0, y: 0)->(${JSON.stringify(diagram.bottomRightPoint)}`,
-      );
-    }
-    const xPosCm = (position?.x * 100) / diagram.zoomScale + diagram.originPageOffset.x * 100;
-    const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
     return {
-      x: this.planCmToCytoscape(xPosCm) + this.pixelMargin,
-      y: this.pixelMargin - this.planCmToCytoscape(yPosCm),
+      x: this.planCmToCytoscape(x) + this.pixelMargin,
+      y: this.pixelMargin - this.planCmToCytoscape(y),
     };
   }
 
@@ -196,10 +181,9 @@ export class CytoscapeCoordinateMapper {
 
   /**
    * Returns a factor to scale fonts by so they agree with coordinate dimensions
-   * This has been determined empirically
    */
   fontScaleFactor() {
-    return this.scalePixelsPerCm / 38.3;
+    return this.scalePixelsPerCm / CSS_PIXELS_PER_CM;
   }
 
   /**
@@ -220,7 +204,7 @@ export class CytoscapeCoordinateMapper {
    * @param cy
    */
   cytoscapeToPoint(cy: number): number {
-    return this.cytoscapeToPlanCm(cy) * pointsPerCm;
+    return this.cytoscapeToPlanCm(cy) * POINTS_PER_CM;
   }
 
   /**
@@ -244,7 +228,7 @@ export class CytoscapeCoordinateMapper {
    * @param points
    */
   pointToCytoscape(points: number): number {
-    return this.planCmToCytoscape(points / pointsPerCm);
+    return this.planCmToCytoscape(points / POINTS_PER_CM);
   }
 
   /**

@@ -14,6 +14,7 @@ import { useContext, useEffect } from "react";
 
 import {
   diagrams,
+  fromBuilder,
   lineEdges,
   markNodes,
   pageBorderEdges,
@@ -27,7 +28,7 @@ import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
 import { mockStore } from "@/test-utils/store-mock";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
-import { pointsPerCm } from "@/util/cytoscapeUtil";
+import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";
@@ -82,20 +83,6 @@ const CytoscapeTemplate = () => {
 export const Default: Story = {
   render: () => <CytoscapeTemplate />,
 };
-
-const fromBuilder = () =>
-  new PlanDataBuilder().addDiagram(
-    {
-      x: 39,
-      y: -24,
-    },
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    100, // So 39m on ground = 39cm = plan width
-  );
 
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
 
@@ -576,7 +563,7 @@ const addOffsetLabel = (
   );
   builder.addCooordinate(idBase * 100 + 2, { x, y });
   const anchorAngleRads = (anchorAngle * Math.PI) / 180;
-  const cmOffset = pointOffset / 2 / pointsPerCm;
+  const cmOffset = pointOffset / 2 / POINTS_PER_CM;
   builder.addCooordinate(idBase * 100 + 3, {
     x: x + cmOffset * Math.cos(anchorAngleRads),
     y: y + cmOffset * Math.sin(anchorAngleRads),

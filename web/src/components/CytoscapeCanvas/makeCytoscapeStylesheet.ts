@@ -23,7 +23,7 @@ import {
   FOREGROUND_COLOUR_BLACK,
   GREYED_FOREGROUND_COLOUR,
 } from "@/modules/plan/styling";
-import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
+import { PIXELS_PER_POINT, POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
   [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState") as string)
@@ -40,9 +40,11 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   const compassPlanHeightCm = 50;
 
   // Convert to Cytoscape units
-  const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape((compassPlanWidthCm * pixelsPerPoint) / pointsPerCm);
+  const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
+    (compassPlanWidthCm * PIXELS_PER_POINT) / POINTS_PER_CM,
+  );
   const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-    (compassPlanHeightCm * pixelsPerPoint) / pointsPerCm,
+    (compassPlanHeightCm * PIXELS_PER_POINT) / POINTS_PER_CM,
   );
 
   const svgDataForCompass = {

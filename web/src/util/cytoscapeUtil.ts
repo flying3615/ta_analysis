@@ -6,8 +6,8 @@ export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 10.0;
 export const ZOOM_DELTA = 0.5;
 export const SCROLL_THRESHOLD = 1.3;
-export const pixelsPerPoint = 0.75;
-export const pointsPerCm = 28.3465;
+export const PIXELS_PER_POINT = 0.75;
+export const POINTS_PER_CM = 28.3465;
 export interface IDiagramAreasLimits {
   diagramOuterLimitsPx: BoundingBox12;
   disabledAreasLimitsPx: BoundingBox12[];

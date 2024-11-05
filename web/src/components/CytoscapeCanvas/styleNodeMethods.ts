@@ -1,12 +1,18 @@
-import cytoscape, { NodeSingular } from "cytoscape";
-import { max, memoize, sum } from "lodash-es";
+import cytoscape from "cytoscape";
+import { max, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
+import {
+  memoizedTextAlign,
+  paddingOffsetHorizontal,
+  paddingOffsetVertical,
+  TextAlignment,
+} from "@/components/CytoscapeCanvas/textAlignment";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling";
-import { pixelsPerPoint, pointsPerCm } from "@/util/cytoscapeUtil";
+import { PIXELS_PER_POINT, POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 export const LABEL_PADDING_PX = 4;
 const PIXELS_PER_CM = 37.79;
@@ -23,9 +29,7 @@ export interface StyleData {
   textRotation?: number;
 }
 
-function getStyleData(ele: cytoscape.NodeSingular): StyleData {
-  return ele.data() as StyleData;
-}
+export const getStyleData = (ele: cytoscape.NodeSingular): StyleData => ele.data() as StyleData;
 
 export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
   const { font, fontSize, label } = getStyleData(ele);
@@ -102,85 +106,6 @@ export const textRotationMathRads = (ele: cytoscape.NodeSingular) => {
   return ((ele.data("textRotation") ?? 0.0) * Math.PI) / 180;
 };
 
-interface TextAlignment {
-  horizontal: "left" | "center" | "right";
-  justify: "left" | "center" | "right";
-  vertical: "bottom" | "center" | "top";
-}
-
-function getTextAlign(textAlignment?: string): TextAlignment | undefined {
-  if (!textAlignment) {
-    return;
-  }
-  let horizontal: TextAlignment["horizontal"] = "left";
-  let justify: TextAlignment["justify"] = "left";
-  let vertical: TextAlignment["vertical"] = "center";
-
-  const [textAlign, textJustify] = textAlignment.split(",", 2);
-  if (textAlign?.endsWith("Center")) {
-    horizontal = "center";
-  } else if (textAlign?.endsWith("Right")) {
-    horizontal = "right";
-  }
-
-  if (textJustify?.endsWith("Center")) {
-    justify = "center";
-  } else if (textJustify?.endsWith("Right")) {
-    justify = "right";
-  }
-
-  if (textAlign?.startsWith("bottom")) {
-    vertical = "bottom";
-  } else if (textAlign?.startsWith("top")) {
-    vertical = "top";
-  }
-
-  return { horizontal, justify, vertical };
-}
-
-const memoizedTextAlign = memoize(getTextAlign);
-const elementTextAlign = (ele: NodeSingular): TextAlignment | undefined =>
-  memoizedTextAlign(getStyleData(ele).textAlignment);
-
-export const textHAlign = (ele: cytoscape.NodeSingular): TextAlignment["horizontal"] =>
-  (
-    ({
-      left: "right",
-      center: "center",
-      right: "left",
-    }) as Record<TextAlignment["horizontal"], TextAlignment["horizontal"]>
-  )[elementTextAlign(ele)?.horizontal ?? "left"]; // so default is "right" !?;
-
-const signumHorizontal = (ele: cytoscape.NodeSingular): number =>
-  ({
-    left: 1,
-    center: 0,
-    right: -1,
-  })[elementTextAlign(ele)?.horizontal ?? "right"];
-
-// Cytoscape pads our labels inside the border
-// but we also need to adjust the label location relative to the node
-export const paddingOffsetHorizontal = (ele: cytoscape.NodeSingular) => signumHorizontal(ele) * LABEL_PADDING_PX;
-
-const signumVertical = (ele: cytoscape.NodeSingular): number =>
-  ({
-    bottom: 1,
-    center: 0,
-    top: -1,
-  })[elementTextAlign(ele)?.vertical ?? "center"];
-
-export const paddingOffsetVertical = (ele: cytoscape.NodeSingular) =>
-  ((signumVertical(ele) + 1) * LABEL_PADDING_PX) / 2;
-
-export const textVAlign = (ele: cytoscape.NodeSingular): TextAlignment["vertical"] =>
-  (
-    ({
-      bottom: "top",
-      center: "center",
-      top: "bottom",
-    }) as Record<TextAlignment["vertical"], TextAlignment["vertical"]>
-  )[elementTextAlign(ele)?.vertical ?? "center"];
-
 export const fontStyle = (ele: cytoscape.NodeSingular): string =>
   ["boldItalic", "italic"].includes(getStyleData(ele).fontStyle ?? "") ? "italic" : "normal";
 export const fontWeight = (ele: cytoscape.NodeSingular): string =>
@@ -201,7 +126,7 @@ export const rotatedMargin = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMa
   const { anchorAngle = 0, pointOffset = 0 } = ele.data() as StyleData;
   const angleRadsAntiClockwise = ((360.0 - anchorAngle) * Math.PI) / 180.0;
 
-  const cytoscapePixelOffset = cytoscapeCoordinateMapper.planCmToCytoscape(pointOffset / pointsPerCm);
+  const cytoscapePixelOffset = cytoscapeCoordinateMapper.planCmToCytoscape(pointOffset / POINTS_PER_CM);
   return {
     x: cytoscapePixelOffset * Math.cos(angleRadsAntiClockwise) + paddingOffsetHorizontal(ele),
     y: cytoscapePixelOffset * Math.sin(angleRadsAntiClockwise) + paddingOffsetVertical(ele),
@@ -300,7 +225,7 @@ export const circleLabel = (
       symbolSvg: CircleSVG,
       centre: { x: svgCentreX, y: svgCentreY },
       svg: { width: svgWidth * 0.8, height: svgHeight * 0.8 },
-      viewport: { width: svgWidth, height: svgWidth },
+      viewport: { width: svgWidth, height: svgHeight },
       radius: svgCircleRadius,
       lineColor: (ele.data("fontColor") ?? FOREGROUND_COLOUR_BLACK) as string,
       ...getStyleData(ele),
@@ -340,10 +265,10 @@ export const svgDataForSymbolFun =
     }
 
     const widthPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg.widthPlanPixels * pixelsPerPoint) / pointsPerCm,
+      (symbolSvg.widthPlanPixels * PIXELS_PER_POINT) / POINTS_PER_CM,
     );
     const heightPixels = cytoscapeCoordinateMapper.planCmToCytoscape(
-      (symbolSvg.heightPlanPixels * pixelsPerPoint) / pointsPerCm,
+      (symbolSvg.heightPlanPixels * PIXELS_PER_POINT) / POINTS_PER_CM,
     );
 
     return {

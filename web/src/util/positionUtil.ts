@@ -18,6 +18,11 @@ export function angleDegrees360<T extends number | null | undefined>(angle: T): 
   return (angle < 0 ? -(-angle % 360) + 360 : angle % 360) as T;
 }
 
+export const deltaFromPolar = (thetaDegrees: number | undefined, r: number | undefined): Delta => {
+  const thetaRads = (thetaDegrees ?? 0) * (Math.PI / 180);
+  return { dx: (r ?? 0) * Math.cos(thetaRads), dy: (r ?? 0) * Math.sin(thetaRads) };
+};
+
 /**
  * Normalize angle to range -90 to 90
  * @param angle

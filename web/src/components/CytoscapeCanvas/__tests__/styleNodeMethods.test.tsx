@@ -8,10 +8,7 @@ import {
   textDiameterCm,
   textDimensions,
   textDimensionsCm,
-  textHAlign,
-  textJustification,
   textRotationClockwiseFromH,
-  textVAlign,
 } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
@@ -60,18 +57,6 @@ describe("styleNodeMethods", () => {
   test("textRotationClockwiseFromH should return the rotation in radians clockwise from horizontal", () => {
     const rot = textRotationClockwiseFromH(testEle);
     expect(rot).toBeCloseTo(Math.PI * 2 - (Math.PI * 120.0) / 180.0);
-  });
-
-  describe("textAlignment", () => {
-    test("textHAlign returns reversed horizontal alignment", () => {
-      expect(textHAlign(testEle)).toBe("right");
-    });
-    test("textVAlign returns reversed vertical alignment", () => {
-      expect(textVAlign(testEle)).toBe("bottom");
-    });
-    test("textJustification returns justification", () => {
-      expect(textJustification(testEle)).toBe("center");
-    });
   });
 
   test("rotatedMargin calculates the margin with offset and anchor adjust", () => {

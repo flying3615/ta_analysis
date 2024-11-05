@@ -7,8 +7,23 @@ import {
 } from "@linz/survey-plan-generation-api-client";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 const diagramId = 1;
+
+export const fromBuilder = () =>
+  new PlanDataBuilder().addDiagram(
+    {
+      x: 39,
+      y: -24,
+    },
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    100, // So 39m on ground = 39cm = plan width
+  );
 
 export const markNodes: INodeData[] = [
   {

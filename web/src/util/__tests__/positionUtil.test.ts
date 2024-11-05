@@ -7,6 +7,7 @@ import {
   asPosition,
   atanDegrees360,
   Delta,
+  deltaFromPolar,
   midPoint,
   normalizeAngle,
   Position,
@@ -53,6 +54,14 @@ describe("angleDegrees360", () => {
     expect(angleDegrees360(0)).toBe(0);
     expect(angleDegrees360(null)).toBeNull();
     expect(angleDegrees360(undefined)).toBeUndefined();
+  });
+});
+
+describe("deltaFromPolar", () => {
+  test("Returns a Delta from polar coordinates", () => {
+    const delta = deltaFromPolar(30, 1);
+    expect(delta.dx).toBeCloseTo(Math.sqrt(3) / 2);
+    expect(delta.dy).toBeCloseTo(0.5);
   });
 });
 
