@@ -39,8 +39,8 @@ import {
   setPlanMode,
 } from "@/redux/planSheets/planSheetsSlice";
 
-import { useDeleteLabels } from "./useDeleteLabels";
-import { useDeleteLines } from "./useDeleteLines";
+import { usePageLabelEdit } from "./usePageLabelEdit";
+import { usePageLineEdit } from "./usePageLineEdit";
 
 export const usePlanSheetsContextMenu = () => {
   const dispatch = useAppDispatch();
@@ -53,8 +53,8 @@ export const usePlanSheetsContextMenu = () => {
   const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
-  const deletePageLines = useDeleteLines();
-  const deletePageLabels = useDeleteLabels();
+  const { deletePageLines } = usePageLineEdit();
+  const { deletePageLabels } = usePageLabelEdit();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: movetoPage }];

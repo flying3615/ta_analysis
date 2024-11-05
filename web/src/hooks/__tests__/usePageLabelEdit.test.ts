@@ -20,9 +20,9 @@ describe("useDeleteLabels", () => {
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const useDeleteLabels = (require("@/hooks/useDeleteLabels") as typeof import("@/hooks/useDeleteLabels"))
-      .useDeleteLabels;
-    const deletePageLabels = useDeleteLabels();
+    const useDeleteLabels = (require("@/hooks/usePageLabelEdit") as typeof import("@/hooks/usePageLabelEdit"))
+      .usePageLabelEdit;
+    const { deletePageLabels } = useDeleteLabels();
     deletePageLabels(targets);
 
     expect(dispatch).toHaveBeenCalledTimes(1);

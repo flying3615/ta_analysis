@@ -3,9 +3,9 @@ import { ReactElement } from "react";
 
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
-import { useDeleteLabels } from "@/hooks/useDeleteLabels";
-import { useDeleteLines } from "@/hooks/useDeleteLines";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
+import { usePageLabelEdit } from "@/hooks/usePageLabelEdit";
+import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 
 export type SelectHandlerMode = PlanMode.SelectLine | PlanMode.SelectLabel;
 
@@ -24,8 +24,8 @@ export interface DeleteKeyHandlerProps {
  */
 export function DeleteKeyHandler({ mode }: DeleteKeyHandlerProps): ReactElement {
   const { cyto } = useCytoscapeContext();
-  const deletePageLines = useDeleteLines();
-  const deletePageLabels = useDeleteLabels();
+  const { deletePageLines } = usePageLineEdit();
+  const { deletePageLabels } = usePageLabelEdit();
 
   const selector = getSelector(mode);
 

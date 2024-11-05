@@ -18,9 +18,9 @@ describe("useDeleteLines", () => {
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const useDeleteLines = (require("@/hooks/useDeleteLines") as typeof import("@/hooks/useDeleteLines"))
-      .useDeleteLines;
-    const deletePageLines = useDeleteLines();
+    const useDeleteLines = (require("@/hooks/usePageLineEdit") as typeof import("@/hooks/usePageLineEdit"))
+      .usePageLineEdit;
+    const { deletePageLines } = useDeleteLines();
     deletePageLines(targets);
 
     expect(dispatch).toHaveBeenCalledTimes(1);
