@@ -1,11 +1,13 @@
 import "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel.scss";
 
+import { LuiMessagingContextProvider } from "@linzjs/lui";
 import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
-import { PanelsContextProvider } from "@linzjs/windows";
+import { LuiModalAsyncContextProvider, PanelsContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http, HttpResponse } from "msw";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
@@ -28,22 +30,26 @@ export default {
 } as Meta<typeof MaintainDiagramsPanel>;
 
 const MaintainDiagramsWrapper = ({ transactionId }: { transactionId: string }) => (
-  <QueryClientProvider client={queryClient}>
-    <FeatureFlagProvider>
-      <PanelsContextProvider>
-        <StorybookRouter url={generatePath(Paths.maintainDiagramLayers, { transactionId })}>
-          <Route
-            path={Paths.maintainDiagramLayers}
-            element={
-              <PanelInstanceContextMock>
-                <MaintainDiagramsPanel transactionId={123} />
-              </PanelInstanceContextMock>
-            }
-          />
-        </StorybookRouter>
-      </PanelsContextProvider>
-    </FeatureFlagProvider>
-  </QueryClientProvider>
+  <LuiModalAsyncContextProvider>
+    <LuiMessagingContextProvider version="v2">
+      <QueryClientProvider client={queryClient}>
+        <FeatureFlagProvider>
+          <PanelsContextProvider>
+            <StorybookRouter url={generatePath(Paths.maintainDiagramLayers, { transactionId })}>
+              <Route
+                path={Paths.maintainDiagramLayers}
+                element={
+                  <PanelInstanceContextMock>
+                    <MaintainDiagramsPanel transactionId={123} />
+                  </PanelInstanceContextMock>
+                }
+              />
+            </StorybookRouter>
+          </PanelsContextProvider>
+        </FeatureFlagProvider>
+      </QueryClientProvider>
+    </LuiMessagingContextProvider>
+  </LuiModalAsyncContextProvider>
 );
 type Story = StoryObj<typeof MaintainDiagramsWrapper>;
 
@@ -126,4 +132,151 @@ export const MaintainIndividualUserDefinedDiagramsDefault: Story = {
 MaintainIndividualUserDefinedDiagramsDefault.play = async () => {
   const maintainIndividualUserDefinedDiagramsTab = await screen.findByText("Individual user-defined diagram");
   await userEvent.click(maintainIndividualUserDefinedDiagramsTab);
+};
+
+export const MaintainDiagramsLayersSave: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
+          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+MaintainDiagramsLayersSave.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
+    await sleep(1000);
+  });
+  await step("WHEN I click the select button for the Existing Parcels layer", async () => {
+    await clickLayersSelectButton("23", table);
+  });
+  await step("AND click Save button", async () => {
+    const saveButton = await screen.findByText("Save");
+    await userEvent.click(saveButton);
+  });
+  await step("THEN updated layer preferences are saved", async () => {
+    const overwriteButton = await screen.findByText("Overwrite");
+    await userEvent.click(overwriteButton);
+    await expect(await screen.findByText("All layers up to date")).toBeTruthy();
+  });
+};
+
+export const MaintainDiagramsLayersErrorOnSave: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
+          HttpResponse.json({ ok: true }, { status: 500, statusText: "Internal server error" }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
+    await sleep(1000);
+  });
+  await step("WHEN I click the select button for the Existing Parcels layer", async () => {
+    await clickLayersSelectButton("23", table);
+  });
+  await step("AND click Save button", async () => {
+    const saveButton = await screen.findByText("Save");
+    await userEvent.click(saveButton);
+  });
+  await step("THEN updated layer preferences are saved", async () => {
+    const overwriteButton = await screen.findByText("Overwrite");
+    await userEvent.click(overwriteButton);
+    await expect(await screen.findByText("Error updating diagram layer preferences")).toBeTruthy();
+  });
+};
+
+export const MaintainDiagramsLayersUnsavedChangesDiscard: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
+          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+MaintainDiagramsLayersUnsavedChangesDiscard.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
+    await sleep(1000);
+  });
+  await step("WHEN I click the select button for the Existing Parcels layer", async () => {
+    await clickLayersSelectButton("23", table);
+  });
+  await step("AND I change diagram type and discard changes", async () => {
+    const diagramTypeSelectDropDown = await findQuick({ classes: ".LuiSelect-select" });
+    await userEvent.selectOptions(diagramTypeSelectDropDown, "System Generated Survey Diagram");
+    await userEvent.click(await screen.findByText("Discard"));
+  });
+  await step("THEN changes are discarded and user is navigated to new diagram type", async () => {});
+};
+
+export const MaintainDiagramsLayersUnsavedChangesCancel: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
+          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+MaintainDiagramsLayersUnsavedChangesCancel.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
+    await sleep(1000);
+  });
+  await step("WHEN I click the select button for the Existing Parcels layer", async () => {
+    await clickLayersSelectButton("23", table);
+  });
+  await step("AND I change diagram type and click on cancel", async () => {
+    const diagramTypeSelectDropDown = await findQuick({ classes: ".LuiSelect-select" });
+    await userEvent.selectOptions(diagramTypeSelectDropDown, "System Generated Survey Diagram");
+    const buttonGroup = await findQuick({ classes: ".LuiModalAsync-ButtonGroup" });
+    const cancelButton = await findQuick({ tagName: "button", text: "Cancel" }, buttonGroup);
+    await userEvent.click(cancelButton);
+  });
+  await step(
+    "THEN user stays on System Generated Primary Diagram and navigation to different diagram type is cancelled",
+    async () => {},
+  );
 };
