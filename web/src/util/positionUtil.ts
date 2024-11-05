@@ -29,7 +29,7 @@ export const deltaFromPolar = (thetaDegrees: number | undefined, r: number | und
  */
 export const normalizeAngle = (angle: number): number => {
   // Normalize angle to range 0 to 360
-  angle = (angle + 360) % 360;
+  angle = Math.round((angle + 360) % 360);
   // Adjust angle to range -180 to 180
   if (angle > 180) angle -= 360;
   // Further adjust angle to range -90 to 90

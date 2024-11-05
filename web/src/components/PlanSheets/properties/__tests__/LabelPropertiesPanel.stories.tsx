@@ -95,6 +95,25 @@ export const ShowLabelPropertiesPanel: Story = {
   },
 };
 
+export const RotateLabelSliderAndPropertiesTextAngleAreConsistent: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const rotateLabelMenuItem = await canvas.findByText("Rotate label");
+    await userEvent.hover(rotateLabelMenuItem);
+    await expect(canvas.getByRole("slider")).toHaveValue("90");
+    const propertiesMenuItem = await canvas.findByText("Properties");
+    await userEvent.click(propertiesMenuItem);
+    await sleep(500);
+    await expect(await canvas.findByDisplayValue("90")).toBeInTheDocument();
+  },
+};
+
 export const UpdatePageLabelProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
@@ -119,7 +138,10 @@ export const UpdatePageLabelProperties: Story = {
     await userEvent.selectOptions(fontInput, "Arial");
     const fontSizeInput = await canvas.findByDisplayValue("14");
     await userEvent.selectOptions(fontSizeInput, "16");
-    const textAngleInput = await canvas.findByDisplayValue("0");
+    const textAngleInput = await canvas.findByDisplayValue("90");
+    void fireEvent.input(textAngleInput, { target: { value: "200" } });
+    await canvas.findByText("Must be between 0 and 180 degrees");
+    await userEvent.clear(textAngleInput);
     void fireEvent.input(textAngleInput, { target: { value: "45" } });
     const rightAlignButton = await canvas.findByRole("button", { name: "Right" });
     await userEvent.click(rightAlignButton);

@@ -1,8 +1,8 @@
 import { DisplayStateEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
+import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiIcon, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
 import clsx from "clsx";
 import { isEmpty, isNil } from "lodash-es";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -17,6 +17,7 @@ import {
   areAllPageLabels,
   borderWidthOptions,
   createLabelPropsToBeSaved,
+  cytoscapeLabelIdToPlanData,
   fontOptions,
   fontSizeOptions,
   getCommonPropertyValue,
@@ -71,11 +72,49 @@ export type LabelElementTypeProps = { elementType?: PlanElementType; diagramId?:
 export type LabelPropsToUpdateWithElemType = { data: LabelPropsToUpdate; type: LabelElementTypeProps };
 
 const LabelProperties = (props: LabelPropertiesProps) => {
-  const selectedLabels = props.data;
-
   const dispatch = useAppDispatch();
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
+
+  const selectedLabels = useMemo(() => {
+    // load the selected labels from redux store
+    return props.data.map((label) => {
+      const pageLabel = activePage?.labels?.find((pageLabel) => pageLabel.id === cytoscapeLabelIdToPlanData(label.id));
+      const diagram = activeDiagrams.find((diagram) => diagram.id === Number(label.diagramId));
+
+      const diagramLabel = diagram?.labels.find(
+        (diagramLabel) => diagramLabel.id === cytoscapeLabelIdToPlanData(label.id),
+      );
+      const coordinateLabel = diagram?.coordinateLabels.find(
+        (coordinateLabel) => coordinateLabel.id === cytoscapeLabelIdToPlanData(label.id),
+      );
+      const lineLabel = diagram?.lineLabels.find((lineLabel) => lineLabel.id === cytoscapeLabelIdToPlanData(label.id));
+      const parcelLabel = diagram?.parcelLabelGroups
+        ?.flatMap((parcelLabelGroup) => parcelLabelGroup.labels)
+        .find((coordinateLabel) => coordinateLabel.id === cytoscapeLabelIdToPlanData(label.id));
+
+      const childDiagramLabel = diagram?.childDiagrams
+        ?.flatMap((cd) => cd.labels)
+        .find((diagramLabel) => diagramLabel.id === cytoscapeLabelIdToPlanData(label.id));
+
+      const selectedLabel =
+        pageLabel ?? diagramLabel ?? coordinateLabel ?? lineLabel ?? parcelLabel ?? childDiagramLabel;
+
+      return {
+        ...label,
+        displayState: selectedLabel?.displayState ?? label.displayState,
+        fontStyle: selectedLabel?.fontStyle ?? label.fontStyle,
+        label: selectedLabel?.displayText ?? label.label,
+        font: selectedLabel?.font ?? label.font,
+        fontSize: `${selectedLabel?.fontSize ?? label.fontSize}`,
+        textRotation: `${selectedLabel?.rotationAngle ?? label.textRotation}`,
+        borderWidth: selectedLabel?.borderWidth ?? label.borderWidth,
+        textAlignment: selectedLabel?.textAlignment ?? label.textAlignment,
+        displayFormat: selectedLabel?.displayFormat ?? label.displayFormat,
+      } as LabelPropertiesData;
+    });
+  }, [props.data, activePage, activeDiagrams]);
+
   const [panelValuesToUpdate, setPanelValuesToUpdate] = useState<PanelValuesToUpdate>();
 
   // Save function
@@ -102,6 +141,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         },
       };
     });
+
     dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdateWithElemType)));
 
     // Update page labels (do not apply onDataChanging as it is already done in replaceDiagrams, so the undo button works correctly)
@@ -111,13 +151,15 @@ const LabelProperties = (props: LabelPropertiesProps) => {
     );
   }, [panelValuesToUpdate, activePage, activeDiagrams, selectedLabels, dispatch]);
 
+  /** Normalize the angle to be within 0-180  with 1 decimal precision */
+  const normalizeLabelAngle = (angle: number): number => {
+    const normalizedAngle = angle <= 90 ? 90 - angle : 90 - angle + 360;
+    return parseFloat(normalizedAngle.toFixed(1));
+  };
+
   useEffect(() => {
     props.setSaveFunction(() => save);
   }, [props, save]);
-
-  useEffect(() => {
-    panelValuesToUpdate && props.setSaveEnabled(true);
-  }, [panelValuesToUpdate, props]);
 
   // declare state variables
   const labelType = getCommonPropertyValue(selectedLabels, "labelType");
@@ -125,12 +167,14 @@ const LabelProperties = (props: LabelPropertiesProps) => {
     getCommonPropertyValue(selectedLabels, "displayState"),
   );
   const [isBold, setIsBold] = useState<boolean>();
+  const [hasLabelTextError, setHasLabelTextError] = useState<boolean>();
+  const [hasTextRotationError, setHasTextRotationError] = useState<boolean>();
   const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
   const [hide00, setHide00] = useState<boolean>();
   const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "font"));
   const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "fontSize"));
-  const [textRotation, setTextRotation] = useState<string | undefined>(
-    getCommonPropertyValue(selectedLabels, "textRotation"),
+  const [textRotation, setTextRotation] = useState<number | undefined>(
+    normalizeLabelAngle(Number(getCommonPropertyValue(selectedLabels, "textRotation"))),
   );
   const textAlignemntValues = getTextAlignmentValues(selectedLabels);
   const [justify, setJustify] = useState(
@@ -144,7 +188,25 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   );
 
   const textLengthErrorMessage = labelText ? getTextLengthErrorMessage(labelText.length - textLengthLimit) : "";
-  const hasError = labelText && (labelText.length > textLengthLimit || specialCharsRegex.test(labelText));
+
+  useEffect(() => {
+    const hasLabelTextError = !!(
+      labelText &&
+      (labelText.length > textLengthLimit || specialCharsRegex.test(labelText))
+    );
+    const hasTextRotationError = !!(textRotation && (textRotation < 0 || textRotation > 180));
+
+    setHasLabelTextError(hasLabelTextError);
+    setHasTextRotationError(hasTextRotationError);
+
+    const hasError = hasLabelTextError || hasTextRotationError;
+
+    if (hasError) {
+      props.setSaveEnabled(false);
+    } else {
+      panelValuesToUpdate && props.setSaveEnabled(true);
+    }
+  }, [labelText, panelValuesToUpdate, props, textRotation]);
 
   return (
     <div className="plan-element-properties">
@@ -226,12 +288,12 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                     setLabelText(newValue);
                     setPanelValuesToUpdate({ ...panelValuesToUpdate, labelText: newValue });
                   }}
-                  className={clsx("PageLabelInput labelTextarea", { error: hasError })}
+                  className={clsx("PageLabelInput labelTextarea", { error: hasLabelTextError })}
                   data-testid="label-textarea"
                 />
-                {hasError && (
+                {hasLabelTextError && (
                   <LabelTextErrorMessage
-                    labelText={labelText}
+                    labelText={labelText ?? ""}
                     textLengthErrorMessage={textLengthErrorMessage}
                     className="errorMessage"
                   />
@@ -298,18 +360,32 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       </div>
 
       <div className="property-wrap">
-        <span className="LuiTextInput-label-text">Text angle (degrees)</span>
-        <LuiTextInput
-          inputProps={{ type: "number", step: "any" }}
-          label=""
-          hideLabel
-          value={textRotation}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            setTextRotation(newValue);
-            setPanelValuesToUpdate({ ...panelValuesToUpdate, textRotation: newValue });
-          }}
-        />
+        <div className="text-angle-input">
+          <span className="LuiTextInput-label-text">Text angle (degrees)</span>
+          <LuiTextInput
+            inputProps={{
+              type: "number",
+              min: "0",
+              max: "180",
+              step: "0.1",
+              pattern: "^(?:180(?:.0)?|1?[0-7]?[0-9](?:.[0-9])?)$",
+            }}
+            label=""
+            hideLabel
+            value={`${textRotation}`}
+            onChange={(e) => {
+              const newValue = Number(e.target.value);
+              setTextRotation(newValue);
+              setPanelValuesToUpdate({ ...panelValuesToUpdate, textRotation: `${normalizeLabelAngle(newValue)}` });
+            }}
+          />
+          {hasTextRotationError && (
+            <div className={clsx("PageLabelTextAngleInput-error")}>
+              <LuiIcon alt="error" name="ic_error" className="PageLabelInput-error-icon" size="sm" status="error" />
+              <span>Must be between 0 and 180 degrees</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="property-wrap">

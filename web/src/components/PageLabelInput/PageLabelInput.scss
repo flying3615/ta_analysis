@@ -26,14 +26,22 @@
   }
 }
 
-.PageLabelInput-error {
+.PageLabelInput-error,
+.PageLabelTextAngleInput-error {
   font-size: 14px;
   font-weight: 600;
   color: lui.$charcoal;
   display: flex;
   align-items: center;
-  margin-top: -(lui.$unit-xxs);
   background-color: white;
+}
+
+.PageLabelInput-error {
+  margin-top: -(lui.$unit-xxs);
+}
+
+.PageLabelTextAngleInput-error {
+  margin-top: 1px;
 }
 
 .PageLabelInput-error-icon {

@@ -1,5 +1,12 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
+/* Hide arrows in input number for Chrome, Safari, Edge, and Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .PlanElement-container {
   .plan-element-properties {
     padding: 0 16px;
@@ -101,6 +108,27 @@
     border-top: 1px solid #dad7d6;
     .lui-button {
       flex: 1;
+    }
+  }
+}
+
+.text-angle-input {
+  .LuiTextInput-input {
+    &:has(input:invalid:not(:focus)) {
+      box-shadow: none;
+    }
+
+    &:invalid {
+      border-color: lui.$error;
+      outline: none;
+
+      &:not(:focus) {
+        border-width: 1px;
+      }
+
+      &:focus {
+        border-width: 2px;
+      }
     }
   }
 }
