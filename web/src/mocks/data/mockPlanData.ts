@@ -123,6 +123,22 @@ export const mockPlanData = new PlanDataBuilder()
   .addRotatedLabel("lineLabels", 13, "Label 13", { x: 20, y: -40 }, "Arial", 14, 270, 0, 14, undefined, 1006, "Line")
   .addLabel("parcelLabels", 14, "Label 14", { x: 35, y: -35 }, 1, "parcel", "parcelAppellation", "Tahoma", 16)
   .addLabel(
+    "parcelLabels",
+    15,
+    "A",
+    { x: 55, y: -25 },
+    1,
+    "parcel",
+    "parcelAppellation",
+    "Tahoma",
+    18,
+    "none",
+    "display",
+    "circle",
+    "centerCenter",
+    0.7,
+  )
+  .addLabel(
     "labels",
     1,
     "System Generated Primary Diagram",

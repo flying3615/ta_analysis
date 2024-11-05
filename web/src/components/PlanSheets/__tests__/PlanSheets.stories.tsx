@@ -778,6 +778,30 @@ export const HideLine: Story & Required<Pick<Story, "play">> = {
   },
 };
 
+export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 600, 215, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const menuHide = await canvas.findByText("Hide");
+    await userEvent.click(menuHide);
+    await sleep(1500);
+
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 600, 215, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const menuShow = await canvas.findByText("Show");
+    await userEvent.click(menuShow);
+    await sleep(500);
+  },
+};
+
 const checkElementProperties = async (
   selector: string,
   expectedColor: string,
