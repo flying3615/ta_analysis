@@ -4,11 +4,13 @@ import React, { memo, ReactNode } from "react";
 
 export interface MenuItem {
   title: string | ReactNode;
-  callback?: (event: {
-    target: NodeSingular | EdgeSingular | null;
-    cy: cytoscape.Core | undefined;
-    position?: cytoscape.Position;
-  }) => void;
+  callback?:
+    | ReactNode
+    | ((event: {
+        target: NodeSingular | EdgeSingular | null;
+        cy: cytoscape.Core | undefined;
+        position?: cytoscape.Position;
+      }) => void);
   submenu?: MenuItem[];
   divider?: boolean;
   disabled?: boolean;
@@ -79,7 +81,7 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
             }}
           >
             <div className={clsx("menu-item-content", item.className)}>
-              {item.title}
+              {React.isValidElement(item.callback) ? item.callback : item.title}
               {item.submenu && !item.disabled && <span className="submenu-indicator"></span>}
             </div>
             {item.submenu && !item.disabled && (

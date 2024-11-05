@@ -171,6 +171,7 @@ export class PlanDataBuilder {
     id: number,
     position: CartesianCoordsDTO,
     coordType: CoordinateDTOCoordTypeEnum = CoordinateDTOCoordTypeEnum.node,
+    originalCoord?: CartesianCoordsDTO,
   ): PlanDataBuilder {
     if (this.planData.diagrams.length === 0) {
       throw new Error(
@@ -178,11 +179,17 @@ export class PlanDataBuilder {
       );
     }
 
-    last(this.planData.diagrams)?.coordinates?.push({
+    const coordinate: CoordinateDTO = {
       id,
       position,
       coordType,
-    });
+    };
+
+    if (originalCoord !== undefined) {
+      coordinate.originalCoord = originalCoord;
+    }
+
+    last(this.planData.diagrams)?.coordinates?.push(coordinate);
     return this;
   }
 

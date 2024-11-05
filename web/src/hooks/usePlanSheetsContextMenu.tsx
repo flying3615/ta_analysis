@@ -1,4 +1,4 @@
-import { DiagramDTO, DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 import { useContext } from "react";
@@ -6,6 +6,7 @@ import { useContext } from "react";
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { MoveOriginalLocation } from "@/components/PlanSheets/interactions/MoveOriginalLocation";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
@@ -19,17 +20,11 @@ import { LinePropertiesData } from "@/components/PlanSheets/properties/LinePrope
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
-import {
-  getUpdatedDiagrams,
-  restoreOriginalPosition,
-  TargetPositionLookup,
-} from "@/modules/plan/LookupOriginalPosition";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectActiveDiagrams, selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import {
   getActivePage,
-  getOriginalPositions,
   getPlanMode,
   getPreviousAttributesForDiagram,
   replaceDiagrams,
@@ -47,7 +42,6 @@ export const usePlanSheetsContextMenu = () => {
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
-  const originalPositions = useAppSelector(getOriginalPositions);
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const { openPanel } = useContext(PanelsContext);
@@ -120,43 +114,9 @@ export const usePlanSheetsContextMenu = () => {
       );
     };
 
-    const originalLocation = (event: {
-      target: NodeSingular | EdgeSingular | null;
-      cy: cytoscape.Core | undefined;
-      position?: cytoscape.Position;
-    }) => {
-      const { target, cy } = event;
-      if (!cy || !target || !activeDiagrams || !originalPositions) return;
-
-      const data = target.data() as Record<string, string | number | boolean | undefined>;
-
-      const updateDiagrams = (positions: cytoscape.Position[], elementType: keyof DiagramDTO, ids: number[]) => {
-        const updatedDiagrams = getUpdatedDiagrams(activeDiagrams, data, elementType, positions, ids);
-        dispatch(replaceDiagrams(updatedDiagrams));
-      };
-
-      if (target.isNode?.()) {
-        const position = restoreOriginalPosition(originalPositions, target.data() as TargetPositionLookup);
-        if (position) updateDiagrams([position], data["elementType"] as keyof DiagramDTO, [Number(data["id"])]);
-      } else if (target.isEdge?.()) {
-        const coordRefs = [Number(data["source"]), Number(data["target"])];
-        const positions = coordRefs
-          .map((id) => {
-            const newData = {
-              id: id,
-              elementType: PlanElementType.COORDINATES,
-              diagramId: data["diagramId"],
-            } as unknown as TargetPositionLookup;
-            return restoreOriginalPosition(originalPositions, newData);
-          })
-          .filter((pos): pos is cytoscape.Position => pos !== null);
-        updateDiagrams(positions, PlanElementType.COORDINATES as keyof DiagramDTO, coordRefs);
-      }
-    };
-
     const buildLineMenus = (targetLine: EdgeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
       return [
-        { title: "Original location", callback: originalLocation },
+        { title: "Original location", callback: <MoveOriginalLocation target={targetLine} /> },
         {
           title: "Show",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
@@ -241,7 +201,7 @@ export const usePlanSheetsContextMenu = () => {
       if (!selectedLabels) return [];
       const selectedNonSystemLabels = filterNonSystemLabels(selectedLabels);
       return [
-        { title: "Original location", callback: originalLocation },
+        { title: "Original location", callback: () => <MoveOriginalLocation target={targetLabel} /> },
         {
           title: "Show",
           hideWhen: () =>
@@ -291,31 +251,33 @@ export const usePlanSheetsContextMenu = () => {
       ];
     };
 
-    const nodeMenus: MenuItem[] = [
-      { title: "Original location", callback: originalLocation },
-      {
-        title: "Show",
-        hideWhen: (e) =>
-          [ShowHideMenuOptionState.HIDE, ShowHideMenuOptionState.HIDE_DISABLED].includes(getNodeShowState(e)),
-        disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.SHOW_DISABLED,
-        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-          setNodeHidden(event.target, false);
+    const buildNodeMenus = (targetNode: NodeSingular): MenuItem[] => {
+      return [
+        { title: "Original location", callback: <MoveOriginalLocation target={targetNode} /> },
+        {
+          title: "Show",
+          hideWhen: (e) =>
+            [ShowHideMenuOptionState.HIDE, ShowHideMenuOptionState.HIDE_DISABLED].includes(getNodeShowState(e)),
+          disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.SHOW_DISABLED,
+          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+            setNodeHidden(event.target, false);
+          },
         },
-      },
-      {
-        title: "Hide",
-        hideWhen: (e) =>
-          [ShowHideMenuOptionState.SHOW, ShowHideMenuOptionState.SHOW_DISABLED].includes(getNodeShowState(e)),
-        disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE_DISABLED,
-        callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-          setNodeHidden(event.target, true);
+        {
+          title: "Hide",
+          hideWhen: (e) =>
+            [ShowHideMenuOptionState.SHOW, ShowHideMenuOptionState.SHOW_DISABLED].includes(getNodeShowState(e)),
+          disableWhen: (e) => getNodeShowState(e) === ShowHideMenuOptionState.HIDE_DISABLED,
+          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
+            setNodeHidden(event.target, true);
+          },
         },
-      },
-      // { title: "Properties", callback: getProperties },
-      // { title: "Cut", disabled: true },
-      // { title: "Copy", disabled: true },
-      // { title: "Paste", disabled: true },
-    ];
+        // { title: "Properties", callback: getProperties },
+        // { title: "Cut", disabled: true },
+        // { title: "Copy", disabled: true },
+        // { title: "Paste", disabled: true },
+      ];
+    };
 
     switch (planMode) {
       case PlanMode.SelectDiagram:
@@ -326,7 +288,7 @@ export const usePlanSheetsContextMenu = () => {
         return buildLineMenus(element as EdgeSingular, selectedCollection);
       case PlanMode.SelectCoordinates:
         if (planElementType === PlanElementType.COORDINATES || planElementType === PlanElementType.COORDINATE_LABELS)
-          return nodeMenus;
+          return buildNodeMenus(element as NodeSingular);
         return undefined;
       case PlanMode.SelectLabel:
         if (

@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import { LookupOriginalPosition, PositionLookup } from "@/modules/plan/LookupOriginalPosition";
+import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 
 export interface PlanSheetsState {
@@ -21,7 +21,7 @@ export interface PlanSheetsState {
   previousHasChanges?: boolean;
   previousDiagrams: DiagramDTO[] | null;
   previousPages: PageDTO[] | null;
-  originalPositions?: PositionLookup;
+  originalPositions?: CoordLookup;
 }
 
 const initialState: PlanSheetsState = {
@@ -78,7 +78,7 @@ const planSheetsSlice = createSlice({
           state.activePageNumbers[type] = 1;
         }
       });
-      state.originalPositions = LookupOriginalPosition(action.payload.diagrams);
+      state.originalPositions = LookupOriginalCoord(action.payload.diagrams);
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       onDataChanging(state);

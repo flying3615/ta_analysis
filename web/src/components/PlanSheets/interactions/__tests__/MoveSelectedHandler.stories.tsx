@@ -66,6 +66,7 @@ export const MoveDiagramNode: Story & Required<Pick<Story, "play">> = {
   },
 };
 
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
 export const MoveDiagramLabel: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -85,6 +86,62 @@ export const MoveDiagramLabel: Story = {
       clientX: position2.clientX + 50,
       clientY: position2.clientY + 100,
     });
+  },
+};
+
+export const MoveNodeToOriginalCoord: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(500);
+
+    const position = { clientX: 411, clientY: 136 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 50,
+      clientY: position.clientY + 100,
+    });
+    await sleep(1500);
+    clickAtCoordinates(
+      getCytoscapeNodeLayer(cytoscapeElement),
+      position.clientX + 50,
+      position.clientY + 100,
+      RIGHT_MOUSE_BUTTON,
+    );
+    await sleep(500);
+    const menuOriginLoc = await canvas.findByText("Original location");
+    await userEvent.click(menuOriginLoc);
+  },
+};
+
+export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const position = { clientX: 498, clientY: 136 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 50,
+      clientY: position.clientY + 100,
+    });
+    await sleep(1500);
+    clickAtCoordinates(
+      getCytoscapeNodeLayer(cytoscapeElement),
+      position.clientX + 50,
+      position.clientY + 100,
+      RIGHT_MOUSE_BUTTON,
+    );
+    await sleep(500);
+    const menuOriginLoc = await canvas.findByText("Original location");
+    await userEvent.click(menuOriginLoc);
   },
 };
 

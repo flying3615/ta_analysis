@@ -38,74 +38,23 @@ export const mockPlanData = new PlanDataBuilder()
     style: "arrowhead",
   })
   .addPage(2)
-  .addCooordinate(10001, {
-    x: 20,
-    y: -10,
-  })
-  .addCooordinate(10002, {
-    x: 50,
-    y: -10,
-  })
-  .addCooordinate(10003, {
-    x: 80,
-    y: -10,
-  })
-  .addCooordinate(10004, {
-    x: 80,
-    y: -70,
-  })
-  .addCooordinate(10005, {
-    x: 50,
-    y: -70,
-  })
-  .addCooordinate(10006, {
-    x: 20,
-    y: -70,
-  })
-  .addCooordinate(20001, {
-    x: 20,
-    y: -80,
-  })
-  .addCooordinate(20002, {
-    x: 80,
-    y: -80,
-  })
-  .addCooordinate(30001, {
-    x: 20,
-    y: -75,
-  })
-  .addCooordinate(30002, {
-    x: 80,
-    y: -75,
-  })
-  .addCooordinate(30004, {
-    x: 10,
-    y: -40,
-  })
-  .addCooordinate(30005, {
-    x: 10,
-    y: -40,
-  })
-  .addCooordinate(30006, {
-    x: 20,
-    y: -70,
-  })
-  .addCooordinate(30007, {
-    x: 20,
-    y: -73,
-  })
-  .addCooordinate(30008, {
-    x: 25,
-    y: -71,
-  })
-  .addCooordinate(30009, {
-    x: 30,
-    y: -72,
-  })
-  .addCooordinate(30010, {
-    x: 35,
-    y: -74,
-  })
+  .addCooordinate(10001, { x: 20, y: -10 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -10 })
+  .addCooordinate(10002, { x: 50, y: -10 }, CoordinateDTOCoordTypeEnum.node, { x: 50, y: -10 })
+  .addCooordinate(10003, { x: 80, y: -10 }, CoordinateDTOCoordTypeEnum.node, { x: 80, y: -10 })
+  .addCooordinate(10004, { x: 80, y: -70 }, CoordinateDTOCoordTypeEnum.node, { x: 80, y: -70 })
+  .addCooordinate(10005, { x: 50, y: -70 }, CoordinateDTOCoordTypeEnum.node, { x: 50, y: -70 })
+  .addCooordinate(10006, { x: 20, y: -70 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -70 })
+  .addCooordinate(20001, { x: 20, y: -80 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -80 })
+  .addCooordinate(20002, { x: 80, y: -80 }, CoordinateDTOCoordTypeEnum.node, { x: 80, y: -80 })
+  .addCooordinate(30001, { x: 20, y: -75 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -75 })
+  .addCooordinate(30002, { x: 80, y: -75 }, CoordinateDTOCoordTypeEnum.node, { x: 80, y: -75 })
+  .addCooordinate(30004, { x: 10, y: -40 }, CoordinateDTOCoordTypeEnum.node, { x: 10, y: -40 })
+  .addCooordinate(30005, { x: 10, y: -40 }, CoordinateDTOCoordTypeEnum.node, { x: 10, y: -40 })
+  .addCooordinate(30006, { x: 20, y: -70 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -70 })
+  .addCooordinate(30007, { x: 20, y: -73 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -73 })
+  .addCooordinate(30008, { x: 25, y: -71 }, CoordinateDTOCoordTypeEnum.node, { x: 25, y: -71 })
+  .addCooordinate(30009, { x: 30, y: -72 }, CoordinateDTOCoordTypeEnum.node, { x: 30, y: -72 })
+  .addCooordinate(30010, { x: 35, y: -74 }, CoordinateDTOCoordTypeEnum.node, { x: 35, y: -74 })
   .addLine(1001, [10001, 10002], 0.75, "observation", "peck1")
   .addLine(1002, [10002, 10003], 1.0, "observation", "solid")
   .addLine(1003, [10003, 10004], 4.0, "observation", "solid")
