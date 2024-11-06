@@ -6,7 +6,6 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION_PREVIEW_COMPILATION = "survey-plan-generation-preview-compilation",
   SURVEY_PLAN_GENERATION_LABEL_PREFERENCES = "survey-plan-generation-label-preferences",
   SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS = "survey-plan-generation-maintain-diagram-layers",
-  SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS = "survey-plan-generation-maintain-locks",
 }
 
 export enum TREATMENTS {

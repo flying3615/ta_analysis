@@ -4,9 +4,7 @@ import { screen } from "@testing-library/react";
 
 import { PlangenApp } from "@/App";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
-import { setMockedSplitFeatures } from "@/setupTests";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags";
 
 import { renderWithReduxProvider } from "./test-utils/jest-utils";
 
@@ -42,12 +40,4 @@ const verifyAllRoutesRender = (before?: () => void) => {
 
 describe("Verify rendering of application", () => {
   verifyAllRoutesRender();
-});
-
-describe("Verify when locking is disabled app renders", () => {
-  verifyAllRoutesRender(() => {
-    setMockedSplitFeatures({
-      [FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS]: TREATMENTS.OFF,
-    });
-  });
 });

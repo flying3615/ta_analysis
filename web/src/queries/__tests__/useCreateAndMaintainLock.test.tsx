@@ -1,5 +1,4 @@
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
-import { wait } from "@linzjs/step-ag-grid";
 import { screen, waitFor } from "@testing-library/react";
 import { generatePath, Route } from "react-router-dom";
 
@@ -7,8 +6,6 @@ import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { useCreateAndMaintainLock } from "@/queries/useCreateAndMaintainLock";
-import { setMockedSplitFeatures } from "@/setupTests";
-import { FEATUREFLAGS, TREATMENTS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 const TestComponent = () => {
@@ -39,28 +36,6 @@ describe("useCreateAndMaintainLock hook", () => {
   });
 
   server.events.on("request:start", requestSpy);
-
-  it("should not lock if split disabled", async () => {
-    setMockedSplitFeatures({
-      [FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS]: TREATMENTS.OFF,
-    });
-
-    renderCompWithReduxAndRoute(
-      <Route element={<TestWrapper />} path={Paths.root} />,
-      generatePath(Paths.root, { transactionId: "123" }),
-    );
-
-    await wait(500);
-
-    expect(requestSpy).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          method: "GET",
-          url: "http://localhost/v1/surveys/api/survey/123/locks",
-        }) as unknown,
-      }),
-    );
-  });
 
   it("should lock on load", async () => {
     renderCompWithReduxAndRoute(

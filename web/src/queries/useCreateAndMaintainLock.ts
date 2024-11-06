@@ -12,8 +12,6 @@ import {
 } from "@/components/modals/surveyLockedModal";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getsertLock, getsertLockQueryKey, updateLockLastUsed } from "@/queries/lock";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { hostProtoForApplication } from "@/util/httpUtil";
 import {
   useCreateAndMaintainLockResult,
@@ -30,8 +28,6 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
   const userProfile = useUserProfile();
   const queryClient = useQueryClient();
   const { showPrefabModal } = useLuiModalPrefab();
-
-  const { result: maintainLocksAllowed } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_LOCKS);
 
   const lockPreviouslyHeldRef = useRef(false);
   const [stopLockChecks, setStopLockChecks] = useState(false);
@@ -89,9 +85,9 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
       },
       refetchOnWindowFocus: true,
       staleTime: 30000,
-      enabled: maintainLocksAllowed && !stopLockChecks,
+      enabled: !stopLockChecks,
     };
-  }, [transactionId, userProfile?.id, maintainLocksAllowed, stopLockChecks, queryClient, showPrefabModal]);
+  }, [transactionId, userProfile?.id, stopLockChecks, queryClient, showPrefabModal]);
 
   const { isLoading, data } = useQueryRefetchOnUserInteraction(queryOptions);
 
@@ -101,6 +97,6 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
 
   return {
     isLoading,
-    lockPreviouslyHeld: lockPreviouslyHeldRef.current || !maintainLocksAllowed,
+    lockPreviouslyHeld: lockPreviouslyHeldRef.current,
   };
 };
