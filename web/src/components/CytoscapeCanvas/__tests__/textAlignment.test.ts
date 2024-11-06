@@ -58,7 +58,7 @@ describe("textAlignment", () => {
   });
 
   test("paddingOffsetHorizontal computes padding offset for horizontal alignment", () => {
-    expect(paddingOffsetHorizontal(testEle)).toBe(4);
+    expect(paddingOffsetHorizontal(testEle)).toBe(1);
   });
 
   test("paddingOffsetVertical computes padding offset for vertical alignment", () => {

@@ -16,6 +16,7 @@ import {
   INodeData,
   INodeDataProperties,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { LABEL_PADDING_PX } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { planDataLabelIdToCytoscape } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { SYMBOLS_FONT } from "@/constants";
@@ -50,6 +51,7 @@ export const labelToNode = (label: LabelDTO): INodeData => {
       textBackgroundOpacity: getTextBackgroundOpacity(label),
       textBorderOpacity: label.borderWidth ? 1 : 0,
       textBorderWidth: label.borderWidth ?? 0,
+      textBackgroundPadding: label.borderWidth ? 3 : LABEL_PADDING_PX,
       textRotation: label.rotationAngle,
       anchorAngle: label.anchorAngle,
       pointOffset: label.pointOffset,

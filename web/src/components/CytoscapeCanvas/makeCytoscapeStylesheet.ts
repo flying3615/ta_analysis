@@ -9,7 +9,6 @@ import {
   fontStyle,
   fontWeight,
   getLabelText,
-  LABEL_PADDING_PX,
   scaledFontSize,
   svgDataForSymbolFun,
   textJustification,
@@ -72,7 +71,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-border-opacity": "data(textBorderOpacity)",
     "text-border-width": "data(textBorderWidth)",
     "text-border-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
-    "text-background-padding": LABEL_PADDING_PX,
+    "text-background-padding": "data(textBackgroundPadding)",
     "text-rotation": textRotationClockwiseFromH,
     "background-clip": "none",
     "bounds-expansion": 12, // ensure circles are visible

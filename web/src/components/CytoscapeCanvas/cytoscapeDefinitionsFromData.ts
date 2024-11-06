@@ -56,6 +56,7 @@ export interface INodeDataProperties extends IGraphDataProperties {
   textBackgroundOpacity?: number;
   textBorderOpacity?: number;
   textBorderWidth?: number;
+  textBackgroundPadding?: number;
   textRotation?: number;
   displayFormat?: string;
 }
