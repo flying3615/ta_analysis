@@ -1,4 +1,4 @@
-import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { userEvent, within } from "@storybook/test";
@@ -7,6 +7,7 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import {
   multipleSegmentPageLineArrowHead,
@@ -54,6 +55,15 @@ const PlanSheetsTemplate = () => {
 export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
 };
+const checkCytoElementProperties = async (selector: string) => {
+  const element = window.cyRef.$(selector);
+  if (element.length > 0) {
+    const data = element.data() as INodeDataProperties;
+    await expect(data.displayState).toBe(DisplayStateEnum.hide);
+  } else {
+    console.log(`Element with ID ${selector} not found.`);
+  }
+};
 export const ShowLineMenu: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -84,6 +94,33 @@ export const ShowDiagramLineMenuProperties: Story = {
     await userEvent.click(propertiesMenuItem);
   },
 };
+/**
+ * Story to hide a line through the line properties panel and verify that it actually got hidden.
+ */
+export const ShowHideDiagramLineFromProperties: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 520, 135, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+
+    const menuProperties = await canvas.findByText("Properties");
+    await userEvent.click(menuProperties);
+    await sleep(500);
+
+    await userEvent.click(await canvas.findByLabelText("Hide"));
+    await sleep(500);
+    await userEvent.click(await canvas.findByText("OK"));
+    await sleep(500);
+
+    await checkCytoElementProperties("#1001_0");
+    await sleep(500);
+  },
+};
 export const ShowPageLineMenuProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
@@ -100,7 +137,6 @@ export const ShowPageLineMenuProperties: Story = {
     await userEvent.click(propertiesMenuItem);
   },
 };
-
 export const UpdatePageLineProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {

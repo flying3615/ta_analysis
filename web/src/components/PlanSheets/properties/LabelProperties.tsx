@@ -151,7 +151,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
     );
   }, [panelValuesToUpdate, activePage, activeDiagrams, selectedLabels, dispatch]);
 
-  /** Normalize the angle to be within 0-180  with 1 decimal precision */
+  /** Normalize the angle to be within 0-180 with 1 decimal precision */
   const normalizeLabelAngle = (angle: number): number => {
     const normalizedAngle = angle <= 90 ? 90 - angle : 90 - angle + 360;
     return parseFloat(normalizedAngle.toFixed(1));

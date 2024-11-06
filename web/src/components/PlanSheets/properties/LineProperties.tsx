@@ -2,18 +2,11 @@ import { DisplayStateEnum, LineDTO } from "@linz/survey-plan-generation-api-clie
 import { LuiCheckboxInput, LuiRadioInput, LuiTextInput } from "@linzjs/lui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LineStyle } from "@/modules/plan/styling";
 import { updateDiagramLines, updatePageLines } from "@/modules/plan/updatePlanData";
-import {
-  getActivePage,
-  getActiveSheet,
-  getDiagrams,
-  replaceDiagrams,
-  replacePage,
-} from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, getDiagrams, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
 
 import { borderWidthOptions } from "./LabelPropertiesUtils";
 
@@ -43,7 +36,6 @@ const LineProperties = (props: LinePropertiesProps) => {
   const selectedLine = useMemo(() => props.data[0] ?? ({} as LinePropertiesData), [props.data]);
 
   const dispatch = useAppDispatch();
-  const activeSheet = useAppSelector(getActiveSheet);
   const activePage = useAppSelector(getActivePage);
   const diagrams = useAppSelector(getDiagrams);
 
@@ -134,6 +126,10 @@ const LineProperties = (props: LinePropertiesProps) => {
     }
   }
 
+  const isDisabled = displayState === DisplayStateEnum.systemDisplay;
+
+  const isHidden = displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay;
+
   return (
     <div className="plan-element-properties">
       <div className="property-wrap">
@@ -142,13 +138,8 @@ const LineProperties = (props: LinePropertiesProps) => {
           value="false"
           label="Hide"
           onChange={onVisibilityChange}
-          isDisabled={
-            !isUserDefinedLine &&
-            (activeSheet === PlanSheetType.TITLE ||
-              displayState === DisplayStateEnum.systemHide ||
-              displayState === DisplayStateEnum.systemDisplay)
-          }
-          isChecked={displayState !== DisplayStateEnum.display && displayState !== DisplayStateEnum.systemDisplay}
+          isDisabled={isDisabled}
+          isChecked={isHidden}
         />
       </div>
       <div className="property-wrap">

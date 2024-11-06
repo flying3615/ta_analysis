@@ -35,11 +35,11 @@ describe("LineProperties", () => {
     expect(screen.getByText("Width (pts)")).toBeInTheDocument();
   });
 
-  it("displays Visibility property as disabled for Title sheet", () => {
-    renderComponent({});
+  it("displays Visibility property as enabled for parcel boundary line in Title sheet", () => {
+    renderComponent({ props: [{ ...mockProps, lineType: "parcelBoundary" }] });
     const checkbox = screen.getByRole("checkbox", { name: "Hide Check" });
     expect(checkbox).toBeInTheDocument();
-    expect(checkbox).toBeDisabled();
+    expect(checkbox).toBeEnabled();
   });
 
   it("displays Visibility property as enabled for userDefined line in Title sheet", () => {
