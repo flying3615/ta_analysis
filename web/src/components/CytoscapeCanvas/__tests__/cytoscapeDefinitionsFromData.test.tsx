@@ -182,7 +182,7 @@ describe("nodePositionsFromData", () => {
     expect(cytoscapePositions["node1"]?.x).toBeCloseTo(94.4, 1);
     expect(cytoscapePositions["node1"]?.y).toBeCloseTo(513.5, 1);
     expect(cytoscapePositions["node2"]?.x).toBeCloseTo(1033.8, 1);
-    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(208.1, 1);
+    expect(cytoscapePositions["node2"]?.y).toBeCloseTo(206.1, 1);
   });
 
   test("nodeDefinitionsFromData maps diagram to a hidden rectangle node", () => {

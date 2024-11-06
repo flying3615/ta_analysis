@@ -4,12 +4,7 @@ import { max, sum } from "lodash-es";
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
-import {
-  memoizedTextAlign,
-  paddingOffsetHorizontal,
-  paddingOffsetVertical,
-  TextAlignment,
-} from "@/components/CytoscapeCanvas/textAlignment";
+import { memoizedTextAlign, TextAlignment } from "@/components/CytoscapeCanvas/textAlignment";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling";
 import { PIXELS_PER_POINT, POINTS_PER_CM } from "@/util/cytoscapeUtil";
@@ -128,8 +123,8 @@ export const rotatedMargin = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMa
 
   const cytoscapePixelOffset = cytoscapeCoordinateMapper.planCmToCytoscape(pointOffset / POINTS_PER_CM);
   return {
-    x: cytoscapePixelOffset * Math.cos(angleRadsAntiClockwise) + paddingOffsetHorizontal(ele),
-    y: cytoscapePixelOffset * Math.sin(angleRadsAntiClockwise) + paddingOffsetVertical(ele),
+    x: cytoscapePixelOffset * Math.cos(angleRadsAntiClockwise),
+    y: cytoscapePixelOffset * Math.sin(angleRadsAntiClockwise),
   };
 };
 
@@ -223,9 +218,9 @@ export const circleLabel = (
   return {
     svg: makeScaledSVG({
       symbolSvg: CircleSVG,
-      centre: { x: svgCentreX, y: svgCentreY },
-      svg: { width: svgWidth * 0.8, height: svgHeight * 0.8 },
-      viewport: { width: svgWidth, height: svgHeight },
+      centre: { x: svgCentreX * 1.2, y: svgCentreY * 1.2 },
+      svg: { width: svgWidth, height: svgHeight },
+      viewport: { width: svgWidth * 1.2, height: svgHeight * 1.2 },
       radius: svgCircleRadius,
       lineColor: (ele.data("fontColor") ?? FOREGROUND_COLOUR_BLACK) as string,
       ...getStyleData(ele),

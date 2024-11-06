@@ -584,12 +584,6 @@ export const RendersOffsetCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
     addOffsetLabel(builder, 8, "D", 20, -20, 270, false);
     return <CanvasFromMockData data={builder.build()} />;
   },
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 const addRotatedLabel = (
@@ -636,12 +630,6 @@ export const RendersRotatedCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
     addRotatedLabel(builder, 8, "D", 20, -20, 270, "topLeft", true);
     return <CanvasFromMockData data={builder.build()} />;
   },
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 export const RendersRotatedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
@@ -649,12 +637,6 @@ export const RendersRotatedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
     const builder = fromBuilder();
     addRotatedLabel(builder, 9, "II", 15, -10, 45, "centerCenter", true, false);
     return <CanvasFromMockData data={builder.build()} />;
-  },
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
   },
 };
 
@@ -665,12 +647,6 @@ export const RendersRotatedSelectedCircledLabel: StoryObj<typeof CytoscapeCanvas
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: selectAllLabels,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
@@ -703,12 +679,6 @@ export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> 
     }
 
     return <CanvasFromMockData data={builder.build()} />;
-  },
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
   },
 };
 
@@ -744,12 +714,6 @@ export const RendersSelectedCircledLabelsCenterCenter: StoryObj<typeof Cytoscape
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: selectAllLabels,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 export const RendersSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
@@ -784,12 +748,6 @@ export const RendersSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanva
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: selectAllLabels,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 export const RendersHoveredCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
@@ -808,12 +766,6 @@ export const RendersHoveredCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: hoverAllLabels,
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
-  },
 };
 
 export const RendersHoveredSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
@@ -834,12 +786,6 @@ export const RendersHoveredSelectedCircledLabelsTopLeft: StoryObj<typeof Cytosca
   play: async () => {
     await selectAllLabels();
     await hoverAllLabels();
-  },
-  parameters: {
-    viewport: {
-      defaultViewport: "tablet",
-      defaultOrientation: "landscape",
-    },
   },
 };
 export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
