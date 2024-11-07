@@ -1,3 +1,4 @@
+import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
 import { expect } from "@storybook/jest";
@@ -120,18 +121,20 @@ export const clickAtPosition = (
   coordinates: { clientX: number; clientY: number },
   button: number | undefined = undefined,
 ) => {
-  clickAtCoordinates(cytoscapeNodeLayer, coordinates.clientX, coordinates.clientY, button);
+  clickAtCoordinates(cytoscapeNodeLayer, [coordinates.clientX, coordinates.clientY], button);
 };
 
 export const clickAtCoordinates = (
   cytoscapeNodeLayer: HTMLElement,
-  x: number,
-  y: number,
+  location: [number, number],
   button: number | undefined = undefined,
+  withCtrlKey = false,
 ) => {
+  const [x, y] = location;
   fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
-  fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
-  fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y });
+  console.log(`Clicking at ${x}, ${y}`);
+  fireEvent.mouseDown(cytoscapeNodeLayer, { button: button, clientX: x, clientY: y, ctrlKey: withCtrlKey });
+  fireEvent.mouseUp(cytoscapeNodeLayer, { button: button, clientX: x, clientY: y, ctrlKey: withCtrlKey });
 };
 
 export const clickMultipleCoordinates = (
@@ -140,9 +143,7 @@ export const clickMultipleCoordinates = (
   button: number | undefined = undefined,
 ) => {
   coordinates.forEach(({ x, y }) => {
-    fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
-    fireEvent.mouseDown(cytoscapeNodeLayer, { button, clientX: x, clientY: y, ctrlKey: true });
-    fireEvent.mouseUp(cytoscapeNodeLayer, { button, clientX: x, clientY: y, ctrlKey: true });
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y], button, true);
   });
 };
 
@@ -193,44 +194,102 @@ export function getCytoscapeOffsetInCanvas(
   return { cyOffsetX, cyOffsetY };
 }
 
-export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement): HTMLElement {
+export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement, layer = 2): HTMLElement {
   // eslint-disable-next-line testing-library/no-node-access
-  return (cytoscapeElement.firstChild as HTMLElement).children[2] as HTMLElement;
+  return (cytoscapeElement.firstChild as HTMLElement).children[layer] as HTMLElement;
+}
+
+export function toClientXY(position: [number, number]): { clientX: number; clientY: number } {
+  const [x, y] = position;
+  return { clientX: x, clientY: y };
 }
 
 export class TestCanvas {
   user: UserEvent;
-  canvas: HTMLCanvasElement;
+  canvasElement: HTMLElement;
+  cytoscapeCanvas: HTMLElement;
+  cyOffsetX: number;
+  cyOffsetY: number;
 
   public static Create = async (canvasElement: HTMLElement, firstSelect = "Select Labels") => {
     const canvas = within(canvasElement);
     const user = userEvent.setup();
     await user.click(await canvas.findByTitle(firstSelect));
     await sleep(500);
-    return new TestCanvas(user, getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas")));
+    return new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
   };
 
-  constructor(user: UserEvent, canvas: HTMLCanvasElement) {
+  constructor(user: UserEvent, canvasElement: HTMLElement, cytoscapeCanvas: HTMLElement) {
     this.user = user;
-    this.canvas = canvas;
+    this.canvasElement = canvasElement;
+    this.cytoscapeCanvas = cytoscapeCanvas;
+    const offset = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeCanvas);
+    this.cyOffsetX = offset.cyOffsetX;
+    this.cyOffsetY = offset.cyOffsetY;
   }
 
-  withCtrl = async (action: () => Promise<void>) => {
-    await this.user.keyboard("{Control>}"); // Press Ctrl (without releasing it)
-    await action();
-    await this.user.keyboard("{/Control}");
-  };
+  toCoords(location: [number, number]): [number, number] {
+    return [this.cyOffsetX + location[0], this.cyOffsetY + location[1]];
+  }
 
-  click = async (
-    clientCoord: { clientX: number; clientY: number },
-    button: "MouseLeft" | "MouseRight" = "MouseLeft",
-  ) => {
-    await this.user.pointer({
-      keys: `[${button}]`,
-      target: this.canvas,
-      coords: clientCoord,
-    });
-  };
+  toClientXY(location: [number, number]): { clientX: number; clientY: number } {
+    return toClientXY(this.toCoords(location));
+  }
+
+  async click(location: [number, number], withCtrl = false) {
+    await sleep(500);
+    clickAtCoordinates(getCytoCanvas(this.cytoscapeCanvas), this.toCoords(location), LEFT_MOUSE_BUTTON, withCtrl);
+  }
+
+  async leftClick(location: [number, number], layer = 2, withCtrl = false) {
+    await sleep(500);
+    clickAtCoordinates(
+      getCytoscapeNodeLayer(this.cytoscapeCanvas, layer),
+      this.toCoords(location),
+      LEFT_MOUSE_BUTTON,
+      withCtrl,
+    );
+  }
+
+  async rightClick(location: [number, number], layer = 2) {
+    await sleep(500);
+    clickAtCoordinates(getCytoscapeNodeLayer(this.cytoscapeCanvas, layer), this.toCoords(location), RIGHT_MOUSE_BUTTON);
+  }
+
+  async hoverOver(location: [number, number], layer = 2) {
+    await sleep(500);
+    fireEvent.mouseOver(getCytoscapeNodeLayer(this.cytoscapeCanvas, layer), this.toClientXY(location));
+  }
+
+  async contextMenu(_: { at: [number, number]; select: string }): Promise<void> {
+    const { at, select } = _; // not so nice way to get named arguments
+    await this.rightClick(at);
+    const ctxMenuElement = await within(this.canvasElement).findByTestId("cytoscapeContextMenu");
+    const propertiesMenuItem = within(ctxMenuElement).getByText(select);
+    await this.user.click(propertiesMenuItem);
+  }
+
+  findProperty(luiType: "TextInput", withLabel: string): Element {
+    // can probably do this better with findQuick
+    for (const element of this.canvasElement.querySelectorAll("div.property-wrap")) {
+      // eslint-disable-next-line testing-library/no-node-access
+      let e = element.querySelector(`.Lui${luiType}-label-text`);
+      if (e === null) continue;
+      if (e.textContent === withLabel) {
+        // eslint-disable-next-line testing-library/no-node-access
+        e = element.querySelector(`.Lui${luiType}-input`);
+        if (e === null) continue;
+        return e;
+      }
+    }
+    throw Error(`Could not find div.property-wrap element with .Lui${luiType}-label-text text matching ${withLabel}`);
+  }
+
+  async clickCancel() {
+    const buttonGroup = await findQuick({ classes: ".footer" });
+    const cancelButton = await findQuick({ tagName: "button", text: "Cancel" }, buttonGroup);
+    await userEvent.click(cancelButton);
+  }
 }
 
 export interface MousePosition {

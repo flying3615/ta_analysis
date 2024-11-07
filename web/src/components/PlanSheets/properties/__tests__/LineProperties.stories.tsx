@@ -74,7 +74,7 @@ export const ShowLineMenu: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
   },
 };
@@ -87,7 +87,7 @@ export const ShowDiagramLineMenuProperties: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
@@ -105,7 +105,7 @@ export const ShowHideDiagramLineFromProperties: Story = {
     await sleep(500);
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 520, 135, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
     const menuProperties = await canvas.findByText("Properties");
@@ -130,7 +130,7 @@ export const ShowPageLineMenuProperties: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
@@ -146,7 +146,7 @@ export const UpdatePageLineProperties: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
@@ -156,8 +156,8 @@ export const UpdatePageLineProperties: Story = {
     await expect(okButton).toBeDisabled();
     const dashStyleRadioButton = canvas.getByRole("radio", { name: "peck1" });
     await userEvent.click(dashStyleRadioButton);
-    const thickness2RadioButtom = canvas.getByRole("radio", { name: "2.0" });
-    await userEvent.click(thickness2RadioButtom);
+    const thickness2RadioButton = canvas.getByRole("radio", { name: "2.0" });
+    await userEvent.click(thickness2RadioButton);
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
     await expect(await canvas.findByRole("button", { name: "Undo" })).toBeEnabled();
@@ -173,7 +173,7 @@ export const UpdateLinePropertiesCancelFlow: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
@@ -183,8 +183,8 @@ export const UpdateLinePropertiesCancelFlow: Story = {
     await expect(okButton).toBeDisabled();
     const dashStyleRadioButton = canvas.getByRole("radio", { name: "peck1" });
     await userEvent.click(dashStyleRadioButton);
-    const thickness2RadioButtom = canvas.getByRole("radio", { name: "2.0" });
-    await userEvent.click(thickness2RadioButtom);
+    const thickness2RadioButton = canvas.getByRole("radio", { name: "2.0" });
+    await userEvent.click(thickness2RadioButton);
     await expect(okButton).toBeEnabled();
     const cancelButton = canvas.getByRole("button", { name: "Cancel" });
     await userEvent.click(cancelButton); // final screenshot verify changes not rendered
@@ -201,7 +201,7 @@ export const UpdatePageLinePropertiesThenUndo: Story = {
     await sleep(500);
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");

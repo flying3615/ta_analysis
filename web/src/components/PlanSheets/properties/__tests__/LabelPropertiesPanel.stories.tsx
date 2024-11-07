@@ -15,7 +15,6 @@ import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
   click,
-  clickAtCoordinates,
   clickAtPosition,
   clickMultipleCoordinates,
   getCytoCanvas,
@@ -76,7 +75,7 @@ export const ShowLabelContextMenu: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON); // screenshot verify context menu
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON); // screenshot verify context menu
   },
 };
 
@@ -87,7 +86,7 @@ export const ShowLabelPropertiesPanel: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
@@ -102,7 +101,7 @@ export const RotateLabelSliderAndPropertiesTextAngleAreConsistent: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const rotateLabelMenuItem = await canvas.findByText("Rotate label");
     await userEvent.hover(rotateLabelMenuItem);
@@ -123,7 +122,7 @@ export const UpdatePageLabelProperties: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtCoordinates(target, pageLabelPosition.clientX, pageLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
@@ -159,7 +158,7 @@ export const UpdateLabelPropertiesCancelFlow: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtCoordinates(target, diagramLabelPosition.clientX, diagramLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
@@ -186,7 +185,7 @@ export const UpdateMultiplePageAndDiagramLabelProperties: Story = {
       { x: pageLabelPosition.clientX, y: pageLabelPosition.clientY },
       { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
     ]);
-    clickAtCoordinates(target, pageLabelPosition.clientX, pageLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
@@ -217,7 +216,7 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
       { x: pageLabelPosition.clientX, y: pageLabelPosition.clientY },
       { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
     ]);
-    clickAtCoordinates(target, pageLabelPosition.clientX, pageLabelPosition.clientY, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);

@@ -52,7 +52,7 @@ export const useAdjustLoadedPlanData = () => {
     return label;
   };
 
-  const adjustLoadedPlanData = (response: PlanResponseDTO): PlanResponseDTO => {
+  return (response: PlanResponseDTO): PlanResponseDTO => {
     const originAdjustedDiagrams = response.diagrams.map((diagram) => {
       return diagram.originPageOffset.x === 0 && diagram.originPageOffset.y === 0
         ? {
@@ -72,7 +72,7 @@ export const useAdjustLoadedPlanData = () => {
 
       diagrams: originAdjustedDiagrams.map((diagram) => {
         // TODO: this is just diagram labels
-        const labelAdjustedDiagram = {
+        return {
           ...diagram,
           labels: diagram.labels.map((label) => {
             return relocateOffscreenLabel(planCoordinateMapper, diagram.id, label);
@@ -81,10 +81,7 @@ export const useAdjustLoadedPlanData = () => {
             return relocateOffscreenLabel(planCoordinateMapper, diagram.id, label);
           }),
         };
-
-        return labelAdjustedDiagram;
       }),
     };
   };
-  return adjustLoadedPlanData;
 };

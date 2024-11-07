@@ -1,3 +1,4 @@
+import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 
@@ -12,6 +13,7 @@ import {
   selectAndDrag,
   sleep,
   tabletLandscapeParameters,
+  TestCanvas,
 } from "@/test-utils/storybook-utils";
 
 export default {
@@ -107,8 +109,7 @@ export const MoveNodeToOriginalCoord: Story & Required<Pick<Story, "play">> = {
     await sleep(1500);
     clickAtCoordinates(
       getCytoscapeNodeLayer(cytoscapeElement),
-      position.clientX + 50,
-      position.clientY + 100,
+      [position.clientX + 50, position.clientY + 100],
       RIGHT_MOUSE_BUTTON,
     );
     await sleep(500);
@@ -135,8 +136,7 @@ export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
     await sleep(1500);
     clickAtCoordinates(
       getCytoscapeNodeLayer(cytoscapeElement),
-      position.clientX + 50,
-      position.clientY + 100,
+      [position.clientX + 50, position.clientY + 100],
       RIGHT_MOUSE_BUTTON,
     );
     await sleep(500);
@@ -149,25 +149,23 @@ export const AlignLabelToLine: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
 
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Align label to line" });
 
-    // Location of a label (Label 14: {213,213}) in cytoscape pixels
-    clickAtCoordinates(cytoscapeNodeLayer, 213 + cyOffsetX, 213 + cyOffsetY, RIGHT_MOUSE_BUTTON);
-    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
-    const propertiesMenuItem = within(ctxMenuElement).getByText("Align label to line");
-    await userEvent.click(propertiesMenuItem);
-    await sleep(500);
+    await test.leftClick([360, 250] /* whitespace */, 0); // Nothing should change
+    await test.leftClick([98, 183] /* Angled line on left */, 0);
+    await test.contextMenu({ at: [213, 213], select: "Properties" });
+    await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18");
+    await test.clickCancel();
+    // What we want to see is:
+    // - Label 14 is at an angle
 
-    const middlePoint = { x: 98 + cyOffsetX, y: 183 + cyOffsetY };
-
-    // TODO: WIP fix mouse not move here...
-    clickAtCoordinates(cytoscapeNodeLayer, middlePoint.x, middlePoint.y);
-    await sleep(500);
+    // TODO: Check hover over functionality
+    // await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
+    // await test.hoverOver([96, 284] /* Angled line at lower left */);
+    // await expect(await within(canvasElement).findByRole("tooltip")).toHaveTextContent("Select a line to align label to");
+    // - Angled line at lower left is blue
+    // - Cursor has text "Select a line to align label to"
   },
 };

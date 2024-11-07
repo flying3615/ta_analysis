@@ -18,7 +18,7 @@ export const useMeasureText = () => {
     }
   }, []);
 
-  const measureTextCm = (text: string, font: string = "Tahoma", fontSize: number = 12): Delta => {
+  return (text: string, font: string = "Tahoma", fontSize: number = 12): Delta => {
     const lines = text.split("\n");
 
     if (measuringContext) {
@@ -36,6 +36,4 @@ export const useMeasureText = () => {
     const width = (max(lines.map((l: string) => l.length)) ?? 0) / PIXELS_PER_CM;
     return { dx: width, dy: height };
   };
-
-  return measureTextCm;
 };

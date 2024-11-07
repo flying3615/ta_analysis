@@ -200,8 +200,7 @@ export const getLayerSelectedState = async (
   const cell = await findCell(rowId, "selected", container);
   const button = await findQuick({ tagName: "button" }, cell);
   const actualSelectedSpan = await findQuick({ tagName: "span" }, button);
-  const actualSelectedState = actualSelectedSpan.ariaLabel;
-  return actualSelectedState;
+  return actualSelectedSpan.ariaLabel;
 };
 
 export const clickMenuOption = async (menuOptionText: string | RegExp): Promise<void> => {

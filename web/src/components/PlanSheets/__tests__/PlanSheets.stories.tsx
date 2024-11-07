@@ -562,8 +562,7 @@ const COORDINATE_10001_Y = 136;
 const COORDINATE_10004_X = 733;
 const COORDINATE_10004_Y = 456;
 
-const LABEL_14_X = 493;
-const LABEL_14_Y = 269;
+const LABEL_14: [number, number] = [493, 269];
 
 export const SelectDiagram: Story = {
   ...Default,
@@ -579,7 +578,7 @@ export const SelectDiagram: Story = {
 
     const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
     const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
-    clickAtCoordinates(cytoscapeNodeLayer, x, y);
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y]);
     await sleep(500);
   },
 };
@@ -619,7 +618,7 @@ export const MoveDiagramToPage: Story = {
 
     const x = 411 - CANVAS_CORNER_REL_X + cyOffsetX;
     const y = 136 - CANVAS_CORNER_REL_Y + cyOffsetY;
-    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y], RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
     const menuLink = await canvas.findByText("Move to page");
@@ -655,7 +654,7 @@ export const SelectCoordinates: Story = {
 
     await sleep(500);
 
-    clickAtCoordinates(cytoscapeNodeLayer, x_10001, y_10001);
+    clickAtCoordinates(cytoscapeNodeLayer, [x_10001, y_10001]);
 
     await sleep(500);
   },
@@ -676,7 +675,7 @@ export const ShowCoordinatesMenu: Story = {
     // Location of a mark in cytoscape pixels
     const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
     const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
-    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y], RIGHT_MOUSE_BUTTON);
     await sleep(500);
   },
 };
@@ -697,12 +696,12 @@ export const HideCoordinate: Story & Required<Pick<Story, "play">> = {
     // Location of a mark in cytoscape pixels
     const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
     const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
-    clickAtCoordinates(cytoscapeNodeLayer, x, y, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y], RIGHT_MOUSE_BUTTON);
 
     const menuHide = await canvas.findByText("Hide");
     await userEvent.click(menuHide);
     await sleep(500);
-    clickAtCoordinates(cytoscapeNodeLayer, 10 + cyOffsetX, 10 + cyOffsetY); // click off node to remove select
+    clickAtCoordinates(cytoscapeNodeLayer, [10 + cyOffsetX, 10 + cyOffsetY]); // click off node to remove select
     await sleep(500);
   },
 };
@@ -717,7 +716,7 @@ export const SelectLine: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135);
+    clickAtCoordinates(cytoscapeNodeLayer, [520, 135]);
     await sleep(500);
   },
 };
@@ -732,7 +731,7 @@ export const ShowLineMenu: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     await expect(canvas.queryByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
   },
@@ -748,7 +747,7 @@ export const DeletePageLine: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 785, 289, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     await userEvent.click(await canvas.findByText("Delete"));
     await sleep(500);
@@ -767,13 +766,13 @@ export const HideLine: Story & Required<Pick<Story, "play">> = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 520, 135, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
     const menuHide = await canvas.findByText("Hide");
     await userEvent.click(menuHide);
     await sleep(500);
-    clickAtCoordinates(cytoscapeNodeLayer, 10 + 520, 10 + 135);
+    clickAtCoordinates(cytoscapeNodeLayer, [10 + 520, 10 + 135]);
     await sleep(500);
   },
 };
@@ -787,14 +786,14 @@ export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
     await sleep(500);
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 600, 215, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [600, 215], RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
     const menuHide = await canvas.findByText("Hide");
     await userEvent.click(menuHide);
     await sleep(1500);
 
-    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), 600, 215, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [600, 215], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const menuShow = await canvas.findByText("Show");
     await userEvent.click(menuShow);
@@ -830,7 +829,7 @@ export const SelectLineAndLinkedLabel: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 411, 366);
+    clickAtCoordinates(cytoscapeNodeLayer, [411, 366]);
     await sleep(500);
 
     await checkElementProperties("#1006_0", "rgb(248,27,239)", "line-color", "element-move-control");
@@ -848,7 +847,7 @@ export const SelectMarkAndLinkedLabel: Story = {
 
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, 411, 135);
+    clickAtCoordinates(cytoscapeNodeLayer, [411, 135]);
     await sleep(500);
 
     await checkElementProperties("#10001", "rgb(248,27,239)", "outline-color", "related-label-selected");
@@ -867,7 +866,7 @@ export const RotateDiagramLabel: Story = {
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
 
-    clickAtCoordinates(cytoscapeNodeLayer, LABEL_14_X, LABEL_14_Y, RIGHT_MOUSE_BUTTON);
+    clickAtCoordinates(cytoscapeNodeLayer, LABEL_14, RIGHT_MOUSE_BUTTON);
     await sleep(500);
 
     const rotateLabelMenuItem = await canvas.findByText("Rotate label");
