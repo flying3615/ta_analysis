@@ -30,36 +30,25 @@ export const useAdjustLoadedPlanData = () => {
 
     const origLabelCentre = addIntoPosition(addIntoPosition(labelPositionCm, offset), originalShift);
 
-    console.log(
-      `relocateOffscreenLabel label: ${JSON.stringify(label)}, labelSizeCm=${JSON.stringify(labelSizeCm)}, labelPositionCm=${JSON.stringify(labelPositionCm)}, offset=${JSON.stringify(offset)}, origLabelCentre=${JSON.stringify(origLabelCentre)}`,
-    );
-
     const xL = origLabelCentre.x - labelSizeCm.dx / 2;
     const offsideL = CytoscapeCoordinateMapper.diagramLimitOriginX - xL;
-    const xR = origLabelCentre.x + labelSizeCm.dx / 2;
     const offsideR = xL - CytoscapeCoordinateMapper.diagramLimitBottomRightX;
     const yT = origLabelCentre.y + labelSizeCm.dy / 2;
     const offsideT = yT - CytoscapeCoordinateMapper.diagramLimitOriginY;
     const yB = origLabelCentre.y - labelSizeCm.dy / 2;
     const offsideB = CytoscapeCoordinateMapper.diagramLimitBottomRightY - yB;
-    console.log(`relocateOffscreenLabel ${xL}, ${xR}, ${yT}, ${yB}`);
 
     if (offsideL < 0 && offsideR < 0 && offsideT < 0 && offsideB < 0) return label;
 
-    console.log(`relocateOffscreenLabel label is clipped ${offsideL}, ${offsideR}, ${offsideT}, ${offsideB}`);
     const unclipShift = {
       dx: offsideL > 0 ? offsideL : offsideR > 0 ? -offsideR : 0,
       dy: offsideT > 0 ? offsideT : offsideB > 0 ? -offsideB : 0,
     };
 
-    console.log(`relocateOffscreenLabel unclipShift=${JSON.stringify(unclipShift)}`);
-
     const newShift = addIntoDelta(originalShift, unclipShift);
-    console.log(`relocateOffscreenLabel newShift=${JSON.stringify(newShift)}`);
 
     label.pointOffset = Math.sqrt(newShift.dx ** 2 + newShift.dy ** 2) * POINTS_PER_CM;
     label.anchorAngle = angleDegrees360(-Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
-    console.log(`relocateOffscreenLabel new pointOffset=${label.pointOffset}, new anchorAngle=${label.anchorAngle}`);
     return label;
   };
 

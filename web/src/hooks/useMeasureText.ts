@@ -24,7 +24,6 @@ export const useMeasureText = () => {
     if (measuringContext) {
       measuringContext.font = `${fontSize}px ${font}`; // order matters here
       const lineSizes = lines.map((l: string) => measuringContext.measureText(l));
-      console.log(`measureTextCm font=${measuringContext.font} lineSizes=${JSON.stringify(lineSizes)}`);
 
       const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
       const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
