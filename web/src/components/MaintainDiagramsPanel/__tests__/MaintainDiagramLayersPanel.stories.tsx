@@ -165,8 +165,8 @@ MaintainDiagramsLayersSave.play = async ({ step }) => {
     await userEvent.click(saveButton);
   });
   await step("THEN updated layer preferences are saved", async () => {
-    const overwriteButton = await screen.findByText("Overwrite");
-    await userEvent.click(overwriteButton);
+    const continueButton = await screen.findByText("Continue");
+    await userEvent.click(continueButton);
     await expect(await screen.findByText("All layers up to date")).toBeTruthy();
   });
 };
@@ -202,12 +202,12 @@ MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
     await userEvent.click(saveButton);
   });
   await step("THEN updated layer preferences are saved", async () => {
-    const overwriteButton = await screen.findByText("Overwrite");
-    await userEvent.click(overwriteButton);
-    await expect(await screen.findByText("Error updating diagram layer preferences")).toBeTruthy();
+    const continueButton = await screen.findByText("Continue");
+    await userEvent.click(continueButton);
+    const toastMessage = await screen.findByText("Error updating diagram layer preferences.");
+    await expect(toastMessage).toBeTruthy();
   });
 };
-
 export const MaintainDiagramsLayersUnsavedChangesDiscard: Story = {
   ...Default,
   parameters: {

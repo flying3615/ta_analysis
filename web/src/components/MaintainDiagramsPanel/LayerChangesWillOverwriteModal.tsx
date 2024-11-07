@@ -1,15 +1,15 @@
 import { useLuiModalPrefabProps } from "@linzjs/windows";
 import { PropsWithChildren } from "react";
 
-export const layerChangesWillOverwriteModal: PropsWithChildren<useLuiModalPrefabProps<"overwrite">> = {
+export const layerChangesWillOverwriteModal: PropsWithChildren<useLuiModalPrefabProps<"continue">> = {
   level: "warning",
   title: "Message: 126034",
   children: (
     <>
-      Any layer changes made to the individual user defined diagrams
+      Any layer changes made to an individual user defined
       <br />
-      will be overwritten if you continue. Do you wish to continue?
+      diagram of this diagram type will be overwritten.
     </>
   ),
-  buttons: [{ title: "Cancel" }, { title: "Overwrite", value: "overwrite", default: true }],
+  buttons: [{ title: "Cancel" }, { title: "Continue", value: "continue", default: true }],
 };

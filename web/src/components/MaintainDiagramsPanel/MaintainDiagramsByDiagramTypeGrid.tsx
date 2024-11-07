@@ -39,13 +39,11 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
     return diagramTypes?.diagramTypes;
   }, [diagramTypes]);
 
-  const [saving, setSaving] = useState<boolean>();
   const [diagramTypeCode, setDiagramTypeCode] = useState<string>(CpgDiagramType.SYSP);
   const [diagramsByType, setDiagramsByType] = useState<(DiagramLayerPreferenceDTO & { id: number })[]>([]);
   const [diagramsByTypeInitialState, setDiagramsByTypeInitialState] = useState<
     (DiagramLayerPreferenceDTO & { id: number })[]
   >([]);
-  const [hasChanged, setHasChanged] = useState(false);
 
   /**
    * Load diagram preferences
@@ -59,6 +57,11 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
     { enabled: diagramTypeCode != null },
   );
 
+  const { mutateAsync, isPending, isSuccess, reset } = useUpdateLayerPreferencesByDiagramTypeMutation(
+    transactionId,
+    diagramTypeCode,
+  );
+
   /**
    * Copy the initial preferences state for change detection and initialisation.
    */
@@ -67,9 +70,16 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
     setDiagramsByTypeInitialState(withIdUndef(diagramLayerByType?.diagramLayerByTypePreferences, "pldfId") ?? []);
   }, [diagramLayerByType?.diagramLayerByTypePreferences]);
 
+  const hasChanged = useMemo(
+    () => !isEqual(diagramsByType, diagramsByTypeInitialState),
+    [diagramsByTypeInitialState, diagramsByType],
+  );
+
   useEffect(() => {
-    setHasChanged(!isEqual(diagramsByType, diagramsByTypeInitialState));
-  }, [diagramsByType, diagramsByTypeInitialState]);
+    if (hasChanged) {
+      reset();
+    }
+  }, [hasChanged, reset]);
 
   const resetDiagrams = useCallback(() => {
     setDiagramsByType(diagramsByTypeInitialState.map((r) => ({ ...r })));
@@ -80,23 +90,18 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
    */
   useEffect(resetDiagrams, [resetDiagrams]);
 
-  const updateLayerPreferencesByDiagramTypeMutation = useUpdateLayerPreferencesByDiagramTypeMutation({
-    transactionId,
-    diagramTypeCode,
-  });
   /**
    * Save the preference changes
    */
+
   const save = useCallback(async () => {
     const result = await showPrefabModal(layerChangesWillOverwriteModal);
     if (!result) {
       return false;
     }
-    setSaving(true);
-    await updateLayerPreferencesByDiagramTypeMutation.mutateAsync({ diagramsByType });
-    setSaving(false);
-    return true;
-  }, [diagramsByType, updateLayerPreferencesByDiagramTypeMutation, showPrefabModal]);
+    const response = await mutateAsync({ diagramsByType });
+    return response.ok;
+  }, [diagramsByType, mutateAsync, showPrefabModal]);
 
   /**
    * If grid has changed ask if save required and save.
@@ -120,10 +125,6 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   useImperativeHandle(ref, () => ({
     checkSave,
   }));
-
-  useEffect(() => {
-    hasChanged && setSaving(undefined);
-  }, [hasChanged]);
 
   const { panelClose } = useContext(PanelInstanceContext);
 
@@ -171,9 +172,15 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
         columnDefs={columnDefs}
         rowData={diagramsByType}
       />
-      <MaintainDiagramsPanelFooter hasChanged={hasChanged} saving={saving} save={save} cancel={cancel} />
-      {/* Overlay div that appears when saving is true */}
-      {saving && <div className="MaintainDiagrams__overlay" />}
+      <MaintainDiagramsPanelFooter
+        hasChanged={hasChanged}
+        isPending={isPending}
+        isSuccess={isSuccess}
+        save={save}
+        cancel={cancel}
+      />
+      {/* Overlay div that appears when saving is in progress*/}
+      {isPending && <div className="MaintainDiagrams__overlay" />}
     </>
   );
 });

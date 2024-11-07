@@ -2,7 +2,7 @@ import "./MaintainDiagramsGrid.scss";
 
 import type { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
-import { Grid, wait } from "@linzjs/step-ag-grid";
+import { Grid } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext, useLuiModalPrefab } from "@linzjs/windows";
 import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty, isEqual } from "lodash-es";
@@ -13,6 +13,7 @@ import {
   diagramNamesQueryKey,
   useDiagramLayerPreferencesByDiagramQuery,
   useDiagramNamesQuery,
+  useUpdateLayerPreferencesByDiagramIdMutation,
 } from "@/components/LabelPreferencesPanel/maintainDiagram";
 import { useMaintainDiagramsGridColDefs } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridColDefs";
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
@@ -33,8 +34,6 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
   const { panelClose } = useContext(PanelInstanceContext);
 
   const queryClient = useQueryClient();
-
-  const [saving, setSaving] = useState<boolean>();
   const [diagramId, setDiagramId] = useState<number>();
   const [diagramsById, setDiagramsById] = useState<(DiagramLayerPreferenceDTO & { id: number })[]>([]);
 
@@ -72,6 +71,11 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
       { enabled: diagramId != null },
     );
 
+  const { mutateAsync, isPending, isSuccess, reset } = useUpdateLayerPreferencesByDiagramIdMutation(
+    transactionId,
+    diagramId ?? 0,
+  );
+
   /**
    * Copy the initial preferences state for change detection and initialisation.
    */
@@ -80,25 +84,29 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
     [diagramLayerPreferencesByDiagram],
   );
 
-  const hasChanged = !isEqual(diagramsById, diagramPreferencesInitialState);
+  const save = useCallback(async () => {
+    const response = await mutateAsync({ diagramsById });
+    return response.ok;
+  }, [diagramsById, mutateAsync]);
+
+  const hasChanged = useMemo(
+    () => !isEqual(diagramsById, diagramPreferencesInitialState),
+    [diagramPreferencesInitialState, diagramsById],
+  );
+
+  useEffect(() => {
+    if (hasChanged) {
+      reset();
+    }
+  }, [hasChanged, reset]);
 
   const resetDiagrams = useCallback(() => {
     setDiagramsById(diagramPreferencesInitialState.map((d) => ({ ...d })));
   }, [diagramPreferencesInitialState]);
-
   /**
    * Initialise preferences on load
    */
   useEffect(resetDiagrams, [resetDiagrams]);
-
-  const save = useCallback(async () => {
-    setSaving(true);
-    console.log("Save not implemented yet");
-    await wait(1000);
-
-    setSaving(false);
-    return true;
-  }, []);
 
   /**
    * If grid has changed ask if save required and save.
@@ -123,10 +131,6 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
     checkSave,
   }));
 
-  useEffect(() => {
-    hasChanged && setSaving(undefined);
-  }, [hasChanged]);
-
   const cancel = (): Promise<void> => {
     void queryClient.invalidateQueries({ queryKey: diagramNamesQueryKey(transactionId) });
     void queryClient.invalidateQueries({ queryKey: allDiagramLayerPreferencesQueryKey(transactionId) });
@@ -147,7 +151,13 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
     return (
       <>
         <div className="MaintainDiagramsGrid_NoDiagrams">No individual user defined diagrams found</div>
-        <MaintainDiagramsPanelFooter hasChanged={hasChanged} saving={saving} save={save} cancel={cancel} />
+        <MaintainDiagramsPanelFooter
+          hasChanged={hasChanged}
+          isPending={isPending}
+          isSuccess={isSuccess}
+          save={save}
+          cancel={cancel}
+        />
       </>
     );
   }
@@ -188,7 +198,15 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
         columnDefs={columnDefs}
         rowData={diagramsById ?? []}
       />
-      <MaintainDiagramsPanelFooter hasChanged={hasChanged} saving={saving} save={save} cancel={cancel} />
+      <MaintainDiagramsPanelFooter
+        hasChanged={hasChanged}
+        isPending={isPending}
+        isSuccess={isSuccess}
+        save={save}
+        cancel={cancel}
+      />
+      {/* Overlay div that appears when saving is in progress*/}
+      {isPending && <div className="MaintainDiagrams__overlay" />}
     </>
   );
 });

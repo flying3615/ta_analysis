@@ -6,7 +6,6 @@ import type {
 } from "@linz/survey-plan-generation-api-client";
 import { LabelPreferencesControllerApi } from "@linz/survey-plan-generation-api-client";
 import type { UpdateLabelPreferenceRequestDTO } from "@linz/survey-plan-generation-api-client/src/models";
-import { wait } from "@linzjs/step-ag-grid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";
@@ -57,27 +56,19 @@ export const useUpdateLabelPreferencesMutation = (transactionId: number) => {
   const queryClient = useQueryClient();
   const { showErrorToast } = useShowToast();
 
-  const showError = () => showErrorToast("Update label preferences failed");
+  const onError = () => showErrorToast("Update label preferences failed");
+  const onSuccess = () => queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) });
 
   return useMutation({
     mutationFn: async (updateLabelPreferenceRequestDTO: UpdateLabelPreferenceRequestDTO) => {
-      await wait(2000);
-      return await new LabelPreferencesControllerApi(apiConfig()).updateLabelPreference({
+      const response = await new LabelPreferencesControllerApi(apiConfig()).updateLabelPreference({
         transactionId,
         updateLabelPreferenceRequestDTO,
       });
+      if (!response.ok) throw new Error("Update failed");
+      return response;
     },
-    onError: () => {
-      showError();
-      return { ok: false };
-    },
-    onSuccess: async ({ ok }) => {
-      if (!ok) {
-        showError();
-      } else {
-        await queryClient.invalidateQueries({ queryKey: userLabelPreferencesQueryKey(transactionId) });
-      }
-      return { ok };
-    },
+    onError,
+    onSuccess,
   });
 };

@@ -88,26 +88,24 @@ export const useDiagramLayerPreferencesByDiagramTypeQuery = (
     refetchOnMount: true,
   });
 
-export interface UpdateDiagramPreferencesProps {
-  transactionId: number;
-  diagramTypeCode: string;
-}
 export interface UpdateDiagramPreferencesMutationProps {
   diagramsByType: Array<DiagramLayerPreferenceDTO & { id: number }>;
 }
 /**
  * Update diagram preferences mutation.
  */
-export const useUpdateLayerPreferencesByDiagramTypeMutation = ({
-  transactionId,
-  diagramTypeCode,
-}: UpdateDiagramPreferencesProps) => {
+export const useUpdateLayerPreferencesByDiagramTypeMutation = (transactionId: number, diagramTypeCode: string) => {
   const queryClient = useQueryClient();
   const { showErrorToast } = useShowToast();
+  const onError = () => showErrorToast("Error updating diagram layer preferences.");
+  const onSuccess = () =>
+    queryClient.invalidateQueries({
+      queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
+    });
 
   return useMutation({
-    mutationFn: (props: UpdateDiagramPreferencesMutationProps) => {
-      return new MaintainDiagramsControllerApi(apiConfig()).updateDiagramLayerPreferencesByDiagramType({
+    mutationFn: async (props: UpdateDiagramPreferencesMutationProps) => {
+      const response = await new MaintainDiagramsControllerApi(apiConfig()).updateDiagramLayerPreferencesByDiagramType({
         transactionId,
         diagramTypeCode,
         updateDiagramLayerPreferencesRequestDTO: {
@@ -119,14 +117,45 @@ export const useUpdateLayerPreferencesByDiagramTypeMutation = ({
           })),
         },
       });
+      if (!response.ok) throw new Error("Update failed");
+      return response;
     },
-    onError: () => {
-      showErrorToast("Error updating diagram layer preferences");
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
+    onError,
+    onSuccess,
+  });
+};
+
+export interface UpdateDiagramPreferencesByIdMutationProps {
+  diagramsById: Array<DiagramLayerPreferenceDTO & { id: number }>;
+}
+
+export const useUpdateLayerPreferencesByDiagramIdMutation = (transactionId: number, diagramId: number) => {
+  const queryClient = useQueryClient();
+  const { showErrorToast } = useShowToast();
+  const onError = () => showErrorToast("Error updating diagram layer preferences.");
+  const onSuccess = () =>
+    queryClient.invalidateQueries({
+      queryKey: diagramLayerPreferencesByDiagramQueryKey(transactionId, diagramId),
+    });
+
+  return useMutation({
+    mutationFn: async (props: UpdateDiagramPreferencesByIdMutationProps) => {
+      const response = await new MaintainDiagramsControllerApi(apiConfig()).updateDiagramLayerPreferencesByDiagram({
+        transactionId,
+        diagramId,
+        updateDiagramLayerPreferencesRequestDTO: {
+          diagramLayerPreferences: props.diagramsById.map((r) => ({
+            pldfId: r.pldfId,
+            hideLabels: r.hideLabels,
+            hideFeature: r.hideFeature,
+            selected: r.selected,
+          })),
+        },
       });
+      if (!response.ok) throw new Error("Update failed");
+      return response;
     },
+    onError,
+    onSuccess,
   });
 };

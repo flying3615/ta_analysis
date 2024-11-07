@@ -36,10 +36,9 @@ interface Preferences {
 export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelProps) => {
   const { panelClose } = useContext(PanelInstanceContext);
   const [activePanel, setActivePanel] = useState(labelsForThisPlan);
-  const [saving, setSaving] = useState<boolean>();
 
   const { data: queryData, isLoading } = useUserLabelPreferences({ transactionId });
-  const { mutateAsync } = useUpdateLabelPreferencesMutation(transactionId);
+  const { mutateAsync, isPending, isSuccess, reset } = useUpdateLabelPreferencesMutation(transactionId);
 
   const [labelPreferences, setLabelPreferences] = useState<Preferences>({
     surveyLabelPreferences: [],
@@ -57,23 +56,18 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
     setInitialLabelPreferences(cloneDeep(preferences));
   }, [queryData]);
 
-  const close = () => {
-    panelClose();
-  };
+  const save = () => mutateAsync(labelPreferences);
 
-  const save = async () => {
-    setSaving(true);
-    await mutateAsync(labelPreferences);
-    setSaving(false);
-  };
+  const hasChanged = useMemo(
+    () => !isEqual(labelPreferences, initialLabelPreferences),
+    [initialLabelPreferences, labelPreferences],
+  );
 
-  const hasChanged = useMemo(() => {
-    const r = !isEqual(labelPreferences, initialLabelPreferences);
-    if (r) {
-      setSaving(undefined);
+  useEffect(() => {
+    if (hasChanged) {
+      reset();
     }
-    return r;
-  }, [initialLabelPreferences, labelPreferences]);
+  }, [hasChanged, reset]);
 
   return !queryData || isLoading ? (
     <LuiLoadingSpinner />
@@ -87,7 +81,7 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
         className="LabelPreferencesPanel"
         modal={true}
       >
-        {saving && (
+        {isPending && (
           <>
             <div className="MaintainDiagrams__overlay" />
             <LuiLoadingSpinner />
@@ -135,14 +129,14 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
           <div className="LabelPreferencesPanel__Footer">
-            {saving === false && (
+            {isSuccess && (
               <div className="LabelPreferencesPanel__Saved">
                 <LuiIcon name="ic_check_circle_outline" size="md" alt="Saved" />
                 <div>All preferences up to date</div>
               </div>
             )}
             <div style={{ flex: 1 }} />
-            <LuiButton level="secondary" onClick={close}>
+            <LuiButton level="secondary" onClick={panelClose}>
               {hasChanged ? "Cancel" : "Close"}
             </LuiButton>
             <LuiButton level="primary" onClick={() => void save()} disabled={!hasChanged}>
