@@ -305,6 +305,16 @@ export const clickLayersSelectButton = async (rowId: number | string, within?: H
   await userEvent.click(button);
 };
 
+export const clickLayersLabelCheckbox = async (rowId: number | string, within?: HTMLElement): Promise<void> => {
+  const cell = await findCell(rowId, "label", within);
+  await userEvent.click(cell);
+};
+
+export const getLayersLabelCheckbox = async (rowId: number | string, within?: HTMLElement): Promise<HTMLElement> => {
+  const cell = await findCell(rowId, "label", within);
+  return findQuick({ tagName: "input" }, cell);
+};
+
 export const waitForGridReady = async (props?: { grid?: HTMLElement; timeout?: number }) =>
   waitFor(() => expect(getAllQuick({ classes: ".Grid-ready" }, props?.grid)).toBeInTheDocument(), {
     timeout: props?.timeout ?? 5000,

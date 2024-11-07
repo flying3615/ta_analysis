@@ -68,7 +68,7 @@ export const MaintainDiagramsPanel = ({ transactionId, selectedDiagramIds }: Mai
           <LuiTabsPanel key={maintainDiagramsByType} panel={maintainDiagramsByType}>
             <GridUpdatingContextProvider>
               <GridContextProvider>
-                <MaintainDiagramsByDiagramTypeGrid ref={byTypeRef} transactionId={transactionId} />
+                <MaintainDiagramsByDiagramTypeGrid key={activePanel} ref={byTypeRef} transactionId={transactionId} />
               </GridContextProvider>
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
@@ -76,6 +76,7 @@ export const MaintainDiagramsPanel = ({ transactionId, selectedDiagramIds }: Mai
             <GridUpdatingContextProvider>
               <GridContextProvider>
                 <MaintainDiagramsByDiagramIdGrid
+                  key={activePanel}
                   ref={byIdRef}
                   transactionId={transactionId}
                   selectedDiagramIds={selectedDiagramIds}

@@ -22,6 +22,7 @@ import { unsavedChangesModal } from "@/components/MaintainDiagramsPanel/UnsavedC
 import { withIdUndef } from "@/util/queryUtil";
 
 export interface MaintainDiagramsByDiagramIdGridProps {
+  key: string;
   transactionId: number;
   selectedDiagramIds?: number[];
 }
@@ -29,7 +30,7 @@ export interface MaintainDiagramsByDiagramIdGridProps {
 export const MaintainDiagramsByDiagramIdGrid = forwardRef<
   MaintainDiagramsGridRef,
   MaintainDiagramsByDiagramIdGridProps
->(function MaintainDiagramsByDiagramIdGrid({ transactionId, selectedDiagramIds }, ref) {
+>(function MaintainDiagramsByDiagramIdGrid({ key, selectedDiagramIds, transactionId }, ref) {
   const { showPrefabModal } = useLuiModalPrefab();
   const { panelClose } = useContext(PanelInstanceContext);
 
@@ -190,6 +191,7 @@ export const MaintainDiagramsByDiagramIdGrid = forwardRef<
         />
       </div>
       <Grid
+        key={`${key}-${diagramId}`}
         sizeColumns="none"
         loading={diagramLoading || isEmpty(diagramsById)}
         selectable={false}

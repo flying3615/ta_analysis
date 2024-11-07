@@ -15,7 +15,13 @@ import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/Mainta
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { clickLayersSelectButton, findCellContains, getLayerSelectedState } from "@/test-utils/storybook-ag-grid-utils";
+import {
+  clickLayersLabelCheckbox,
+  clickLayersSelectButton,
+  findCellContains,
+  getLayerSelectedState,
+  getLayersLabelCheckbox,
+} from "@/test-utils/storybook-ag-grid-utils";
 import { PanelInstanceContextMock, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 const queryClient = new QueryClient();
@@ -240,6 +246,70 @@ MaintainDiagramsLayersUnsavedChangesDiscard.play = async ({ step }) => {
     await userEvent.click(await screen.findByText("Discard"));
   });
   await step("THEN changes are discarded and user is navigated to new diagram type", async () => {});
+};
+
+export const DiscardUnsavedChangesWhenChangingTabsFromDiagramType: Story = {
+  ...Default,
+  args: {
+    transactionId: "123",
+  },
+  play: async ({ step }) => {
+    const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+    await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
+      await sleep(1000);
+    });
+    await step("WHEN I enable and then uncheck Existing Parcels layer labels", async () => {
+      await clickLayersSelectButton("23", table);
+      await clickLayersLabelCheckbox("23", table);
+      await sleep(100);
+      // verify checkbox before discard
+      await expect(await getLayersLabelCheckbox("23", table)).not.toBeChecked();
+    });
+    await step("AND I change to the Individual user-defined tab and discard changes", async () => {
+      await userEvent.click(await screen.findByText("Individual user-defined diagram"));
+      await userEvent.click(await screen.findByText("Discard"));
+      await sleep(1000);
+    });
+    await step("THEN changes are discarded when returning to Diagrams tab", async () => {
+      await userEvent.click(await screen.findByText("Diagram type", { selector: ".LuiTab" }));
+      // verify checkbox after discard
+      await expect(await getLayersLabelCheckbox("23", table)).toBeChecked();
+    });
+  },
+};
+
+export const DiscardUnsavedChangesWhenChangingTabsFromIndividual: Story = {
+  ...Default,
+  args: {
+    transactionId: "123",
+  },
+  play: async ({ step }) => {
+    let table: HTMLElement;
+
+    await step("GIVEN I'm in the Individual tab of Maintain diagram layers", async () => {
+      await userEvent.click(await screen.findByText("Individual user-defined diagram"));
+      await sleep(1000);
+      table = await findQuick({ classes: ".LuiTabsPanel--active" });
+    });
+    await step("WHEN I enable and then uncheck Existing Parcels layer labels", async () => {
+      await clickLayersSelectButton("42", table);
+      await clickLayersLabelCheckbox("42", table);
+      await sleep(100);
+      // verify checkbox before discard
+      await expect(await getLayersLabelCheckbox("42", table)).not.toBeChecked();
+    });
+    await step("AND I change to the Diagram type tab and discard changes", async () => {
+      await userEvent.click(await screen.findByText("Diagram type", { selector: ".LuiTab" }));
+      await userEvent.click(await screen.findByText("Discard"));
+      await sleep(1000);
+    });
+    await step("THEN changes are discarded when returning to Diagrams tab", async () => {
+      await userEvent.click(await screen.findByText("Individual user-defined diagram"));
+      // verify checkbox after discard
+      await expect(await getLayersLabelCheckbox("42", table)).toBeChecked();
+    });
+  },
 };
 
 export const MaintainDiagramsLayersUnsavedChangesCancel: Story = {
