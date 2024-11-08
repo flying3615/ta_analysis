@@ -3,6 +3,7 @@ import { max, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { cytoscapeToDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
 import { memoizedTextAlign, TextAlignment } from "@/components/CytoscapeCanvas/textAlignment";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
@@ -24,7 +25,13 @@ export interface StyleData {
   textRotation?: number;
 }
 
-export const getStyleData = (ele: cytoscape.NodeSingular): StyleData => ele.data() as StyleData;
+export const getStyleData = (ele: cytoscape.NodeSingular): StyleData => {
+  const data = ele.data() as StyleData;
+  return {
+    ...data,
+    font: cytoscapeToDisplayFont(ele),
+  };
+};
 
 export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
   const { font, fontSize, label } = getStyleData(ele);

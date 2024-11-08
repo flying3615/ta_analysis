@@ -59,6 +59,29 @@ describe("makeCytoscapeStylesheet", () => {
     expect(height).toBeCloseTo(0.18, 1);
     const width = styleEntry["width"]?.(ele);
     expect(width).toBeCloseTo(0.18, 1);
+    const fontFamily = styleEntry["font-family"]?.(ele);
+    expect(fontFamily).toBe("Roboto, sans-serif");
+  });
+
+  const fontCases: string[][] = [
+    ["Arial", "Arimo, sans-serif"],
+    ["Times New Roman", "Tinos, serif"],
+    ["Tahoma", "Roboto, sans-serif"],
+  ];
+
+  test.each(fontCases)("converts font %s to %s", (startFont, expectedFont) => {
+    const nodeWithLabel = stylesheet.find(
+      (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]",
+    ) as cytoscape.Stylesheet;
+    const styleEntry = getStyleEntryFromStylesheet(nodeWithLabel);
+
+    const ele = nodeSingular({
+      fontSize: 14,
+      font: startFont,
+      label: "Label",
+    });
+    const fontFamily = styleEntry["font-family"]?.(ele);
+    expect(fontFamily).toBe(expectedFont);
   });
 
   test("Generates function to show north arrow on the appropriate special node", () => {

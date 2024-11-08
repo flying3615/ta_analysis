@@ -3,6 +3,7 @@ import cytoscape, { Stylesheet } from "cytoscape";
 
 import compassSvg from "@/assets/compass.svg";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { cytoscapeToDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
 import { getEdgeDashPattern } from "@/components/CytoscapeCanvas/styleEdgeMethods";
 import {
   circleLabel,
@@ -57,7 +58,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "line-height": 1,
     "text-wrap": "wrap",
     "text-max-width": "8000px",
-    "font-family": "data(font)",
+    "font-family": cytoscapeToDisplayFont,
     "font-size": (ele: cytoscape.NodeSingular) => scaledFontSize(ele, cytoscapeCoordinateMapper),
     "font-style": fontStyle,
     "font-weight": fontWeight,

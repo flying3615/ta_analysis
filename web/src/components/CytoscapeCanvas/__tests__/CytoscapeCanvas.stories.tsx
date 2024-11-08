@@ -265,7 +265,7 @@ RendersSpecifiedLineTypesSelected.play = async () => {
 
 export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
-    const fonts = ["Tahoma", "Arial", "Times New Roman"];
+    const fonts = ["Roboto", "Arimo", "Tinos"];
 
     const gap = 2;
     const xStart = 10;

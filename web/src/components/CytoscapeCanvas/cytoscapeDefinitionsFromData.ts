@@ -6,6 +6,7 @@ import {
 import cytoscape, { ElementGroup } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { toDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
@@ -151,8 +152,9 @@ export const nodeDefinitionsFromData = (
         data: {
           id: nodeDataEntry.id,
           label: nodeDataEntry.label,
-          "font-family": nodeDataEntry.properties.font,
+          "font-family": toDisplayFont(nodeDataEntry.properties.font),
           "font-size": nodeDataEntry.properties.fontSize,
+          font: toDisplayFont(nodeDataEntry.properties.font),
           ...nodeDataEntry.properties,
         },
         position: nodePositionPixels,
