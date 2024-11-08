@@ -14,7 +14,7 @@ export class LabelDTOBuilder implements BaseBuilder<LabelDTO> {
       font: "Tahoma",
       labelType: LabelDTOLabelTypeEnum.userAnnotation,
       pointOffset: 0,
-      position: { x: 13, y: -13 },
+      position: { x: 0.25, y: -0.05 },
       rotationAngle: 25,
       textAlignment: "centerCenter",
       userEdited: false,

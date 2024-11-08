@@ -370,7 +370,7 @@ describe("extractGraphData", () => {
     expect(extractedNodes).toHaveLength(3);
     const userAnnotationNode = extractedNodes[0];
     expect(userAnnotationNode?.id).toBe("LAB_23");
-    expect(userAnnotationNode?.position).toStrictEqual({ x: 13, y: -13 });
+    expect(userAnnotationNode?.position).toStrictEqual({ x: 0.25, y: -0.05 });
     expect(userAnnotationNode?.label).toBe("Rotated user added text");
     expect(userAnnotationNode?.properties?.["elementType"]).toBe("labels");
     expect(userAnnotationNode?.properties?.["labelType"]).toBe("userAnnotation");

@@ -100,6 +100,21 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
       y: -this.planCmToCytoscape(yPosCm) + this.pixelMargin,
     };
   }
+
+  /**
+   * Converts Cytoscape pixel coordinates to plan coordinates (centimeters).
+   * @param position - Cytoscape pixel coordinates to convert.
+   * @returns Plan coordinates in centimeters.
+   */
+  cytoscapeToPlanCoord(position: cytoscape.Position): GroundMetresPosition {
+    const xPosCm = this.cytoscapeToPlanCm(position.x - this.pixelMargin);
+    const yPosCm = this.cytoscapeToPlanCm(-(position.y - this.pixelMargin));
+    return {
+      x: xPosCm,
+      y: yPosCm,
+    };
+  }
+
   /**
    * Converts page labels coordinates (metres) to Cytoscape pixel coordinates.
    * @param position - Page label coordinates to convert.

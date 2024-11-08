@@ -179,7 +179,9 @@ export const getNodeData = (
   }
   position = diagramId
     ? cytoscapeCoordinateMapper.cytoscapeToGroundCoord(position, diagramId)
-    : cytoscapeCoordinateMapper.pageLabelCytoscapeToCoord(position);
+    : cyData.labelType === LabelDTOLabelTypeEnum.userAnnotation
+      ? cytoscapeCoordinateMapper.pageLabelCytoscapeToCoord(position)
+      : cytoscapeCoordinateMapper.cytoscapeToPlanCoord(position);
 
   const { id, label, ...properties } = cyData;
 
@@ -258,12 +260,13 @@ export const nodePositionFromData = (
 ): cytoscape.Position => {
   let nodePositionPixels;
 
-  if (node.properties.coordType === CoordinateDTOCoordTypeEnum.userDefined) {
-    nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
-  } else if (
+  if (
+    (node.id.startsWith("border_") && node.properties.coordType === CoordinateDTOCoordTypeEnum.userDefined) ||
     node.properties.lineType === CoordinateDTOCoordTypeEnum.userDefined ||
-    node.properties.labelType === LabelDTOLabelTypeEnum.userAnnotation
+    node.properties.coordType === CoordinateDTOCoordTypeEnum.userDefined
   ) {
+    nodePositionPixels = cytoscapeCoordinateMapper.planCoordToCytoscape(node.position);
+  } else if (node.properties.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
     nodePositionPixels = cytoscapeCoordinateMapper.pageLabelCoordToCytoscape(node.position);
   } else {
     const diagramId = node.properties.diagramId;
