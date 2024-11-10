@@ -4,7 +4,7 @@ import "@/components/MainWindow.scss";
 import { ResponseError } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
@@ -126,6 +126,15 @@ const PlanSheets = () => {
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
+  const nodeData = useMemo(
+    () => [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData],
+    [pageConfigsNodeData, diagramNodeData, pageNodeData],
+  );
+  const edgeData = useMemo(
+    () => [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData],
+    [pageConfigsEdgeData, diagramEdgeData, pageEdgeData],
+  );
+
   if (
     planDataIsLoading ||
     !planData ||
@@ -151,9 +160,6 @@ const PlanSheets = () => {
       </div>
     );
   }
-
-  const nodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
-  const edgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
 
   let selectionSelector = "";
   let applyClasses;
