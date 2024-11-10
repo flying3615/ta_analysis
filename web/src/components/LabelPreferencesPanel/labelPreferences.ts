@@ -13,6 +13,20 @@ import { usePrepareDatasetQuery } from "@/queries/prepareDataset";
 import { withId } from "@/util/queryUtil";
 import { useShowToast } from "@/util/showToast";
 
+const IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY = "plangen.isHiddenObjectsVisibleByDefault";
+
+export const isHiddenObjectsVisibleByDefault = (): boolean => {
+  return localStorage.getItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY) !== "false";
+};
+
+export const setHiddenObjectsVisibleByDefault = (isHiddenObjectsVisibleByDefault?: boolean) => {
+  if (isHiddenObjectsVisibleByDefault === undefined) {
+    localStorage.removeItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY, isHiddenObjectsVisibleByDefault ? "true" : "false");
+};
+
 export interface LabelPreferenceDefaultDTOWithId extends LabelPreferenceDefaultDTO {
   id: string;
 }

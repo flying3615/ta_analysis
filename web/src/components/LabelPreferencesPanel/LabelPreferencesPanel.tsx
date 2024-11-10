@@ -14,12 +14,13 @@ import { Panel, PanelContent, PanelHeader, PanelInstanceContext } from "@linzjs/
 import { cloneDeep, isEqual, pick } from "lodash-es";
 import { useContext, useEffect, useMemo, useState } from "react";
 
+import { HiddenObjectsVisibleByDefault } from "./HiddenObjectsVisibleByDefault";
 import {
   LabelPreferenceDTOWithId,
   useUpdateLabelPreferencesMutation,
   useUserLabelPreferences,
-} from "@/components/LabelPreferencesPanel/labelPreferences";
-import { LabelsManagementGrid } from "@/components/LabelPreferencesPanel/LabelsManagementGrid";
+} from "./labelPreferences";
+import { LabelsManagementGrid } from "./LabelsManagementGrid";
 
 const labelsForThisPlan = "labelsForThisPlan";
 const labelsForNewPlans = "labelsForNewPlans";
@@ -129,6 +130,7 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
           <div className="LabelPreferencesPanel__Footer">
+            <HiddenObjectsVisibleByDefault />
             {isSuccess && (
               <div className="LabelPreferencesPanel__Saved">
                 <LuiIcon name="ic_check_circle_outline" size="md" alt="Saved" />

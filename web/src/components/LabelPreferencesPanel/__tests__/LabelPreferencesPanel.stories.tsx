@@ -2,6 +2,7 @@ import "@/components/LabelPreferencesPanel/LabelPreferencesPanel.scss";
 
 import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { PanelsContextProvider } from "@linzjs/windows";
+import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +15,8 @@ import { Paths } from "@/Paths";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import { findCell, findCellContains, openAndClickMenuOption } from "@/test-utils/storybook-ag-grid-utils";
 import { PanelInstanceContextMock, StorybookRouter } from "@/test-utils/storybook-utils";
+
+import { isHiddenObjectsVisibleByDefault, setHiddenObjectsVisibleByDefault } from "../labelPreferences";
 
 const queryClient = new QueryClient();
 export default {
@@ -93,4 +96,57 @@ RevertLabelStyle.play = async () => {
   );
   await userEvent.click(revertButton);
   await findCellContains("ARCR", "font", /Roboto/, table);
+};
+
+export const HiddenObjectsInteraction: Story = {
+  ...Default,
+  beforeEach: () => {
+    // clear setting
+    setHiddenObjectsVisibleByDefault(undefined);
+  },
+  play: async () => {
+    const hidden = await screen.findByText("Hidden objects visible by default");
+    const input = await screen.findByLabelText("Hidden objects visible by default");
+    // default state
+    await expect(input).toBeChecked();
+    await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
+    // uncheck sets false
+    await userEvent.click(hidden);
+    await expect(input).not.toBeChecked();
+    await expect(isHiddenObjectsVisibleByDefault()).toBeFalsy();
+    // check sets true
+    await userEvent.click(hidden);
+    await expect(input).toBeChecked();
+    await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
+    // reset
+    setHiddenObjectsVisibleByDefault(undefined);
+  },
+};
+
+export const HiddenObjectsStateHidden: Story = {
+  ...Default,
+  beforeEach: () => {
+    setHiddenObjectsVisibleByDefault(false);
+  },
+  play: async () => {
+    const input = await screen.findByLabelText("Hidden objects visible by default");
+    await expect(input).not.toBeChecked();
+    await expect(isHiddenObjectsVisibleByDefault()).toBeFalsy();
+    // reset
+    setHiddenObjectsVisibleByDefault(undefined);
+  },
+};
+
+export const HiddenObjectsStateVisible: Story = {
+  ...Default,
+  beforeEach: () => {
+    setHiddenObjectsVisibleByDefault(true);
+  },
+  play: async () => {
+    const input = await screen.findByLabelText("Hidden objects visible by default");
+    await expect(input).toBeChecked();
+    await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
+    // reset
+    setHiddenObjectsVisibleByDefault(undefined);
+  },
 };
