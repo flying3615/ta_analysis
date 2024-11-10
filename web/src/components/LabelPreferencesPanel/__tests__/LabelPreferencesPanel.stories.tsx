@@ -83,7 +83,7 @@ export const RevertLabelStyle: Story = {
 };
 RevertLabelStyle.play = async () => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
-  await openAndClickMenuOption("ARCR", "font", "Arial", table);
+  await openAndClickMenuOption("ARCR", "font", /Arimo/, table);
   const revert = await findCell("ARCR", "revert", table);
   const revertButton = await findQuick(
     {
@@ -92,5 +92,5 @@ RevertLabelStyle.play = async () => {
     revert,
   );
   await userEvent.click(revertButton);
-  await findCellContains("ARCR", "font", "Tahoma", table);
+  await findCellContains("ARCR", "font", /Roboto/, table);
 };

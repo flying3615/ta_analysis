@@ -13,6 +13,12 @@ import {
   LabelPreferenceDTOWithId,
 } from "@/components/LabelPreferencesPanel/labelPreferences";
 
+const newFontDescriptions: Record<string, string> = {
+  TAHM: "Roboto",
+  TINR: "Tinos",
+  ARIL: "Arimo",
+};
+
 export interface LabelsForThisPlanProps {
   fonts: LabelPreferencesResponseDTOFontsInner[];
   defaults: LabelPreferenceDefaultDTOWithId[];
@@ -58,8 +64,6 @@ export const LabelsManagementGrid = ({
   );
 
   const columnDefs: ColDefT<LabelPreferenceDTOWithId>[] = useMemo((): ColDefT<LabelPreferenceDTOWithId>[] => {
-    const fontMap = fromPairs(fonts.map((f) => [f.code, f.description]));
-
     return [
       GridCell({
         colId: "description",
@@ -93,13 +97,22 @@ export const LabelsManagementGrid = ({
           minWidth: 190,
           field: "font",
           headerName: "Font",
-          valueFormatter: ({ value }) => fontMap[value] ?? "",
+          valueFormatter: ({ value }) => newFontDescriptions[value] ?? "",
           resizable: false,
         },
         {
           multiEdit: false,
           editorParams: {
-            options: fonts.map((f) => ({ value: f.code, label: f.description })),
+            options: fonts.map((f) => ({
+              value: f.code,
+              label: (
+                <>
+                  <span className="LabelPreferencesPanel__font--description">{newFontDescriptions[f.code]}</span>
+                  &nbsp;
+                  <span className="LabelPreferencesPanel__font--was">(was {f.description})</span>
+                </>
+              ),
+            })),
             onSelectedItem: ({ selectedRowIds, value }) => {
               updateLabelPreferences(selectedRowIds, { font: FontEnum[value] });
               return Promise.resolve();

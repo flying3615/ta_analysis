@@ -31,3 +31,12 @@
 .LabelPreferencesPanel__Footer button.lui-button {
   width: 120px;
 }
+
+.LabelPreferencesPanel__font--description {
+  color: colours.$charcoal;
+}
+
+.LabelPreferencesPanel__font--was {
+  font-size: 14px;
+  color: colours.$fuscous;
+}
