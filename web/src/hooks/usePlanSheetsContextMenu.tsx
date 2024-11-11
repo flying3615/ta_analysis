@@ -1,11 +1,15 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { PanelsContext } from "@linzjs/windows";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { degreesToRadians, point, polygon } from "@turf/helpers";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { textDimensions } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { MoveOriginalLocation } from "@/components/PlanSheets/interactions/MoveOriginalLocation";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -49,6 +53,7 @@ export const usePlanSheetsContextMenu = () => {
   const setLineHidden = useChangeLine();
   const { deletePageLines } = usePageLineEdit();
   const { deletePageLabels } = usePageLabelEdit();
+  const highlightedLabel = useRef<NodeSingular>();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: movetoPage }];
@@ -100,6 +105,7 @@ export const usePlanSheetsContextMenu = () => {
   const getAllMenuItemsForElement = (
     element: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core,
     planElementType: PlanElementType,
+    clickedPosition: cytoscape.Position,
     selectedCollection?: CollectionReturnValue,
   ) => {
     const lookupElementSource = (element: NodeSingular | EdgeSingular) => {
@@ -200,6 +206,8 @@ export const usePlanSheetsContextMenu = () => {
       const selectedLabels = selectedCollection?.nodes();
       if (!selectedLabels) return [];
       const selectedNonSystemLabels = filterNonSystemLabels(selectedLabels);
+      const stackedLabels = getStackedLabels(targetLabel, clickedPosition);
+
       return [
         { title: "Original location", callback: () => <MoveOriginalLocation target={targetLabel} /> },
         {
@@ -220,15 +228,22 @@ export const usePlanSheetsContextMenu = () => {
         },
         { title: "Properties", callback: getProperties },
         {
-          title: "Select (coming soon)",
+          title: "Select",
+          hideWhen: () => [0, 1].includes(stackedLabels.length),
           divider: true,
-          disabled: true,
-          // submenu: [
-          // { title: "Observation distance" },
-          // { title: "Observation bearing" },
-          // { title: "Observation code" },
-          // { title: "All" },
-          // ],
+          submenu: stackedLabels.map((label) => ({
+            title: label.data("label") as string,
+            callback: () => {
+              targetLabel.unselect();
+              highlightedLabel.current = label;
+              highlightedLabel.current.select();
+            },
+            callbackOnHover: true,
+            restoreOnLeave: () => {
+              highlightedLabel.current?.unselect();
+              targetLabel.select();
+            },
+          })),
         },
         // Add the "Rotate label" menu item only if singleSelected is true
         ...(singleSelected ? [{ title: "Align label to line", callback: alignLabelToLine }] : []),
@@ -291,16 +306,7 @@ export const usePlanSheetsContextMenu = () => {
           return buildNodeMenus(element as NodeSingular);
         return undefined;
       case PlanMode.SelectLabel:
-        if (
-          ![
-            PlanElementType.LABELS,
-            PlanElementType.PARCEL_LABELS,
-            PlanElementType.LINE_LABELS,
-            PlanElementType.COORDINATE_LABELS,
-            PlanElementType.CHILD_DIAGRAM_LABELS,
-          ].includes(planElementType)
-        )
-          return undefined;
+        if (!isLabel(planElementType)) return undefined;
         return buildLabelMenus(element as NodeSingular, selectedCollection);
       default:
         return undefined;
@@ -360,15 +366,88 @@ export const usePlanSheetsContextMenu = () => {
     }
   };
 
+  const getStackedLabels = (targetLabel: NodeSingular, clickedPosition: cytoscape.Position) => {
+    const container = targetLabel.cy()?.container();
+    if (!container) return [];
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
+
+    const targetClickedPosition = { x: clickedPosition.x, y: clickedPosition.y + 7 };
+    const stackedLabels: cytoscape.NodeSingular[] = [];
+
+    // Find the labels that are close to the clicked position by checking their bounding box
+    const closeLabels = targetLabel
+      .cy()
+      .nodes()
+      .filter((node) => {
+        return isPositionInElem(targetClickedPosition, node) && isLabel(node.data("elementType") as PlanElementType);
+      });
+
+    // Check if the clicked position is inside the labels actual area
+    closeLabels.forEach((label) => {
+      const textDim = textDimensions(label, cytoscapeCoordinateMapper);
+      const halfTextDimWidth = textDim.width / 2;
+      const halfTextDimHeight = textDim.height / 2;
+      const labelCenter = { x: label.position().x, y: label.position().y + 7 };
+      // [top-left, top-right, bottom-right, bottom-left]
+      const labelPolygonHoriz: cytoscape.Position[] = [
+        { x: labelCenter.x - halfTextDimWidth, y: labelCenter.y + halfTextDimHeight },
+        { x: labelCenter.x + halfTextDimWidth, y: labelCenter.y + halfTextDimHeight },
+        { x: labelCenter.x + halfTextDimWidth, y: labelCenter.y - halfTextDimHeight },
+        { x: labelCenter.x - halfTextDimWidth, y: labelCenter.y - halfTextDimHeight },
+      ];
+      const labelTextRotation = -label.data("textRotation"); // negative because is counter clockwise
+      // Rotate the label polygon
+      const labelPolygonRotated = labelPolygonHoriz.map((point) => {
+        const labelTextRotationRadians = degreesToRadians(labelTextRotation);
+        return {
+          x:
+            labelCenter.x +
+            (point.x - labelCenter.x) * Math.cos(labelTextRotationRadians) -
+            (point.y - labelCenter.y) * Math.sin(labelTextRotationRadians),
+          y:
+            labelCenter.y +
+            (point.x - labelCenter.x) * Math.sin(labelTextRotationRadians) +
+            (point.y - labelCenter.y) * Math.cos(labelTextRotationRadians),
+        };
+      });
+      const labelPolygon = labelPolygonRotated.map((point) => [point.x, point.y]);
+      const turfPoint = point([targetClickedPosition.x, targetClickedPosition.y]);
+      labelPolygon[0] && labelPolygon.push(labelPolygon[0]); //First and last Position need to be equivalent to be a turf polygon
+      const turfPolygon = polygon([labelPolygon]);
+      const isInside = booleanPointInPolygon(turfPoint, turfPolygon);
+      // filter the labels that match the clicked position
+      if (isInside) stackedLabels.push(label);
+    });
+    return stackedLabels;
+  };
+
+  const isPositionInElem = (position: cytoscape.Position, elem: NodeSingular) => {
+    const elemBbox = elem.boundingBox();
+    return (
+      position.x >= elemBbox.x1 && position.x <= elemBbox.x2 && position.y >= elemBbox.y1 && position.y <= elemBbox.y2
+    );
+  };
+
+  const isLabel = (elementType: PlanElementType) => {
+    return [
+      PlanElementType.LABELS,
+      PlanElementType.PARCEL_LABELS,
+      PlanElementType.LINE_LABELS,
+      PlanElementType.COORDINATE_LABELS,
+      PlanElementType.CHILD_DIAGRAM_LABELS,
+    ].includes(elementType);
+  };
+
   return (
     clickedElement: cytoscape.NodeSingular | cytoscape.EdgeSingular | cytoscape.Core | undefined,
+    clickedPosition: cytoscape.Position,
     selectedCollection?: CollectionReturnValue,
   ): MenuItem[] => {
     const element = clickedElement ?? selectedCollection?.nodes()[0] ?? selectedCollection?.edges()[0] ?? undefined;
     if (!element) return [];
     const planElementType = element.data("elementType") as PlanElementType;
     return (
-      getAllMenuItemsForElement(element, planElementType, selectedCollection)
+      getAllMenuItemsForElement(element, planElementType, clickedPosition, selectedCollection)
         ?.map((menuItem) => ({
           ...menuItem,
           disabled: menuItem.disabled || menuItem.disableWhen?.(element),

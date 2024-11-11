@@ -12,6 +12,8 @@ export interface MenuItem {
         position?: cytoscape.Position;
       }) => void);
   submenu?: MenuItem[];
+  callbackOnHover?: boolean;
+  restoreOnLeave?: () => void;
   divider?: boolean;
   disabled?: boolean;
   disableWhen?: (element: NodeSingular | EdgeSingular | cytoscape.Core) => boolean;
@@ -24,7 +26,7 @@ interface ICytoscapeMenu {
   isSubmenu?: boolean;
   leftMenu?: boolean;
   divider?: boolean;
-  onItemClick: (item: MenuItem) => void;
+  onItemClick: (item: MenuItem, shouldHideMenu?: boolean) => void;
   target: cytoscape.NodeSingular | cytoscape.EdgeSingular | null;
 }
 
@@ -72,12 +74,14 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
                   e.currentTarget.style.cursor = "default";
                 }
               }
+              item.callbackOnHover && onItemClick(item, false);
             }}
             onMouseLeave={(e) => {
               e.stopPropagation();
               e.currentTarget.classList.remove("hovered");
               e.currentTarget.style.background = "none";
               e.currentTarget.style.cursor = "default";
+              item.restoreOnLeave && item.restoreOnLeave();
             }}
           >
             <div className={clsx("menu-item-content", item.className)}>

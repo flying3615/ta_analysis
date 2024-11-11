@@ -40,6 +40,7 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   getContextMenuItems: (
     element: NodeSingular | EdgeSingular | cytoscape.Core,
     selectedCollection: CollectionReturnValue,
+    clickedPosition: cytoscape.Position,
   ) => MenuItem[] | undefined;
   "data-testid"?: string;
 }

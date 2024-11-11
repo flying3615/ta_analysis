@@ -23,6 +23,7 @@ export const useCytoscapeContextMenu = (
   getContextMenuItems: (
     element: NodeSingular | EdgeSingular | cytoscape.Core,
     selectedCollection: CollectionReturnValue,
+    clickedPosition: cytoscape.Position,
   ) => MenuItem[] | undefined,
 ) => {
   useEscapeKey({ callback: () => hideMenu() });
@@ -58,6 +59,7 @@ export const useCytoscapeContextMenu = (
       const menuItems = getContextMenuItems(
         target as SingularElementArgument | cytoscape.Core,
         event.cy.elements(":selected"),
+        event.position,
       );
       if (!menuItems || menuItems.length === 0) return;
 

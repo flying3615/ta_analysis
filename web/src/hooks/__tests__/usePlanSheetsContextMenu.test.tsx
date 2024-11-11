@@ -40,7 +40,7 @@ describe("PlanSheetsContextMenu", () => {
 
   const PlanSheetsContextMenuWrapComponent = (props: PlanSheetsContextMenuWrapProps) => {
     const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
-    const menuItems = getMenuItemsForPlanElement(props.targetElement, props.selectedCollection);
+    const menuItems = getMenuItemsForPlanElement(props.targetElement, { x: 10, y: 10 }, props.selectedCollection);
     props.expectations(menuItems);
     return <></>;
   };
@@ -296,6 +296,7 @@ describe("PlanSheetsContextMenu", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -324,7 +325,6 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
-              "Select (coming soon)",
               "Align label to line",
               "Move to page",
               "Rotate label",
@@ -344,6 +344,7 @@ describe("PlanSheetsContextMenu", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -381,7 +382,6 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Hide",
               "Properties",
-              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
@@ -399,6 +399,7 @@ describe("PlanSheetsContextMenu", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -427,7 +428,6 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Hide",
               "Properties",
-              "Select (coming soon)",
               "Align label to line",
               "Move to page",
               "Rotate label",
@@ -447,6 +447,7 @@ describe("PlanSheetsContextMenu", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -484,7 +485,6 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
-              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
@@ -502,6 +502,7 @@ describe("PlanSheetsContextMenu", () => {
       const mockNode = {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -539,7 +540,6 @@ describe("PlanSheetsContextMenu", () => {
               "Original location",
               "Show",
               "Properties",
-              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
@@ -554,6 +554,11 @@ describe("PlanSheetsContextMenu", () => {
     });
 
     test("for combination label selection menu (system display, display)", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
+      } as unknown as NodeSingular;
       const selectedElements = [
         {
           data: (key: string) =>
@@ -582,14 +587,13 @@ describe("PlanSheetsContextMenu", () => {
 
       renderWithReduxProvider(
         <PlanSheetsContextMenuWrapComponent
-          targetElement={undefined}
+          targetElement={mockNode}
           selectedCollection={selectedCollectionReturnValue}
           expectations={(labelMenuItems) => {
             expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
               "Original location",
               "Hide",
               "Properties",
-              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
@@ -604,6 +608,11 @@ describe("PlanSheetsContextMenu", () => {
     });
 
     test("for combination label selection menu (system display, hide)", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
+        cy: () => undefined,
+      } as unknown as NodeSingular;
       const selectedElements = [
         {
           data: (key: string) =>
@@ -632,14 +641,13 @@ describe("PlanSheetsContextMenu", () => {
 
       renderWithReduxProvider(
         <PlanSheetsContextMenuWrapComponent
-          targetElement={undefined}
+          targetElement={mockNode}
           selectedCollection={selectedCollectionReturnValue}
           expectations={(labelMenuItems) => {
             expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
               "Original location",
               "Show",
               "Properties",
-              "Select (coming soon)",
               "Move to page",
               "Cut",
               "Copy",
@@ -654,6 +662,15 @@ describe("PlanSheetsContextMenu", () => {
     });
 
     test("for single diagram label (system display)", () => {
+      const mockNode = {
+        data: (key: string) =>
+          ({
+            id: "1001",
+            elementType: PlanElementType.CHILD_DIAGRAM_LABELS,
+            displayState: DisplayStateEnum.systemDisplay,
+          })[key],
+        cy: () => undefined,
+      } as unknown as NodeSingular;
       const selectedElements = [
         {
           data: (key: string) =>
@@ -673,14 +690,13 @@ describe("PlanSheetsContextMenu", () => {
 
       renderWithReduxProvider(
         <PlanSheetsContextMenuWrapComponent
-          targetElement={undefined}
+          targetElement={mockNode}
           selectedCollection={selectedCollectionReturnValue}
           expectations={(labelMenuItems) => {
             expect(labelMenuItems?.map((m) => m.title)).toStrictEqual([
               "Original location",
               "Show",
               "Properties",
-              "Select (coming soon)",
               "Align label to line",
               "Move to page",
               "Rotate label",

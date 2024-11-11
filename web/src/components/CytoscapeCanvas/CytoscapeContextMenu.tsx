@@ -1,5 +1,6 @@
 import "./CytoscapeContextMenu.scss";
 
+import { isNil } from "lodash-es";
 import React, { useRef } from "react";
 
 import CytoscapeMenu, { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
@@ -16,11 +17,11 @@ export const CytoscapeContextMenu = ({ menuState, hideMenu }: IContextMenu) => {
 
   if (!visible) return null;
 
-  const onItemClick = (item: MenuItem) => {
+  const onItemClick = (item: MenuItem, shouldHideMenu?: boolean) => {
     if (typeof item.callback === "function") {
       item.callback?.({ target: target, cy: target?.cy?.(), position: position });
     }
-    hideMenu();
+    (shouldHideMenu || isNil(shouldHideMenu)) && hideMenu();
   };
 
   return (
