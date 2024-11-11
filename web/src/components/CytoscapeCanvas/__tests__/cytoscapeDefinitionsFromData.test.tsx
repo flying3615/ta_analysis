@@ -130,7 +130,6 @@ describe("nodePositionsFromData", () => {
       diagrams,
     );
     const cytoscapePositions = nodePositionsFromData(inputNodes, cytoscapeCoordinateMapper);
-    console.log(JSON.stringify(cytoscapePositions));
     expect(cytoscapePositions["node1"]?.x).toBeCloseTo(94.4, 1);
     expect(cytoscapePositions["node1"]?.y).toBeCloseTo(511.9, 1);
     expect(cytoscapePositions["node2"]?.x).toBeCloseTo(1033.8, 1);

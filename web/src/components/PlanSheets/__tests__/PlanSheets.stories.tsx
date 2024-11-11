@@ -98,7 +98,7 @@ export const TitlePage1: Story = {
         ),
         http.get(/\/123\/plan$/, () => {
           const pd = planData();
-          console.log(`Fetched planData ${JSON.stringify(pd)}`);
+          console.debug(`Fetched planData ${JSON.stringify(pd)}`);
           return HttpResponse.json(pd, { status: 200, statusText: "OK" });
         }),
         http.get(/\/api\/survey\/123\/survey-info/, () => {

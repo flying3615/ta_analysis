@@ -1,9 +1,10 @@
 import { CoordinateDTOCoordTypeEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { cloneDeep } from "lodash-es";
 
 import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
-export const mockPlanData = new PlanDataBuilder()
+export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
   .addDiagram({
     bottomRightPoint: {
       x: 80,
@@ -97,8 +98,9 @@ export const mockPlanData = new PlanDataBuilder()
     "diagram",
     "Tahoma",
     14.0,
-  )
+  );
 
+export const mockPlanDataBuilder = cloneDeep(mockPlanDataBuilderDiagram1)
   .addDiagram({
     bottomRightPoint: {
       x: 150,
@@ -187,5 +189,6 @@ export const mockPlanData = new PlanDataBuilder()
     "Tahoma",
     14.0,
   )
-  .addConfigs()
-  .build();
+  .addConfigs();
+
+export const mockPlanData = mockPlanDataBuilder.build();

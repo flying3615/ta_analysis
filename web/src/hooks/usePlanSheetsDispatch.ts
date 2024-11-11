@@ -2,7 +2,10 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 import { useCallback, useMemo } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
-import { getEdgeData, getNodeData, INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import {
+  getCytoscapeDataToNodeAndEdgeData,
+  INodeAndEdgeData,
+} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePageWithNode } from "@/modules/plan/updatePlanData";
 import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
@@ -35,22 +38,7 @@ export function usePlanSheetsDispatch(): PlanSheetsDispatch {
 
   const cytoDataToNodeAndEdgeData = useCallback(
     (cytoscapeData: CollectionReturnValue | EdgeSingular | NodeSingular): INodeAndEdgeData => {
-      if (!cytoCoordMapper) {
-        throw new Error("cyto not ready");
-      }
-      const changes: INodeAndEdgeData = {
-        edges: [],
-        nodes: [],
-      };
-      // convert singular/collection to collection, then loop
-      cytoscapeData.union(cytoscapeData).forEach((ele) => {
-        if (ele.isNode()) {
-          changes.nodes.push(getNodeData(ele, cytoCoordMapper));
-        } else {
-          changes.edges.push(getEdgeData(ele));
-        }
-      });
-      return changes;
+      return getCytoscapeDataToNodeAndEdgeData(cytoCoordMapper, cytoscapeData);
     },
     [cytoCoordMapper],
   );

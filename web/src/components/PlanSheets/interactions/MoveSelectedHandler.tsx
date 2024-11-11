@@ -1,6 +1,6 @@
 import "./MoveSelectedHandler.scss";
 
-import {
+import cytoscape, {
   BoundingBox12,
   CollectionReturnValue,
   EdgeDefinition,
@@ -149,6 +149,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
           console.error("moveStartPositions is undefined at endMove");
           return;
         }
+
         const movingElementsOffsetCoords = convertMovedCoordinateLabelsToOffsets(
           cytoCoordMapper,
           movingElements,
@@ -391,11 +392,20 @@ function setPositions(
   });
 }
 
+const areAllElementsLabels = (elements: CollectionReturnValue): boolean =>
+  elements.every((ele) => !!((ele as cytoscape.NodeSingular).isNode() && ele.data("label")));
+
 function convertMovedCoordinateLabelsToOffsets(
   cytoCoordMapper: CytoscapeCoordinateMapper,
   movedElements: CollectionReturnValue,
   startPositions: Record<string, Position>,
 ): CollectionReturnValue {
+  if (!areAllElementsLabels(movedElements)) {
+    // It's a line or mark move
+    // The labels stick to the marks and linesd
+    return movedElements;
+  }
+
   movedElements.forEach((ele) => {
     if (!ele.isNode()) {
       return;

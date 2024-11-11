@@ -3,7 +3,7 @@ import {
   DisplayStateEnum,
   LabelDTOLabelTypeEnum,
 } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { ElementGroup } from "cytoscape";
+import cytoscape, { CollectionReturnValue, EdgeSingular, ElementGroup, NodeSingular } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { toDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
@@ -60,6 +60,7 @@ export interface INodeDataProperties extends IGraphDataProperties {
   textBackgroundPadding?: number;
   textRotation?: number;
   displayFormat?: string;
+  ignorePositionChange?: boolean;
 }
 
 export interface IDiagramNodeDataProperties extends INodeDataProperties {
@@ -188,6 +189,8 @@ export const getNodeData = (
   // Not needed as there are already font and fontSize properties
   delete properties["font-family"];
   delete properties["font-size"];
+  // and the position is a top level property
+  delete properties["position"];
 
   const data = { id, position, properties, classes: node.classes() } as INodeData;
 
@@ -195,6 +198,28 @@ export const getNodeData = (
     data.label = label;
   }
   return data;
+};
+
+export const getCytoscapeDataToNodeAndEdgeData = (
+  cytoCoordMapper: CytoscapeCoordinateMapper | undefined,
+  cytoscapeData: CollectionReturnValue | EdgeSingular | NodeSingular,
+): INodeAndEdgeData => {
+  if (!cytoCoordMapper) {
+    throw new Error("cyto not ready");
+  }
+  const changes: INodeAndEdgeData = {
+    edges: [],
+    nodes: [],
+  };
+  // convert singular/collection to collection, then loop
+  cytoscapeData.union(cytoscapeData).forEach((ele) => {
+    if (ele.isNode()) {
+      changes.nodes.push(getNodeData(ele, cytoCoordMapper));
+    } else {
+      changes.edges.push(getEdgeData(ele));
+    }
+  });
+  return changes;
 };
 
 export const edgeDefinitionsFromData = (data: IEdgeData[]): cytoscape.EdgeDefinition[] => {
