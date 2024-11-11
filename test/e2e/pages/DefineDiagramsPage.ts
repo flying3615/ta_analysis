@@ -4,11 +4,15 @@ import { Page } from "playwright-core";
 export class DefineDiagramsPage {
   readonly page: Page;
   readonly definePrimaryDiagramByRectangleButton: Locator;
+  readonly maintainDiagramLayersButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.definePrimaryDiagramByRectangleButton = page.getByRole("button", {
       name: "Define primary diagram (Rectangle)",
+    });
+    this.maintainDiagramLayersButton = page.getByRole("button", {
+      name: "Maintain diagram layers",
     });
   }
 
