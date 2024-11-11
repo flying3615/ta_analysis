@@ -6,6 +6,7 @@ import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http, HttpResponse } from "msw";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
@@ -13,8 +14,12 @@ import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelP
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { findCell, findCellContains, openAndClickMenuOption } from "@/test-utils/storybook-ag-grid-utils";
-import { PanelInstanceContextMock, StorybookRouter } from "@/test-utils/storybook-utils";
+import { findCell, findCellContains, openAndClickMenuOption, selectCell } from "@/test-utils/storybook-ag-grid-utils";
+import {
+  PanelInstanceContextMock,
+  StorybookRouter,
+  waitForLoadingSpinnerToDisappear,
+} from "@/test-utils/storybook-utils";
 
 import { isHiddenObjectsVisibleByDefault, setHiddenObjectsVisibleByDefault } from "../labelPreferences";
 
@@ -70,12 +75,16 @@ export const NewPlansLabels: Story = {
     transactionId: "123",
   },
 };
-NewPlansLabels.play = async () => {
-  const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
-  await userEvent.click(labelsForNewPlansTab);
+NewPlansLabels.play = async ({ step }) => {
+  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+  await step("WHEN I navigate to new plan labels tab", async () => {
+    const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
+    await userEvent.click(labelsForNewPlansTab);
+  });
+  await step("THEN I see the labels for new plans", async () => {});
 };
 
-export const RevertLabelStyle: Story = {
+export const ThisPlanRevertLabelPreferences: Story = {
   ...Default,
   parameters: {
     ...Default.parameters,
@@ -84,18 +93,100 @@ export const RevertLabelStyle: Story = {
     transactionId: "123",
   },
 };
-RevertLabelStyle.play = async () => {
+ThisPlanRevertLabelPreferences.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
-  await openAndClickMenuOption("ARCR", "font", /Arimo/, table);
-  const revert = await findCell("ARCR", "revert", table);
-  const revertButton = await findQuick(
-    {
-      classes: "[aria-label=revert]",
+  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+  await step("WHEN I change font family to Arimo for Arc Radius label type", async () => {
+    await openAndClickMenuOption("ARCR", "font", /Arimo/, table);
+  });
+
+  await step("AND I revert my changes", async () => {
+    const revert = await findCell("ARCR", "revert", table);
+    const revertButton = await findQuick(
+      {
+        classes: "[aria-label=revert]",
+      },
+      revert,
+    );
+    await userEvent.click(revertButton);
+  });
+
+  await step("THEN font family is reverted back to Roboto for Arc Radius label type", async () => {
+    await findCellContains("ARCR", "font", "Roboto", table);
+  });
+};
+
+export const ThisPlanSaveLabelPreferences: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/label-preference-update$/, () =>
+          HttpResponse.json({ ok: true, statusCode: null, message: null }),
+        ),
+      ],
     },
-    revert,
-  );
-  await userEvent.click(revertButton);
-  await findCellContains("ARCR", "font", /Roboto/, table);
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+ThisPlanSaveLabelPreferences.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+  await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
+  await openAndClickMenuOption("ARCR", "font", /Arial/, table);
+  await openAndClickMenuOption("ARCR", "fontSize", "8", table);
+  await selectCell("ARCR", "bold", table);
+  await step("AND I save updated label preferences", async () => {
+    const saveButton = await screen.findByText("Save");
+    await userEvent.click(saveButton);
+  });
+  await step("THEN updated label preferences are saved", async () => {
+    await waitForLoadingSpinnerToDisappear();
+    const successMessage = await screen.findByText("All preferences up to date");
+    await expect(successMessage).toBeTruthy();
+  });
+};
+
+export const NewPlansSaveLabelPreferences: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/label-preference-update$/, () =>
+          HttpResponse.json({ ok: true, statusCode: null, message: null }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+NewPlansSaveLabelPreferences.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+  await step("GIVEN I'm in the New plans LabelPreferences tab", async () => {
+    const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
+    await userEvent.click(labelsForNewPlansTab);
+  });
+  await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
+  await openAndClickMenuOption("ARCR", "font", /Arial/, table);
+  await openAndClickMenuOption("ARCR", "fontSize", "8", table);
+  await selectCell("ARCR", "bold", table);
+  await step("AND I save updated label preferences", async () => {
+    const saveButton = await screen.findByText("Save");
+    await userEvent.click(saveButton);
+  });
+  await step("THEN updated label preferences are saved", async () => {
+    await waitForLoadingSpinnerToDisappear();
+    const successMessage = await screen.findByText("All preferences up to date");
+    await expect(successMessage).toBeTruthy();
+  });
 };
 
 export const HiddenObjectsInteraction: Story = {

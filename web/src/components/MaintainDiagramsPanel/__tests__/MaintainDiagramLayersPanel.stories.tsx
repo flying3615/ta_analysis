@@ -83,9 +83,7 @@ export const RequiredLayersAreAutomaticallyEnabled: Story = {
 RequiredLayersAreAutomaticallyEnabled.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-    await sleep(1000);
-  });
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
   await step("WHEN I select a layer that has a required layer", async () => {
     await clickLayersSelectButton("51", table);
   });
@@ -160,9 +158,7 @@ export const MaintainDiagramsLayersSave: Story = {
 MaintainDiagramsLayersSave.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-    await sleep(1000);
-  });
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
   await step("WHEN I click the select button for the Existing Parcels layer", async () => {
     await clickLayersSelectButton("23", table);
   });
@@ -197,9 +193,7 @@ export const MaintainDiagramsLayersErrorOnSave: Story = {
 MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-    await sleep(1000);
-  });
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
   await step("WHEN I click the select button for the Existing Parcels layer", async () => {
     await clickLayersSelectButton("23", table);
   });
@@ -234,9 +228,7 @@ export const MaintainDiagramsLayersUnsavedChangesDiscard: Story = {
 MaintainDiagramsLayersUnsavedChangesDiscard.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-    await sleep(1000);
-  });
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
   await step("WHEN I click the select button for the Existing Parcels layer", async () => {
     await clickLayersSelectButton("23", table);
   });
@@ -256,9 +248,7 @@ export const DiscardUnsavedChangesWhenChangingTabsFromDiagramType: Story = {
   play: async ({ step }) => {
     const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-    await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-      await sleep(1000);
-    });
+    await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
     await step("WHEN I enable and then uncheck Existing Parcels layer labels", async () => {
       await clickLayersSelectButton("23", table);
       await clickLayersLabelCheckbox("23", table);
@@ -332,9 +322,7 @@ export const MaintainDiagramsLayersUnsavedChangesCancel: Story = {
 MaintainDiagramsLayersUnsavedChangesCancel.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
-  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {
-    await sleep(1000);
-  });
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
   await step("WHEN I click the select button for the Existing Parcels layer", async () => {
     await clickLayersSelectButton("23", table);
   });

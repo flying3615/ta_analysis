@@ -3,6 +3,7 @@ import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
+import { screen } from "@storybook/testing-library";
 import { fireEvent, userEvent, waitFor, within } from "@storybook/testing-library";
 import { UserEvent } from "@testing-library/user-event";
 import React, { PropsWithChildren, useEffect, useState } from "react";
@@ -410,4 +411,15 @@ export async function multiSelectAndDrag(
     await sleep(100);
   }
   fireEvent.mouseUp(canvas, steps[steps.length - 1]);
+}
+
+export async function waitForLoadingSpinnerToDisappear() {
+  return await waitFor(
+    async () => {
+      await sleep(1000); // wait for spinner
+      const spinner = screen.queryByTestId("loading-spinner");
+      await expect(spinner).toBeNull();
+    },
+    { timeout: 10000 },
+  );
 }
