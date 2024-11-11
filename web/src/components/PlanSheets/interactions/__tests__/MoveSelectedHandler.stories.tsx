@@ -1,6 +1,6 @@
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
-import { userEvent, within } from "@storybook/testing-library";
+import { screen, userEvent, within } from "@storybook/testing-library";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
@@ -153,18 +153,18 @@ export const AlignLabelToLine: Story = {
 
     await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Align label to line" });
 
-    await test.leftClick([360, 250] /* whitespace */, 0); // Nothing should change
-    await test.leftClick([98, 183] /* Angled line on left */, 0);
+    await test.leftClick([360, 250] /* whitespace */, "layer0-selectbox"); // Nothing should change
+    await test.leftClick([98, 183] /* Angled line on left */, "layer0-selectbox");
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18");
     await test.clickCancel();
+
+    await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
+    await test.hoverOver([96, 284] /* Angled line at lower left */);
+    await sleep(500);
+    await expect(await screen.findByRole("tooltip")).toHaveTextContent("Select a line to align label to");
     // What we want to see is:
     // - Label 14 is at an angle
-
-    // TODO: Check hover over functionality
-    // await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
-    // await test.hoverOver([96, 284] /* Angled line at lower left */);
-    // await expect(await within(canvasElement).findByRole("tooltip")).toHaveTextContent("Select a line to align label to");
     // - Angled line at lower left is blue
     // - Cursor has text "Select a line to align label to"
   },

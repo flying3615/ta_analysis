@@ -3,8 +3,7 @@ import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
-import { within } from "@storybook/test";
-import { fireEvent, userEvent, waitFor } from "@storybook/testing-library";
+import { fireEvent, userEvent, waitFor, within } from "@storybook/testing-library";
 import { UserEvent } from "@testing-library/user-event";
 import React, { PropsWithChildren, useEffect, useState } from "react";
 import ReactModal from "react-modal";
@@ -132,7 +131,6 @@ export const clickAtCoordinates = (
 ) => {
   const [x, y] = location;
   fireEvent.mouseOver(cytoscapeNodeLayer, { clientX: x, clientY: y });
-  console.log(`Clicking at ${x}, ${y}`);
   fireEvent.mouseDown(cytoscapeNodeLayer, { button: button, clientX: x, clientY: y, ctrlKey: withCtrlKey });
   fireEvent.mouseUp(cytoscapeNodeLayer, { button: button, clientX: x, clientY: y, ctrlKey: withCtrlKey });
 };
@@ -194,9 +192,12 @@ export function getCytoscapeOffsetInCanvas(
   return { cyOffsetX, cyOffsetY };
 }
 
-export function getCytoscapeNodeLayer(cytoscapeElement: HTMLElement, layer = 2): HTMLElement {
+export function getCytoscapeNodeLayer(
+  cytoscapeElement: HTMLElement,
+  layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+): HTMLElement {
   // eslint-disable-next-line testing-library/no-node-access
-  return (cytoscapeElement.firstChild as HTMLElement).children[layer] as HTMLElement;
+  return cytoscapeElement.querySelector(`[data-id="${layer}"]`) as HTMLElement;
 }
 
 export function toClientXY(position: [number, number]): { clientX: number; clientY: number } {
@@ -215,7 +216,7 @@ export class TestCanvas {
     const canvas = within(canvasElement);
     const user = userEvent.setup();
     await user.click(await canvas.findByTitle(firstSelect));
-    await sleep(500);
+    await sleep(400);
     return new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
   };
 
@@ -228,6 +229,11 @@ export class TestCanvas {
     this.cyOffsetY = offset.cyOffsetY;
   }
 
+  async waitForCytoscape() {
+    // For now, a simple wait. Maybe a better solution can be found?
+    await sleep(400);
+  }
+
   toCoords(location: [number, number]): [number, number] {
     return [this.cyOffsetX + location[0], this.cyOffsetY + location[1]];
   }
@@ -237,28 +243,72 @@ export class TestCanvas {
   }
 
   async click(location: [number, number], withCtrl = false) {
-    await sleep(500);
+    await this.waitForCytoscape();
     clickAtCoordinates(getCytoCanvas(this.cytoscapeCanvas), this.toCoords(location), LEFT_MOUSE_BUTTON, withCtrl);
   }
 
-  async leftClick(location: [number, number], layer = 2, withCtrl = false) {
-    await sleep(500);
-    clickAtCoordinates(
-      getCytoscapeNodeLayer(this.cytoscapeCanvas, layer),
-      this.toCoords(location),
-      LEFT_MOUSE_BUTTON,
-      withCtrl,
-    );
+  async mouseClick(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+    button = LEFT_MOUSE_BUTTON,
+    withCtrl = false,
+  ) {
+    await this.waitForCytoscape();
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+    fireEvent.mouseDown(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrl: withCtrl });
+    fireEvent.mouseUp(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrl: withCtrl });
   }
 
-  async rightClick(location: [number, number], layer = 2) {
-    await sleep(500);
-    clickAtCoordinates(getCytoscapeNodeLayer(this.cytoscapeCanvas, layer), this.toCoords(location), RIGHT_MOUSE_BUTTON);
+  async leftClick(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+    withCtrl = false,
+  ) {
+    await this.mouseClick(location, layer, LEFT_MOUSE_BUTTON, withCtrl);
   }
 
-  async hoverOver(location: [number, number], layer = 2) {
-    await sleep(500);
-    fireEvent.mouseOver(getCytoscapeNodeLayer(this.cytoscapeCanvas, layer), this.toClientXY(location));
+  async rightClick(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+  ) {
+    await this.mouseClick(location, layer, RIGHT_MOUSE_BUTTON);
+  }
+
+  getLayer(layer: "layer0-selectbox" | "layer1-drag" | "layer2-node"): HTMLElement {
+    // eslint-disable-next-line testing-library/no-node-access
+    return getCytoscapeNodeLayer(this.canvasElement, layer);
+  }
+
+  async mouseMove(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+  ) {
+    await this.waitForCytoscape();
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+  }
+
+  async enterAt(location: [number, number], layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node") {
+    await this.waitForCytoscape();
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+    fireEvent.keyDown(this.getLayer(layer), { key: "Enter" });
+  }
+
+  async doubleClick(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+  ) {
+    await this.waitForCytoscape();
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+    fireEvent.mouseDown(this.getLayer(layer), { ...this.toClientXY(location), button: LEFT_MOUSE_BUTTON });
+    fireEvent.mouseUp(this.getLayer(layer), { ...this.toClientXY(location), button: LEFT_MOUSE_BUTTON });
+    fireEvent.mouseDown(this.getLayer(layer), { ...this.toClientXY(location), button: LEFT_MOUSE_BUTTON });
+    fireEvent.mouseUp(this.getLayer(layer), { ...this.toClientXY(location), button: LEFT_MOUSE_BUTTON });
+  }
+
+  async hoverOver(location: [number, number]) {
+    await this.waitForCytoscape();
+    const target = getCytoCanvas(await within(this.canvasElement).findByTestId("MainCytoscapeCanvas"));
+    await userEvent.pointer({ target: target, coords: this.toClientXY(location) });
   }
 
   async contextMenu(_: { at: [number, number]; select: string }): Promise<void> {
@@ -311,7 +361,7 @@ export async function selectAndDrag(element: HTMLElement, from: MousePosition, t
   // click to select
   fireEvent.mouseDown(element, positions[0]);
   fireEvent.mouseUp(element, positions[0]);
-  await sleep(500);
+  await sleep(400);
 
   // drag
   fireEvent.mouseDown(element, positions[0]);
@@ -333,7 +383,7 @@ export async function multiSelectAndDrag(
     fireEvent.mouseDown(canvas, { ...position, ctrlKey: true });
     fireEvent.mouseUp(canvas, { ...position, ctrlKey: true });
   }
-  await sleep(500);
+  await sleep(400);
 
   if (positions.length === 0) {
     return;

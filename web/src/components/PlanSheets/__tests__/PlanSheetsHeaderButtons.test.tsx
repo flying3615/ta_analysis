@@ -66,7 +66,6 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.Delete],
     [PlanMode.View],
     [PlanMode.SelectPolygon],
-    [PlanMode.AddLine],
     [PlanMode.FormatLinesText],
     [PlanMode.SelectRectangle],
   ])("handles unimplemented button %s", async (label: PlanMode) => {
