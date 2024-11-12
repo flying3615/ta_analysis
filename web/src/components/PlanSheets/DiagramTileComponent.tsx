@@ -4,6 +4,7 @@ import { right } from "@popperjs/core";
 import { DiagramDisplay } from "@/components/PlanSheets/DiagramList";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   getActivePageNumber,
@@ -35,9 +36,11 @@ const usePageNumber = (pageRef: number | null | undefined) => {
 const useRemoveFromPage = (diagramId: number, pageNumber: number | null) => {
   const dispatch = useAppDispatch();
   const activePageNumber = useAppSelector(getActivePageNumber);
+  const { adjustDiagram } = useAdjustLoadedPlanData();
+
   return () => {
     if (pageNumber === activePageNumber) {
-      dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined }));
+      dispatch(setDiagramPageRef({ id: diagramId, pageRef: undefined, adjustDiagram }));
     }
   };
 };

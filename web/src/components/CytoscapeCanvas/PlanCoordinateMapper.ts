@@ -21,8 +21,11 @@ export class PlanCoordinateMapper {
   groundCoordToCm(diagramId: number, position: GroundMetresPosition): Position {
     const diagram = this.diagrams[diagramId];
 
-    if (!diagram || !diagram.zoomScale) {
+    if (!diagram) {
       throw new Error(`Diagram with id ${diagramId} not found`);
+    }
+    if (!diagram.zoomScale) {
+      throw new Error(`Diagram ${JSON.stringify(diagram)} has no zoomScale`);
     }
 
     if (

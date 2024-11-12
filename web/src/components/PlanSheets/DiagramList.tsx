@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 
 import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import {
   getActivePageNumber,
   getActiveSheet,
@@ -40,9 +41,11 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
   const activeSheet = useAppSelector(getActiveSheet);
   const getPageRef = useAppSelector((state) => getPageRefFromPageNumber(state)(activePageNumber));
 
+  const { adjustDiagram } = useAdjustLoadedPlanData();
+
   const insertDiagram = () => {
     if (getPageRef && selectedDiagramId) {
-      dispatch(setDiagramPageRef({ id: selectedDiagramId, pageRef: getPageRef }));
+      dispatch(setDiagramPageRef({ id: selectedDiagramId, pageRef: getPageRef, adjustDiagram }));
       setSelectedDiagramId(null);
     }
   };

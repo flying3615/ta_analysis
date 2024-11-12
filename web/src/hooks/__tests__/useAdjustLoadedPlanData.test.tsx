@@ -1,5 +1,6 @@
 import { CartesianCoordsDTO, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { render, screen } from "@testing-library/react";
+import { cloneDeep } from "lodash-es";
 
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -9,9 +10,9 @@ describe("useAdjustLoadedPlanData", () => {
     loadedData: PlanResponseDTO;
     expect: (adjustedData: PlanResponseDTO) => void;
   }) => {
-    const adjustLoadedPlanData = useAdjustLoadedPlanData();
+    const { adjustPlanData } = useAdjustLoadedPlanData();
 
-    const adjustedData = adjustLoadedPlanData(props.loadedData);
+    const adjustedData = adjustPlanData(props.loadedData);
 
     props.expect(adjustedData);
 
@@ -28,6 +29,7 @@ describe("useAdjustLoadedPlanData", () => {
           },
           labels: [],
           coordinateLabels: [],
+          parcelLabelGroups: undefined,
         },
       ],
     } as unknown as PlanResponseDTO;
@@ -64,6 +66,7 @@ describe("useAdjustLoadedPlanData", () => {
           },
           labels: [],
           coordinateLabels: [],
+          parcelLabelGroups: undefined,
         },
       ],
     } as unknown as PlanResponseDTO;
@@ -77,8 +80,8 @@ describe("useAdjustLoadedPlanData", () => {
     expect(await screen.findByText("Adjusted")).toBeInTheDocument();
   });
 
-  it("applies offset and angle to an offscreen label", async () => {
-    const loadedData = new PlanDataBuilder()
+  describe("with an offscreen label", () => {
+    const loadedDataOffscreen = new PlanDataBuilder()
       .addDiagram({
         bottomRightPoint: { x: 1625.39, y: -1165.179 },
         zoomScale: 24016,
@@ -93,15 +96,59 @@ describe("useAdjustLoadedPlanData", () => {
       } as LabelDTO)
       .build();
 
-    render(
-      <TestAdjustLoadedPlanData
-        loadedData={loadedData}
-        expect={(adjustedData) => {
-          expect(adjustedData.diagrams[0]?.labels?.[0]?.anchorAngle).toBeCloseTo(270);
-          expect(adjustedData.diagrams[0]?.labels?.[0]?.pointOffset).toBeCloseTo(2.2, 0);
-        }}
-      />,
-    );
-    expect(await screen.findByText("Adjusted")).toBeInTheDocument();
+    it("applies offset and angle", async () => {
+      render(
+        <TestAdjustLoadedPlanData
+          loadedData={loadedDataOffscreen}
+          expect={(adjustedData) => {
+            expect(adjustedData.diagrams[0]?.labels?.[0]?.anchorAngle).toBeCloseTo(270);
+            expect(adjustedData.diagrams[0]?.labels?.[0]?.pointOffset).toBeCloseTo(10.5, 0);
+          }}
+        />,
+      );
+      expect(await screen.findByText("Adjusted")).toBeInTheDocument();
+    });
+
+    test("is idempotent when adjusting label position", async () => {
+      const TestAdjustLoadedPlanDataMultiple = (props: {
+        loadedData: PlanResponseDTO;
+        iterations: number;
+        expect: (adjustedData: PlanResponseDTO, iteration: number) => boolean;
+      }) => {
+        const { adjustPlanData } = useAdjustLoadedPlanData();
+
+        let data = props.loadedData;
+        let n = 0;
+        for (; n < props.iterations; n++) {
+          data = adjustPlanData(cloneDeep(data));
+
+          if (!props.expect(data, n)) {
+            return <>Failed {n}</>;
+          }
+        }
+
+        return <>Adjusted {n}</>;
+      };
+
+      render(
+        <TestAdjustLoadedPlanDataMultiple
+          loadedData={loadedDataOffscreen}
+          iterations={3}
+          expect={(adjustedData, n) => {
+            // expect fails didn't stop the test here
+            if (Math.abs((adjustedData.diagrams[0]?.labels?.[0]?.anchorAngle ?? 0) - 270) > 0.1) {
+              console.error(`Adjusted ${n} anchorAngle: ${adjustedData.diagrams[0]?.labels?.[0]?.anchorAngle} != 270`);
+              return false;
+            }
+            if (Math.abs((adjustedData.diagrams[0]?.labels?.[0]?.pointOffset ?? 0) - 10.5) > 0.1) {
+              console.error(`Adjusted ${n} pointOffset: ${adjustedData.diagrams[0]?.labels?.[0]?.pointOffset} != 10.5`);
+              return false;
+            }
+            return true;
+          }}
+        />,
+      );
+      expect(await screen.findByText("Adjusted 3")).toBeInTheDocument();
+    }, 30000);
   });
 });

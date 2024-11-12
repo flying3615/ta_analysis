@@ -1,4 +1,4 @@
-import { LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
@@ -30,31 +30,38 @@ export const useAdjustLoadedPlanData = () => {
 
     const origLabelCentre = addIntoPosition(addIntoPosition(labelPositionCm, offset), originalShift);
 
+    // console.log(`relocateOffscreenLabel label: ${JSON.stringify(label)}`);
+    // console.log(
+    //   `relocateOffscreenLabel labelSizeCm=${JSON.stringify(labelSizeCm)}, labelPositionCm=${JSON.stringify(labelPositionCm)}, offset=${JSON.stringify(offset)}, originalShift=${JSON.stringify(originalShift)}, origLabelCentre=${JSON.stringify(origLabelCentre)}`,
+    // );
+
     const xL = origLabelCentre.x - labelSizeCm.dx / 2;
     const offsideL = CytoscapeCoordinateMapper.diagramLimitOriginX - xL;
-    const offsideR = xL - CytoscapeCoordinateMapper.diagramLimitBottomRightX;
+    const xR = origLabelCentre.x + labelSizeCm.dx / 2;
+    const offsideR = xR - CytoscapeCoordinateMapper.diagramLimitBottomRightX;
     const yT = origLabelCentre.y + labelSizeCm.dy / 2;
     const offsideT = yT - CytoscapeCoordinateMapper.diagramLimitOriginY;
     const yB = origLabelCentre.y - labelSizeCm.dy / 2;
     const offsideB = CytoscapeCoordinateMapper.diagramLimitBottomRightY - yB;
 
-    if (offsideL < 0 && offsideR < 0 && offsideT < 0 && offsideB < 0) return label;
+    if (offsideL <= 0 && offsideR <= 0 && offsideT <= 0 && offsideB <= 0) return label;
 
     const unclipShift = {
       dx: offsideL > 0 ? offsideL : offsideR > 0 ? -offsideR : 0,
-      dy: offsideT > 0 ? offsideT : offsideB > 0 ? -offsideB : 0,
+      dy: offsideT > 0 ? -offsideT : offsideB > 0 ? offsideB : 0,
     };
 
     const newShift = addIntoDelta(originalShift, unclipShift);
 
     label.pointOffset = Math.sqrt(newShift.dx ** 2 + newShift.dy ** 2) * POINTS_PER_CM;
-    label.anchorAngle = angleDegrees360(-Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
+    label.anchorAngle = angleDegrees360(Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
+    // console.log(`relocateOffscreenLabel new pointOffset=${label.pointOffset}, new anchorAngle=${label.anchorAngle}`);
     return label;
   };
 
-  return (response: PlanResponseDTO): PlanResponseDTO => {
-    const originAdjustedDiagrams = response.diagrams.map((diagram) => {
-      return diagram.originPageOffset.x === 0 && diagram.originPageOffset.y === 0
+  const adjustDiagram = (diagram: DiagramDTO): DiagramDTO => {
+    const originAdjustedDiagram =
+      diagram.originPageOffset?.x === 0 && diagram.originPageOffset?.y === 0
         ? {
             ...diagram,
             originPageOffset: {
@@ -63,25 +70,38 @@ export const useAdjustLoadedPlanData = () => {
             },
           }
         : diagram;
-    });
 
-    const planCoordinateMapper = new PlanCoordinateMapper(originAdjustedDiagrams);
-
+    const planCoordinateMapper = new PlanCoordinateMapper([originAdjustedDiagram]);
     return {
-      ...response,
-
-      diagrams: originAdjustedDiagrams.map((diagram) => {
-        // TODO: this is just diagram labels
+      ...originAdjustedDiagram,
+      labels: originAdjustedDiagram.labels?.map((label) => {
+        return relocateOffscreenLabel(planCoordinateMapper, originAdjustedDiagram.id, label);
+      }),
+      coordinateLabels: originAdjustedDiagram.coordinateLabels?.map((label) => {
+        return relocateOffscreenLabel(planCoordinateMapper, originAdjustedDiagram.id, label);
+      }),
+      parcelLabelGroups: originAdjustedDiagram.parcelLabelGroups?.map((group) => {
         return {
-          ...diagram,
-          labels: diagram.labels.map((label) => {
-            return relocateOffscreenLabel(planCoordinateMapper, diagram.id, label);
-          }),
-          coordinateLabels: diagram.coordinateLabels.map((label) => {
-            return relocateOffscreenLabel(planCoordinateMapper, diagram.id, label);
-          }),
+          ...group,
+          labels: group.labels.map((label) =>
+            relocateOffscreenLabel(planCoordinateMapper, originAdjustedDiagram.id, label),
+          ),
         };
       }),
     };
+  };
+
+  const adjustPlanData = (response: PlanResponseDTO): PlanResponseDTO => {
+    const diagrams = response.diagrams;
+    return {
+      ...response,
+
+      diagrams: diagrams.map((d) => adjustDiagram(d)),
+    };
+  };
+
+  return {
+    adjustPlanData,
+    adjustDiagram,
   };
 };

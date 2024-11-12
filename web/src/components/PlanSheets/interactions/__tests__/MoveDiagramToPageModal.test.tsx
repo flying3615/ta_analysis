@@ -12,8 +12,63 @@ describe("MoveDiagramToPageModal", () => {
   const page2 = { id: 3, pageNumber: 2, pageType: PlanSheetType.TITLE } as PageDTO;
   const page3 = { id: 2, pageNumber: 3, pageType: PlanSheetType.TITLE } as PageDTO;
   const page4 = { id: 1, pageNumber: 1, pageType: PlanSheetType.SURVEY } as PageDTO;
-  const diagram1 = { id: 1, pageRef: 4 } as DiagramDTO;
-  const diagram2 = { id: 2, pageRef: 3 } as DiagramDTO;
+  const diagram1 = {
+    id: 1,
+    pageRef: 4,
+    originPageOffset: { x: 0, y: 0 },
+    zoomScale: 100,
+    bottomRightPoint: { x: 40, y: -10 },
+    labels: [
+      {
+        id: 1000,
+        displayText: "Label 1",
+        font: "Arial",
+        fontSize: 16,
+        position: { x: 20, y: -0.005 },
+      },
+    ],
+    coordinateLabels: [
+      {
+        id: 1001,
+        displayText: "Mark Label",
+        font: "Tahoma",
+        fontSize: 16,
+        position: { x: -0.1, y: -10 },
+      },
+    ],
+    parcelLabelGroups: [
+      {
+        id: 1002,
+        labels: [
+          {
+            id: 1003,
+            displayText: "Parcel App",
+            font: "Arial",
+            fontSize: 16,
+            position: { x: 25, y: 1.5 },
+            anchorAngle: 90,
+            pointOffset: 16,
+          },
+          {
+            id: 1004,
+            displayText: "Parcel Area",
+            font: "Arial",
+            fontSize: 14,
+            position: { x: 25, y: 1.5 },
+            anchorAngle: 270,
+            pointOffset: 14,
+          },
+        ],
+      },
+    ],
+  } as unknown as DiagramDTO;
+  const diagram2 = {
+    id: 2,
+    pageRef: 3,
+    labels: undefined,
+    coordinateLabels: undefined,
+    parcelLabelGroups: undefined,
+  } as unknown as DiagramDTO;
 
   const diagramIdToMove = diagram1.id;
 
@@ -71,7 +126,11 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(continueButton);
 
     const updatedState = store.getState().planSheets;
-    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 3 }, diagram2]);
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(3);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
     expect(updatedState.pages).toStrictEqual(initialState.pages);
     expect(updatedState.diagramIdToMove).toBeUndefined();
     expect(updatedState.activePageNumbers).toStrictEqual({
@@ -92,7 +151,41 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(screen.getByText("Continue"));
 
     const updatedState = store.getState().planSheets;
-    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 5 }, diagram2]);
+    // We expect offscreen labels to have moved on screen
+    // by applying an offset to their position
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(5);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(100);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 40, y: -10 });
+
+    expect(updatedState.diagrams[0]?.labels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.id).toBe(1000);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.displayText).toBe("Label 1");
+    expect(updatedState.diagrams[0]?.labels?.[0]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.pointOffset).toBeCloseTo(5.86);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.position).toStrictEqual({ x: 20, y: -0.005 });
+
+    expect(updatedState.diagrams[0]?.coordinateLabels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.id).toBe(1001);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.displayText).toBe("Mark Label");
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.anchorAngle).toBeCloseTo(0);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.pointOffset).toBeCloseTo(62.84);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.position).toStrictEqual({ x: -0.1, y: -10 });
+    expect(updatedState.diagrams[0]?.parcelLabelGroups).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.id).toBe(1002);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels).toHaveLength(2);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.id).toBe(1003); // Parcel App
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.displayText).toBe("Parcel App");
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.pointOffset).toBeCloseTo(48.52);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.position).toStrictEqual({ x: 25, y: 1.5 });
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.id).toBe(1004); // Parcel Area
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.displayText).toBe("Parcel Area");
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.pointOffset).toBeCloseTo(47.77);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.position).toStrictEqual({ x: 25, y: 1.5 });
+
     expect(updatedState.pages).toStrictEqual([
       page1,
       page2,
@@ -116,7 +209,12 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(screen.getByText("Continue"));
 
     const updatedState = store.getState().planSheets;
-    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 6 }, diagram2]);
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(6);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
+
     expect(updatedState.pages).toStrictEqual([
       page1,
       { ...page2, pageNumber: 3 },
@@ -140,7 +238,12 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(screen.getByText("Continue"));
 
     const updatedState = store.getState().planSheets;
-    expect(updatedState.diagrams).toStrictEqual([{ ...diagram1, pageRef: 5 }, diagram2]);
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(5);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
+
     expect(updatedState.pages).toStrictEqual([
       { id: 5, pageNumber: 1, pageType: PlanSheetType.TITLE },
       { ...page1, pageNumber: 2 },

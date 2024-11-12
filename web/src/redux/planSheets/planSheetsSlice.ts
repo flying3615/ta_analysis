@@ -101,10 +101,13 @@ const planSheetsSlice = createSlice({
     setActivePageNumber: (state, action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>) => {
       state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
     },
-    setDiagramPageRef: (state, action: PayloadAction<{ id: number; pageRef: number | undefined }>) => {
+    setDiagramPageRef: (
+      state,
+      action: PayloadAction<{ id: number; pageRef: number | undefined; adjustDiagram: (d: DiagramDTO) => DiagramDTO }>,
+    ) => {
       onDataChanging(state);
-      const { id, pageRef } = action.payload;
-      state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...d, pageRef } : d));
+      const { id, pageRef, adjustDiagram } = action.payload;
+      state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...adjustDiagram(d), pageRef } : d));
     },
     removeDiagramPageRef: (state, action: PayloadAction<number>) => {
       onDataChanging(state);

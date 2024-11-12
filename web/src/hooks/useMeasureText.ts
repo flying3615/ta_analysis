@@ -32,8 +32,8 @@ export const useMeasureText = () => {
 
     // Fallback if we couldn't get the canvas context
     console.warn("Warning: couldn't get canvas context for measuring text size");
-    const height = lines.length / PIXELS_PER_CM;
-    const width = (max(lines.map((l: string) => l.length)) ?? 0) / PIXELS_PER_CM;
+    const height = (lines.length * fontSize) / PIXELS_PER_CM;
+    const width = ((max(lines.map((l: string) => l.length)) ?? 0) * fontSize) / PIXELS_PER_CM;
     return { dx: width, dy: height };
   };
 };

@@ -19,7 +19,7 @@ export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactio
 
 export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, enabled }) => {
   const dispatch = useAppDispatch();
-  const adjustLoadedPlanData = useAdjustLoadedPlanData();
+  const { adjustPlanData } = useAdjustLoadedPlanData();
 
   return useQuery({
     queryKey: getPlanQueryKey(transactionId),
@@ -29,7 +29,7 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
       })(async () => new PlanControllerApi(apiConfig()).getPlan({ transactionId }));
       const adjustedResponse = await performanceMeasure("adjustedResponse", transactionId, {
         workflow: "loadPlanXML",
-      })(() => Promise.resolve(adjustLoadedPlanData(response)));
+      })(() => Promise.resolve(adjustPlanData(response)));
       await performanceMeasure("setPlanData", transactionId, {
         workflow: "loadPlanXML",
       })(() => Promise.resolve(dispatch(setPlanData(adjustedResponse))));

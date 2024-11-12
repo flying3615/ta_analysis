@@ -13,6 +13,7 @@ import clsx from "clsx";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   getActivePageNumber,
@@ -43,6 +44,8 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   const [pageError, setPageError] = useState<string | undefined>();
   const [pageWarning, setPageWarning] = useState<string | undefined>();
   const [newPageNumber, setNewPageNumber] = useState<number | undefined>(undefined);
+  const { adjustDiagram } = useAdjustLoadedPlanData();
+
   const pageInfo = { activeSheet, activePageNumber };
   const { zoomToFit } = useCytoscapeContext();
   const radioOptions = [
@@ -87,7 +90,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
 
   const moveDiagram = (pageRef: number) => {
     if (diagramId) {
-      dispatch(setDiagramPageRef({ id: diagramId, pageRef: pageRef }));
+      dispatch(setDiagramPageRef({ id: diagramId, pageRef: pageRef, adjustDiagram }));
     }
   };
 
