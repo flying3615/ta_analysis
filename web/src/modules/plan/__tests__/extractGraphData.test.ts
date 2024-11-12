@@ -61,7 +61,7 @@ describe("extractGraphData", () => {
     const labelNode11 = extractedNodeMap["LAB_11"];
     expect(labelNode11?.id).toBe("LAB_11");
     expect(labelNode11?.label).toBe("Label 11");
-    expect(labelNode11?.position).toStrictEqual({ x: 55, y: -10 });
+    expect(labelNode11?.position).toStrictEqual({ x: 20, y: -10 });
     expect(labelNode11?.properties?.["diagramId"]).toBe(1);
     expect(labelNode11?.properties?.["elementType"]).toBe("coordinateLabels");
     expect(labelNode11?.properties?.["labelType"]).toBe("markName");

@@ -253,6 +253,7 @@ export class PlanDataBuilder {
     symbolType: string | undefined = undefined,
     textAlignment: string | undefined = "centerCenter",
     borderWidth: number | undefined = undefined,
+    pointOffset: number = 0,
   ) {
     if (this.planData.diagrams.length === 0) {
       throw new Error(
@@ -267,7 +268,7 @@ export class PlanDataBuilder {
             displayState: displayState,
             effect,
             symbolType,
-            pointOffset: 0,
+            pointOffset,
             rotationAngle: 0,
             userEdited: false,
             id: idOrOptions,

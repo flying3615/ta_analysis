@@ -1,6 +1,7 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue } from "cytoscape";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
@@ -16,7 +17,13 @@ export interface CoordLookup {
     };
   };
 }
-export type ElementLookupData = { diagramId: number; position: cytoscape.Position; elementType: string; id: number };
+export type ElementLookupData = {
+  diagramId: number;
+  position: cytoscape.Position;
+  elementType: string;
+  id: number;
+  pointOffset?: number;
+};
 
 export const LookupOriginalCoord = (diagrams: DiagramDTO[]): CoordLookup => {
   const positionLookup: CoordLookup = {};
@@ -110,4 +117,36 @@ export function extractPositions(elements: CollectionReturnValue): Record<string
     }
   });
   return posMap;
+}
+
+export function transformMovedLabelCoordinates(
+  coordinateMapper: CytoscapeCoordinateMapper,
+  elements: CollectionReturnValue,
+  initialPositions: Record<string, cytoscape.Position>,
+): CollectionReturnValue {
+  elements.forEach((element) => {
+    if (!element.isNode()) {
+      return;
+    }
+
+    const initialPosition = initialPositions[element.id()];
+    const elementData = element.data() as INodeDataProperties;
+
+    if (elementData.label && initialPosition && !elementData.symbolId) {
+      let offset, angle;
+      const isDiagram = !!element.data("diagramId");
+      if (isDiagram) {
+        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.diagramLabelPositionToOffsetAndAngle(
+          element,
+          initialPosition,
+        ));
+      } else {
+        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.pageLabelPositionsToOffsetAndAngle(element));
+      }
+
+      element.data({ pointOffset: offset, anchorAngle: angle, ignorePositionChange: isDiagram });
+    }
+  });
+
+  return elements;
 }

@@ -1,81 +1,86 @@
-import { CoordinateDTO, DiagramDTO, LabelDTO } from "@linz/survey-plan-generation-api-client";
-import { EdgeSingular, NodeSingular } from "cytoscape";
+import cytoscape, { BoundingBox12, EdgeSingular, NodeSingular, Position as CytoscapePosition } from "cytoscape";
 
-import { INodeData, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { IEdgeDataProperties, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { moveExtent } from "@/components/PlanSheets/interactions/moveAndResizeUtil";
 import { getRelatedElements, getRelatedLabels } from "@/components/PlanSheets/interactions/selectUtil";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
-import { ElementLookupData, findElementsPosition } from "@/modules/plan/LookupOriginalCoord";
+import {
+  ElementLookupData,
+  extractPositions,
+  findElementsPosition,
+  transformMovedLabelCoordinates,
+} from "@/modules/plan/LookupOriginalCoord";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { getOriginalPositions, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
+import { getOriginalPositions } from "@/redux/planSheets/planSheetsSlice";
 
 interface MoveOriginalLocationProps {
   target: NodeSingular | EdgeSingular | null;
 }
 
 export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
-  const { cyto, cytoDataToNodeAndEdgeData } = usePlanSheetsDispatch();
+  const { cyto, cytoCoordMapper, updateActiveDiagramsAndPage, cytoDataToNodeAndEdgeData } = usePlanSheetsDispatch();
   const originalPositions = useAppSelector(getOriginalPositions);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
-  const dispatch = useAppDispatch();
   const adjustLabels = useLineLabelAdjust();
+  let moveStartPositions: Record<string, cytoscape.Position> | undefined;
 
-  if (!cyto || !target || !activeDiagrams || !originalPositions) return;
+  if (!cyto || !target || !activeDiagrams || !originalPositions || !cytoCoordMapper) return;
 
-  function getUpdatedDiagrams(
-    elements: ElementLookupData[],
-    labels: INodeData[],
-    diagrams: DiagramDTO[],
-  ): DiagramDTO[] {
-    return diagrams.map((diagram) => {
-      const updatePositions = (items: (CoordinateDTO | LabelDTO)[], idPrefix = "") =>
-        items.map((item) => {
-          const matchingElem = elements.find(
-            (e) => e.diagramId === diagram.id && e.id.toString() === `${idPrefix}${item.id}`.toString(),
-          );
-          return matchingElem
-            ? { ...item, position: matchingElem.position, ...(idPrefix && { pointOffset: 1 }) }
-            : item;
-        });
-      const updatedCoordinateLabels = updatePositions(diagram.coordinateLabels, "LAB_");
-      const updatedCoordinates = updatePositions(diagram.coordinates);
-      const updatedLineLabels = diagram.lineLabels.map((label) => {
-        const matchingElem = labels.find(
-          (e) => e.properties.diagramId === diagram.id && e.id.toString() === `LAB_${label.id}`.toString(),
-        );
-        return matchingElem
-          ? {
-              ...label,
-              position: matchingElem.position,
-              rotationAngle: matchingElem.properties?.textRotation,
-              anchorAngle: matchingElem.properties?.anchorAngle,
-            }
-          : label;
-      });
+  const updateMove = (
+    moveStartPositions: Record<string, CytoscapePosition> | undefined,
+    movingElements: cytoscape.CollectionReturnValue,
+    moveElementsExtent: BoundingBox12 | undefined,
+    moveStart: CytoscapePosition | undefined,
+    moveEnd: CytoscapePosition | undefined,
+  ): CytoscapePosition | undefined => {
+    if (!moveElementsExtent || !moveStart || !moveEnd || !moveStartPositions) {
+      return;
+    }
 
-      return {
-        ...diagram,
-        coordinates: updatedCoordinates,
-        coordinateLabels: updatedCoordinateLabels,
-        lineLabels: updatedLineLabels,
-      };
-    }) as DiagramDTO[];
-  }
-
-  const updateMovedNodePosition = (coords: ElementLookupData[], movedNode: { [p: string]: INodeData }) => {
-    const updatedMovedNode = { ...movedNode };
-    coords.forEach((elem) => {
-      const matchingElem = updatedMovedNode[elem.id];
-      if (matchingElem) {
-        updatedMovedNode[elem.id] = {
-          ...matchingElem,
-          position: elem.position,
-        };
+    const newExtent = moveExtent(moveElementsExtent, moveEnd.x - moveStart.x, moveEnd.y - moveStart.y);
+    const dx = newExtent.x1 - moveElementsExtent.x1;
+    const dy = newExtent.y1 - moveElementsExtent.y1;
+    movingElements.positions((ele) => {
+      const position = moveStartPositions[ele.id()];
+      if (!position) {
+        throw `missing position for element ${ele.id()}`;
       }
+      return {
+        x: position.x + dx,
+        y: position.y + dy,
+      };
     });
-    return updatedMovedNode;
+
+    if (dx === 0 && dy === 0) {
+      return;
+    }
+    return { x: dx, y: dy };
   };
+
+  function findMoveEnd(
+    target: NodeSingular | EdgeSingular,
+    coordinates: ElementLookupData[],
+  ): { x: number; y: number } {
+    if ("source" in target.data()) {
+      const data = target.data() as IEdgeDataProperties;
+      const srcId: string | undefined = data.source?.toString();
+      const srcElement = coordinates.find((e) => e.id.toString() === srcId);
+
+      if (moveStartPositions && srcId && srcElement) {
+        const startPos = moveStartPositions[srcId] ?? { x: 0, y: 0 };
+        const dx = -startPos.x + srcElement.position.x;
+        const dy = -startPos.y + srcElement.position.y;
+        return { x: dx, y: dy };
+      }
+    } else {
+      const data = target.data() as INodeDataProperties;
+      const element = coordinates.find((e) => e.id.toString() === data.id);
+      return element ? element.position : { x: 0, y: 0 };
+    }
+    return { x: 0, y: 0 };
+  }
 
   const restoreOriginalPosition = () => {
     const selected = cyto.elements(":selected");
@@ -85,25 +90,35 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
     const connectedElements = selected.union(selected.connectedNodes());
     connectedElements.merge(getRelatedLabels(connectedElements));
     const adjacentEdges = connectedElements.connectedEdges().difference(connectedElements);
-
     const allElements = connectedElements.union(adjacentEdges).union(getRelatedLabels(adjacentEdges));
-    // const moveStartPositions = extractPositions(allElements);
-    const movingData = cytoDataToNodeAndEdgeData(allElements);
-    const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
-    const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
-    const allCoordinates: ElementLookupData[] = [];
+    moveStartPositions = extractPositions(allElements);
+
+    const originalCoordinates: ElementLookupData[] = [];
     allElements.forEach((ele) => {
       const data = ele.data() as INodeDataProperties;
       const coordinates: ElementLookupData | null = findElementsPosition(data, allElements, originalPositions);
-      if (coordinates) {
-        allCoordinates.push(coordinates);
+
+      if (coordinates && coordinates.position) {
+        coordinates.position = cytoCoordMapper.groundCoordToCytoscape(coordinates.position, coordinates.diagramId);
+        originalCoordinates.push(coordinates);
       }
     });
-    const updateMovedNodes = updateMovedNodePosition(allCoordinates, movedNodesById);
-    const adjustedLabels = adjustLabels(updateMovedNodes);
-    const updatedDiagrams = getUpdatedDiagrams(allCoordinates, adjustedLabels, activeDiagrams);
-    dispatch(replaceDiagrams(updatedDiagrams));
+    const moveStart = cyto.$id(target.id()).position();
+    const moveEnd = findMoveEnd(target, originalCoordinates);
+    updateMove(moveStartPositions, connectedElements, selected.boundingBox(), moveStart, moveEnd);
+
+    const movingElementsOffsetCoords = transformMovedLabelCoordinates(
+      cytoCoordMapper,
+      connectedElements,
+      moveStartPositions,
+    );
+    const movingData = cytoDataToNodeAndEdgeData(movingElementsOffsetCoords);
+    const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
+    const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
+    const adjustedLabels = adjustLabels(movedNodesById);
+
+    updateActiveDiagramsAndPage({ nodes: [...movingData.nodes, ...adjustedLabels], edges: movingData.edges });
   };
 
   // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions

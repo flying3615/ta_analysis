@@ -116,6 +116,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       // set extent based on selection, not related
       moveElementsExtent = selectedElements.boundingBox();
       moveStart = event.position;
+
       moveStartPositions = getPositions(movingElements.union(adjacentEdges));
 
       adjacentEdges.addClass(ELEMENT_CLASS_MOVE_HIDE);
@@ -157,7 +158,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
         );
 
         const movingData = cytoDataToNodeAndEdgeData(movingElementsOffsetCoords);
-
         const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
@@ -183,7 +183,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       if (!moveElementsExtent || !moveStart || !moveStartPositions) {
         return;
       }
-
       const newExtent = moveExtent(
         moveElementsExtent,
         event.position.x - moveStart.x,
