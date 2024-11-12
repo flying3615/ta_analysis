@@ -26,3 +26,13 @@ export const multipleSegmentPageLineArrowHead: LineDTO = {
   userEdited: false,
   displayState: "display",
 };
+
+export const hiddenPageLine: LineDTO = {
+  id: 10021,
+  lineType: "userDefined",
+  style: "doubleArrow1",
+  coordRefs: [10011, 10015],
+  pointWidth: 2.0,
+  userEdited: false,
+  displayState: "systemHide",
+};

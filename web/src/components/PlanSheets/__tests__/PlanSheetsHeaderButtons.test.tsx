@@ -62,20 +62,17 @@ describe("PlanSheetsHeaderButtons", () => {
     expect(await screen.findByRole("button", { name: label })).toBeInTheDocument();
   });
 
-  it.each([
-    [PlanMode.Delete],
-    [PlanMode.View],
-    [PlanMode.SelectPolygon],
-    [PlanMode.FormatLinesText],
-    [PlanMode.SelectRectangle],
-  ])("handles unimplemented button %s", async (label: PlanMode) => {
-    renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-    window.alert = jest.fn();
+  it.each([[PlanMode.Delete], [PlanMode.SelectPolygon], [PlanMode.FormatLinesText], [PlanMode.SelectRectangle]])(
+    "handles unimplemented button %s",
+    async (label: PlanMode) => {
+      renderWithReduxProvider(<PlanSheetsHeaderButtons />);
+      window.alert = jest.fn();
 
-    const button = screen.getByRole("button", { name: label });
-    await userEvent.click(button);
-    await waitFor(() => expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented"));
-  });
+      const button = screen.getByRole("button", { name: label });
+      await userEvent.click(button);
+      await waitFor(() => expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented"));
+    },
+  );
 
   it("displays Zoom In, Zoom Out, and Zoom to Fit buttons in the toolbar", () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);

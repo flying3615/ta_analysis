@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { NoPageMessage } from "@/components/Footer/NoPageMessage";
 import Header from "@/components/Header/Header";
 import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal";
@@ -36,7 +37,7 @@ import {
 import { useGetPlanQuery } from "@/queries/plan";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
-import { getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import { getCanViewHiddenLabels, getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
 
 import { DeleteKeyHandler } from "./interactions/DeleteKeyHandler";
 import { ElementHover } from "./interactions/ElementHover";
@@ -48,6 +49,7 @@ import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();
+  const canViewHiddenLabels = useAppSelector(getCanViewHiddenLabels);
 
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -104,6 +106,24 @@ const PlanSheets = () => {
     })();
   }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
 
+  const filterNodeData = (nodeData: INodeData[]) => {
+    return nodeData.filter((node) => {
+      const { properties } = node;
+      const { elementType, displayState } = properties || {};
+      const validElementTypes = ["coordinateLabels", "lineLabels", "lines", "parcelLabels", "labels"];
+      return !(validElementTypes.includes(elementType!) && (displayState === "hide" || displayState === "systemHide"));
+    });
+  };
+
+  const filterEdgeData = (edgeData: IEdgeData[]) => {
+    return edgeData.filter((edge) => {
+      const { properties } = edge;
+      const { elementType, displayState } = properties || {};
+      const validElementTypes = ["coordinateLabels", "lineLabels", "lines", "parcelLabels"];
+      return !(validElementTypes.includes(elementType!) && (displayState === "hide" || displayState === "systemHide"));
+    });
+  };
+
   const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
   const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
@@ -127,14 +147,19 @@ const PlanSheets = () => {
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
-  const nodeData = useMemo(
+  let nodeData = useMemo(
     () => [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData],
     [pageConfigsNodeData, diagramNodeData, pageNodeData],
   );
-  const edgeData = useMemo(
+  let edgeData = useMemo(
     () => [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData],
     [pageConfigsEdgeData, diagramEdgeData, pageEdgeData],
   );
+
+  if (!canViewHiddenLabels) {
+    nodeData = filterNodeData(nodeData);
+    edgeData = filterEdgeData(edgeData);
+  }
 
   if (
     planDataIsLoading ||

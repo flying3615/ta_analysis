@@ -1,5 +1,6 @@
+import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { MenuHeader, MenuItem } from "@szhsin/react-menu";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { CommonButtons } from "@/components/CommonButtons";
 import { VerticalSpacer } from "@/components/Header/Header";
@@ -7,7 +8,14 @@ import { HeaderButton } from "@/components/Header/HeaderButton";
 import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
-import { canUndo, getPlanMode, setPlanMode, undo } from "@/redux/planSheets/planSheetsSlice";
+import {
+  canUndo,
+  getCanViewHiddenLabels,
+  getPlanMode,
+  setCanViewHiddenLabels,
+  setPlanMode,
+  undo,
+} from "@/redux/planSheets/planSheetsSlice";
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil";
 
 import { PlanMode } from "./PlanSheetType";
@@ -18,6 +26,7 @@ export const PlanSheetsHeaderButtons = () => {
   const dispatch = useAppDispatch();
   const planMode = useAppSelector(getPlanMode);
   const enableUndo = useAppSelector(canUndo);
+  const canViewHiddenLabels = useAppSelector(getCanViewHiddenLabels);
 
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
@@ -75,18 +84,22 @@ export const PlanSheetsHeaderButtons = () => {
         setSelectedButtonLabel={setSelectedButtonLabel}
       >
         <MenuHeader>View labels</MenuHeader>
-        {/* see https://www.figma.com/design/1BgaquDso4nMqlGAJ2bLdj/Plan-Generation-(Survey-Q)?node-id=0-1&t=w9XoSPwjxgkeJioP-0 */}
         <MenuItem>Dynamically gen list</MenuItem>
       </HeaderMenu>
-      <HeaderButton
-        headerMenuLabel={PlanMode.View}
-        iconName="ic_view"
+
+      <LuiButton
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.View);
-          alert("Not Yet Implemented");
+          dispatch(setCanViewHiddenLabels(!canViewHiddenLabels));
         }}
-        selectedButtonLabel={planMode}
-      />
+        className="lui-button-icon lui-button-icon-only lui-button-tertiary"
+      >
+        {canViewHiddenLabels ? (
+          <LuiIcon name="ic_view" alt={PlanMode.View} size="md" title={PlanMode.View} />
+        ) : (
+          <LuiIcon name="ic_visiblity_off" alt={PlanMode.View} size="md" title={PlanMode.View} />
+        )}
+      </LuiButton>
+
       <VerticalSpacer />
       <HeaderButton
         headerMenuLabel={PlanMode.Cursor}

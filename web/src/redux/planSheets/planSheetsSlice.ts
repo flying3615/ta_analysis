@@ -22,6 +22,7 @@ export interface PlanSheetsState {
   previousDiagrams: DiagramDTO[] | null;
   previousPages: PageDTO[] | null;
   originalPositions?: CoordLookup;
+  canViewHiddenLabels: boolean;
 }
 
 const initialState: PlanSheetsState = {
@@ -39,6 +40,7 @@ const initialState: PlanSheetsState = {
   previousDiagrams: null,
   previousPages: null,
   originalPositions: {},
+  canViewHiddenLabels: true,
 };
 
 /**
@@ -200,6 +202,9 @@ const planSheetsSlice = createSlice({
       state.previousDiagrams = null;
       state.previousPages = null;
     },
+    setCanViewHiddenLabels: (state, action: PayloadAction<boolean>) => {
+      state.canViewHiddenLabels = action.payload;
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -249,6 +254,7 @@ const planSheetsSlice = createSlice({
         return state.previousDiagramAttributesMap[id];
       },
     canUndo: (state) => state.previousDiagrams != null && state.previousPages != null,
+    getCanViewHiddenLabels: (state) => state.canViewHiddenLabels,
   },
 });
 
@@ -271,6 +277,7 @@ export const {
   removePageLabels,
   undo,
   clearUndo,
+  setCanViewHiddenLabels,
 } = planSheetsSlice.actions;
 
 export const {
@@ -293,6 +300,7 @@ export const {
   getDiagramIdToMove,
   getPreviousAttributesForDiagram,
   canUndo,
+  getCanViewHiddenLabels,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

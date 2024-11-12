@@ -13,7 +13,7 @@ export enum PlanMode {
   ZoomCentre = "Zoom centre",
   ManageLabels = "Manage labels",
   DropdownIcon = "Dropdown icon",
-  View = "View",
+  View = "View hidden objects",
   Cursor = "Cursor",
   SelectDiagram = "Select Diagrams",
   SelectLabel = "Select Labels",

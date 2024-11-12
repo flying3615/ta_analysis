@@ -46,6 +46,7 @@ describe("planSheetsSlice", () => {
     previousDiagramAttributesMap: {},
     previousDiagrams: null,
     previousPages: null,
+    canViewHiddenLabels: true,
   };
 
   let store = setupStore();

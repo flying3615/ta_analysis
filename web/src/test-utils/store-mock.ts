@@ -14,5 +14,6 @@ export const mockStore = {
     previousDiagramAttributesMap: {},
     previousDiagrams: null,
     previousPages: null,
+    canViewHiddenLabels: true,
   },
 };

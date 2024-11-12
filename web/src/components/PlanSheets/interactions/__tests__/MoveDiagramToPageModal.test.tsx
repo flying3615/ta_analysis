@@ -33,6 +33,7 @@ describe("MoveDiagramToPageModal", () => {
     previousDiagramAttributesMap: {},
     previousDiagrams: null,
     previousPages: null,
+    canViewHiddenLabels: true,
   };
 
   it("can move a diagram to an existing page", async () => {

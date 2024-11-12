@@ -1,7 +1,7 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
-import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { PageDTOPageTypeEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
@@ -14,9 +14,21 @@ import { generatePath, Route } from "react-router-dom";
 
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import {
+  diagramLabelObsBearingHide,
+  diagramLabelParcelAppellation,
+  pageLabelWithBorder,
+} from "@/components/PlanSheets/properties/__tests__/data/LabelsData";
+import {
+  hiddenPageLine,
+  userCoordinate1,
+  userCoordinate2,
+} from "@/components/PlanSheets/properties/__tests__/data/LineData";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store";
@@ -32,6 +44,7 @@ import {
   sleep,
   StorybookRouter,
   tabletLandscapeParameters,
+  TestCanvas,
 } from "@/test-utils/storybook-utils";
 import { downloadBlob } from "@/util/downloadHelper";
 
@@ -877,5 +890,74 @@ export const RotateDiagramLabel: Story = {
 
     fireEvent.change(rangeInput, { target: { value: 50 } });
     fireEvent.mouseOut(rotateLabelMenuItem);
+  },
+};
+
+const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (customMockPlanData.pages[0]) {
+  customMockPlanData.pages[0].coordinates = [
+    ...(customMockPlanData.pages[0].coordinates ?? []),
+    userCoordinate1,
+    userCoordinate2,
+  ];
+}
+if (customMockPlanData.pages[0]) {
+  customMockPlanData.pages[0].lines = [...(customMockPlanData.pages[0].lines ?? []), hiddenPageLine];
+}
+if (customMockPlanData.pages[0]) {
+  customMockPlanData.pages[0].labels = [...(customMockPlanData.pages[0].labels ?? []), pageLabelWithBorder];
+}
+if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
+  customMockPlanData.diagrams[0].lineLabels = [
+    ...customMockPlanData.diagrams[0].lineLabels,
+    diagramLabelParcelAppellation,
+    diagramLabelObsBearingHide,
+  ];
+}
+export const PlanSheetWithHiddenObject: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(customMockPlanData, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        ...handlers,
+      ],
+    },
+  },
+};
+
+export const HideHiddenObject: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const visibilityIcon = await canvas.findByTitle("View hidden objects");
+    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon togged on by default
+    await userEvent.click(await canvas.findByTitle("View hidden objects"));
+    await sleep(500); // final screenshot - chromatic will check for the absence of the hidden line and labels on screen
+    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_visiblity_off"); // View Hidden Object icon changed to off
+  },
+};
+
+export const ShowHiddenObject: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const visibilityIcon = await canvas.findByTitle("View hidden objects");
+    await userEvent.click(await canvas.findByTitle("View hidden objects")); // hide hidden object to turn on later
+    await sleep(500);
+
+    // state of “View hidden objects” button is not affected by activating select labels mode (any other selection mode)
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Hide" });
+    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_visiblity_off"); // View Hidden Object icon remains off
+
+    await userEvent.click(await canvas.findByTitle("View hidden objects"));
+    await sleep(500); // final screenshot - chromatic will check that hidden line and labels are back on screen
+    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon changed to on
   },
 };

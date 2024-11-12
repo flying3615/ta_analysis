@@ -52,6 +52,7 @@ const planSheetsState: PlanSheetsState = {
   previousDiagramAttributesMap: {},
   previousDiagrams: null,
   previousPages: null,
+  canViewHiddenLabels: true,
 };
 
 const mockGetPlanResponse = {
@@ -148,6 +149,7 @@ describe("PlanSheets", () => {
       previousDiagramAttributesMap: {},
       previousDiagrams: null,
       previousPages: null,
+      canViewHiddenLabels: true,
     };
 
     server.use(
@@ -215,6 +217,7 @@ describe("PlanSheets", () => {
       previousDiagramAttributesMap: {},
       previousDiagrams: null,
       previousPages: null,
+      canViewHiddenLabels: true,
     };
 
     server.use(
