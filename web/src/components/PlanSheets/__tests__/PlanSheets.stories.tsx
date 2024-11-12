@@ -5,7 +5,7 @@ import { PageDTOPageTypeEnum, PlanResponseDTO } from "@linz/survey-plan-generati
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, screen, userEvent, waitForElementToBeRemoved, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cloneDeep } from "lodash-es";
 import { http, HttpResponse } from "msw";
@@ -575,8 +575,6 @@ const COORDINATE_10001_Y = 136;
 const COORDINATE_10004_X = 733;
 const COORDINATE_10004_Y = 456;
 
-const LABEL_14: [number, number] = [493, 269];
-
 export const SelectDiagram: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -872,24 +870,43 @@ export const RotateDiagramLabel: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [213, 213], select: "Rotate label" }, "hover");
 
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-
-    clickAtCoordinates(cytoscapeNodeLayer, LABEL_14, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-
-    const rotateLabelMenuItem = await canvas.findByText("Rotate label");
-    await userEvent.hover(rotateLabelMenuItem);
-    await sleep(500);
-
-    const rangeInput = await canvas.findByRole("slider");
-
+    const rangeInput = await within(canvasElement).findByRole("slider");
     fireEvent.change(rangeInput, { target: { value: 50 } });
-    fireEvent.mouseOut(rotateLabelMenuItem);
+    fireEvent.focusOut(rangeInput);
+  },
+};
+
+export const RotateDiagramLabelProperties: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    async function isnotIs(isnot: string | number, is: string | number) {
+      fireEvent.change(angleField, { target: { value: isnot } });
+      await expect(await screen.findByText("Must be a number in D.MMSS format")).toBeVisible();
+      await waitFor(() => expect(screen.getByRole("button", { name: "OK" })).toBeDisabled());
+
+      fireEvent.change(angleField, { target: { value: is } });
+      await waitFor(() => expect(screen.queryByText("Must be a number in D.MMSS format")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole("button", { name: "OK" })).toBeEnabled());
+    }
+
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [213, 213], select: "Rotate label" });
+
+    const rangeInput = await within(canvasElement).findByRole("slider");
+    fireEvent.change(rangeInput, { target: { value: 50 } });
+    fireEvent.focusOut(rangeInput);
+    await test.contextMenu({ at: [213, 213], select: "Properties" });
+    const angleField = test.findProperty("TextInput", "Text angle (degrees)");
+    await isnotIs(123.6, 123.4);
+    await isnotIs(123.596, 123.59);
+    await isnotIs("123.00000", "123.0000");
+    await isnotIs(123.59596, 123.5959);
+    screen.getByRole("button", { name: "OK" }).click();
+    // Chromatic to check angle of text
   },
 };
 

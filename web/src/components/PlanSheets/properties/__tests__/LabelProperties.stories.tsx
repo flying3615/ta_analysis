@@ -275,7 +275,7 @@ export const PageAndDiagramLabelWithPartialCheckbox: Story = {
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
     await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
-    await expect(await canvas.findByDisplayValue("90")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("90.0000")).toBeEnabled();
     canvas
       .getByTestId("button-group")
       .querySelectorAll("button")

@@ -1,4 +1,4 @@
-import { convertToDegrees, s, wrapText } from "@/util/stringUtil";
+import { convertDegreesToDms, convertDmsToDegrees, convertToDegrees, s, wrapText } from "@/util/stringUtil";
 
 describe("Pluralise", () => {
   test("s", () => {
@@ -50,5 +50,15 @@ describe("convertToDegrees", () => {
   test("should handle non-radian inputs correctly", () => {
     expect(convertToDegrees("180")).toBeCloseTo(180, 4);
     expect(convertToDegrees("-90")).toBeCloseTo(-90, 4);
+  });
+});
+
+describe("convertDegreesToDms and convertDmsToDegrees", () => {
+  test("should convert degrees to DMS correctly", () => {
+    expect(convertDegreesToDms(45.1234)).toBe("45.0724");
+  });
+
+  test("should convert DMS to degrees correctly", () => {
+    expect(convertDmsToDegrees(45.0724)).toBeCloseTo(45.1234, 2);
   });
 });

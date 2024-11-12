@@ -243,6 +243,15 @@ export class TestCanvas {
     return toClientXY(this.toCoords(location));
   }
 
+  async userClick(location: [number, number]) {
+    await sleep(500);
+    await this.user.pointer({
+      target: getCytoCanvas(this.cytoscapeCanvas),
+      coords: this.toClientXY(location),
+      keys: "[MouseLeft]",
+    });
+  }
+
   async click(location: [number, number], withCtrl = false) {
     await this.waitForCytoscape();
     clickAtCoordinates(getCytoCanvas(this.cytoscapeCanvas), this.toCoords(location), LEFT_MOUSE_BUTTON, withCtrl);
@@ -312,12 +321,23 @@ export class TestCanvas {
     await userEvent.pointer({ target: target, coords: this.toClientXY(location) });
   }
 
-  async contextMenu(_: { at: [number, number]; select: string }): Promise<void> {
+  async contextMenu(
+    _: {
+      at: [number, number];
+      select: string;
+    },
+    action: "" | "hover" = "",
+  ): Promise<HTMLElement> {
     const { at, select } = _; // not so nice way to get named arguments
     await this.rightClick(at);
     const ctxMenuElement = await within(this.canvasElement).findByTestId("cytoscapeContextMenu");
     const propertiesMenuItem = within(ctxMenuElement).getByText(select);
-    await this.user.click(propertiesMenuItem);
+    if (action === "hover") {
+      await this.user.hover(propertiesMenuItem);
+    } else {
+      await this.user.click(propertiesMenuItem);
+    }
+    return propertiesMenuItem;
   }
 
   findProperty(luiType: "TextInput", withLabel: string): Element {

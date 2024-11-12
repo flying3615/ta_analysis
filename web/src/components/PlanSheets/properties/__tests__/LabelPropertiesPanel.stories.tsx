@@ -109,7 +109,7 @@ export const RotateLabelSliderAndPropertiesTextAngleAreConsistent: Story = {
     const propertiesMenuItem = await canvas.findByText("Properties");
     await userEvent.click(propertiesMenuItem);
     await sleep(500);
-    await expect(await canvas.findByDisplayValue("90")).toBeInTheDocument();
+    await expect(await canvas.findByDisplayValue("90.0000")).toBeInTheDocument();
   },
 };
 
@@ -137,7 +137,7 @@ export const UpdatePageLabelProperties: Story = {
     await userEvent.selectOptions(fontInput, "Arial");
     const fontSizeInput = await canvas.findByDisplayValue("14");
     await userEvent.selectOptions(fontSizeInput, "16");
-    const textAngleInput = await canvas.findByDisplayValue("90");
+    const textAngleInput = await canvas.findByDisplayValue("90.0000");
     void fireEvent.input(textAngleInput, { target: { value: "200" } });
     await canvas.findByText("Must be between 0 and 180 degrees");
     await userEvent.clear(textAngleInput);

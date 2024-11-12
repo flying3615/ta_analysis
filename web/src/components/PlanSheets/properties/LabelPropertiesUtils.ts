@@ -154,6 +154,12 @@ export const createLabelPropsToBeSaved = (
 export const textLengthLimit = 2048;
 export const specialCharsRegex = /[\u00B2\u00BA\u00B0]/; // ², º, °
 export const invalidCharactersErrorMessage = "Invalid character(s) entered";
+
+export const ANGLE_REGEXP_DMS = "^([0-1]?[0-9]{1,2}\\.([0-5]?[0-9])([0-5]?[0-9]))$";
+export const ANGLE_REGEXP_DMS_PATTERN = new RegExp(ANGLE_REGEXP_DMS);
+export const angleExceedErrorMessage = "Must be between 0 and 180 degrees";
+export const angleFormatErrorMessage = "Must be a number in D.MMSS format";
+
 export const getTextLengthErrorMessage = (numberOverLimit: number) => `${numberOverLimit} characters over the limit`;
 
 export const cytoscapeLabelIdToPlanData = (cytoscapeLabelId: string | undefined): number => {

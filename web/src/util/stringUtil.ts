@@ -1,3 +1,5 @@
+import { padEnd, padStart } from "lodash-es";
+
 /**
  * This function wraps a given text to a specified width and height in pixels.
  * It uses an OffscreenCanvas to measure the width of the text and inserts newline characters to wrap the text.
@@ -84,4 +86,46 @@ export const convertToDegrees = (input: string) => {
     value = ((value + 180) % 360) - 180;
   }
   return value;
+};
+
+export const convertDegreesToDms = (degrees: number): string => {
+  let deg = Math.floor(degrees);
+  let min = Math.floor((degrees - deg) * 60);
+  let sec = Math.round((degrees - deg - min / 60) * 3600);
+
+  if (sec === 60) {
+    sec = 0;
+    min += 1;
+  }
+
+  if (min === 60) {
+    min = 0;
+    deg += 1;
+  }
+
+  return `${deg}.${padStart(min.toString(), 2, "0")}${padStart(sec.toString(), 2, "0")}`;
+};
+
+export const convertDmsToDegrees = (dmsValue: number): number => {
+  const dms = paddingMMSS(dmsValue.toString());
+  const deg = parseInt(dms.split(".")[0]!);
+  const mmss = dms.split(".")[1]!;
+
+  const min = parseInt(mmss.substring(0, 2));
+  const sec = parseInt(mmss.substring(2, 4));
+
+  return Number((deg + min / 60 + sec / 3600).toFixed(4));
+};
+
+/**
+ * Pads a number with leading zeros to ensure it is at least 4 characters long
+ * @param value
+ */
+export const paddingMMSS = (value: string): string => {
+  const dms = value.split(".");
+
+  const deg = dms[0];
+  const mmss = padEnd(dms[1], 4, "0");
+
+  return `${deg}.${mmss}`;
 };

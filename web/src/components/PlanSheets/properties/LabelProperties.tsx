@@ -10,9 +10,14 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import { convertDegreesToDms, convertDmsToDegrees, paddingMMSS } from "@/util/stringUtil";
 
 import {
   allHave00,
+  ANGLE_REGEXP_DMS,
+  ANGLE_REGEXP_DMS_PATTERN,
+  angleExceedErrorMessage,
+  angleFormatErrorMessage,
   anyHasDisplayState,
   areAllPageLabels,
   borderWidthOptions,
@@ -151,10 +156,18 @@ const LabelProperties = (props: LabelPropertiesProps) => {
     );
   }, [panelValuesToUpdate, activePage, activeDiagrams, selectedLabels, dispatch]);
 
-  /** Normalize the angle to be within 0-180 with 1 decimal precision */
-  const normalizeLabelAngle = (angle: number): number => {
-    const normalizedAngle = angle <= 90 ? 90 - angle : 90 - angle + 360;
-    return parseFloat(normalizedAngle.toFixed(1));
+  /** Normalize the angle to be within 0-180 in DMS */
+  const normalizeLabelAngle = (angle: string | undefined): string => {
+    if (isNaN(Number(angle))) return "";
+    const angleValue = Number(angle);
+    const normalizedAngle = angleValue <= 90 ? 90 - angleValue : 90 - angleValue + 360;
+    return convertDegreesToDms(normalizedAngle);
+  };
+
+  /** Reverse operate of normalizeLabelAngle in degree */
+  const denormalizeLabelAngle = (dms: number): number => {
+    const angle = convertDmsToDegrees(Number(dms));
+    return angle <= 90 ? 90 - angle : 90 - angle + 360;
   };
 
   useEffect(() => {
@@ -168,13 +181,13 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   );
   const [isBold, setIsBold] = useState<boolean>();
   const [hasLabelTextError, setHasLabelTextError] = useState<boolean>();
-  const [hasTextRotationError, setHasTextRotationError] = useState<boolean>();
+  const [textRotationErrorMsg, setTextRotationErrorMsg] = useState<string | undefined>();
   const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
   const [hide00, setHide00] = useState<boolean>();
   const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "font"));
   const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "fontSize"));
-  const [textRotation, setTextRotation] = useState<number | undefined>(
-    normalizeLabelAngle(Number(getCommonPropertyValue(selectedLabels, "textRotation"))),
+  const [textRotation, setTextRotation] = useState<string | undefined>(
+    normalizeLabelAngle(getCommonPropertyValue(selectedLabels, "textRotation")),
   );
   const textAlignemntValues = getTextAlignmentValues(selectedLabels);
   const [justify, setJustify] = useState(
@@ -194,19 +207,24 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       labelText &&
       (labelText.length > textLengthLimit || specialCharsRegex.test(labelText))
     );
-    const hasTextRotationError = !!(textRotation && (textRotation < 0 || textRotation > 180));
-
     setHasLabelTextError(hasLabelTextError);
-    setHasTextRotationError(hasTextRotationError);
 
-    const hasError = hasLabelTextError || hasTextRotationError;
+    if (Number(textRotation) < 0 || Number(textRotation) > 180) {
+      setTextRotationErrorMsg(angleExceedErrorMessage);
+    } else if (textRotation && !ANGLE_REGEXP_DMS_PATTERN.test(paddingMMSS(textRotation))) {
+      setTextRotationErrorMsg(angleFormatErrorMessage);
+    } else {
+      setTextRotationErrorMsg(undefined);
+    }
+
+    const hasError = hasLabelTextError || textRotationErrorMsg;
 
     if (hasError) {
       props.setSaveEnabled(false);
     } else {
       panelValuesToUpdate && props.setSaveEnabled(true);
     }
-  }, [labelText, panelValuesToUpdate, props, textRotation]);
+  }, [textRotationErrorMsg, labelText, panelValuesToUpdate, props, textRotation]);
 
   return (
     <div className="plan-element-properties">
@@ -367,22 +385,26 @@ const LabelProperties = (props: LabelPropertiesProps) => {
               type: "number",
               min: "0",
               max: "180",
-              step: "0.1",
-              pattern: "^(?:180(?:.0)?|1?[0-7]?[0-9](?:.[0-9])?)$",
+              step: "0.0001",
+              pattern: ANGLE_REGEXP_DMS,
             }}
             label=""
             hideLabel
             value={`${textRotation}`}
             onChange={(e) => {
-              const newValue = Number(e.target.value);
+              const newValue = e.target.value;
               setTextRotation(newValue);
-              setPanelValuesToUpdate({ ...panelValuesToUpdate, textRotation: `${normalizeLabelAngle(newValue)}` });
+              // change dms value to degree to update
+              setPanelValuesToUpdate({
+                ...panelValuesToUpdate,
+                textRotation: `${denormalizeLabelAngle(Number(newValue))}`,
+              });
             }}
           />
-          {hasTextRotationError && (
+          {textRotationErrorMsg && (
             <div className={clsx("PageLabelTextAngleInput-error")}>
               <LuiIcon alt="error" name="ic_error" className="PageLabelInput-error-icon" size="sm" status="error" />
-              <span>Must be between 0 and 180 degrees</span>
+              <span>{textRotationErrorMsg}</span>
             </div>
           )}
         </div>
