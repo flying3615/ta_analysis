@@ -1,4 +1,4 @@
-import { DisplayStateEnum, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape, { EventHandler, ExportBlobOptions } from "cytoscape";
@@ -17,6 +17,7 @@ import {
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { filterHiddenEdges, filterHiddenNodes } from "@/hooks/utils";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
@@ -188,16 +189,16 @@ export const usePlanGenPreview = (props: {
           maxPageNumber,
         );
 
+        const filteredDiagramNodes = filterHiddenNodes(extractPageNodes([currentPage]));
+        const filteredPageNodes = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams, undefined, true));
+        const filteredDiagramEdges = filterHiddenEdges(extractDiagramEdges(currentPageDiagrams));
+        const filteredPageEdges = filterHiddenEdges(extractPageEdges([currentPage]));
+
         const nodeData = [
           ...surveyInfoNodes, // survey info text nodes
           ...(props.pageConfigsNodeData ?? []), // page frame and north compass nodes
-          ...extractDiagramNodes(currentPageDiagrams, undefined, true).filter(
-            (node) =>
-              ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
-                node.properties.displayState?.valueOf() ?? "",
-              ),
-          ), // filter out hidden diagram nodes
-          ...extractPageNodes([currentPage]), // page labels & coordinates
+          ...filteredDiagramNodes,
+          ...filteredPageNodes,
         ];
 
         const sheetType = activeSheet === PlanSheetType.TITLE ? "T" : "S";
@@ -216,8 +217,8 @@ export const usePlanGenPreview = (props: {
 
         const edgeData = [
           ...(props.pageConfigsEdgeData ?? []), // page frame edges
-          ...extractDiagramEdges(currentPageDiagrams), // diagram edges
-          ...extractPageEdges([currentPage]), // page lines
+          ...filteredDiagramEdges,
+          ...filteredPageEdges,
         ];
 
         cyRefCurrent.add({

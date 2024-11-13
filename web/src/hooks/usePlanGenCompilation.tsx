@@ -1,6 +1,6 @@
 import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
-import { DisplayStateEnum, LabelDTOLabelTypeEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
+import { LabelDTOLabelTypeEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
 import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
 import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
 import { useToast } from "@linzjs/lui";
@@ -25,6 +25,7 @@ import {
   PlanSheetTypeObject,
 } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { filterHiddenEdges, filterHiddenNodes } from "@/hooks/utils";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
@@ -186,7 +187,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
           const currentPageId = currentPage?.id;
-          const currentPageNodes = currentPage ? extractPageNodes([currentPage]) : [];
+          const filteredPageNodes = filterHiddenNodes(extractPageNodes([currentPage!]));
+          const currentPageNodes = currentPage ? filteredPageNodes : [];
 
           if (!currentPageId) continue;
 
@@ -206,12 +208,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
           // filter out hidden nodes
-          let diagramNodeData = extractDiagramNodes(currentPageDiagrams, undefined, true).filter(
-            (node) =>
-              ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
-                node.properties.displayState?.valueOf() ?? "",
-              ),
-          );
+          let diagramNodeData = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams));
 
           // filter out the mark name if the sheet type is title plan title
           if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE) {
@@ -220,8 +217,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             );
           }
 
-          const diagramEdgeData = extractDiagramEdges(currentPageDiagrams);
-          const currentPageEdges = extractPageEdges([currentPage]);
+          const diagramEdgeData = filterHiddenEdges(extractDiagramEdges(currentPageDiagrams));
+          const currentPageEdges = filterHiddenEdges(extractPageEdges([currentPage]));
 
           const nodeData = [...diagramNodeData, ...currentPageNodes];
           const edgeData = [...diagramEdgeData, ...currentPageEdges];

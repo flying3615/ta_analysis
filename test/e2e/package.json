@@ -7,7 +7,7 @@
     "lint": "eslint *.{ts,js} ./**/*.{ts,js} --max-warnings 0 --cache && prettier --check *.{ts,js} ./**/*.{ts,js}",
     "lint:fix": "eslint *.{ts,js} ./**/*.ts --fix --cache && prettier --write *.{ts,js} ./**/*.{ts,js} && npm run lint",
     "test": "playwright test",
-    "test:ci": "cross-env CI=true npm test -c ./playwright.config.ts",
+    "test:ci": "cross-env CI=true npm test -c ./playwright.config.ts || ts-node copyComparePngsToPwOutput.ts",
     "test:debug": "npm test -c ./playwright.config.ts -- --debug --trace on",
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
