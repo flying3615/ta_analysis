@@ -217,14 +217,14 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       setTextRotationErrorMsg(undefined);
     }
 
-    const hasError = hasLabelTextError || textRotationErrorMsg;
+    const hasError = (labelType === LabelDTOLabelTypeEnum.userAnnotation && hasLabelTextError) || textRotationErrorMsg;
 
     if (hasError) {
       props.setSaveEnabled(false);
     } else {
       panelValuesToUpdate && props.setSaveEnabled(true);
     }
-  }, [textRotationErrorMsg, labelText, panelValuesToUpdate, props, textRotation]);
+  }, [textRotationErrorMsg, labelText, labelType, panelValuesToUpdate, props, textRotation]);
 
   return (
     <div className="plan-element-properties">

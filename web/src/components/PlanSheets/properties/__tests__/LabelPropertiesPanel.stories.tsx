@@ -154,6 +154,42 @@ export const UpdatePageLabelProperties: Story = {
   },
 };
 
+export const UpdateDiagramLabelProperties: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const propertiesButton = await within(contextMenu).findByText("Properties");
+    await userEvent.click(propertiesButton);
+    await sleep(500);
+    const okButton = canvas.getByRole("button", { name: "OK" });
+    await expect(okButton).toBeDisabled();
+    const boldCheckbox = await canvas.findByLabelText("Bold");
+    await userEvent.click(boldCheckbox);
+    const fontInput = await canvas.findByDisplayValue("Tahoma");
+    await userEvent.selectOptions(fontInput, "Arial");
+    const fontSizeInput = await canvas.findByDisplayValue("16");
+    await userEvent.selectOptions(fontSizeInput, "14");
+    const textAngleInput = await canvas.findByDisplayValue("90.0000");
+    void fireEvent.input(textAngleInput, { target: { value: "200" } });
+    await canvas.findByText("Must be between 0 and 180 degrees");
+    await userEvent.clear(textAngleInput);
+    void fireEvent.input(textAngleInput, { target: { value: "111.12345" } });
+    await canvas.findByText("Must be a number in D.MMSS format");
+    await userEvent.clear(textAngleInput);
+    void fireEvent.input(textAngleInput, { target: { value: "45" } });
+    const borderCheckbox = await canvas.findByLabelText("Border");
+    await userEvent.click(borderCheckbox);
+    await expect(okButton).toBeEnabled();
+    await userEvent.click(okButton); // final screenshot verify changes rendered
+  },
+};
+
 export const UpdateLabelPropertiesCancelFlow: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
