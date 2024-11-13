@@ -5,7 +5,7 @@ import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-cli
 import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
-import cytoscape from "cytoscape";
+import cytoscape, { EventHandler } from "cytoscape";
 import React, { useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -34,6 +34,7 @@ import {
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
 import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
+import { promiseWithTimeout } from "@/util/promiseUtil";
 
 export interface PlanGenCompilation {
   startCompile: () => Promise<void>;
@@ -144,6 +145,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     );
   };
 
+  const delay = (ms: number | undefined) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const startCompile = async () => {
     setCompiling(true);
     const preCheckPassed = await preCheckResult();
@@ -172,10 +175,11 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
     try {
-      const processFilesGroup = Object.values(PlanSheetTypeObject).map((obj): ImageFile[] => {
+      const processFilesGroup = Object.values(PlanSheetTypeObject).map(async (obj): Promise<ImageFile[]> => {
         const imageFiles: ImageFile[] = [];
         const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
+        await delay(500);
 
         let firstTimeExport = true;
         for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
@@ -184,9 +188,20 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const currentPageId = currentPage?.id;
           const currentPageNodes = currentPage ? extractPageNodes([currentPage]) : [];
 
-          if (!currentPageId) {
-            continue;
-          }
+          if (!currentPageId) continue;
+
+          let nodeBgPromise: Promise<EventHandler | void>[] = [];
+          let layoutPromise: Promise<EventHandler | void> = Promise.resolve();
+          cyRefCurrent?.one("add", () => {
+            layoutPromise = cyRefCurrent?.promiseOn("layoutstop").then(() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              nodeBgPromise = cyRefCurrent?.nodes().map((n, _) => {
+                // :nonbackgrounding : Matches an element if its background image not currently loading;
+                // i.e. there is no image or the image is already loaded.
+                return n.is(":nonbackgrounding") ? Promise.resolve() : n.promiseOn("background");
+              });
+            });
+          });
 
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
@@ -219,6 +234,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
             continue;
           }
+          cyRefCurrent.remove(cyRefCurrent.elements());
 
           cyRefCurrent.add({
             nodes: nodeDefinitionsFromData(nodeData, cyMapperCurrent),
@@ -232,6 +248,10 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
               positions: nodePositionsFromData(nodeData, cyMapperCurrent),
             })
             .run();
+
+          await layoutPromise;
+
+          await waitForNodeBackgrounds(nodeBgPromise, currentPageNumber);
 
           const jpg = cyRefCurrent?.jpg({
             ...cyImageExportConfig,
@@ -254,7 +274,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
         }
         return imageFiles;
       });
-      const imageFiles = processFilesGroup.flat();
+      const imageFiles = (await Promise.all(processFilesGroup)).flat();
       await generateCompilation(imageFiles);
     } catch (e) {
       errorToast("An error occurred while compile the layout.");
@@ -263,6 +283,24 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
       cyRef.current?.off("add");
       setCompiling(false);
     }
+  };
+
+  const waitForNodeBackgrounds = async (
+    nodeBgPromise: Promise<void | cytoscape.EventHandler>[],
+    currentPageNumber: number,
+  ) => {
+    await Promise.all(
+      nodeBgPromise.map((p, index) =>
+        promiseWithTimeout(
+          {
+            promise: p,
+            name: `page ${currentPageNumber} ${index} node background images promise`,
+          },
+          30000,
+          "timed out",
+        ),
+      ),
+    );
   };
 
   const generateCompilation = async (imageFiles: ImageFile[]) => {
