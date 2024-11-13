@@ -113,22 +113,5 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .text-angle-input {
-  .LuiTextInput-input {
-    &:has(input:invalid:not(:focus)) {
-      box-shadow: none;
-    }
-
-    &:invalid {
-      border-color: lui.$error;
-      outline: none;
-
-      &:not(:focus) {
-        border-width: 1px;
-      }
-
-      &:focus {
-        border-width: 2px;
-      }
-    }
-  }
+  padding: 0 !important;
 }

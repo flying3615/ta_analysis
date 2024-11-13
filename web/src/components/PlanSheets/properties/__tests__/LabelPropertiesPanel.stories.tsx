@@ -141,6 +141,9 @@ export const UpdatePageLabelProperties: Story = {
     void fireEvent.input(textAngleInput, { target: { value: "200" } });
     await canvas.findByText("Must be between 0 and 180 degrees");
     await userEvent.clear(textAngleInput);
+    void fireEvent.input(textAngleInput, { target: { value: "111.12345" } });
+    await canvas.findByText("Must be a number in D.MMSS format");
+    await userEvent.clear(textAngleInput);
     void fireEvent.input(textAngleInput, { target: { value: "45" } });
     const rightAlignButton = await canvas.findByRole("button", { name: "Right" });
     await userEvent.click(rightAlignButton);

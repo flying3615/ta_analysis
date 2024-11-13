@@ -88,6 +88,10 @@ export const convertToDegrees = (input: string) => {
   return value;
 };
 
+/**
+ * convert degrees to DMS format
+ * @param degrees
+ */
 export const convertDegreesToDms = (degrees: number): string => {
   let deg = Math.floor(degrees);
   let min = Math.floor((degrees - deg) * 60);
@@ -106,6 +110,26 @@ export const convertDegreesToDms = (degrees: number): string => {
   return `${deg}.${padStart(min.toString(), 2, "0")}${padStart(sec.toString(), 2, "0")}`;
 };
 
+/**
+ * format DMS to human-readable format
+ * @param input
+ */
+export const formatDms = (input: string): string => {
+  const dms = paddingMMSS(input);
+
+  const deg = dms.split(".")[0]!;
+  const mmss = dms.split(".")[1]!;
+
+  const min = mmss.substring(0, 2);
+  const sec = mmss.substring(2, 4);
+
+  return `${deg}° ${min}' ${sec}"`;
+};
+
+/**
+ * Convert DMS to degrees in 4 dp format
+ * @param dmsValue
+ */
 export const convertDmsToDegrees = (dmsValue: number): number => {
   const dms = paddingMMSS(dmsValue.toString());
   const deg = parseInt(dms.split(".")[0]!);
@@ -124,7 +148,7 @@ export const convertDmsToDegrees = (dmsValue: number): number => {
 export const paddingMMSS = (value: string): string => {
   const dms = value.split(".");
 
-  const deg = dms[0];
+  const deg = dms[0] ?? "0";
   const mmss = padEnd(dms[1], 4, "0");
 
   return `${deg}.${mmss}`;

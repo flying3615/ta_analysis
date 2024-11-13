@@ -56,7 +56,7 @@
     "@linz/survey-plan-generation-api-client": "^0.57.0",
     "@linzjs/landonline-openlayers-map": "^6.2.1",
     "@linzjs/lui": "^21.49.0",
-    "@linzjs/step-ag-grid": "^22.2.5",
+    "@linzjs/step-ag-grid": "^22.3.0",
     "@linzjs/windows": "^3.5.0",
     "@reduxjs/toolkit": "^2.3.0",
     "@splitsoftware/splitio-react": "^1.13.0",

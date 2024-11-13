@@ -1,5 +1,6 @@
 import { DisplayStateEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiIcon, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
+import { LuiButton, LuiButtonGroup, LuiCheckboxInput, LuiSelectInput, LuiTextInput } from "@linzjs/lui";
+import { TextInputFormatted } from "@linzjs/step-ag-grid";
 import clsx from "clsx";
 import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -10,11 +11,10 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
-import { convertDegreesToDms, convertDmsToDegrees, paddingMMSS } from "@/util/stringUtil";
+import { convertDegreesToDms, convertDmsToDegrees, formatDms, paddingMMSS } from "@/util/stringUtil";
 
 import {
   allHave00,
-  ANGLE_REGEXP_DMS,
   ANGLE_REGEXP_DMS_PATTERN,
   angleExceedErrorMessage,
   angleFormatErrorMessage,
@@ -378,36 +378,22 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       </div>
 
       <div className="property-wrap">
-        <div className="text-angle-input">
-          <span className="LuiTextInput-label-text">Text angle (degrees)</span>
-          <LuiTextInput
-            inputProps={{
-              type: "number",
-              min: "0",
-              max: "180",
-              step: "0.0001",
-              pattern: ANGLE_REGEXP_DMS,
-            }}
-            label=""
-            hideLabel
-            value={`${textRotation}`}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              setTextRotation(newValue);
-              // change dms value to degree to update
-              setPanelValuesToUpdate({
-                ...panelValuesToUpdate,
-                textRotation: `${denormalizeLabelAngle(Number(newValue))}`,
-              });
-            }}
-          />
-          {textRotationErrorMsg && (
-            <div className={clsx("PageLabelTextAngleInput-error")}>
-              <LuiIcon alt="error" name="ic_error" className="PageLabelInput-error-icon" size="sm" status="error" />
-              <span>{textRotationErrorMsg}</span>
-            </div>
-          )}
-        </div>
+        <span className="LuiTextInput-label-text">Text angle (degrees)</span>
+        <TextInputFormatted
+          className="text-angle-input"
+          value={`${textRotation}`}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setTextRotation(newValue);
+            // change dms value to degree to update
+            setPanelValuesToUpdate({
+              ...panelValuesToUpdate,
+              textRotation: `${denormalizeLabelAngle(Number(newValue))}`,
+            });
+          }}
+          formatted={textRotation && !textRotationErrorMsg ? formatDms(textRotation) : ""}
+          error={textRotationErrorMsg}
+        />
       </div>
 
       <div className="property-wrap">
