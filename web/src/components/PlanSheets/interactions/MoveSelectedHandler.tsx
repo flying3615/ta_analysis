@@ -420,9 +420,10 @@ function convertMovedCoordinateLabelsToOffsets(
         ({ pointOffset, anchorAngle } = cytoCoordMapper.diagramLabelPositionToOffsetAndAngle(
           ele,
           movedEleStartPosition,
+          1,
         ));
       } else {
-        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele));
+        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele, 1));
       }
 
       ele.data({ pointOffset, anchorAngle, ignorePositionChange: isDiagramLabel });

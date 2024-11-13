@@ -111,4 +111,39 @@ describe("CytoscapeCoordinateMapper", () => {
     expect(result.pointOffset).toBeCloseTo(0.2478, 2);
     expect(result.anchorAngle).toBeCloseTo(63.434, 2);
   });
+
+  test("diagramLabelPositionToOffsetAndAngle calculates correct offset and angle with right dp", () => {
+    const mockMovedLabel = {
+      position: () => ({ x: 100, y: 200 }),
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      data: (key: string) => {
+        if (key === "anchorAngle") return 60.8;
+        if (key === "pointOffset") return 73.1;
+      },
+    } as unknown as cytoscape.NodeSingular;
+
+    const result = cytoscapeCoordinateMapper.diagramLabelPositionToOffsetAndAngle(
+      mockMovedLabel,
+      {
+        x: 50,
+        y: 100,
+      },
+      1,
+    );
+
+    expect(result.pointOffset).toBeCloseTo(315.9, 2);
+    expect(result.anchorAngle).toBeCloseTo(307.6, 2);
+  });
+
+  test("pageLabelPositionsToOffsetAndAngle calculates correct offset and angle with right dp", () => {
+    const mockNode = {
+      position: () => ({ x: 100, y: 200 }),
+    } as unknown as cytoscape.NodeSingular;
+
+    const result = cytoscapeCoordinateMapper.pageLabelPositionsToOffsetAndAngle(mockNode, 1);
+
+    expect(result.pointOffset).toBeCloseTo(0.2, 2);
+    expect(result.anchorAngle).toBeCloseTo(63.4, 2);
+  });
 });

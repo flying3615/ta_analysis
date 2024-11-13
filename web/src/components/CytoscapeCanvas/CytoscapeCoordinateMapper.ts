@@ -1,6 +1,7 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import { degreesToRadians, radiansToDegrees } from "@turf/helpers";
 import { BoundingBox12 } from "cytoscape";
+import { round } from "lodash-es";
 
 import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
@@ -147,8 +148,13 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
    * Calculate moved label element's new pointOffset and anchorAngle based on its new position.
    * @param movedElement
    * @param startPosition
+   * @param roundDp round to decimal places
    */
-  diagramLabelPositionToOffsetAndAngle(movedElement: cytoscape.NodeSingular, startPosition: cytoscape.Position) {
+  diagramLabelPositionToOffsetAndAngle(
+    movedElement: cytoscape.NodeSingular,
+    startPosition: cytoscape.Position,
+    roundDp?: number,
+  ) {
     const anchorAngleDegs = Number(movedElement.data("anchorAngle"));
     const angleRadsAntiClockwise = degreesToRadians(anchorAngleDegs);
     const currentPointOffset = Number(movedElement.data("pointOffset"));
@@ -171,10 +177,18 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
 
     const anchorAngle = (radiansToDegrees(Math.atan2(movedToYCytoscape, movedToXCytoscape)) + 360) % 360;
 
-    return { pointOffset, anchorAngle };
+    return {
+      pointOffset: roundDp ? round(pointOffset, roundDp) : pointOffset,
+      anchorAngle: roundDp ? round(anchorAngle, roundDp) : anchorAngle,
+    };
   }
 
-  pageLabelPositionsToOffsetAndAngle(movedElement: cytoscape.NodeSingular) {
+  /**
+   * Calculate moved user added label element's new pointOffset and anchorAngle based on its new position.
+   * @param movedElement
+   * @param roundDp round to decimal places
+   */
+  pageLabelPositionsToOffsetAndAngle(movedElement: cytoscape.NodeSingular, roundDp?: number) {
     const movedToXCytoscape = movedElement.position().x;
     const movedToYCytoscape = movedElement.position().y;
 
@@ -182,7 +196,10 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
       Math.sqrt(movedToXCytoscape * movedToXCytoscape + movedToYCytoscape * movedToYCytoscape),
     );
     const anchorAngle = (radiansToDegrees(Math.atan2(movedToYCytoscape, movedToXCytoscape)) + 360) % 360;
-    return { pointOffset, anchorAngle };
+    return {
+      pointOffset: roundDp ? round(pointOffset, roundDp) : pointOffset,
+      anchorAngle: roundDp ? round(anchorAngle, roundDp) : anchorAngle,
+    };
   }
 
   /**

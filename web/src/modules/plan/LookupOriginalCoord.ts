@@ -139,9 +139,10 @@ export function transformMovedLabelCoordinates(
         ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.diagramLabelPositionToOffsetAndAngle(
           element,
           initialPosition,
+          1,
         ));
       } else {
-        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.pageLabelPositionsToOffsetAndAngle(element));
+        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.pageLabelPositionsToOffsetAndAngle(element, 1));
       }
 
       element.data({ pointOffset: offset, anchorAngle: angle, ignorePositionChange: isDiagram });

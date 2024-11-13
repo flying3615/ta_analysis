@@ -97,16 +97,16 @@ describe("useLineLabelAdjust", () => {
 
     const adjustedLabels = adjustLabelsWithLine({ 10002: movedNode });
     expect(adjustedLabels).toHaveLength(2);
-    expect(adjustedLabels[0]?.id).toBe("2001");
+    expect(adjustedLabels[0]?.id).toBe("LAB_2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);
     expect(adjustedLabels[0]?.position?.y).toBeCloseTo(-7.5);
-    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBeCloseTo(14, 0);
-    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBeCloseTo(14, 0);
-    expect(adjustedLabels[1]?.id).toBe("2002");
+    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBe(14.0362);
+    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBe(14);
+    expect(adjustedLabels[1]?.id).toBe("LAB_2002");
     expect(adjustedLabels[1]?.position?.x).toBeCloseTo(35);
     expect(adjustedLabels[1]?.position?.y).toBeCloseTo(-12.5);
-    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBeCloseTo(236, 0);
-    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(326, 0);
+    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBe(236.3099);
+    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBe(326.3);
   });
 
   test("returns adjusted label nodes when two nodes moved", () => {
@@ -125,20 +125,20 @@ describe("useLineLabelAdjust", () => {
 
     const adjustedLabels = adjustLabelsWithLine({ 10003: movedNode10003, 10002: movedNode10002 });
     expect(adjustedLabels).toHaveLength(3);
-    expect(adjustedLabels[0]?.id).toBe("2001");
+    expect(adjustedLabels[0]?.id).toBe("LAB_2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);
     expect(adjustedLabels[0]?.position?.y).toBeCloseTo(-7.5);
-    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBeCloseTo(14, 0);
-    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBeCloseTo(14, 0);
-    expect(adjustedLabels[1]?.id).toBe("2002");
-    expect(adjustedLabels[1]?.position?.x).toBeCloseTo(40);
-    expect(adjustedLabels[1]?.position?.y).toBeCloseTo(-10);
-    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBeCloseTo(270, 0);
-    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(0, 0);
-    expect(adjustedLabels[2]?.id).toBe("2003");
-    expect(adjustedLabels[2]?.position?.x).toBeCloseTo(30);
-    expect(adjustedLabels[2]?.position?.y).toBeCloseTo(-17.5);
-    expect(adjustedLabels[2]?.properties?.["textRotation"]).toBeCloseTo(189, 0);
-    expect(adjustedLabels[2]?.properties?.["anchorAngle"]).toBeCloseTo(9, 0);
+    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBe(14.0362);
+    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBe(14);
+    expect(adjustedLabels[1]?.id).toBe("LAB_2002");
+    expect(adjustedLabels[1]?.position?.x).toBe(40);
+    expect(adjustedLabels[1]?.position?.y).toBe(-10);
+    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBe(270);
+    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBe(0);
+    expect(adjustedLabels[2]?.id).toBe("LAB_2003");
+    expect(adjustedLabels[2]?.position?.x).toBe(30);
+    expect(adjustedLabels[2]?.position?.y).toBe(-17.5);
+    expect(adjustedLabels[2]?.properties?.["textRotation"]).toBe(189.4623);
+    expect(adjustedLabels[2]?.properties?.["anchorAngle"]).toBe(9.5);
   });
 });

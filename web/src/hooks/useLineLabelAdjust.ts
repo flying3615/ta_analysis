@@ -1,5 +1,5 @@
 import { CoordinateDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
-import { last } from "lodash-es";
+import { last, round } from "lodash-es";
 
 import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -41,8 +41,8 @@ export const useLineLabelAdjust = () => {
     return {
       ...label,
       position: newLabelPosition,
-      rotationAngle: anticlockwiseAngle,
-      anchorAngle: adjustedAnchorAngle,
+      rotationAngle: round(anticlockwiseAngle, 4),
+      anchorAngle: round(adjustedAnchorAngle, 1),
     };
   };
 
