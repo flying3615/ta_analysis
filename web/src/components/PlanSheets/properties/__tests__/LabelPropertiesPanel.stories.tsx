@@ -255,7 +255,7 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
       { x: pageLabelPosition.clientX, y: pageLabelPosition.clientY },
       { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
     ]);
-    clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
+    clickAtPosition(target, whiteSpace, RIGHT_MOUSE_BUTTON); // specifically not a selected object
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);

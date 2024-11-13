@@ -226,7 +226,20 @@ export const usePlanSheetsContextMenu = () => {
           disableWhen: () => selectedLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.systemHide),
           callback: () => updateLabelsDisplayState(selectedLabels, "hide"),
         },
-        { title: "Properties", callback: getProperties },
+        {
+          title: "Properties",
+          callback: (event) => {
+            if (!event.target && selectedLabels && selectedLabels[0]) {
+              getProperties({
+                target: selectedLabels[0],
+                cy: selectedLabels[0].cy(),
+                position: event.position,
+              });
+            } else {
+              getProperties(event);
+            }
+          },
+        },
         {
           title: "Select",
           hideWhen: () => [0, 1].includes(stackedLabels.length),
