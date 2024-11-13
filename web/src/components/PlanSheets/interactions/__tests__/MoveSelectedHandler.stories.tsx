@@ -157,7 +157,7 @@ export const AlignLabelToLine: Story = {
     await test.leftClick([98, 183] /* Angled line on left */, "layer0-selectbox");
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18.0000");
-    await test.clickCancel();
+    await test.clickCancelFooter();
 
     await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
     await test.hoverOver([96, 284] /* Angled line at lower left */);

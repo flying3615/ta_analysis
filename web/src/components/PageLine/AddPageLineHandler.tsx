@@ -9,20 +9,22 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
-import { LineStyle } from "@/modules/plan/styling";
-import { getActivePage, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import { getEdgeStyling, LineStyle } from "@/modules/plan/styling";
+import { getActivePage, getLastUpdatedLineStyle, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export const AddPageLineHandler = () => {
   const { cyto } = useCytoscapeContext();
 
   const activePage = useAppSelector(getActivePage);
+  const lastUpdatedLineStyle = useAppSelector(getLastUpdatedLineStyle);
   const container = cyto?.container();
   const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);
 
   const lineSegmentStart = useRef<cytoscape.NodeDefinition | null>(null);
   const lineSegmentEnd = useRef<cytoscape.NodeDefinition | null>(null);
   const lineNodeList = useRef<cytoscape.NodeDefinition[]>([]);
+  const lineEdgeList = useRef<cytoscape.ElementDefinition[]>([]);
   const dispatch = useAppDispatch();
 
   const lastMousePosition = useRef<cytoscape.Position | null>(null);
@@ -62,21 +64,29 @@ export const AddPageLineHandler = () => {
     };
   };
 
-  const newLineEdge = (
-    edgeId: number,
-    start: cytoscape.NodeDefinition,
-    end: cytoscape.NodeDefinition,
-  ): cytoscape.ElementDefinition => {
-    return {
-      group: "edges",
-      data: {
-        id: `${edgeId}`,
-        pointWidth: "1",
-        source: start.data.id,
-        target: end.data.id,
-      },
-    };
-  };
+  const newLineEdge = useCallback(
+    (edgeId: number, startNodeId: string, endNodeId: string, segmentIndex: number): cytoscape.ElementDefinition => {
+      const styles = getEdgeStyling(
+        {
+          id: edgeId,
+          lineType: "userDefined",
+          style: lastUpdatedLineStyle ?? LineStyle.SOLID,
+          coordRefs: lineNodeList.current.map((node) => (node.data.id ? parseInt(node.data.id) : 0)),
+        },
+        segmentIndex,
+      );
+      return {
+        group: "edges",
+        data: {
+          ...styles,
+          id: `${edgeId}`,
+          source: startNodeId,
+          target: endNodeId,
+        },
+      };
+    },
+    [lastUpdatedLineStyle],
+  );
 
   const isPositionWithinAreaLimits = useCallback(
     (position: cytoscape.Position): boolean => {
@@ -118,7 +128,20 @@ export const AddPageLineHandler = () => {
 
       const addEdge = (edge: cytoscape.ElementDefinition) => {
         if (cyto) {
+          const previousEdge = [...lineEdgeList.current].pop();
+          lineEdgeList.current.push(edge);
           cyto.add(edge);
+          //update the style of the previous line segment (for arrow styles)
+          if (previousEdge) {
+            const updatedEdge = newLineEdge(
+              Number(previousEdge.data.id),
+              previousEdge.data.source as string,
+              previousEdge.data.target as string,
+              lineEdgeList.current.length - 2,
+            );
+            cyto.remove(`edge[id='${previousEdge?.data.id}']`);
+            cyto.add(updatedEdge);
+          }
         }
       };
 
@@ -126,7 +149,7 @@ export const AddPageLineHandler = () => {
         if (cyto && node1.data.id && node2.data.id) {
           addNode(node1);
           addNode(node2);
-          addEdge(newLineEdge(edgeId, node1, node2));
+          addEdge(newLineEdge(edgeId, node1.data.id, node2.data.id, lineEdgeList.current.length));
         }
       };
 
@@ -167,7 +190,7 @@ export const AddPageLineHandler = () => {
 
       handleSingleClick(event.position);
     },
-    [cyto, getCyMaxId, isPositionWithinAreaLimits],
+    [cyto, getCyMaxId, isPositionWithinAreaLimits, newLineEdge],
   );
 
   const onMouseDoubleClick = useCallback(() => {
@@ -182,14 +205,20 @@ export const AddPageLineHandler = () => {
         let cyMaxId = getCyMaxId();
         dispatch(
           replacePage({
-            updatedPage: addPageLineByList(activePage, lineNodeList.current, cytoCoordMapper, cyMaxId++),
+            updatedPage: addPageLineByList(
+              activePage,
+              lineNodeList.current,
+              cytoCoordMapper,
+              cyMaxId++,
+              lastUpdatedLineStyle ?? LineStyle.SOLID,
+            ),
           }),
         );
         resetInput();
         dispatch(setPlanMode(PlanMode.View));
       }
     }
-  }, [activePage, cytoCoordMapper, dispatch, getCyMaxId, isPositionWithinAreaLimits]);
+  }, [activePage, cytoCoordMapper, lastUpdatedLineStyle, dispatch, getCyMaxId, isPositionWithinAreaLimits]);
 
   const onMouseMove = useCallback(
     (event: cytoscape.EventObject) => {
@@ -225,6 +254,7 @@ const addPageLineByList = (
   nodeList: cytoscape.NodeDefinition[],
   cytoCoordMapper: CytoscapeCoordinateMapper,
   edgeId: number,
+  lineStyle: string,
 ): PageDTO => {
   const coordList: CoordinateDTO[] = [];
   nodeList.forEach((node) => {
@@ -241,7 +271,7 @@ const addPageLineByList = (
   const line: LineDTO = {
     id: edgeId,
     lineType: "userDefined",
-    style: LineStyle.SOLID,
+    style: lineStyle,
     pointWidth: 1,
     coordRefs: nodeList.map((node) => (node.data.id ? parseInt(node.data.id) : 0)),
     displayState: DisplayStateEnum.display,

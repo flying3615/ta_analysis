@@ -6,7 +6,13 @@ import lineSymbolSvgs from "@/components/PlanSheets/properties/lineSymbolSvgs";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { LineStyle } from "@/modules/plan/styling";
 import { updateDiagramLines, updatePageLines } from "@/modules/plan/updatePlanData";
-import { getActivePage, getDiagrams, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePage,
+  getDiagrams,
+  replaceDiagrams,
+  replacePage,
+  setLastUpdatedLineStyle,
+} from "@/redux/planSheets/planSheetsSlice";
 
 import { borderWidthOptions } from "./LabelPropertiesUtils";
 
@@ -88,6 +94,7 @@ const LineProperties = (props: LinePropertiesProps) => {
     } else {
       dispatch(replaceDiagrams(updateDiagramLines(diagrams, [updateLineProps])));
     }
+    valuesToUpdate.style && dispatch(setLastUpdatedLineStyle(valuesToUpdate.style));
   }, [valuesToUpdate, activePage, diagrams, isUserDefinedLine, selectedLine, dispatch]);
 
   useEffect(() => {

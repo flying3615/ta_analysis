@@ -216,9 +216,9 @@ export class TestCanvas {
   public static Create = async (canvasElement: HTMLElement, firstSelect = "Select Labels") => {
     const canvas = within(canvasElement);
     const user = userEvent.setup();
-    await user.click(await canvas.findByTitle(firstSelect));
-    await sleep(400);
-    return new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
+    const test = new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
+    await test.clickTitle(firstSelect);
+    return test;
   };
 
   constructor(user: UserEvent, canvasElement: HTMLElement, cytoscapeCanvas: HTMLElement) {
@@ -233,6 +233,10 @@ export class TestCanvas {
   async waitForCytoscape() {
     // For now, a simple wait. Maybe a better solution can be found?
     await sleep(400);
+  }
+
+  async clickTitle(title: string) {
+    await this.user.click(await within(this.canvasElement).findByTitle(title));
   }
 
   toCoords(location: [number, number]): [number, number] {
@@ -340,15 +344,20 @@ export class TestCanvas {
     return propertiesMenuItem;
   }
 
-  findProperty(luiType: "TextInput", withLabel: string): Element {
+  findProperty(luiType: "TextInput" | "RadioInput", withLabel: string): Element {
     // can probably do this better with findQuick
     for (const element of this.canvasElement.querySelectorAll("div.property-wrap")) {
       // eslint-disable-next-line testing-library/no-node-access
-      let e = element.querySelector(`.Lui${luiType}-label-text`);
+      let e = element.querySelector(`span`);
       if (e === null) continue;
       if (e.textContent === withLabel) {
+        const propertySelectors = new Map<string, string>([
+          ["TextInput", ".LuiTextInput-input"],
+          ["RadioInput", ".LuiRadioInput-fieldset"],
+        ]);
+
         // eslint-disable-next-line testing-library/no-node-access
-        e = element.querySelector(`.Lui${luiType}-input`);
+        e = element.querySelector(propertySelectors.get(luiType) as string);
         if (e === null) continue;
         return e;
       }
@@ -356,10 +365,14 @@ export class TestCanvas {
     throw Error(`Could not find div.property-wrap element with .Lui${luiType}-label-text text matching ${withLabel}`);
   }
 
-  async clickCancel() {
+  async clickCancelFooter() {
     const buttonGroup = await findQuick({ classes: ".footer" });
     const cancelButton = await findQuick({ tagName: "button", text: "Cancel" }, buttonGroup);
     await userEvent.click(cancelButton);
+  }
+
+  async clickButton(name: string) {
+    await userEvent.click(within(this.canvasElement).getByText(name));
   }
 }
 

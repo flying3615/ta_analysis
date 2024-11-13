@@ -14,6 +14,7 @@ export interface PlanSheetsState {
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
   planMode: PlanMode;
+  lastUpdatedLineStyle?: string;
   alignedLabelNodeId?: string;
   diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
@@ -123,6 +124,9 @@ const planSheetsSlice = createSlice({
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
+    },
+    setLastUpdatedLineStyle: (state, action: PayloadAction<string>) => {
+      state.lastUpdatedLineStyle = action.payload;
     },
     setAlignedLabelNodeId: (state, action: PayloadAction<{ nodeId: string }>) => {
       state.alignedLabelNodeId = action.payload.nodeId;
@@ -249,6 +253,7 @@ const planSheetsSlice = createSlice({
     getOriginalPositions: (state) => state.originalPositions,
     hasChanges: (state) => state.hasChanges,
     getPlanMode: (state) => state.planMode,
+    getLastUpdatedLineStyle: (state) => state.lastUpdatedLineStyle,
     getAlignedLabelNodeId: (state) => state.alignedLabelNodeId,
     getDiagramIdToMove: (state) => state.diagramIdToMove,
     getPreviousAttributesForDiagram:
@@ -271,6 +276,7 @@ export const {
   setDiagramPageRef,
   updatePages,
   setPlanMode,
+  setLastUpdatedLineStyle,
   setAlignedLabelNodeId,
   setDiagramIdToMove,
   setSymbolHide,
@@ -299,6 +305,7 @@ export const {
   getOriginalPositions,
   hasChanges,
   getPlanMode,
+  getLastUpdatedLineStyle,
   getAlignedLabelNodeId,
   getDiagramIdToMove,
   getPreviousAttributesForDiagram,
