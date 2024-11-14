@@ -136,6 +136,11 @@ export const clickAtCoordinates = (
   fireEvent.mouseUp(cytoscapeNodeLayer, { button: button, clientX: x, clientY: y, ctrlKey: withCtrlKey });
 };
 
+export const pressEscapeKey = (cytoscapeNodeLayer: HTMLElement) => {
+  fireEvent.keyDown(cytoscapeNodeLayer, { key: "Escape" });
+  fireEvent.keyUp(cytoscapeNodeLayer, { key: "Escape" });
+};
+
 export const clickMultipleCoordinates = (
   cytoscapeNodeLayer: HTMLElement,
   coordinates: { x: number; y: number }[],

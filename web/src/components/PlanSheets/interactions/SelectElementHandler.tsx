@@ -1,10 +1,11 @@
 import { CollectionReturnValue, EventObjectEdge, EventObjectNode } from "cytoscape";
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useCallback, useEffect, useState } from "react";
 
 import { Tooltips } from "@/components/PlanSheets/interactions/Tooltips";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { useEscapeKey } from "@/hooks/useEscape";
 import { useSelectTargetLine } from "@/hooks/useSelectTargetLine";
 
 import { MoveSelectedHandler } from "./MoveSelectedHandler";
@@ -44,6 +45,31 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
 
+  const onUnselect = useCallback(
+    (event?: EventObjectEdge | EventObjectNode) => {
+      if (!cyto) {
+        return;
+      }
+
+      const selection = cyto.$(":selected");
+      const element = event?.target;
+      if (!element) {
+        selection.unselect();
+        setSelected(undefined);
+        return;
+      }
+
+      const related = getRelatedElements(element);
+      if (related && selection.contains(related)) {
+        selection.unmerge(related.unselect());
+      }
+      setSelected(selection.nonempty() ? selection : undefined);
+    },
+    [cyto],
+  );
+
+  useEscapeKey({ callback: onUnselect, enabled: true });
+
   // track selection
   useEffect(() => {
     if (!cyto) {
@@ -60,22 +86,6 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       });
 
       setSelected(selection);
-    };
-
-    const onUnselect = (event?: EventObjectEdge | EventObjectNode) => {
-      const selection = cyto.$(":selected");
-      const element = event?.target;
-      if (!element) {
-        selection.unselect();
-        setSelected(undefined);
-        return;
-      }
-
-      const related = getRelatedElements(element);
-      if (related && selection.contains(related)) {
-        selection.unmerge(related.unselect());
-      }
-      setSelected(selection.nonempty() ? selection : undefined);
     };
 
     const onClick = (event: EventObjectEdge | EventObjectNode) => {
@@ -118,7 +128,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, handleLabelAlignment, mode]);
+  }, [cyto, handleLabelAlignment, mode, onUnselect]);
 
   // highlight related labels
   useEffect(() => {

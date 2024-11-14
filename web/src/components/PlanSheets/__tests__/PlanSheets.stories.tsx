@@ -575,7 +575,8 @@ const COORDINATE_10001_Y = 136;
 const COORDINATE_10004_X = 733;
 const COORDINATE_10004_Y = 456;
 
-export const SelectDiagram: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
+export const SelectDiagram: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -658,7 +659,8 @@ export const MoveDiagramToPage: Story = {
   },
 };
 
-export const SelectCoordinates: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
+export const SelectCoordinates: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -737,7 +739,8 @@ export const HideCoordinate: Story & Required<Pick<Story, "play">> = {
   },
 };
 
-export const SelectLine: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
+export const SelectLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -850,7 +853,8 @@ const checkElementProperties = async (
   }
 };
 
-export const SelectLineAndLinkedLabel: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
+export const SelectLineAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -868,7 +872,8 @@ export const SelectLineAndLinkedLabel: Story = {
   },
 };
 
-export const SelectMarkAndLinkedLabel: Story = {
+// Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
+export const SelectMarkAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
