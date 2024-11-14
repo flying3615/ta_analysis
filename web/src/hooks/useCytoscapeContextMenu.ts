@@ -5,10 +5,11 @@ import cytoscape, {
   NodeSingular,
   SingularElementArgument,
 } from "cytoscape";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { increaseZIndex, restoreZIndex } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
@@ -30,7 +31,16 @@ export const useCytoscapeContextMenu = (
     clickedPosition: cytoscape.Position,
   ) => MenuItem[] | undefined,
 ) => {
-  useEscapeKey({ callback: () => hideMenu() });
+  useEscapeKey({
+    callback: () => {
+      hideMenu();
+      // restore selected elements
+      cy?.elements().unselect();
+      selectedElements.current?.select();
+      cy?.elements().forEach((elem) => restoreZIndex(elem));
+      selectedElements.current?.forEach((elem) => increaseZIndex(elem));
+    },
+  });
   const [menuState, setMenuState] = useState<ContextMenuState>({
     items: [],
     position: { x: 0, y: 0 },
@@ -40,6 +50,10 @@ export const useCytoscapeContextMenu = (
   const showMenu = useCallback((state: ContextMenuState) => {
     setMenuState({ ...state, visible: true });
   }, []);
+
+  // set selected elements into ref to restore them after closing the context menu
+  const selectedElements = useRef<CollectionReturnValue>();
+  selectedElements.current = cy?.elements(":selected");
 
   const container = cy?.container();
   const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);

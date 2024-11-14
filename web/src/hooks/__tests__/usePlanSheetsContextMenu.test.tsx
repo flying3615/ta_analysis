@@ -297,6 +297,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -345,6 +346,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -400,6 +402,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -448,6 +451,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -503,6 +507,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
 
       const selectedElements = [
@@ -558,6 +563,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
       const selectedElements = [
         {
@@ -612,6 +618,7 @@ describe("PlanSheetsContextMenu", () => {
         data: (key: string) =>
           ({ id: "1001", elementType: PlanElementType.LABELS, displayState: DisplayStateEnum.systemDisplay })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
       const selectedElements = [
         {
@@ -670,6 +677,7 @@ describe("PlanSheetsContextMenu", () => {
             displayState: DisplayStateEnum.systemDisplay,
           })[key],
         cy: () => undefined,
+        removeClass: () => undefined,
       } as unknown as NodeSingular;
       const selectedElements = [
         {

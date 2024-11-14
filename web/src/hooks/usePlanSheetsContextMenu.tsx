@@ -3,6 +3,7 @@ import { PanelsContext } from "@linzjs/windows";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { degreesToRadians, point, polygon } from "@turf/helpers";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import { isNil } from "lodash-es";
 import { useContext, useRef } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
@@ -13,13 +14,17 @@ import { textDimensions } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { MoveOriginalLocation } from "@/components/PlanSheets/interactions/MoveOriginalLocation";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
 import {
   LabelPropertiesData,
   LabelPropsToUpdate,
   LabelPropsToUpdateWithElemType,
 } from "@/components/PlanSheets/properties/LabelProperties";
-import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
+import {
+  cytoscapeLabelIdToPlanData,
+  increaseZIndex,
+  restoreZIndex,
+} from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
@@ -202,6 +207,7 @@ export const usePlanSheetsContextMenu = () => {
     };
 
     const buildLabelMenus = (targetLabel: NodeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
+      targetLabel.removeClass(PlanStyleClassName.ElementHover);
       const singleSelected = selectedCollection && selectedCollection?.size() === 1;
       const selectedLabels = selectedCollection?.nodes();
       if (!selectedLabels) return [];
@@ -247,14 +253,19 @@ export const usePlanSheetsContextMenu = () => {
           submenu: stackedLabels.map((label) => ({
             title: label.data("label") as string,
             callback: () => {
-              targetLabel.unselect();
+              selectedLabels.unselect();
+              stackedLabels.forEach((elem) => restoreZIndex(elem));
+              // highlight selected label and bring it to the front of the stack
               highlightedLabel.current = label;
               highlightedLabel.current.select();
+              increaseZIndex(highlightedLabel.current);
             },
             callbackOnHover: true,
             restoreOnLeave: () => {
               highlightedLabel.current?.unselect();
-              targetLabel.select();
+              selectedLabels.select();
+              stackedLabels.forEach((elem) => restoreZIndex(elem));
+              selectedLabels.forEach((elem) => increaseZIndex(elem));
             },
           })),
         },
@@ -442,8 +453,8 @@ export const usePlanSheetsContextMenu = () => {
       labelPolygon[0] && labelPolygon.push(labelPolygon[0]); //First and last Position need to be equivalent to be a turf polygon
       const turfPolygon = polygon([labelPolygon]);
       const isInside = booleanPointInPolygon(turfPoint, turfPolygon);
-      // filter the labels that match the clicked position
-      if (isInside) stackedLabels.push(label);
+      // filter the labels that match the clicked position and are not nodeSymbol
+      if (isInside && isNil(label.data("symbolId"))) stackedLabels.push(label);
     });
     return stackedLabels;
   };

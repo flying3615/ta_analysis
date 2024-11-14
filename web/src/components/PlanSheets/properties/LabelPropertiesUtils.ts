@@ -1,5 +1,6 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { SelectOptions } from "@linzjs/lui/dist/components/LuiFormElements/LuiSelectInput/LuiSelectInput";
+import { NodeSingular } from "cytoscape";
 import { uniq } from "lodash-es";
 
 import { LabelPropertiesData, LabelPropsToUpdate, PanelValuesToUpdate } from "./LabelProperties";
@@ -173,3 +174,13 @@ export const cytoscapeLabelIdToPlanData = (cytoscapeLabelId: string | undefined)
 };
 
 export const planDataLabelIdToCytoscape = (planDataLabelId: number) => `LAB_${planDataLabelId}`;
+
+export const restoreZIndex = (elem: NodeSingular) => {
+  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(elem.data("displayState") as string)
+    ? elem.style("zIndex", "100")
+    : elem.style("zIndex", "200");
+};
+
+export const increaseZIndex = (elem: NodeSingular) => {
+  elem.style("zIndex", elem.data("zIndex") + 50);
+};
