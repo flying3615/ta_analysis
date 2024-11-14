@@ -24,6 +24,7 @@ export interface IGraphDataProperties extends Record<string, unknown> {
   id?: string;
   invisible?: boolean;
   label?: string;
+  labelType?: string;
   lineId?: string;
   lineType?: string;
   locked?: boolean;

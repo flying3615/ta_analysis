@@ -2,7 +2,7 @@ import { LuiButton } from "@linzjs/lui";
 import { Panel, PanelContent, PanelHeader, PanelsContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { within } from "@storybook/test";
+import { fireEvent, within } from "@storybook/test";
 import { Provider } from "react-redux";
 
 import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty";
@@ -10,7 +10,7 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import { setupStore } from "@/redux/store";
 import { mockStore } from "@/test-utils/store-mock";
-import { PanelInstanceContextMock } from "@/test-utils/storybook-utils";
+import { PanelInstanceContextMock, sleep } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/Properties/LabelPropertiesPanel/LabelPropertiesValidation",
@@ -109,7 +109,7 @@ const diagramLabelWithBorder: LabelPropertiesData[] = [
     id: "1",
     elementType: PlanElementType.PARCEL_LABELS,
     displayState: "display",
-    labelType: "parcelAppellation",
+    labelType: "obsBearing",
     fontStyle: "regular",
     label: "Lot 1",
     font: "Tahoma",
@@ -129,10 +129,10 @@ export const DiagramLabelWithBorder: Story = {
     const canvas = within(canvasElement);
     await expect(await canvas.findByLabelText("Hide")).not.toBeChecked();
     await expect(await canvas.findByLabelText("Bold")).not.toBeChecked();
-    await expect(await canvas.findByDisplayValue("Parcel appellation")).toBeDisabled();
-    await expect(await canvas.findByTestId("label-textarea")).toBeDisabled();
-    await expect(await canvas.findByTestId("label-textarea")).toHaveValue("Lot 1");
-    await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
+    await expect(await canvas.findByDisplayValue("Observation bearing")).toBeDisabled();
+    await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toBeDisabled();
+    await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("Lot 1");
+    await expect(canvas.getByLabelText("Hide 00")).toBeInTheDocument();
     await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     canvas
@@ -143,6 +143,53 @@ export const DiagramLabelWithBorder: Story = {
       });
     await expect(await canvas.findByLabelText("Border")).toBeChecked();
     await expect(await canvas.findByDisplayValue("1.4")).toBeEnabled();
+  },
+};
+
+const parcelAppelationLabelWithBorder: LabelPropertiesData[] = [
+  {
+    id: "1",
+    elementType: PlanElementType.PARCEL_LABELS,
+    displayState: "display",
+    labelType: "parcelAppellation",
+    fontStyle: "regular",
+    label: "Lot 1",
+    font: "Tahoma",
+    fontSize: "14",
+    textRotation: "0",
+    borderWidth: "1.4",
+    textAlignment: "centerCenter",
+    diagramId: "1",
+    displayFormat: undefined,
+  },
+];
+
+export const ParcelAppelationLabelWithBorder: Story = {
+  render: PanelTemplate,
+  args: { data: parcelAppelationLabelWithBorder },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByLabelText("Hide")).not.toBeChecked();
+    await expect(await canvas.findByLabelText("Bold")).not.toBeChecked();
+    await expect(await canvas.findByDisplayValue("Parcel appellation")).toBeDisabled();
+    const labelTextInput = await canvas.findByTestId("label-textarea");
+    await expect(labelTextInput).toBeEnabled();
+    await expect(labelTextInput).toHaveValue("Lot 1");
+    await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
+    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
+    canvas
+      .getByTestId("button-group")
+      .querySelectorAll("button")
+      .forEach((button) => {
+        void expect(button).toBeEnabled();
+      });
+    await expect(await canvas.findByLabelText("Border")).toBeChecked();
+    await expect(await canvas.findByDisplayValue("1.4")).toBeEnabled();
+    await sleep(500);
+    void fireEvent.input(labelTextInput, { target: { value: "Lot 1X" } });
+    await expect(await canvas.findByText("Appellations cannot be altered")).toBeInTheDocument();
+    await expect(labelTextInput).toHaveValue("Lot 1");
   },
 };
 
@@ -231,7 +278,7 @@ export const ObservationBearingDiagramLabelWithout00Precision: Story = {
   },
 };
 
-const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
+const pageAndParcelAppellationLabelWithPartialCheckbox: LabelPropertiesData[] = [
   {
     id: "1",
     elementType: PlanElementType.LABELS,
@@ -252,6 +299,60 @@ const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
     elementType: PlanElementType.PARCEL_LABELS,
     displayState: "display",
     labelType: "parcelAppellation",
+    fontStyle: "regular",
+    label: "Lot 1",
+    font: "Tahoma",
+    fontSize: "14",
+    textRotation: "0",
+    borderWidth: "1.4",
+    textAlignment: "centerCenter",
+    diagramId: "1",
+    displayFormat: undefined,
+  },
+];
+
+export const PageAndParcelAppellationLabelWithPartialCheckbox: Story = {
+  render: PanelTemplate,
+  args: { data: pageAndParcelAppellationLabelWithPartialCheckbox },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByLabelText("Bold")).toBeChecked();
+    await expect(await canvas.findByLabelText("Border")).toBeChecked();
+    await expect(await canvas.findAllByLabelText("Indeterminate Check")).toHaveLength(2);
+    await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
+    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("90.0000")).toBeEnabled();
+    canvas
+      .getByTestId("button-group")
+      .querySelectorAll("button")
+      .forEach((button) => {
+        void expect(button).toBeEnabled();
+      });
+  },
+};
+
+const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
+  {
+    id: "1",
+    elementType: PlanElementType.LABELS,
+    displayState: "display",
+    labelType: "userAnnotation",
+    fontStyle: "bold",
+    label: "Lot 1",
+    font: "Tahoma",
+    fontSize: "14",
+    textRotation: "0",
+    borderWidth: undefined,
+    textAlignment: "centerCenter",
+    diagramId: undefined,
+    displayFormat: undefined,
+  },
+  {
+    id: "2",
+    elementType: PlanElementType.PARCEL_LABELS,
+    displayState: "display",
+    labelType: "obsBearing",
     fontStyle: "regular",
     label: "Lot 1",
     font: "Tahoma",

@@ -25,7 +25,7 @@ import {
 } from "@/test-utils/storybook-utils";
 
 export default {
-  title: "PageLabel",
+  title: "LabelTextInput",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
@@ -75,19 +75,19 @@ export const InputLabelValidation: Story = {
 
     // click inside the page border shows input
     await click(target, { clientX: 800, clientY: 100 });
-    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     // click outside the page border hides input
     await click(target, { clientX: 1270, clientY: 300 });
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await expect(canvas.queryByTestId("LabelTextInput-textarea")).not.toBeInTheDocument();
     // click inside the page border shows input
     await click(target, { clientX: 850, clientY: 500 });
-    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     await click(target, { clientX: 1200, clientY: 670 });
     // click in the page number reserved area hides input
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await expect(canvas.queryByTestId("LabelTextInput-textarea")).not.toBeInTheDocument();
     await click(target, { clientX: 750, clientY: 680 });
     // click in the bottom text reserved area hides input
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await expect(canvas.queryByTestId("LabelTextInput-textarea")).not.toBeInTheDocument();
 
     // click inside the page border shows input
     await click(target, { clientX: 1080, clientY: 450 });
@@ -104,6 +104,30 @@ export const InputLabelValidation: Story = {
     void fireEvent.input(addLabelTextBox, { target: { value: "My page label" } });
     await userEvent.type(addLabelTextBox, "{enter}with line break");
     await expect(canvas.queryByText("Invalid character(s) entered")).not.toBeInTheDocument();
+  },
+};
+
+export const ParcelAppellationValidation: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 };
+    await click(target, parcelAppellationLabelPosition); // click to select
+    await click(target, parcelAppellationLabelPosition); // click to edit
+    const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+    //new lines can replace spaces and vice versa
+    void fireEvent.input(addLabelTextBox, { target: { value: "Label\n14" } });
+    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
+    void fireEvent.input(addLabelTextBox, { target: { value: "Label 14" } });
+    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
+    //any other changes to the appellation are blocked and an info message shows
+    void fireEvent.input(addLabelTextBox, { target: { value: "Label 14X" } });
+    await expect(await canvas.findByText("Appellations cannot be altered")).toBeInTheDocument();
+    await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Label 14");
   },
 };
 
@@ -152,43 +176,56 @@ export const AddLabel: Story = {
   },
 };
 
-export const EditLabel: Story = {
+export const ShowEditLabel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
-    await sleep(500);
-    let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-
-    const pageLabelPosition = { clientX: 900, clientY: 200 };
-    await addLabel(canvasElement, pageLabelPosition);
-    // click outside the textarea to save the label
-    await click(target, { clientX: 800, clientY: 500 });
-    await sleep(500);
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
-    target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    // click on a diagram label does not show the input
-    const diagramLabelPosition = { clientX: 585, clientY: 296 };
-    await click(target, diagramLabelPosition); // click to select
-    await click(target, diagramLabelPosition); // click to edit
-    await waitFor(() => expect(canvas.queryByTestId("PageLabelInput-textarea")).toBeNull());
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const pageLabelPosition = { clientX: 873, clientY: 161 };
+    const obsBearingLabelPosition = { clientX: 426, clientY: 293 };
+    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 };
     // click on a page label does show the input
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
-    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     // press Escape to cancel the edit label (does not change the mode)
     await userEvent.keyboard("{escape}");
     await sleep(500);
-    await waitFor(() => expect(canvas.queryByTestId("PageLabelInput-textarea")).toBeNull());
-    // eslint-disable-next-line testing-library/no-node-access
+    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+    // click on a diagram label does not show the input
+    await click(target, obsBearingLabelPosition); // click to select
+    await click(target, obsBearingLabelPosition); // click to edit
+    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+    // click on a parcel appellation label does show the input
+    await click(target, parcelAppellationLabelPosition); // click to select
+    await click(target, parcelAppellationLabelPosition); // click to edit
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
+    // press Escape to cancel the edit label (does not change the mode)
+    await userEvent.keyboard("{escape}");
+    await sleep(500);
+    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+    //eslint-disable-next-line testing-library/no-node-access
     const selectLabelButton = (await canvas.findByTitle(PlanMode.SelectLabel)).parentElement;
     await expect(selectLabelButton).toHaveClass("selected");
-    // click on a page label, edit the page label and save
+  },
+};
+
+export const EditPageLabel: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const pageLabelPosition = { clientX: 873, clientY: 161 };
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
-    const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
-    void fireEvent.input(addLabelTextBox, { target: { value: "Edited my page label" } });
+    const editLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+    void fireEvent.input(editLabelTextBox, { target: { value: "Edited my page label" } });
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
@@ -197,8 +234,34 @@ export const EditLabel: Story = {
     // click on a page label does show the input (final screenshot)
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
-    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Edited my page label");
+  },
+};
+
+export const EditParcelAppellationLabel: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 };
+    await click(target, parcelAppellationLabelPosition); // click to select
+    await click(target, parcelAppellationLabelPosition); // click to edit
+    const editLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+    void fireEvent.input(editLabelTextBox, { target: { value: "Label\n14" } });
+    await click(target, { clientX: 800, clientY: 500 });
+    await sleep(500);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    // click on a page label does show the input (final screenshot)
+    await click(target, parcelAppellationLabelPosition); // click to select
+    await click(target, parcelAppellationLabelPosition); // click to edit
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
+    await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Label\n14");
   },
 };
 
@@ -238,7 +301,7 @@ export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
       target: target,
       coords: pageLabelPosition,
     });
-    await expect(canvas.queryByTestId("PageLabelInput-textarea")).not.toBeInTheDocument();
+    await expect(canvas.queryByTestId("LabelTextInput-textarea")).not.toBeInTheDocument();
     // select page label again to have multiple selected labels
     await user.pointer({
       keys: "[MouseLeft]",
@@ -253,7 +316,7 @@ export const PreventShowingInputLabelWhenControlKeyPressed: Story = {
       target: target,
       coords: pageLabelPosition,
     });
-    await expect(await canvas.findByTestId("PageLabelInput-textarea")).toBeInTheDocument();
+    await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
   },
 };
 
@@ -268,7 +331,7 @@ export const HoverLabel: Story = {
 export const DeselectLabel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const test = await TestCanvas.Create(canvasElement);
     await test.leftClick(diagramLabelPosition);
     await test.leftClick(whiteSpace); // label is deselected
   },
@@ -277,7 +340,7 @@ export const DeselectLabel: Story = {
 export const SelectMultipleLabels: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const test = await TestCanvas.Create(canvasElement);
     await test.click([210, 214] /* Label 14 */, true);
     await test.click([146, 246] /* Label 13 */, true);
   },
@@ -286,7 +349,7 @@ export const SelectMultipleLabels: Story = {
 export const DeselectMultipleLabels: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const test = await TestCanvas.Create(canvasElement);
     await test.click([210, 214] /* Label 14 */, true);
     await test.click([146, 246] /* Label 13 */, true);
     await test.click(whiteSpace); // label is deselected
@@ -356,80 +419,4 @@ const addPageLabel = async (
   await addLabel(canvasElement, labelPosition, pageLabel);
   await click(target, { clientX: whiteSpace[0], clientY: whiteSpace[1] }); // click outside the textarea to save the label
   await sleep(500);
-};
-
-export const CopyPageLabelDoesNotRemove: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" }, "hover");
-    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "false");
-    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "false");
-    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
-    (await test.findMenuItem("Copy")).click();
-    // chomatic checks that nothing has changed
-  },
-};
-
-export const CutPageLabelDoesRemove: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: [585, 113] /* page label */, select: "Cut" });
-    // chomatic checks that the line has been removed
-  },
-};
-
-export const PageLabelEmptyClipboardPasteIsDisabled: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: whiteSpace, select: "" });
-    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
-  },
-};
-
-export const MultiLabelTypeClipboardEditIsDisabled: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.multiSelect([
-      [585, 113] /* page label */,
-      [318, 162] /* Diagram label */,
-    ]);
-    await test.contextMenu({ at: whiteSpace, select: "" });
-    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
-    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
-    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
-  },
-};
-
-export const EmptyClipboardNoSelectionEditIsDisabled: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement);
-    await test.contextMenu({ at: whiteSpace, select: "" });
-    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
-    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
-    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
-  },
-};
-
-export const PageLabelMultiSelectCopyPaste: Story = {
-  ...Default,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" });
-    await test.contextMenu({ at: [585, 213] /* whitespace */, select: "Paste" });
-    await test.contextMenu({ at: [585, 313] /* other white space */, select: "Paste" });
-    await test.multiSelect([
-      [585, 113],
-      [585, 213],
-      [585, 313],
-    ]);
-    await test.contextMenu({ at: [585, 213], select: "Copy" });
-    await test.contextMenu({ at: [385, 213], select: "Paste" });
-    await test.contextMenu({ at: [185, 213], select: "Paste" });
-  },
-  // chromatic should now see 9 page labels while there was just one
 };

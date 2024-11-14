@@ -19,7 +19,6 @@ import {
   errorFromSerializedError,
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal";
-import { PageLabelInput } from "@/components/PageLabel/PageLabelInput";
 import { AddPageLineHandler } from "@/components/PageLine/AddPageLineHandler";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
 import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";
@@ -39,11 +38,13 @@ import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
 import { getCanViewHiddenLabels, getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
 
+import { AddLabelHandler } from "./interactions/AddLabelHandler";
 import { DeleteKeyHandler } from "./interactions/DeleteKeyHandler";
 import { ElementHover } from "./interactions/ElementHover";
 import { PageNumberTooltips } from "./interactions/PageNumberTooltips";
 import { SelectDiagramHandler } from "./interactions/SelectDiagramHandler";
 import { SelectElementHandler } from "./interactions/SelectElementHandler";
+import { SelectLabelHandler } from "./interactions/SelectLabelHandler";
 import PlanSheetsFooter from "./PlanSheetsFooter";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons";
 
@@ -222,7 +223,8 @@ const PlanSheets = () => {
           ) : (
             <NoPageMessage />
           )}
-          {[PlanMode.AddLabel, PlanMode.SelectLabel].includes(planMode) && <PageLabelInput />}
+          {planMode === PlanMode.AddLabel && <AddLabelHandler />}
+          {planMode === PlanMode.SelectLabel && <SelectLabelHandler />}
           {planMode === PlanMode.AddLine && <AddPageLineHandler />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
           {(planMode === PlanMode.SelectCoordinates ||

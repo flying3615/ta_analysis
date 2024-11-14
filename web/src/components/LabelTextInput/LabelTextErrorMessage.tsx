@@ -13,8 +13,8 @@ export const LabelTextErrorMessage = (props: {
   className?: string;
 }) => {
   return (
-    <div className={clsx("PageLabelInput-error", props.className)}>
-      <LuiIcon alt="error" name="ic_error" className="PageLabelInput-error-icon" size="sm" status="error" />
+    <div className={clsx("LabelTextInput-error", props.className)}>
+      <LuiIcon alt="error" name="ic_error" className="LabelTextInput-error-icon" size="sm" status="error" />
       <span>
         {specialCharsRegex.test(props.labelText)
           ? invalidCharactersErrorMessage

@@ -5,9 +5,11 @@ import clsx from "clsx";
 import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { LabelTextErrorMessage } from "@/components/PageLabel/LabelTextErrorMessage";
+import { LabelTextErrorMessage } from "@/components/LabelTextInput/LabelTextErrorMessage";
+import { LabelTextInfoMessage } from "@/components/LabelTextInput/LabelTextInfoMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useLabelTextValidation } from "@/hooks/useLabelTextValidation";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
@@ -19,7 +21,7 @@ import {
   angleExceedErrorMessage,
   angleFormatErrorMessage,
   anyHasDisplayState,
-  areAllPageLabels,
+  areAllPageOrParcelAppelationLabels,
   borderWidthOptions,
   createLabelPropsToBeSaved,
   cytoscapeLabelIdToPlanData,
@@ -29,6 +31,7 @@ import {
   getTextAlignmentValues,
   getTextLengthErrorMessage,
   labelTypeOptions,
+  parcelAppellationInfoMessage,
   planDataLabelIdToCytoscape,
   someButNotAllHavePropertyValue,
   specialCharsRegex,
@@ -109,7 +112,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
         ...label,
         displayState: selectedLabel?.displayState ?? label.displayState,
         fontStyle: selectedLabel?.fontStyle ?? label.fontStyle,
-        label: selectedLabel?.displayText ?? label.label,
+        label: label.label,
         font: selectedLabel?.font ?? label.font,
         fontSize: `${selectedLabel?.fontSize ?? label.fontSize}`,
         textRotation: `${selectedLabel?.rotationAngle ?? label.textRotation}`,
@@ -181,8 +184,13 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   );
   const [isBold, setIsBold] = useState<boolean>();
   const [hasLabelTextError, setHasLabelTextError] = useState<boolean>();
+  const [hasLabelTextInfo, setHasLabelTextInfo] = useState<boolean>();
   const [textRotationErrorMsg, setTextRotationErrorMsg] = useState<string | undefined>();
   const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
+  const { fixLabelTextWhitespace, isLabelTextValid } = useLabelTextValidation({
+    originalLabelText: getCommonPropertyValue(selectedLabels, "label"),
+    labelType,
+  });
   const [hide00, setHide00] = useState<boolean>();
   const [font, setFont] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "font"));
   const [fontSize, setFontSize] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "fontSize"));
@@ -299,14 +307,23 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             ) : (
               <div>
                 <textarea
-                  disabled={!labelText || labelType !== LabelDTOLabelTypeEnum.userAnnotation || props.data.length > 1}
+                  disabled={
+                    !labelText ||
+                    (labelType !== LabelDTOLabelTypeEnum.userAnnotation &&
+                      labelType !== LabelDTOLabelTypeEnum.parcelAppellation) ||
+                    props.data.length > 1
+                  }
                   value={props.data.length === 1 ? labelText : ""}
                   onChange={(e) => {
-                    const newValue = e.target.value;
-                    setLabelText(newValue);
-                    setPanelValuesToUpdate({ ...panelValuesToUpdate, labelText: newValue });
+                    const newValue = fixLabelTextWhitespace(e.target.value);
+                    if (isLabelTextValid(newValue)) {
+                      setLabelText(newValue);
+                      setPanelValuesToUpdate({ ...panelValuesToUpdate, labelText: newValue });
+                    } else {
+                      setHasLabelTextInfo(true);
+                    }
                   }}
-                  className={clsx("PageLabelInput labelTextarea", { error: hasLabelTextError })}
+                  className={clsx("LabelTextInput labelTextarea", { error: hasLabelTextError })}
                   data-testid="label-textarea"
                 />
                 {hasLabelTextError && (
@@ -315,6 +332,9 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                     textLengthErrorMessage={textLengthErrorMessage}
                     className="errorMessage"
                   />
+                )}
+                {hasLabelTextInfo && (
+                  <LabelTextInfoMessage infoMessage={parcelAppellationInfoMessage} className="infoMessage" />
                 )}
               </div>
             )}
@@ -405,7 +425,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
               setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textLeft" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 1 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(selectedLabels)}
+            disabled={!areAllPageOrParcelAppelationLabels(selectedLabels)}
           >
             Left
           </LuiButton>
@@ -415,7 +435,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
               setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textCenter" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 2 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(selectedLabels)}
+            disabled={!areAllPageOrParcelAppelationLabels(selectedLabels)}
           >
             Center
           </LuiButton>
@@ -425,7 +445,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
               setPanelValuesToUpdate({ ...panelValuesToUpdate, justify: "textRight" });
             }}
             className={clsx(`lui-button lui-button-secondary`, justify === 3 ? `lui-button-active` : "")}
-            disabled={!areAllPageLabels(selectedLabels)}
+            disabled={!areAllPageOrParcelAppelationLabels(selectedLabels)}
           >
             Right
           </LuiButton>

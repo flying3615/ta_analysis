@@ -1,11 +1,11 @@
 @use "@linzjs/lui/dist/scss/Core" as lui;
 
-.PageLabelInput-container {
+.LabelTextInput-container {
   position: absolute;
   z-index: 1000;
 }
 
-.PageLabelInput {
+.LabelTextInput {
   padding: lui.$unit-xs;
   font-family: inherit;
   font-size: 14px;
@@ -26,7 +26,8 @@
   }
 }
 
-.PageLabelInput-error,
+.LabelTextInput-error,
+.LabelTextInput-info,
 .PageLabelTextAngleInput-error {
   font-size: 14px;
   font-weight: 600;
@@ -36,7 +37,8 @@
   background-color: white;
 }
 
-.PageLabelInput-error {
+.LabelTextInput-info,
+.LabelTextInput-error {
   margin-top: -(lui.$unit-xxs);
 }
 
@@ -44,6 +46,7 @@
   margin-top: 1px;
 }
 
-.PageLabelInput-error-icon {
+.LabelTextInput-info-icon,
+.LabelTextInput-error-icon {
   margin-right: lui.$unit-xxs;
 }
