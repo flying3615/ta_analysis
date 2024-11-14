@@ -5,6 +5,7 @@ import { screen, userEvent, within } from "@storybook/testing-library";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import {
+  checkCytoElementProperties,
   clickAtCoordinates,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
@@ -97,7 +98,7 @@ export const MoveNodeToOriginalCoord: Story & Required<Pick<Story, "play">> = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle("Select Coordinates"));
-    await sleep(500);
+    await sleep(1500);
 
     const position = { clientX: 411, clientY: 136 };
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
@@ -124,7 +125,7 @@ export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
+    await sleep(1500);
 
     const position = { clientX: 498, clientY: 136 };
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
@@ -142,6 +143,66 @@ export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
     await sleep(500);
     const menuOriginLoc = await canvas.findByText("Original location");
     await userEvent.click(menuOriginLoc);
+  },
+};
+
+export const MoveNodeConstrained: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(1500);
+
+    const position = { clientX: 411, clientY: 136 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 1150,
+      clientY: position.clientY,
+    });
+    await sleep(1500);
+    await checkCytoElementProperties("#10001", { position: { x: 961.43, y: 79.51 } });
+  },
+};
+
+export const MoveLineConstrained: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(1500);
+
+    const position = { clientX: 498, clientY: 136 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 1150,
+      clientY: position.clientY,
+    });
+    await sleep(1500);
+    await checkCytoElementProperties("#10001", { position: { x: 961.43, y: 79.51 } });
+  },
+};
+
+export const MoveLabelConstrained: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(1500);
+
+    const position = { clientX: 492, clientY: 268 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 1150,
+      clientY: position.clientY,
+    });
+    await sleep(1500);
+    await checkCytoElementProperties("#10001", { position: { x: 132.95, y: 79.51 } });
   },
 };
 

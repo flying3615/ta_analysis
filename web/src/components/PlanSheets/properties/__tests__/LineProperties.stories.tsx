@@ -7,7 +7,6 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
-import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import {
   multipleSegmentPageLineArrowHead,
@@ -19,6 +18,7 @@ import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
+  checkCytoElementProperties,
   clickAtCoordinates,
   getCytoCanvas,
   getCytoscapeNodeLayer,
@@ -55,15 +55,7 @@ const PlanSheetsTemplate = () => {
 export const Default: Story = {
   render: () => <PlanSheetsTemplate />,
 };
-const checkCytoElementProperties = async (selector: string) => {
-  const element = window.cyRef.$(selector);
-  if (element.length > 0) {
-    const data = element.data() as INodeDataProperties;
-    await expect(data.displayState).toBe(DisplayStateEnum.hide);
-  } else {
-    console.log(`Element with ID ${selector} not found.`);
-  }
-};
+
 export const ShowLineMenu: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -117,7 +109,7 @@ export const ShowHideDiagramLineFromProperties: Story = {
     await userEvent.click(await canvas.findByText("OK"));
     await sleep(500);
 
-    await checkCytoElementProperties("#1001_0");
+    await checkCytoElementProperties("#1001_0", { displayState: DisplayStateEnum.hide });
     await sleep(500);
   },
 };

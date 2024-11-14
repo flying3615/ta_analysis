@@ -1,6 +1,9 @@
-import cytoscape, { BoundingBox12 } from "cytoscape";
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import cytoscape, { BoundingBox12, BoundingBoxWH } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 10.0;
@@ -125,6 +128,62 @@ const keepPanWithinBoundaries = (cy: cytoscape.Core) => {
 const onViewportChange = (cy: cytoscape.Core) => {
   if (!cy.userPanningEnabled()) {
     cy.userPanningEnabled(true);
+  }
+};
+
+const constrain = (val: number, min: number, max: number): number => {
+  return val < min ? min : val > max ? max : val;
+};
+
+const constrainInBox = (node: cytoscape.NodeSingular, bb: cytoscape.BoundingBox12): cytoscape.Position => {
+  const pos = node.position();
+  const w = node.width();
+  const h = node.height();
+
+  return {
+    x: constrain(pos.x, bb.x1 + w / 2, bb.x2 - w / 2),
+    y: constrain(pos.y, bb.y1 + h / 2, bb.y2 - h / 2),
+  };
+};
+
+/**
+ * Returns a function that constrains a node's position within a bounding box.
+ * @param bb - The bounding box.
+ * @returns A function that takes a node and returns its constrained position.
+ */
+export const boxPosition = (bb: cytoscape.BoundingBox12) => {
+  return (node: cytoscape.NodeSingular): cytoscape.Position => {
+    return constrainInBox(node, bb);
+  };
+};
+
+export const keepNodeWithinAreaLimit = (evt: cytoscape.EventObject): void => {
+  const cy = evt.cy;
+  const node = evt.target as cytoscape.NodeSingular;
+  const data = node.data() as INodeDataProperties;
+  const nodeBB: BoundingBoxWH = node.boundingBox({ includeLabels: false, includeOverlays: false });
+  const [border1, border2] = ["border_1001", "border_1007"].map((id) => cy.getElementById(id).position());
+
+  if (!border1 || !border2) return;
+
+  const boundingBox: cytoscape.BoundingBox12 =
+    (data.elementType === PlanElementType.COORDINATE_LABELS && data.labelType === LabelDTOLabelTypeEnum.markName) ||
+    data.elementType === PlanElementType.PARCEL_LABELS
+      ? { x1: border1.x + nodeBB.w / 2, y1: border1.y, x2: border2.x - nodeBB.w / 2, y2: border2.y }
+      : data.elementType === PlanElementType.LABELS && data.labelType === LabelDTOLabelTypeEnum.userAnnotation
+        ? {
+            x1: border1.x + nodeBB.w,
+            y1: border1.y + nodeBB.h / 2,
+            x2: border2.x - nodeBB.w,
+            y2: border2.y - nodeBB.h / 2,
+          }
+        : { x1: border1.x, y1: border1.y, x2: border2.x, y2: border2.y };
+
+  const { x, y } = boxPosition(boundingBox)(node);
+  const { x: currentX, y: currentY } = node.position();
+
+  if (x !== currentX || y !== currentY) {
+    node.position({ x, y });
   }
 };
 

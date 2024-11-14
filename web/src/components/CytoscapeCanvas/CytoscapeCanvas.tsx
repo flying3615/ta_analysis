@@ -20,7 +20,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown";
 import { isStorybookTest, updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
-import { MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
+import { keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
 
@@ -212,6 +212,7 @@ const CytoscapeCanvas = ({
     cy?.addListener("mouseup", onMouseUp);
     cy?.addListener("select", "node", onSelected);
     cy?.addListener("unselect", "node", onUnselected);
+    cy?.addListener("position", "node", keepNodeWithinAreaLimit);
     cy?.addListener("zoom", (event: cytoscape.EventObject) => setZoom(event.cy.zoom()));
     cy?.addListener("pan", (event: cytoscape.EventObject) => setPan(event.cy.pan()));
     cy?.on("dragpan", (event) => keepPanWithinBoundaries(event.cy));

@@ -1,3 +1,4 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
 import { findQuick } from "@linzjs/step-ag-grid/src/utils/testQuick";
 import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
@@ -6,12 +7,14 @@ import { StoryFn } from "@storybook/react";
 import { screen } from "@storybook/testing-library";
 import { fireEvent, userEvent, waitFor, within } from "@storybook/testing-library";
 import { UserEvent } from "@testing-library/user-event";
+import cytoscape from "cytoscape";
 import React, { PropsWithChildren, useEffect, useState } from "react";
 import ReactModal from "react-modal";
 import { Provider } from "react-redux";
 import { createMemoryRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
+import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { setupStore } from "@/redux/store";
 
 /* eslint-disable react-refresh/only-export-components */
@@ -476,6 +479,46 @@ export async function multiSelectAndDrag(
   }
   fireEvent.mouseUp(canvas, steps[steps.length - 1]);
 }
+
+export const checkCytoElementProperties = async (
+  selector: string,
+  expectedProperties: {
+    displayState?: DisplayStateEnum;
+    color?: string;
+    styleProperty?: string;
+    className?: string;
+    position?: cytoscape.Position;
+  },
+) => {
+  const element = window.cyRef.$(selector);
+  if (element.length > 0) {
+    if (expectedProperties.displayState !== undefined) {
+      const data = element.data() as INodeDataProperties;
+      await expect(data.displayState).toBe(expectedProperties.displayState);
+    }
+
+    if (expectedProperties.color !== undefined && expectedProperties.styleProperty !== undefined) {
+      const color = element.style(expectedProperties.styleProperty) as string;
+      await expect(color).toBe(expectedProperties.color);
+    }
+
+    if (expectedProperties.className !== undefined) {
+      const classes = element.classes();
+      await expect(classes).toContain(expectedProperties.className);
+    }
+
+    if (expectedProperties.position !== undefined) {
+      const position = element.position();
+      const isClose = (a: number, b: number, tol: number) => Math.abs(a - b) <= tol;
+      const isPositionClose =
+        isClose(position.x, expectedProperties.position.x, 0.01) &&
+        isClose(position.y, expectedProperties.position.y, 0.01);
+      await expect(isPositionClose).toBe(true);
+    }
+  } else {
+    console.log(`Element with ID ${selector} not found.`);
+  }
+};
 
 export async function waitForLoadingSpinnerToDisappear() {
   return await waitFor(

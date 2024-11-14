@@ -92,7 +92,6 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       return;
     }
 
-    const diagramAreaLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
     // move selected, connected nodes, and related labels
     const movingElements = selectedElements.union(selectedElements.connectedNodes());
     movingElements.merge(getRelatedLabels(movingElements));
@@ -183,12 +182,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       if (!moveElementsExtent || !moveStart || !moveStartPositions) {
         return;
       }
-      const newExtent = moveExtent(
-        moveElementsExtent,
-        event.position.x - moveStart.x,
-        event.position.y - moveStart.y,
-        diagramAreaLimits,
-      );
+      const newExtent = moveExtent(moveElementsExtent, event.position.x - moveStart.x, event.position.y - moveStart.y);
       const dx = newExtent.x1 - moveElementsExtent.x1;
       const dy = newExtent.y1 - moveElementsExtent.y1;
       setPositions(movingElements, moveStartPositions, dx, dy);

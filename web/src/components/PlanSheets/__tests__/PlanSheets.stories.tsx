@@ -34,6 +34,7 @@ import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice
 import { store } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import {
+  checkCytoElementProperties,
   clickAtCoordinates,
   clickMultipleCoordinates,
   getCytoscapeNodeLayer,
@@ -835,24 +836,6 @@ export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
   },
 };
 
-const checkElementProperties = async (
-  selector: string,
-  expectedColor: string,
-  styleProperty: string,
-  expectedClass: string,
-) => {
-  const element = window.cyRef.$(selector);
-  if (element.length > 0) {
-    const color = element.style(styleProperty) as string;
-    const classes = element.classes();
-
-    await expect(color).toBe(expectedColor);
-    await expect(classes).toContain(expectedClass);
-  } else {
-    console.log(`Element with ID ${selector} not found.`);
-  }
-};
-
 // Enforces 'play' is provided as it is used in PlanSheetsEscapeKeyDeselects stories
 export const SelectLineAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
   ...Default,
@@ -867,8 +850,16 @@ export const SelectLineAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
     clickAtCoordinates(cytoscapeNodeLayer, [411, 366]);
     await sleep(500);
 
-    await checkElementProperties("#1006_0", "rgb(248,27,239)", "line-color", "element-move-control");
-    await checkElementProperties("#13", "rgb(248,27,239)", "text-background-color", "related-element-selected");
+    await checkCytoElementProperties("#1006_0", {
+      color: "rgb(248,27,239)",
+      styleProperty: "line-color",
+      className: "element-move-control",
+    });
+    await checkCytoElementProperties("#13", {
+      color: "rgb(248,27,239)",
+      styleProperty: "text-background-color",
+      className: "related-element-selected",
+    });
   },
 };
 
@@ -886,8 +877,16 @@ export const SelectMarkAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
     clickAtCoordinates(cytoscapeNodeLayer, [411, 135]);
     await sleep(500);
 
-    await checkElementProperties("#10001", "rgb(248,27,239)", "outline-color", "related-label-selected");
-    await checkElementProperties("#11", "rgb(248,27,239)", "text-background-color", "related-element-selected");
+    await checkCytoElementProperties("#10001", {
+      color: "rgb(248,27,239)",
+      styleProperty: "outline-color",
+      className: "related-label-selected",
+    });
+    await checkCytoElementProperties("#11", {
+      color: "rgb(248,27,239)",
+      styleProperty: "text-background-color",
+      className: "related-element-selected",
+    });
   },
 };
 
