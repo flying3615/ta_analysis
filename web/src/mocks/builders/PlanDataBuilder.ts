@@ -28,7 +28,6 @@ interface DiagramOptions {
   displayState?: DisplayStateEnum;
   listOrder?: number;
   listParentRef?: number;
-  userEdited?: boolean;
   box?: boolean; // draw a box around
 }
 
@@ -270,7 +269,6 @@ export class PlanDataBuilder {
             symbolType,
             pointOffset,
             rotationAngle: 0,
-            userEdited: false,
             id: idOrOptions,
             displayText,
             position: position!,
@@ -379,7 +377,6 @@ export class PlanDataBuilder {
       pointOffset,
       rotationAngle,
       textAlignment: "centerCenter",
-      userEdited: false,
       id,
       displayText,
       position,
@@ -428,85 +425,71 @@ export class PlanDataBuilder {
           id: 1001,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 1.5, y: -1.5 },
-          userEdited: false,
         },
         {
           id: 1002,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 40.5, y: -1.5 },
-          userEdited: false,
         },
         {
           id: 1003,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 1.5, y: -26.2 },
-          userEdited: false,
         },
         {
           id: 1004,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 8.5, y: -26.2 },
-          userEdited: false,
         },
         {
           id: 1005,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 26.5, y: -26.2 },
-          userEdited: false,
         },
         {
           id: 1006,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 33.5, y: -26.2 },
-          userEdited: false,
         },
         {
           id: 1007,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 40.5, y: -26.2 },
-          userEdited: false,
         },
         {
           id: 1008,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 1.5, y: -28.2 },
-          userEdited: false,
         },
         {
           id: 1009,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 8.5, y: -28.2 },
-          userEdited: false,
         },
         {
           id: 1010,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 26.5, y: -28.2 },
-          userEdited: false,
         },
         {
           id: 1011,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 33.5, y: -28.2 },
-          userEdited: false,
         },
         {
           id: 1012,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 40.5, y: -28.2 },
-          userEdited: false,
         },
         {
           id: 1013,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 38.55, y: -1.6 },
-          userEdited: false,
         },
         {
           id: 1014,
           coordType: CoordinateDTOCoordTypeEnum.userDefined,
           position: { x: 40.45, y: -3.5 },
-          userEdited: false,
         },
       ],
       lines: [

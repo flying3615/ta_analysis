@@ -17,7 +17,6 @@ export const pageLabelWithLineBreak: LabelDTO = {
   textAlignment: "centerCenter, textRight",
   displayState: "display",
   effect: "none",
-  userEdited: false,
 };
 
 export const pageLabelWithBorder: LabelDTO = {
@@ -37,7 +36,6 @@ export const pageLabelWithBorder: LabelDTO = {
   textAlignment: "centerCenter",
   displayState: "hide",
   effect: "none",
-  userEdited: false,
   borderWidth: 1.4,
 };
 
@@ -48,7 +46,6 @@ export const diagramLabelParcelAppellation: LabelDTO = {
   pointOffset: 14,
   rotationAngle: 0,
   textAlignment: "bottomCenter",
-  userEdited: false,
   id: 19,
   displayText: "Lot 123",
   position: {
@@ -80,7 +77,6 @@ export const diagramLabelObsBearingHide: LabelDTO = {
   featureId: 1006,
   featureType: "Line",
   effect: "none",
-  userEdited: false,
 };
 
 export const diagramLabelObsBearingSuppressSeconds: LabelDTO = {
@@ -103,7 +99,6 @@ export const diagramLabelObsBearingSuppressSeconds: LabelDTO = {
   featureId: 1006,
   featureType: "Line",
   effect: "none",
-  userEdited: false,
 };
 
 export const diagramLabelSystemDisplay: LabelDTO = {
@@ -123,5 +118,4 @@ export const diagramLabelSystemDisplay: LabelDTO = {
     y: -5,
   },
   effect: "none",
-  userEdited: false,
 };

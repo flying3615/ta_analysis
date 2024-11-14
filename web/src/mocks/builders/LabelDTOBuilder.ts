@@ -17,7 +17,6 @@ export class LabelDTOBuilder implements BaseBuilder<LabelDTO> {
       position: { x: 0.25, y: -0.05 },
       rotationAngle: 25,
       textAlignment: "centerCenter",
-      userEdited: false,
       id: 23,
       featureId: 1,
       featureType: "parcel",
@@ -89,11 +88,6 @@ export class LabelDTOBuilder implements BaseBuilder<LabelDTO> {
 
   withTextAlignment(value: string): LabelDTOBuilder {
     this.labelDTO.textAlignment = value;
-    return this;
-  }
-
-  withUserEdited(value: boolean): LabelDTOBuilder {
-    this.labelDTO.userEdited = value;
     return this;
   }
 

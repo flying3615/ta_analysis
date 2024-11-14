@@ -82,7 +82,6 @@ export const addPageLabel = (
     pointOffset: 0,
     rotationAngle: 0,
     textAlignment: "centerCenter",
-    userEdited: false,
     ...labelProps,
   };
   return {

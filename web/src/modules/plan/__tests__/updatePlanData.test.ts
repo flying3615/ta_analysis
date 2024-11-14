@@ -83,7 +83,6 @@ describe("updatePlanData", () => {
       position: { x: 17, y: 12 },
       rotationAngle: 0,
       textAlignment: "",
-      userEdited: false,
       id: 10002,
     })
     .addUserCoordinate({
@@ -225,7 +224,6 @@ describe("updatePlanData", () => {
             effect: "none",
             pointOffset: 0,
             rotationAngle: 90,
-            userEdited: false,
             id: 2,
             displayText: "Label 2",
             position: {
@@ -285,7 +283,6 @@ describe("updatePlanData", () => {
             effect: "none",
             pointOffset: 0,
             rotationAngle: 45,
-            userEdited: false,
             id: 2,
             displayText: "Updated Label 3",
             position: {
@@ -439,7 +436,6 @@ describe("updatePlanData", () => {
           pointOffset: 0,
           rotationAngle: 0,
           textAlignment: "centerCenter",
-          userEdited: false,
           ...labelProps,
         },
       ],
@@ -470,7 +466,6 @@ describe("updatePlanData", () => {
           pointOffset: 0,
           rotationAngle: 0,
           textAlignment: "centerCenter",
-          userEdited: false,
           ...labelProps,
         },
       ],

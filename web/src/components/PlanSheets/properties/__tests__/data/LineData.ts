@@ -23,7 +23,6 @@ export const multipleSegmentPageLineArrowHead: LineDTO = {
   style: "doubleArrow1",
   coordRefs: [10011, 10014, 10015],
   pointWidth: 2.0,
-  userEdited: false,
   displayState: "display",
 };
 
@@ -33,6 +32,5 @@ export const hiddenPageLine: LineDTO = {
   style: "doubleArrow1",
   coordRefs: [10011, 10015],
   pointWidth: 2.0,
-  userEdited: false,
   displayState: "systemHide",
 };

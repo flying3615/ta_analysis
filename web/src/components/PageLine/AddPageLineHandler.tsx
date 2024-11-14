@@ -263,7 +263,6 @@ const addPageLineByList = (
         id: parseInt(node.data.id),
         coordType: CoordinateDTOCoordTypeEnum.userDefined,
         position: cytoCoordMapper.cytoscapeToPlanCoord(node.position),
-        userEdited: false,
       });
     }
   });
@@ -275,7 +274,6 @@ const addPageLineByList = (
     pointWidth: 1,
     coordRefs: nodeList.map((node) => (node.data.id ? parseInt(node.data.id) : 0)),
     displayState: DisplayStateEnum.display,
-    userEdited: false,
   };
 
   return {

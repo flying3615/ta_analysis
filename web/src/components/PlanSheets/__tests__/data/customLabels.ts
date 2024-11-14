@@ -17,7 +17,6 @@ export const pageLabelWithLineBreak: LabelDTO = {
   textAlignment: "centerCenter, textRight",
   displayState: "display",
   effect: "none",
-  userEdited: false,
 };
 
 export const diagramLabelParcelAppellation: LabelDTO = {
@@ -27,7 +26,6 @@ export const diagramLabelParcelAppellation: LabelDTO = {
   pointOffset: 14,
   rotationAngle: 0,
   textAlignment: "bottomCenter",
-  userEdited: false,
   id: 19,
   displayText: "Lot 123 Section 1",
   position: {
