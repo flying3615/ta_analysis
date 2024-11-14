@@ -5,10 +5,14 @@ import cytoscape, {
   NodeSingular,
   SingularElementArgument,
 } from "cytoscape";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import { useEscapeKey } from "@/hooks/useEscape";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
+
+import { useEditContextMenu } from "./useEditContextMenu";
 
 export interface ContextMenuState {
   visible?: boolean;
@@ -37,6 +41,16 @@ export const useCytoscapeContextMenu = (
     setMenuState({ ...state, visible: true });
   }, []);
 
+  const container = cy?.container();
+  const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);
+
+  const diagramAreasLimits = useMemo(
+    () => (cytoCoordMapper ? cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cy) : null),
+    [cy, cytoCoordMapper],
+  );
+
+  const { buildEditMenuItems } = useEditContextMenu();
+
   const hideMenu = useCallback(() => setMenuState((state) => ({ ...state, visible: false })), []);
 
   const onCxtTap = useCallback(
@@ -47,20 +61,47 @@ export const useCytoscapeContextMenu = (
       const { clientX: x, clientY: y } = event.originalEvent;
       const target = event.target === cy ? null : (event.target as SingularElementArgument);
 
-      if (!target) {
-        if (event.cy.elements(":selected").length === 0) return;
-      } else {
-        if (!target.selected()) {
-          event.cy.elements().unselect();
-          target.select();
+      let menuItems: MenuItem[] | undefined = undefined;
+      if (
+        diagramAreasLimits &&
+        !cytoscapeUtils.isPositionWithinAreaLimits(event.position, [diagramAreasLimits.diagramOuterLimitsPx])
+      ) {
+        // clicked outside of diagram area
+        return;
+      }
+
+      if (
+        diagramAreasLimits &&
+        cytoscapeUtils.isPositionWithinAreaLimits(event.position, [diagramAreasLimits.diagramOuterLimitsPx])
+      ) {
+        if (event.cy.elements(":selected").length === 0) {
+          // click on empty space of diagram area, without selected
+          menuItems = buildEditMenuItems(event.position);
+        } else {
+          // click on empty space of diagram area, with selected
+          menuItems = getContextMenuItems(
+            target as SingularElementArgument | cytoscape.Core,
+            event.cy.elements(":selected"),
+            event.position,
+          );
         }
       }
 
-      const menuItems = getContextMenuItems(
-        target as SingularElementArgument | cytoscape.Core,
-        event.cy.elements(":selected"),
-        event.position,
-      );
+      if (target) {
+        // click on node or edge
+        if (!target.selected()) {
+          // unselect all and only make target selected
+          event.cy.elements().unselect();
+          target.select();
+        }
+
+        menuItems = getContextMenuItems(
+          target as SingularElementArgument | cytoscape.Core,
+          event.cy.elements(":selected"),
+          event.position,
+        );
+      }
+
       if (!menuItems || menuItems.length === 0) return;
 
       const menuWidth = 150;
@@ -79,7 +120,7 @@ export const useCytoscapeContextMenu = (
         leftMenu: isLeftMenu,
       });
     },
-    [getContextMenuItems, showMenu, cy],
+    [cy, getContextMenuItems, showMenu, diagramAreasLimits, buildEditMenuItems],
   );
 
   const onTap = useCallback(

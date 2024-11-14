@@ -1,31 +1,97 @@
 import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { NodeSingular } from "cytoscape";
+import { act, renderHook } from "@testing-library/react";
+import cytoscape from "cytoscape";
 
-describe("useDeleteLabels", () => {
-  test("should delete page labels", () => {
-    const dispatch = jest.fn();
-    const removePageLabels = jest.fn();
-    const useAppDispatch = jest.fn().mockReturnValue(dispatch);
-    jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppDispatch }));
-    jest.doMock("@/redux/planSheets/planSheetsSlice.ts", () => ({ removePageLabels }));
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { usePageLabelEdit } from "@/hooks/usePageLabelEdit";
 
+jest.mock("@/hooks/reduxHooks");
+
+describe("usePageLabelEdit", () => {
+  const mockUseAppSelector = useAppSelector as unknown as jest.Mock;
+  const mockUseAppDispatch = useAppDispatch as unknown as jest.Mock;
+  const dispatch = jest.fn();
+
+  beforeEach(() => {
+    mockUseAppDispatch.mockReturnValue(dispatch);
+    mockUseAppSelector.mockReturnValue({
+      copiedElements: { elements: [], action: "" },
+      activePage: {},
+      maxPlanId: 1,
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete page labels", () => {
+    const { result } = renderHook(() => usePageLabelEdit());
     const targets = [
-      {
-        data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
-      } as NodeSingular,
-      {
-        data: (key: string) => ({ id: "LAB_2", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key],
-      } as NodeSingular,
-      { data: (key: string) => ({ id: "LAB_3", labelType: LabelDTOLabelTypeEnum.obsBearing })[key] } as NodeSingular,
-    ];
+      { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
+    ] as unknown as cytoscape.NodeSingular[];
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const useDeleteLabels = (require("@/hooks/usePageLabelEdit") as typeof import("@/hooks/usePageLabelEdit"))
-      .usePageLabelEdit;
-    const { deletePageLabels } = useDeleteLabels();
-    deletePageLabels(targets);
+    act(() => {
+      result.current.deletePageLabels(targets);
+    });
 
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(removePageLabels).toHaveBeenCalledWith({ labelIds: [1, 2] });
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ payload: { labelIds: [1] }, type: "planSheets/removePageLabels" }),
+    );
+  });
+
+  it("should copy page labels", () => {
+    const { result } = renderHook(() => usePageLabelEdit());
+    const targets = [
+      { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
+    ] as unknown as cytoscape.NodeSingular[];
+
+    act(() => {
+      result.current.copyPageLabels(targets);
+    });
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: { action: "COPY", ids: [1], type: "label" },
+        type: "planSheets/setCopiedElements",
+      }),
+    );
+  });
+
+  it("should cut page labels as expected", () => {
+    const { result } = renderHook(() => usePageLabelEdit());
+    const targets = [
+      { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
+    ] as unknown as cytoscape.NodeSingular[];
+
+    act(() => {
+      result.current.cutPageLabels(targets);
+    });
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: { action: "CUT", ids: [1], type: "label" },
+        type: "planSheets/setCopiedElements",
+      }),
+    );
+  });
+
+  it("should return canPaste as true when there are copied elements", () => {
+    mockUseAppSelector.mockReturnValueOnce({
+      elements: [{ id: "LAB_1" }],
+      action: "COPY",
+      activePage: {},
+      maxPlanId: 1,
+    });
+
+    const { result } = renderHook(() => usePageLabelEdit());
+
+    expect(result.current.canPaste).toBe(true);
+  });
+
+  it("should return canPaste as false when there are no copied elements", () => {
+    const { result } = renderHook(() => usePageLabelEdit());
+
+    expect(result.current.canPaste).toBe(false);
   });
 });

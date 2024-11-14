@@ -11,6 +11,7 @@ export const POINTS_PER_CM = 28.3465;
 export interface IDiagramAreasLimits {
   diagramOuterLimitsPx: BoundingBox12;
   disabledAreasLimitsPx: BoundingBox12[];
+  availableAreaLimitWithPageBlockPx: BoundingBox12;
 }
 
 let _panX: number;
@@ -157,7 +158,14 @@ const getDiagramAreasLimits = (
     },
   ];
 
-  return { diagramOuterLimitsPx, disabledAreasLimitsPx };
+  const availableAreaLimitWithPageBlockPx = {
+    x1: diagramOuterLimitsPx.x1,
+    x2: diagramOuterLimitsPx.x2,
+    y1: diagramOuterLimitsPx.y1,
+    y2: node1.y,
+  };
+
+  return { diagramOuterLimitsPx, disabledAreasLimitsPx, availableAreaLimitWithPageBlockPx };
 };
 
 const isPositionWithinAreaLimits = (position: cytoscape.Position, areas: BoundingBox12[]): boolean => {

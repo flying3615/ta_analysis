@@ -67,26 +67,28 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
   });
 };
 
-export const addPageLabel = (
+export const addPageLabels = (
   page: PageDTO,
-  labelProps: Pick<LabelDTO, "displayText" | "id" | "position"> & Partial<LabelDTO>,
+  labelsProps: (Pick<LabelDTO, "id" | "displayText" | "position"> & Partial<LabelDTO>)[],
 ) => {
-  const label: LabelDTO = {
-    anchorAngle: 0,
-    displayState: DisplayStateEnum.display,
-    effect: "none",
-    font: "Tahoma",
-    fontSize: 14,
-    fontStyle: "italic",
-    labelType: LabelDTOLabelTypeEnum.userAnnotation,
-    pointOffset: 0,
-    rotationAngle: 0,
-    textAlignment: "centerCenter",
-    ...labelProps,
-  };
+  const labels = labelsProps.map((labelProps) => {
+    return {
+      anchorAngle: 0,
+      displayState: DisplayStateEnum.display,
+      effect: "none",
+      font: "Tahoma",
+      fontSize: 14,
+      fontStyle: "italic",
+      labelType: LabelDTOLabelTypeEnum.userAnnotation,
+      pointOffset: 0,
+      rotationAngle: 0,
+      textAlignment: "centerCenter",
+      ...labelProps,
+    };
+  });
   return {
     ...page,
-    labels: [...(page.labels ?? []), label],
+    labels: [...(page.labels ?? []), ...labels],
   };
 };
 

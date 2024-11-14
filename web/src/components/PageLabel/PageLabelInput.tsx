@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
+import { LabelTextErrorMessage } from "@/components/PageLabel/LabelTextErrorMessage";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   cytoscapeLabelIdToPlanData,
@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { selectMaxPlanId } from "@/modules/plan/selectGraphData";
-import { addPageLabel, updatePageLabels } from "@/modules/plan/updatePlanData";
+import { addPageLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import { getActivePage, getPlanMode, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
@@ -122,7 +122,7 @@ export const PageLabelInput = () => {
         const position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
         dispatch(
           replacePage({
-            updatedPage: addPageLabel(activePage, { id: maxPlanId + 1, displayText: labelText, position }),
+            updatedPage: addPageLabels(activePage, [{ id: maxPlanId + 1, displayText: labelText, position }]),
           }),
         );
         dispatch(setPlanMode(PlanMode.Cursor));

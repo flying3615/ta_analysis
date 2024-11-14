@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { LabelTextErrorMessage } from "@/components/PageLabelInput/LabelTextErrorMessage";
+import { LabelTextErrorMessage } from "@/components/PageLabel/LabelTextErrorMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";

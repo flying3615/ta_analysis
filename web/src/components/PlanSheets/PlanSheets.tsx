@@ -19,7 +19,7 @@ import {
   errorFromSerializedError,
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal";
-import { PageLabelInput } from "@/components/PageLabelInput/PageLabelInput";
+import { PageLabelInput } from "@/components/PageLabel/PageLabelInput";
 import { AddPageLineHandler } from "@/components/PageLine/AddPageLineHandler";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
 import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";

@@ -1,3 +1,5 @@
+import cytoscape, { CollectionReturnValue } from "cytoscape";
+
 type Data = Record<string, number | string | boolean>;
 
 export const nodeSingular = (
@@ -28,4 +30,8 @@ export const edgeSingular = (
     data: (dataAttribute?: string) => (dataAttribute ? elementData[dataAttribute] : elementData),
     classes: () => classes,
   } as cytoscape.EdgeSingular;
+};
+
+export const collectionReturnValueToNodeSingularArray = (input: CollectionReturnValue[]): cytoscape.NodeSingular[] => {
+  return input.filter((l) => l.isNode()).map((element) => element as cytoscape.NodeSingular);
 };

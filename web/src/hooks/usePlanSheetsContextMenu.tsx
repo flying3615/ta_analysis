@@ -52,7 +52,7 @@ export const usePlanSheetsContextMenu = () => {
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
   const { deletePageLines } = usePageLineEdit();
-  const { deletePageLabels } = usePageLabelEdit();
+  const { deletePageLabels, copyPageLabels, cutPageLabels } = usePageLabelEdit();
   const highlightedLabel = useRef<NodeSingular>();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
@@ -264,9 +264,23 @@ export const usePlanSheetsContextMenu = () => {
         ...(singleSelected
           ? [{ title: "Rotate label", submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }] }]
           : []),
-        { title: "Cut", divider: true, disabled: true },
-        { title: "Copy", disabled: true },
-        { title: "Paste", disabled: true },
+        {
+          title: "Cut",
+          divider: true,
+          disableWhen: () =>
+            selectedLabels.some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
+          callback: () => cutPageLabels([...selectedLabels]),
+        },
+        {
+          title: "Copy",
+          disableWhen: () =>
+            selectedLabels.some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
+          callback: () => copyPageLabels([...selectedLabels]),
+        },
+        {
+          title: "Paste",
+          disabled: true,
+        },
         {
           title: "Delete",
           className: "delete-item",

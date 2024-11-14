@@ -1,4 +1,6 @@
 import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/survey-plan-generation-api-client";
+import { LabelDTO } from "@linz/survey-plan-generation-api-client/src/models/LabelDTO";
+import { LineDTO } from "@linz/survey-plan-generation-api-client/src/models/LineDTO";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
@@ -18,6 +20,7 @@ export interface PlanSheetsState {
   alignedLabelNodeId?: string;
   diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
+  copiedElements?: { elements: LabelDTO[] | LineDTO[]; action: "COPY" | "CUT" };
   // undo buffer
   previousHasChanges?: boolean;
   previousDiagrams: DiagramDTO[] | null;
@@ -168,6 +171,36 @@ const planSheetsSlice = createSlice({
 
       lineToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
     },
+    setCopiedElements: (state, action: PayloadAction<{ ids: number[]; type: string; action: "COPY" | "CUT" }>) => {
+      const { ids, type } = action.payload;
+      if (ids.length === 0) return;
+
+      if (type === "label") {
+        const targetLabels: LabelDTO[] = [];
+        state.pages.forEach((page) => {
+          const copiedLabels = page.labels?.filter((label) => ids.includes(label.id));
+          if (copiedLabels && copiedLabels.length > 0 && copiedLabels[0] !== undefined) {
+            targetLabels.push(...copiedLabels);
+          }
+        });
+        state.copiedElements = {
+          elements: targetLabels,
+          action: action.payload.action,
+        };
+      } else {
+        const targetLines: LineDTO[] = [];
+        state.pages.forEach((page) => {
+          const copiedLines = page.lines?.filter((line) => ids.includes(line.id));
+          if (copiedLines && copiedLines.length > 0 && copiedLines[0] !== undefined) {
+            targetLines.push(copiedLines[0]);
+          }
+        });
+        state.copiedElements = {
+          elements: targetLines,
+          action: action.payload.action,
+        };
+      }
+    },
     removePageLines: (state, action: PayloadAction<{ lineIds: string[] }>) => {
       const { lineIds } = action.payload;
 
@@ -238,12 +271,33 @@ const planSheetsSlice = createSlice({
     },
     getActivePage: (state) => {
       const activePageNumber = state.activePageNumbers[state.activeSheet];
-      return state.pages.find((page) => state.activeSheet === page.pageType && page.pageNumber === activePageNumber);
+
+      let activePage = state.pages.find(
+        (page) => state.activeSheet === page.pageType && page.pageNumber === activePageNumber,
+      );
+
+      // if the copied elements are cut, remove them from the active page
+      if (state.copiedElements && state.copiedElements.action === "CUT") {
+        if (activePage) {
+          const updatedLabels = activePage.labels?.filter(
+            (label) => !state.copiedElements?.elements.some((el) => el.id === label.id),
+          );
+          activePage = { ...activePage, labels: updatedLabels };
+
+          const updatedLines = activePage.lines?.filter(
+            (line) => !state.copiedElements?.elements.some((el) => el.id === line.id),
+          );
+          activePage = { ...activePage, lines: updatedLines };
+        }
+      }
+
+      return activePage;
     },
     getActivePageNumber: (state) => {
       const pageType = state.activeSheet;
       return state.activePageNumbers[pageType];
     },
+    getCopiedElements: (state) => state.copiedElements,
     getFilteredPages: (state) => {
       const filteredPages = state.pages.filter((page) => page.pageType === state.activeSheet);
       return {
@@ -280,6 +334,7 @@ export const {
   setAlignedLabelNodeId,
   setDiagramIdToMove,
   setSymbolHide,
+  setCopiedElements,
   setPreviousDiagramAttributes,
   setLineHide,
   removePageLines,
@@ -306,6 +361,7 @@ export const {
   hasChanges,
   getPlanMode,
   getLastUpdatedLineStyle,
+  getCopiedElements,
   getAlignedLabelNodeId,
   getDiagramIdToMove,
   getPreviousAttributesForDiagram,

@@ -213,10 +213,11 @@ export class TestCanvas {
   cyOffsetX: number;
   cyOffsetY: number;
 
-  public static Create = async (canvasElement: HTMLElement, firstSelect = "Select Labels") => {
+  public static Create = async (canvasElement: HTMLElement, firstSelect: string | null = null) => {
     const canvas = within(canvasElement);
     const user = userEvent.setup();
     const test = new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
+    if (firstSelect === null) return test;
     await test.clickTitle(firstSelect);
     return test;
   };
@@ -261,6 +262,17 @@ export class TestCanvas {
     clickAtCoordinates(getCytoCanvas(this.cytoscapeCanvas), this.toCoords(location), LEFT_MOUSE_BUTTON, withCtrl);
   }
 
+  clickAt(
+    location: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+    button = LEFT_MOUSE_BUTTON,
+    withCtrl = false,
+  ) {
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+    fireEvent.mouseDown(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrlKey: withCtrl });
+    fireEvent.mouseUp(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrlKey: withCtrl });
+  }
+
   async mouseClick(
     location: [number, number],
     layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
@@ -268,9 +280,14 @@ export class TestCanvas {
     withCtrl = false,
   ) {
     await this.waitForCytoscape();
-    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
-    fireEvent.mouseDown(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrl: withCtrl });
-    fireEvent.mouseUp(this.getLayer(layer), { ...this.toClientXY(location), button: button, ctrl: withCtrl });
+    this.clickAt(location, layer, button, withCtrl);
+  }
+
+  async multiSelect(locations: [number, number][]) {
+    await this.waitForCytoscape();
+    for (const location of locations) {
+      await this.leftClick(location, "layer2-node", true);
+    }
   }
 
   async leftClick(
@@ -335,6 +352,8 @@ export class TestCanvas {
     const { at, select } = _; // not so nice way to get named arguments
     await this.rightClick(at);
     const ctxMenuElement = await within(this.canvasElement).findByTestId("cytoscapeContextMenu");
+    if (!select) return ctxMenuElement;
+    console.log(select);
     const propertiesMenuItem = within(ctxMenuElement).getByText(select);
     if (action === "hover") {
       await this.user.hover(propertiesMenuItem);
@@ -342,6 +361,13 @@ export class TestCanvas {
       await this.user.click(propertiesMenuItem);
     }
     return propertiesMenuItem;
+  }
+
+  async findMenuItem(item: string): Promise<HTMLElement> {
+    for (const candidate of await within(screen.getByTestId("cytoscapeContextMenu")).findAllByRole("menuitem")) {
+      if (candidate.textContent === item) return candidate;
+    }
+    throw Error(`Menu item ${item} could not be found.`);
   }
 
   findProperty(luiType: "TextInput" | "RadioInput", withLabel: string): Element {

@@ -25,7 +25,7 @@ import {
 } from "@/test-utils/storybook-utils";
 
 export default {
-  title: "PageLabelInput",
+  title: "PageLabel",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
@@ -268,7 +268,7 @@ export const HoverLabel: Story = {
 export const DeselectLabel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.leftClick(diagramLabelPosition);
     await test.leftClick(whiteSpace); // label is deselected
   },
@@ -277,7 +277,7 @@ export const DeselectLabel: Story = {
 export const SelectMultipleLabels: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.click([210, 214] /* Label 14 */, true);
     await test.click([146, 246] /* Label 13 */, true);
   },
@@ -286,7 +286,7 @@ export const SelectMultipleLabels: Story = {
 export const DeselectMultipleLabels: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.click([210, 214] /* Label 14 */, true);
     await test.click([146, 246] /* Label 13 */, true);
     await test.click(whiteSpace); // label is deselected
@@ -356,4 +356,80 @@ const addPageLabel = async (
   await addLabel(canvasElement, labelPosition, pageLabel);
   await click(target, { clientX: whiteSpace[0], clientY: whiteSpace[1] }); // click outside the textarea to save the label
   await sleep(500);
+};
+
+export const CopyPageLabelDoesNotRemove: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" }, "hover");
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "false");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "false");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+    (await test.findMenuItem("Copy")).click();
+    // chomatic checks that nothing has changed
+  },
+};
+
+export const CutPageLabelDoesRemove: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [585, 113] /* page label */, select: "Cut" });
+    // chomatic checks that the line has been removed
+  },
+};
+
+export const PageLabelEmptyClipboardPasteIsDisabled: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: whiteSpace, select: "" });
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+  },
+};
+
+export const MultiLabelTypeClipboardEditIsDisabled: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.multiSelect([
+      [585, 113] /* page label */,
+      [318, 162] /* Diagram label */,
+    ]);
+    await test.contextMenu({ at: whiteSpace, select: "" });
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+  },
+};
+
+export const EmptyClipboardNoSelectionEditIsDisabled: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement);
+    await test.contextMenu({ at: whiteSpace, select: "" });
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+  },
+};
+
+export const PageLabelMultiSelectCopyPaste: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" });
+    await test.contextMenu({ at: [585, 213] /* whitespace */, select: "Paste" });
+    await test.contextMenu({ at: [585, 313] /* other white space */, select: "Paste" });
+    await test.multiSelect([
+      [585, 113],
+      [585, 213],
+      [585, 313],
+    ]);
+    await test.contextMenu({ at: [585, 213], select: "Copy" });
+    await test.contextMenu({ at: [385, 213], select: "Paste" });
+    await test.contextMenu({ at: [185, 213], select: "Paste" });
+  },
+  // chromatic should now see 9 page labels while there was just one
 };

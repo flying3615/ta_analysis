@@ -12,7 +12,7 @@ import { LinePropsToUpdate } from "@/components/PlanSheets/properties/LineProper
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 
 import {
-  addPageLabel,
+  addPageLabels,
   updateDiagramLabels,
   updateDiagramLines,
   updateDiagramsWithEdge,
@@ -420,7 +420,7 @@ describe("updatePlanData", () => {
       position: { x: 20, y: 20 },
     };
 
-    const result = addPageLabel(page, labelProps);
+    const result = addPageLabels(page, [labelProps]);
     expect(result).toStrictEqual({
       ...page,
       labels: [
@@ -451,7 +451,7 @@ describe("updatePlanData", () => {
       position: { x: 20, y: 20 },
     };
 
-    const result = addPageLabel(page, labelProps);
+    const result = addPageLabels(page, [labelProps]);
     expect(result).toStrictEqual({
       ...page,
       labels: [
