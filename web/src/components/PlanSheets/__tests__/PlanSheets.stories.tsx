@@ -594,6 +594,26 @@ export const SelectDiagram: Story = {
   },
 };
 
+export const SelectedDiagramContextMenu: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Diagrams"));
+    await sleep(500);
+
+    const cytoscapeElement = await canvas.findByTestId("MainCytoscapeCanvas");
+    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
+
+    const x = COORDINATE_10001_X - CANVAS_CORNER_REL_X + cyOffsetX;
+    const y = COORDINATE_10001_Y - CANVAS_CORNER_REL_Y + cyOffsetY;
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y]);
+    clickAtCoordinates(cytoscapeNodeLayer, [x, y], RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+  },
+};
+
 // Enforces 'play' is provided as it is used in PlanSheetsUndo
 export const MoveDiagram: Story & Required<Pick<Story, "play">> = {
   ...Default,

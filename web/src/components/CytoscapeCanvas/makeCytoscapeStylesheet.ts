@@ -417,6 +417,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       style: {
         "background-opacity": 0.2,
         "background-color": ELEMENT_SELECTED_COLOR,
+        "outline-opacity": 0,
         height: "data(height)",
         shape: "rectangle",
         width: "data(width)",

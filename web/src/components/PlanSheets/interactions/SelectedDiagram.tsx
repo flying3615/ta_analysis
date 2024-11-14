@@ -275,6 +275,7 @@ function getSelectedDiagramElement(extent: BoundingBox12, diagramId: number): El
     group: "nodes",
     data: { id: SELECTED_DIAGRAM, width: extent.x2 - extent.x1, height: extent.y2 - extent.y1, diagramId },
     position: { x: (extent.x1 + extent.x2) / 2, y: (extent.y1 + extent.y2) / 2 },
+    selected: true,
   };
 }
 
