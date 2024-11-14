@@ -3,6 +3,7 @@ import { CoordinateDTO } from "@linz/survey-plan-generation-api-client";
 import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { coordinateToNode } from "@/modules/plan/extractGraphData";
+import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 interface UseLabelAdjustInterface {
   useLineLabelAdjust: () => (movedNodesById: Record<number, INodeData>) => INodeData[];
@@ -60,9 +61,9 @@ describe("useLineLabelAdjust", () => {
       { x: 25, y: -20 },
       "Tahoma",
       10,
-      180,
-      0,
-      0,
+      0, // This is shown left to right on an east-west line
+      90,
+      5 / POINTS_PER_CM,
       undefined,
       1003,
       "Line",
@@ -74,7 +75,7 @@ describe("useLineLabelAdjust", () => {
       { x: 20, y: -15 },
       "Tahoma",
       10,
-      90,
+      45,
       0,
       0,
       undefined,
@@ -100,13 +101,13 @@ describe("useLineLabelAdjust", () => {
     expect(adjustedLabels[0]?.id).toBe("LAB_2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);
     expect(adjustedLabels[0]?.position?.y).toBeCloseTo(-7.5);
-    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBe(14.0362);
-    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBe(14);
+    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBeCloseTo(14, 0);
+    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBeCloseTo(14, 0);
     expect(adjustedLabels[1]?.id).toBe("LAB_2002");
     expect(adjustedLabels[1]?.position?.x).toBeCloseTo(35);
     expect(adjustedLabels[1]?.position?.y).toBeCloseTo(-12.5);
-    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBe(236.3099);
-    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBe(326.3);
+    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBeCloseTo(236, 0);
+    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(326, 0);
   });
 
   test("returns adjusted label nodes when two nodes moved", () => {
@@ -128,17 +129,18 @@ describe("useLineLabelAdjust", () => {
     expect(adjustedLabels[0]?.id).toBe("LAB_2001");
     expect(adjustedLabels[0]?.position?.x).toBeCloseTo(30);
     expect(adjustedLabels[0]?.position?.y).toBeCloseTo(-7.5);
-    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBe(14.0362);
-    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBe(14);
+    expect(adjustedLabels[0]?.properties?.["textRotation"]).toBeCloseTo(14, 0);
+    expect(adjustedLabels[0]?.properties?.["anchorAngle"]).toBeCloseTo(14, 0);
     expect(adjustedLabels[1]?.id).toBe("LAB_2002");
-    expect(adjustedLabels[1]?.position?.x).toBe(40);
-    expect(adjustedLabels[1]?.position?.y).toBe(-10);
-    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBe(270);
-    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBe(0);
+    expect(adjustedLabels[1]?.position?.x).toBeCloseTo(40);
+    expect(adjustedLabels[1]?.position?.y).toBeCloseTo(-10);
+    expect(adjustedLabels[1]?.properties?.["textRotation"]).toBeCloseTo(270, 0);
+    expect(adjustedLabels[1]?.properties?.["anchorAngle"]).toBeCloseTo(0, 0);
     expect(adjustedLabels[2]?.id).toBe("LAB_2003");
-    expect(adjustedLabels[2]?.position?.x).toBe(30);
-    expect(adjustedLabels[2]?.position?.y).toBe(-17.5);
-    expect(adjustedLabels[2]?.properties?.["textRotation"]).toBe(189.4623);
-    expect(adjustedLabels[2]?.properties?.["anchorAngle"]).toBe(9.5);
+    expect(adjustedLabels[2]?.position?.x).toBeCloseTo(30);
+    expect(adjustedLabels[2]?.position?.y).toBeCloseTo(-17.5);
+    expect(adjustedLabels[2]?.properties?.["textRotation"]).toBeCloseTo(9, 0);
+    expect(adjustedLabels[2]?.properties?.["anchorAngle"]).toBeCloseTo(99, 0);
+    expect(adjustedLabels[2]?.properties?.["pointOffset"]).toBeCloseTo(5 / POINTS_PER_CM, 0);
   });
 });

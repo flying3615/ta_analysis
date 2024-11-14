@@ -1,5 +1,5 @@
 import { CoordinateDTO, LabelDTO, LineDTO } from "@linz/survey-plan-generation-api-client";
-import { last, round } from "lodash-es";
+import { last } from "lodash-es";
 
 import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -12,37 +12,33 @@ import {
   atanDegrees360,
   Delta,
   midPoint,
-  Position,
   subtractIntoDelta,
 } from "@/util/positionUtil";
 
 interface ShiftParams {
-  startPosition: Position;
-  endPosition: Position;
   startDelta: Delta;
   endDelta: Delta;
+  angleChange: number;
 }
 
 export const useLineLabelAdjust = () => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
 
   const applyShiftParams = (label: LabelDTO, shiftParams: ShiftParams) => {
-    const { startPosition, endPosition, startDelta, endDelta } = shiftParams;
+    const { startDelta, endDelta, angleChange } = shiftParams;
     const deltaMid = midPoint(startDelta, endDelta);
     const newLabelPosition = addIntoPosition(label.position, deltaMid);
-    const lineDelta = subtractIntoDelta(endPosition, startPosition);
 
-    // Note that in common with legacy the label can be flipped on its back here
-    const anticlockwiseAngle = atanDegrees360(lineDelta);
+    const rotationAngle = angleDegrees360(label.rotationAngle + angleChange); // Note delta angles *can* be negative
+    const anchorAngle = angleDegrees360(label.anchorAngle + angleChange);
 
-    const angleChange = anticlockwiseAngle - label.rotationAngle; // Note delta angles *can* be negative
-    const adjustedAnchorAngle = angleDegrees360(label.anchorAngle + angleChange);
+    // console.log(`angleChange=${angleChange}, new anchorAngle=${anchorAngle}, rotationAngle=${rotationAngle}`);
 
     return {
       ...label,
       position: newLabelPosition,
-      rotationAngle: round(anticlockwiseAngle, 4),
-      anchorAngle: round(adjustedAnchorAngle, 1),
+      rotationAngle,
+      anchorAngle,
     };
   };
 
@@ -65,11 +61,14 @@ export const useLineLabelAdjust = () => {
     const originalStartPosition = lineStartCoord.position;
     const originalEndPosition = lineEndCoord.position;
 
+    const originalAngle = atanDegrees360(subtractIntoDelta(originalEndPosition, originalStartPosition));
+    const newAngle = atanDegrees360(subtractIntoDelta(lineEndPosition, lineStartPosition));
+    const angleChange = newAngle - originalAngle;
+
     return {
-      startPosition: lineStartPosition,
-      endPosition: lineEndPosition,
       startDelta: subtractIntoDelta(lineStartPosition, originalStartPosition),
       endDelta: subtractIntoDelta(lineEndPosition, originalEndPosition),
+      angleChange,
     };
   };
 

@@ -274,18 +274,18 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[3]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
     expect(updatedElements?.nodes?.[3]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
     expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBeCloseTo(189.9, 1);
+    expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[3]?.properties?.textRotation).toBeCloseTo(99.9, 1);
+    expect(updatedElements?.nodes?.[3]?.properties?.textRotation).toBeCloseTo(279.9, 1);
 
     expect(updatedElements?.nodes?.[4]?.id).toBe("LAB_15");
     expect(updatedElements?.nodes?.[4]?.label).toBe("Line 1005");
     expect(updatedElements?.nodes?.[4]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
     expect(updatedElements?.nodes?.[4]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBeCloseTo(161.6, 1);
+    expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[4]?.properties?.textRotation).toBeCloseTo(161.6, 1);
+    expect(updatedElements?.nodes?.[4]?.properties?.textRotation).toBeCloseTo(341.6, 1);
   });
 
   test("can move a label", () => {
@@ -491,26 +491,26 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[6]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
     expect(updatedElements?.nodes?.[6]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[6]?.properties?.anchorAngle).toBeCloseTo(189.9, 1);
+    expect(updatedElements?.nodes?.[6]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[6]?.properties?.textRotation).toBeCloseTo(99.9, 1);
+    expect(updatedElements?.nodes?.[6]?.properties?.textRotation).toBeCloseTo(279.9, 1);
 
     expect(updatedElements?.nodes?.[7]?.id).toBe("LAB_15");
     expect(updatedElements?.nodes?.[7]?.label).toBe("Line 1005");
     expect(updatedElements?.nodes?.[7]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
     expect(updatedElements?.nodes?.[7]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[7]?.properties?.anchorAngle).toBeCloseTo(180, 1);
+    expect(updatedElements?.nodes?.[7]?.properties?.anchorAngle).toBeCloseTo(0, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[7]?.properties?.textRotation).toBeCloseTo(180, 1);
+    expect(updatedElements?.nodes?.[7]?.properties?.textRotation).toBeCloseTo(0, 1);
 
     expect(updatedElements?.nodes?.[8]?.id).toBe("LAB_16");
     expect(updatedElements?.nodes?.[8]?.label).toBe("Line 1004");
     expect(updatedElements?.nodes?.[8]?.position?.x).toBeCloseTo(expectedGroundPosition1004.x, 1);
     expect(updatedElements?.nodes?.[8]?.position?.y).toBeCloseTo(expectedGroundPosition1004.y, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[8]?.properties?.anchorAngle).toBeCloseTo(161.6, 1);
+    expect(updatedElements?.nodes?.[8]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[8]?.properties?.textRotation).toBeCloseTo(161.6, 1);
+    expect(updatedElements?.nodes?.[8]?.properties?.textRotation).toBeCloseTo(341.6, 1);
   });
 });
