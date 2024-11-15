@@ -23,19 +23,69 @@ describe("makeCytoscapeStylesheet", () => {
   test("Generates bound functions to make the SVG data", () => {
     const symbolEntry = stylesheet.find((s) => s.selector === "node[symbolId]") as cytoscape.Stylesheet;
 
-    const ele = nodeSingular({ symbolId: "181" });
+    const ele63 = nodeSingular({ symbolId: "63" });
+    const ele96 = nodeSingular({ symbolId: "96" });
+    const ele97 = nodeSingular({ symbolId: "97" });
+    const ele111 = nodeSingular({ symbolId: "111" });
+    const ele112 = nodeSingular({ symbolId: "112" });
+    const ele117 = nodeSingular({ symbolId: "117" });
+    const ele179 = nodeSingular({ symbolId: "179" });
+    const ele181 = nodeSingular({ symbolId: "181" });
+    const ele182 = nodeSingular({ symbolId: "182" });
+
     const styleEntry = getStyleEntryFromStylesheet(symbolEntry);
     const makeSvg = styleEntry["background-image"];
     const makeWidth = styleEntry["width"];
     const makeHeight = styleEntry["height"];
 
-    const svg = makeSvg?.(ele);
+    const svg63 = makeSvg?.(ele63);
+    const svg96 = makeSvg?.(ele96);
+    const svg97 = makeSvg?.(ele97);
+    const svg111 = makeSvg?.(ele111);
+    const svg112 = makeSvg?.(ele112);
+    const svg117 = makeSvg?.(ele117);
+    const svg179 = makeSvg?.(ele179);
+    const svg181 = makeSvg?.(ele181);
+    const svg182 = makeSvg?.(ele182);
+
     // Asset imports seem not to work in node/jest as configured
-    expect(svg).toBe("data:image/svg+xml;utf8,OtherNew181.svg");
+    expect(svg63).toBe("data:image/svg+xml;utf8,CSNMAdopt63.svg");
+    expect(svg96).toBe("data:image/svg+xml;utf8,PrmNew96.svg");
+    expect(svg97).toBe("data:image/svg+xml;utf8,PrmOld97.svg");
+    expect(svg111).toBe("data:image/svg+xml;utf8,BoundPostAdopt111.svg");
+    expect(svg112).toBe("data:image/svg+xml;utf8,BoundPostOld112.svg");
+    expect(svg117).toBe("data:image/svg+xml;utf8,CSNMOld117.svg");
+    expect(svg179).toBe("data:image/svg+xml;utf8,UnmkNew179.svg");
+    expect(svg181).toBe("data:image/svg+xml;utf8,OtherNew181.svg");
+    expect(svg182).toBe("data:image/svg+xml;utf8,OtherOld182.svg");
 
     // Height and width get scaled into viewport pixels
-    expect(makeWidth?.(ele)).toBeCloseTo(1.66, 2);
-    expect(makeHeight?.(ele)).toBeCloseTo(1.66, 2);
+    expect(makeWidth?.(ele63)).toBeCloseTo(3.866, 2);
+    expect(makeHeight?.(ele63)).toBeCloseTo(3.866, 2);
+
+    expect(makeWidth?.(ele96)).toBeCloseTo(3.866, 2);
+    expect(makeHeight?.(ele96)).toBeCloseTo(3.866, 2);
+
+    expect(makeWidth?.(ele97)).toBeCloseTo(3.866, 2);
+    expect(makeHeight?.(ele97)).toBeCloseTo(3.866, 2);
+
+    expect(makeWidth?.(ele111)).toBeCloseTo(2.209, 2);
+    expect(makeHeight?.(ele111)).toBeCloseTo(2.209, 2);
+
+    expect(makeWidth?.(ele112)).toBeCloseTo(2.209, 2);
+    expect(makeHeight?.(ele112)).toBeCloseTo(2.209, 2);
+
+    expect(makeWidth?.(ele117)).toBeCloseTo(3.866, 2);
+    expect(makeHeight?.(ele117)).toBeCloseTo(3.866, 2);
+
+    expect(makeWidth?.(ele179)).toBeCloseTo(2.209, 2);
+    expect(makeHeight?.(ele179)).toBeCloseTo(2.209, 2);
+
+    expect(makeWidth?.(ele181)).toBeCloseTo(1.66, 2);
+    expect(makeHeight?.(ele181)).toBeCloseTo(1.66, 2);
+
+    expect(makeWidth?.(ele182)).toBeCloseTo(1.66, 2);
+    expect(makeHeight?.(ele182)).toBeCloseTo(1.66, 2);
   });
 
   test("Generates functions to style circle around label", () => {
