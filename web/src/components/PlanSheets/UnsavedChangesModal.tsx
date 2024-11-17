@@ -1,9 +1,9 @@
 import { LuiAlertModalV2, LuiButton, LuiModalV2 } from "@linzjs/lui";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useBeforeUnload, useBlocker } from "react-router-dom";
 
-import { useAppSelector } from "@/hooks/reduxHooks";
-import { hasChanges } from "@/redux/planSheets/planSheetsSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { hasChanges, hasNavigateAfterSave, navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
 
 export const UnsavedChangesModal = ({
   updatePlan,
@@ -14,19 +14,71 @@ export const UnsavedChangesModal = ({
   updatePlanIsPending: boolean | undefined;
   updatePlanIsSuccess: boolean;
 }) => {
+  const dispatch = useAppDispatch();
   const hasUnsavedChanges = useAppSelector(hasChanges);
+  const externalUrl = useAppSelector(hasNavigateAfterSave);
+  const [allowExternalNavigation, setAllowExternalNavigation] = useState(true);
+
+  useEffect(() => {
+    setAllowExternalNavigation(!hasUnsavedChanges);
+  }, [hasUnsavedChanges]);
+
+  const shouldBlockForUnsavedChanges =
+    // block when unsaved changes
+    hasUnsavedChanges &&
+    // and changes weren't just saved
+    !updatePlanIsSuccess &&
+    // and either no externalUrl
+    (!externalUrl ||
+      // or externalUrl that hasn't allowed external navigation
+      (!!externalUrl && !allowExternalNavigation));
 
   const beforeUnload = useCallback(
     (event: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
+      if (shouldBlockForUnsavedChanges) {
         event.preventDefault();
       }
     },
-    [hasUnsavedChanges],
+    [shouldBlockForUnsavedChanges],
   );
   useBeforeUnload(beforeUnload);
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      // document beforeunload => browser alert
+      // this may occur if user navigates via address bar or bookmark
+      document.addEventListener("beforeunload", beforeUnload);
+    }
+    return () => document.removeEventListener("beforeunload", beforeUnload);
+  }, [beforeUnload, hasUnsavedChanges]);
 
-  const blocker = useBlocker(hasUnsavedChanges);
+  const blocker = useBlocker(shouldBlockForUnsavedChanges);
+
+  useEffect(() => {
+    if (!shouldBlockForUnsavedChanges && externalUrl) {
+      // external navigation when not blocked
+      window.location.href = externalUrl;
+    }
+  }, [shouldBlockForUnsavedChanges, externalUrl]);
+
+  const handleCancel = () => {
+    if (blocker.state === "blocked") {
+      blocker.reset();
+    } else if (externalUrl) {
+      dispatch(navigateAfterSave(undefined));
+    }
+  };
+
+  const handleLeave = () => {
+    if (blocker.state === "blocked") {
+      blocker.proceed();
+    } else if (externalUrl) {
+      setAllowExternalNavigation(true);
+    }
+  };
+
+  const handleSave = () => {
+    updatePlan();
+  };
 
   useEffect(() => {
     if (blocker.state === "blocked" && updatePlanIsSuccess) {
@@ -36,25 +88,27 @@ export const UnsavedChangesModal = ({
     }
   }, [blocker, updatePlanIsSuccess]);
 
-  if (blocker.state !== "blocked") {
+  // blocked or externalUrl => show
+  if (blocker.state !== "blocked" && !externalUrl) {
     return null;
   }
 
-  if (updatePlanIsPending) {
+  // save in progress
+  if (updatePlanIsPending || !shouldBlockForUnsavedChanges) {
     return null;
   }
 
   return (
-    <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={() => blocker.reset()}>
+    <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={handleCancel}>
       <p>If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes</p>
       <LuiModalV2.Buttons>
-        <LuiButton level="tertiary" onClick={() => blocker.reset()}>
+        <LuiButton level="tertiary" onClick={handleCancel}>
           Cancel
         </LuiButton>
-        <LuiButton level="tertiary" onClick={() => blocker.proceed()}>
+        <LuiButton level="tertiary" onClick={handleLeave}>
           Leave
         </LuiButton>
-        <LuiButton level="tertiary" onClick={updatePlan}>
+        <LuiButton level="tertiary" onClick={handleSave}>
           Save & leave
         </LuiButton>
       </LuiModalV2.Buttons>

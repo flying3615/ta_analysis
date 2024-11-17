@@ -5,8 +5,10 @@ import { Menu, MenuDivider, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { generatePath, useNavigate } from "react-router-dom";
 
 import { luiColors } from "@/constants";
+import { useAppDispatch } from "@/hooks/reduxHooks";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
+import { navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
 export type ViewMode = "Diagrams" | "LandingPage" | "Sheets" | "Survey";
@@ -19,6 +21,15 @@ interface HeaderToggleProps {
 const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => {
   const navigate = useNavigate();
   const transactionId = useTransactionId();
+  const dispatch = useAppDispatch();
+  const handleSurveyCaptureClick = () => {
+    const externalUrl = `${hostProtoForApplication(8080)}/survey/${transactionId}`;
+    if (view === "Sheets") {
+      dispatch(navigateAfterSave(externalUrl));
+    } else {
+      window.location.href = externalUrl;
+    }
+  };
   return (
     <Menu
       className="HeaderToggle"
@@ -59,9 +70,9 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => {
         <LuiIcon name="ic_parcels_new" alt="Landing Page Icon" size="md" />
         Landing Page
       </MenuItem>
-      <MenuItem href={`${hostProtoForApplication(8080)}/survey/${transactionId}`}>
-        <LuiIcon name="ic_survey" alt="Survey Icon" size="md" />
-        <span className="HeaderToggle__text">Survey Capture</span>
+      <MenuItem onClick={handleSurveyCaptureClick}>
+        <LuiIcon name="ic_parcels_new" alt="Landing Page Icon" size="md" />
+        Survey Capture
       </MenuItem>
     </Menu>
   );
