@@ -1,0 +1,23 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.SurveyDetails {
+  &-container {
+    background-color: lui.$fuscous;
+    padding: 8px;
+    display: flex;
+  }
+
+  &-dataset {
+    color: lui.$white;
+    padding-right: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &-description {
+    color: lui.$white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

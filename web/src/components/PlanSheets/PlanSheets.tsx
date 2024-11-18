@@ -47,6 +47,7 @@ import { SelectElementHandler } from "./interactions/SelectElementHandler";
 import { SelectLabelHandler } from "./interactions/SelectLabelHandler";
 import PlanSheetsFooter from "./PlanSheetsFooter";
 import { PlanSheetsHeaderButtons } from "./PlanSheetsHeaderButtons";
+import { SurveyDetails } from "./SurveyDetails";
 
 const PlanSheets = () => {
   const transactionId = useTransactionId();
@@ -206,6 +207,7 @@ const PlanSheets = () => {
         </Header>
         <div className="PlanSheets" ref={modalOwnerRef}>
           <SidePanel align="left" isOpen={diagramsPanelOpen} data-testid="diagrams-sidepanel">
+            <SurveyDetails surveyInfo={surveyInfo} />
             <DiagramSelector />
           </SidePanel>
           {activePage ? (
