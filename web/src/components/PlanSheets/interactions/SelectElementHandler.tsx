@@ -19,11 +19,29 @@ export type SelectHandlerMode =
 
 const CLASS_RELATED_ELEMENT_SELECTED = "related-element-selected"; // select related label
 
-// coordinates are both _coordinate elements_ and _symbol labels_
-const SELECTOR_COORDINATES = `node[elementType='${PlanElementType.COORDINATES}'][^invisible],node[symbolId]`;
+// Diagram coordinates have a diagramId (see PAGE_COORDS for inverse of this)
+const DIAGRAM_COORDINATES = `node[elementType='${PlanElementType.COORDINATES}'][diagramId][^invisible]`;
+
+// Symbol labels have a symbolId
+const SYMBOL_LABELS = `node[symbolId]`;
+
+// Selector for "coordinates" are both _coordinate elements_ and _symbol labels_ (BUT NOT "page coordinates")
+const SELECTOR_COORDINATES = `${DIAGRAM_COORDINATES}, ${SYMBOL_LABELS}`;
+
 // labels are _all labels_ except _symbol labels_
 const SELECTOR_LABELS = `node[label][^invisible][^symbolId]`;
-const SELECTOR_LINES = `edge[lineId][^invisible][^pageConfig]`;
+
+// The selector for "lines" is more complex, because the defined requirement for the "Select line" header button
+// needs to select/move lines and also separately select/move coordinates. This is how legacy works. It was discussed
+// in detail with the business. Do not change it without extensive discussion. This means the header button for
+// "Select Coordinates" does not select and move Page line coordinates (do not change this).
+const PAGE_LINES = `edge[lineId][^invisible][^pageConfig]`;
+
+// Page coordinates do not have a diagramId
+const PAGE_COORDS = `node[elementType='${PlanElementType.COORDINATES}'][^diagramId][^invisible]`;
+
+// Selector for the header button "Select lines" is both _page lines_ and _page coordinates_
+const SELECTOR_LINES = `${PAGE_LINES}, ${PAGE_COORDS}`;
 
 export interface SelectElementHandlerProps {
   // for generic select, make this optional and track selectMode in state after first feature selected.

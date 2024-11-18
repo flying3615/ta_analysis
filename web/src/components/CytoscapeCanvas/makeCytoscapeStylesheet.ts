@@ -139,6 +139,15 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
+      selector: "node[^selected].hover",
+      style: {
+        "background-color": ELEMENT_HOVERED_COLOR,
+        "background-opacity": 0.4,
+        width: 20,
+        height: 20,
+      },
+    },
+    {
       selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected",
       style: {
         "outline-opacity": 0,

@@ -85,24 +85,47 @@ export const usePlanSheetsContextMenu = () => {
       PlanElementType.LINES,
       PlanElementType.LINE_LABELS,
       PlanElementType.LABELS,
+      PlanElementType.COORDINATES,
       PlanElementType.COORDINATE_LABELS,
       PlanElementType.CHILD_DIAGRAM_LABELS,
       PlanElementType.PARCEL_LABELS,
     ];
     const data = target?.data() as IGraphDataProperties;
     if (data.elementType && position && elementTypes.includes(data.elementType)) {
-      const planProperty: PlanPropertyPayload =
-        planMode === PlanMode.SelectLine
-          ? {
+      let planProperty: PlanPropertyPayload;
+      if (planMode === PlanMode.SelectLine) {
+        if (data.elementType === PlanElementType.LINES) {
+          // If the data element is a line then we can just grab the LineProperties from that
+          planProperty = {
+            mode: PlanMode.SelectLine,
+            data: cy.$("edge:selected").map((edge) => edge.data() as LinePropertiesData),
+            position: { ...position },
+          };
+        } else if (data.elementType === PlanElementType.COORDINATES) {
+          // If the data element is a coordinate then we need to find the connected edges and grab the LineProperties from those
+          const node = target as NodeSingular;
+          const connectedEdges = node.connectedEdges();
+          if (connectedEdges.length > 0) {
+            planProperty = {
               mode: PlanMode.SelectLine,
-              data: cy.$("edge:selected").map((edge) => edge.data() as LinePropertiesData),
-              position: { ...position },
-            }
-          : {
-              mode: PlanMode.SelectLabel,
-              data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesData),
+              data: connectedEdges.map((edge) => edge.data() as LinePropertiesData),
               position: { ...position },
             };
+          } else {
+            console.error("No connected edges found for coordinate");
+          }
+        } else {
+          throw new Error("Invalid plan mode");
+        }
+      } else if (planMode === PlanMode.SelectLabel) {
+        planProperty = {
+          mode: PlanMode.SelectLabel,
+          data: cy.$("node:selected").map((node) => node.data() as LabelPropertiesData),
+          position: { ...position },
+        };
+      } else {
+        throw new Error("Invalid plan mode");
+      }
       openPanel("Plan element property", () => <PlanElementProperty property={planProperty} />);
     }
   };
@@ -337,12 +360,13 @@ export const usePlanSheetsContextMenu = () => {
         if (element.data("id") == null) return undefined;
         return buildDiagramMenu(findPreviousAttributesForDiagram(element.data("diagramId") as number));
       case PlanMode.SelectLine:
-        if (planElementType !== PlanElementType.LINES) return undefined;
+        if (!(planElementType === PlanElementType.COORDINATES || planElementType === PlanElementType.LINES))
+          return undefined;
         return buildLineMenus(element as EdgeSingular, selectedCollection);
       case PlanMode.SelectCoordinates:
-        if (planElementType === PlanElementType.COORDINATES || planElementType === PlanElementType.COORDINATE_LABELS)
-          return buildNodeMenus(element as NodeSingular);
-        return undefined;
+        if (!(planElementType === PlanElementType.COORDINATES || planElementType === PlanElementType.COORDINATE_LABELS))
+          return undefined;
+        return buildNodeMenus(element as NodeSingular);
       case PlanMode.SelectLabel:
         if (!isLabel(planElementType)) return undefined;
         return buildLabelMenus(element as NodeSingular, selectedCollection);

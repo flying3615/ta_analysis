@@ -245,7 +245,7 @@ export const AddPageLineHandler = () => {
     };
   }, [cyto, onMouseClick, onMouseDoubleClick, onMouseMove]);
 
-  // No elements to render, event listeners modify the cytoscape graph
+  // No elements to render, only have event listeners that modify the cytoscape graph
   return <></>;
 };
 

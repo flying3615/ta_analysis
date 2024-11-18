@@ -313,6 +313,27 @@ export class TestCanvas {
     await this.mouseClick(location, layer, RIGHT_MOUSE_BUTTON);
   }
 
+  async leftClickAndDrag(
+    fromLocation: [number, number],
+    toLocation: [number, number],
+    layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
+    withCtrl = false,
+  ) {
+    await this.waitForCytoscape();
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(fromLocation) });
+    fireEvent.mouseDown(this.getLayer(layer), {
+      ...this.toClientXY(fromLocation),
+      button: LEFT_MOUSE_BUTTON,
+      ctrl: withCtrl,
+    });
+    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(toLocation) });
+    fireEvent.mouseUp(this.getLayer(layer), {
+      ...this.toClientXY(toLocation),
+      button: LEFT_MOUSE_BUTTON,
+      ctrl: withCtrl,
+    });
+  }
+
   getLayer(layer: "layer0-selectbox" | "layer1-drag" | "layer2-node"): HTMLElement {
     // eslint-disable-next-line testing-library/no-node-access
     return getCytoscapeNodeLayer(this.canvasElement, layer);

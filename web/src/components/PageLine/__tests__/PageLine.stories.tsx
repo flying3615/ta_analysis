@@ -76,6 +76,123 @@ export const AddLineDoubleClick: Story = {
   },
 };
 
+export const HoverLineVertex: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+
+    // Make a simple line
+    await test.leftClick(pointA);
+    await test.doubleClick(pointB);
+    await test.clickTitle("Select Lines");
+
+    // Hover over the line end
+    await test.mouseMove(pointB);
+
+    // Move the mouse without selecting the vertex
+    await test.mouseMove(pointC);
+
+    // Move back to the line end and end the test
+    await test.mouseMove(pointB);
+
+    // The following should be verified by chromatic:
+    //  - The line shape should not change
+    //  - The hover effect should be visible and not selected (e.g. a blue circle around the vertex with no pink circle)
+  },
+};
+
+export const SelectLineVertex: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+
+    // Make a simple line and switch to select lines mode
+    await test.leftClick(pointA);
+    await test.doubleClick(pointB);
+    await test.clickTitle("Select Lines");
+
+    // Select the vertex
+    await test.leftClick(pointA);
+
+    // The following should be verified by chromatic:
+    //  - The line shape should not change
+    //  - The selected vertex effect should be visible - e.g. a blue circle around the vertex with no pink circle
+  },
+};
+
+export const MovePageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+    const pointD: [number, number] = [275, 360];
+
+    // Make a ^ shape
+    await test.leftClick(pointA);
+    await test.leftClick(pointB);
+    await test.doubleClick(pointC);
+
+    // Click the header button "Select lines"
+    await test.clickTitle("Select Lines");
+
+    // Select the mid-point of the first line segment (we want to select the whole line
+    const pointABMid: [number, number] = [(pointA[0] + pointB[0]) / 2, (pointA[1] + pointB[1]) / 2];
+    await test.leftClick(pointABMid);
+
+    // Now that the line is selected, move it downwards
+    await test.leftClickAndDrag(pointABMid, pointD);
+
+    // The following should be verified by chromatic:
+    // - the line shape should stay the same i.e. the ^ shape, but the line should be moved downwards
+    // - the line selected state should not be visible - once a line has moved, the line should be unselected
+  },
+};
+
+export const MoveLineVertex: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+    const pointD: [number, number] = [275, 360];
+
+    // Make a ^ shape
+    await test.leftClick(pointA);
+    await test.leftClick(pointB);
+    await test.doubleClick(pointC);
+
+    // Click the header button "Select lines". Yes, this is "correct". To move a Page line vertex you need to be in
+    // "Select lines" mode and not "Select coordinates" mode.
+    await test.clickTitle("Select Lines");
+
+    // Select the vertex
+    await test.leftClick(pointB);
+
+    // Move pointB downwards to make a V shape
+    await test.leftClickAndDrag(pointB, pointD);
+
+    // The following should be verified by chromatic:
+    // The line shape should change from a ^ shape to a V shape
+    // The vertex selected state should not be visible - once a line has moved, the vertex should be unselected
+  },
+};
+
 export const AddLineRetainsLineStyle: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -90,6 +207,7 @@ export const AddLineRetainsLineStyle: Story = {
     await test.clickTitle("Select Lines");
     await test.contextMenu({ at: [180, 182], select: "Properties" });
     let styleSelector = test.findProperty("RadioInput", "Line style");
+    // eslint-disable-next-line testing-library/no-node-access
     await test.user.click(styleSelector.querySelector(`input[name="peckDot1"]`) as Element);
     // let widthSelector = test.findProperty("RadioInput", "Width (pts)");
     // await test.user.click(widthSelector.querySelector(`input[name="1.4"]`) as Element);
@@ -103,6 +221,7 @@ export const AddLineRetainsLineStyle: Story = {
     await test.clickTitle("Select Lines");
     await test.contextMenu({ at: [197, 132], select: "Properties" });
     styleSelector = test.findProperty("RadioInput", "Line style");
+    // eslint-disable-next-line testing-library/no-node-access
     await expect(styleSelector.querySelector(`input[name="peckDot1"]`)).toBeChecked();
     // widthSelector = test.findProperty("RadioInput", "Width (pts)");
     // await expect(widthSelector.querySelector(`input[name="1.4"]`)).toBeChecked();
