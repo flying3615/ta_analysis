@@ -189,7 +189,7 @@ export const restoreZIndex = (elem: NodeSingular) => {
 };
 
 export const increaseZIndex = (elem: NodeSingular) => {
-  elem.style("zIndex", elem.data("zIndex") + 50);
+  elem.style("zIndex", 300);
 };
 
 type RegExpMatchArrayWithIndices = RegExpMatchArray & { indices: Array<[number, number]> };

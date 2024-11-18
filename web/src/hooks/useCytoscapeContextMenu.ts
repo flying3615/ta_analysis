@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
-import { increaseZIndex, restoreZIndex } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
@@ -32,14 +31,7 @@ export const useCytoscapeContextMenu = (
   ) => MenuItem[] | undefined,
 ) => {
   useEscapeKey({
-    callback: () => {
-      hideMenu();
-      // restore selected elements
-      cy?.elements().unselect();
-      selectedElements.current?.select();
-      cy?.elements().forEach((elem) => restoreZIndex(elem));
-      selectedElements.current?.forEach((elem) => increaseZIndex(elem));
-    },
+    callback: () => hideMenu(),
   });
   const [menuState, setMenuState] = useState<ContextMenuState>({
     items: [],
