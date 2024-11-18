@@ -26,9 +26,9 @@ export const labelTypeOptions: SelectOptions[] = [
 ];
 
 export const fontOptions: SelectOptions[] = [
-  { value: "Tahoma", label: "Tahoma" },
-  { value: "Arial", label: "Arial" },
-  { value: "Times New Roman", label: "Times New Roman" },
+  { value: "Arial", label: "Arimo (was Arial)" },
+  { value: "Tahoma", label: "Roboto (was Tahoma)" },
+  { value: "Times New Roman", label: "Tinos (was Times New Roman)" },
 ];
 
 export const fontSizeOptions: SelectOptions[] = [

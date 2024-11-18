@@ -133,8 +133,8 @@ export const UpdatePageLabelProperties: Story = {
     await userEvent.click(boldCheckbox);
     const textInput = await canvas.findByTestId("label-textarea");
     void fireEvent.input(textInput, { target: { value: "New Label\nNew Line" } });
-    const fontInput = await canvas.findByDisplayValue("Tahoma");
-    await userEvent.selectOptions(fontInput, "Arial");
+    const fontInput = await canvas.findByDisplayValue("Roboto (was Tahoma)");
+    await userEvent.selectOptions(fontInput, "Arimo (was Arial)");
     const fontSizeInput = await canvas.findByDisplayValue("14");
     await userEvent.selectOptions(fontSizeInput, "16");
     const textAngleInput = await canvas.findByDisplayValue("90.0000");
@@ -171,8 +171,8 @@ export const UpdateDiagramLabelProperties: Story = {
     await expect(okButton).toBeDisabled();
     const boldCheckbox = await canvas.findByLabelText("Bold");
     await userEvent.click(boldCheckbox);
-    const fontInput = await canvas.findByDisplayValue("Tahoma");
-    await userEvent.selectOptions(fontInput, "Arial");
+    const fontInput = await canvas.findByDisplayValue("Roboto (was Tahoma)");
+    await userEvent.selectOptions(fontInput, "Arimo (was Arial)");
     const fontSizeInput = await canvas.findByDisplayValue("16");
     await userEvent.selectOptions(fontSizeInput, "14");
     const textAngleInput = await canvas.findByDisplayValue("90.0000");
@@ -233,8 +233,8 @@ export const UpdateMultiplePageAndDiagramLabelProperties: Story = {
     await expect(okButton).toBeDisabled();
     const boldCheckbox = await canvas.findByLabelText("Bold");
     await userEvent.click(boldCheckbox);
-    const fontInput = await canvas.findByDisplayValue("Tahoma");
-    await userEvent.selectOptions(fontInput, "Arial");
+    const fontInput = await canvas.findByDisplayValue("Roboto (was Tahoma)");
+    await userEvent.selectOptions(fontInput, "Arimo (was Arial)");
     const borderCheckbox = await canvas.findByLabelText("Border");
     await userEvent.click(borderCheckbox);
     await expect(okButton).toBeEnabled();

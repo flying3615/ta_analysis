@@ -92,7 +92,7 @@ export const PageLabel: Story = {
     await expect(await canvas.findByTestId("label-textarea")).toBeEnabled();
     await expect(await canvas.findByTestId("label-textarea")).toHaveValue("My label blabla\nwith line break");
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
-    await expect(await canvas.findByDisplayValue("Arial")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Arimo (was Arial)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("12")).toBeEnabled();
     canvas
       .getByTestId("button-group")
@@ -133,7 +133,7 @@ export const DiagramLabelWithBorder: Story = {
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toBeDisabled();
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("Lot 1");
     await expect(canvas.getByLabelText("Hide 00")).toBeInTheDocument();
-    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Roboto (was Tahoma)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     canvas
       .getByTestId("button-group")
@@ -176,7 +176,7 @@ export const ParcelAppelationLabelWithBorder: Story = {
     await expect(labelTextInput).toBeEnabled();
     await expect(labelTextInput).toHaveValue("Lot 1");
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
-    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Roboto (was Tahoma)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     canvas
       .getByTestId("button-group")
@@ -223,7 +223,7 @@ export const ObservationBearingDiagramLabelWith00Precision: Story = {
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("327°12'00\"");
     await expect(await canvas.findByLabelText("Hide 00")).toBeEnabled();
     await expect(await canvas.findByLabelText("Hide 00")).toBeChecked();
-    await expect(await canvas.findByDisplayValue("Times New Roman")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Tinos (was Times New Roman)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("12")).toBeEnabled();
     canvas
       .getByTestId("button-group")
@@ -265,7 +265,7 @@ export const ObservationBearingDiagramLabelWithout00Precision: Story = {
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toBeDisabled();
     await expect(within(await canvas.findByTestId("label-text-input")).getByRole("textbox")).toHaveValue("327°12'59\"");
     await expect(await canvas.findByLabelText("Hide 00")).toBeDisabled();
-    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Roboto (was Tahoma)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     canvas
       .getByTestId("button-group")
@@ -320,7 +320,7 @@ export const PageAndParcelAppellationLabelWithPartialCheckbox: Story = {
     await expect(await canvas.findByLabelText("Border")).toBeChecked();
     await expect(await canvas.findAllByLabelText("Indeterminate Check")).toHaveLength(2);
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
-    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Roboto (was Tahoma)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("90.0000")).toBeEnabled();
     canvas
@@ -374,7 +374,7 @@ export const PageAndDiagramLabelWithPartialCheckbox: Story = {
     await expect(await canvas.findByLabelText("Border")).toBeChecked();
     await expect(await canvas.findAllByLabelText("Indeterminate Check")).toHaveLength(2);
     await expect(canvas.queryByLabelText("Hide 00")).not.toBeInTheDocument();
-    await expect(await canvas.findByDisplayValue("Tahoma")).toBeEnabled();
+    await expect(await canvas.findByDisplayValue("Roboto (was Tahoma)")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("14")).toBeEnabled();
     await expect(await canvas.findByDisplayValue("90.0000")).toBeEnabled();
     canvas

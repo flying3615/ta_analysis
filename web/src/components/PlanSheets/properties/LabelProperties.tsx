@@ -369,7 +369,6 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             <LuiSelectInput
               label=""
               hideLabel
-              placeholderText=" "
               options={fontOptions}
               value={font ?? ""}
               onChange={(e) => {
@@ -384,7 +383,6 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             <LuiSelectInput
               label=""
               hideLabel
-              placeholderText=" "
               options={fontSizeOptions}
               value={fontSize ?? ""}
               onChange={(e) => {
