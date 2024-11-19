@@ -33,6 +33,7 @@ import {
 } from "@/modules/plan/extractGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
 import { filterHiddenEdges, filterHiddenNodes } from "@/util/cytoscapeUtil";
 import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
@@ -79,7 +80,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
       errorNotifier: (error) => {
         console.log(error);
       },
-      baseUrl: window._env_.secureFileUploadBaseUrl,
+      baseUrl: window._env_.secureFileUploadBaseUrl ?? "",
     }),
   ).current;
 
@@ -304,8 +305,12 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
     try {
       const processUploadJobs = imageFiles.map(async (imageFile) => {
         try {
-          const image = await compressImage(imageFile);
-          return await secureFileUploadClient.uploadFile(image.compressedImage);
+          if (isStorybookTest()) {
+            return await secureFileUploadClient.uploadFile(new File([imageFile.blob], imageFile.name));
+          } else {
+            const image = await compressImage(imageFile);
+            return await secureFileUploadClient.uploadFile(image.compressedImage);
+          }
         } catch (e) {
           return Promise.reject(e);
         }
@@ -321,19 +326,13 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
         filesUlids: sfuResponse,
       };
 
-      const token = await accessToken();
-
-      if (token) {
-        const planCompilationRequest: PlanCompileRequest = {
-          transactionId: transactionId,
-          authorization: `Bearer ${token}`,
-          planGraphicsCompileRequest: planGraphicsCompileRequest,
-        };
-
-        await compilePlan(planCompilationRequest);
-      } else {
-        console.error("Failed to get access token");
-      }
+      const token = (await accessToken()) || "mocked-token";
+      const planCompilationRequest: PlanCompileRequest = {
+        transactionId: transactionId,
+        authorization: `Bearer ${token}`,
+        planGraphicsCompileRequest: planGraphicsCompileRequest,
+      };
+      await compilePlan(planCompilationRequest);
     } catch (e) {
       console.error(e);
     }

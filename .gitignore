@@ -266,6 +266,7 @@ scratch.*
 /test/cypress/screenshots
 /test/cypress/cypress/reports/*
 /test/testcafe/testcafe/reports/*
+/test/e2e/compare/testOutputCompileImages
 
 bin/
 !infra/bin

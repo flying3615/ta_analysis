@@ -25,6 +25,11 @@ import {
   successfulRegeneratePlanTaskId,
   successfulUpdatePlanTaskId,
 } from "@/mocks/mockAsyncTaskHandler";
+import { writeCompileImage } from "@/test-utils/idb-utils";
+import { generateUniqueValue } from "@/util/httpUtil";
+
+// Keeping track of the SFU uploads for compile plan feature
+const fileUlidSet = new Map<string, string>();
 
 export const handlers: HttpHandler[] = [
   // Survey 123 = all features
@@ -393,6 +398,25 @@ export const handlers: HttpHandler[] = [
   }),
 
   http.post(/\/123\/compile-plans$/, () => HttpResponse.json({}, { status: 200, statusText: "OK" })),
+  http.post(/\/v1\/file-uploads/, async ({ request }) => {
+    const ulid = generateUniqueValue();
+    const requestBody = (await request.json()) as { originalFileName: string };
+    fileUlidSet.set(ulid, requestBody.originalFileName);
+    return HttpResponse.json({ fileUlid: ulid, signedUrl: `/v1/file-uploads/s3/${ulid}` }, { status: 200 });
+  }),
+  http.put(/\/v1\/file-uploads\/s3/, async ({ request }) => {
+    const blob = await request.blob();
+    const fileUlid = request.url.split("/").pop();
+    if (fileUlid) {
+      // Add blob to the compileImages map
+      const filename = fileUlidSet.get(fileUlid);
+      if (filename) {
+        await writeCompileImage(filename, new Blob([blob], { type: "image/jpeg" }));
+      }
+      return HttpResponse.json({}, { status: 200, statusText: "OK" });
+    }
+    return HttpResponse.json({}, { status: 400, statusText: "Bad Request" });
+  }),
 
   http.post(/\/456\/prepare$/, () => HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" })),
   http.post(/\/666\/prepare$/, () =>
