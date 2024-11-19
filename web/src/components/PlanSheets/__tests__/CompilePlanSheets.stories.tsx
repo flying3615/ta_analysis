@@ -94,6 +94,9 @@ const stories: Story[] = [];
 const images = await fetchCompileImages();
 if (images.length === 0) {
   stories.push({
+    parameters: {
+      chromatic: { delay: 1000 },
+    },
     render: () => <CompileImageViewer />,
   } as Story);
   storyImageDSPT = stories[0];
@@ -101,6 +104,9 @@ if (images.length === 0) {
 } else {
   images.forEach(([filename, blob]) => {
     stories.push({
+      parameters: {
+        chromatic: { delay: 1000 },
+      },
       render: () => <CompileImageViewer filename={filename} image={blob} />,
     } as Story);
   });

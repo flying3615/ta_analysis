@@ -209,7 +209,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
           // filter out hidden nodes
-          let diagramNodeData = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams));
+          let diagramNodeData = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams, undefined, true));
 
           // filter out the mark name if the sheet type is title plan title
           if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE) {
