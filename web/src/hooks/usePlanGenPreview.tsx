@@ -17,7 +17,6 @@ import {
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { filterHiddenEdges, filterHiddenNodes } from "@/hooks/utils";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
@@ -27,6 +26,7 @@ import {
 import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
+import { filterHiddenEdges, filterHiddenNodes } from "@/util/cytoscapeUtil";
 import { createNewNode } from "@/util/mapUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 import { wrapText } from "@/util/stringUtil";

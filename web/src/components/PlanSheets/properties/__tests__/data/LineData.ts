@@ -32,5 +32,5 @@ export const hiddenPageLine: LineDTO = {
   style: "doubleArrow1",
   coordRefs: [10011, 10015],
   pointWidth: 2.0,
-  displayState: "systemHide",
+  displayState: "hide",
 };

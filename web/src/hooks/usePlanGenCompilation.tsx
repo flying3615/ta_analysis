@@ -25,7 +25,6 @@ import {
   PlanSheetTypeObject,
 } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { filterHiddenEdges, filterHiddenNodes } from "@/hooks/utils";
 import {
   extractDiagramEdges,
   extractDiagramNodes,
@@ -34,6 +33,7 @@ import {
 } from "@/modules/plan/extractGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { filterHiddenEdges, filterHiddenNodes } from "@/util/cytoscapeUtil";
 import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 

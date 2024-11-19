@@ -1,8 +1,8 @@
-import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { BoundingBox12, BoundingBoxWH } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
-import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { IEdgeData, INodeData, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
 export const MIN_ZOOM = 0.5;
@@ -232,6 +232,40 @@ const isPositionWithinAreaLimits = (position: cytoscape.Position, areas: Boundin
     return position.x >= area.x1 && position.x <= area.x2 && position.y >= area.y1 && position.y <= area.y2;
   });
 };
+
+export const filterNodeData = (nodeData: INodeData[], displayStateValue: string) => {
+  return nodeData.filter((node) => {
+    const { properties } = node;
+    const { elementType, displayState } = properties || {};
+    const validElementTypes = ["coordinateLabels", "lineLabels", "lines", "parcelLabels", "labels"];
+    return !(validElementTypes.includes(elementType!) && displayState === displayStateValue);
+  });
+};
+
+export const filterEdgeData = (edgeData: IEdgeData[], displayStateValue: string) => {
+  return edgeData.filter((edge) => {
+    const { properties } = edge;
+    const { elementType, displayState } = properties || {};
+    const validElementTypes = ["coordinateLabels", "lineLabels", "lines", "parcelLabels", "labels"];
+    return !(validElementTypes.includes(elementType!) && displayState === displayStateValue);
+  });
+};
+
+export const filterHiddenNodes = (nodes: INodeData[]) =>
+  nodes.filter(
+    (node) =>
+      ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
+        node.properties.displayState?.valueOf() ?? "",
+      ),
+  );
+
+export const filterHiddenEdges = (edges: IEdgeData[]) =>
+  edges.filter(
+    (edge) =>
+      ![DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(
+        edge.properties.displayState?.valueOf() ?? "",
+      ),
+  );
 
 export const cytoscapeUtils = {
   zoomToFit,

@@ -119,3 +119,22 @@ export const diagramLabelSystemDisplay: LabelDTO = {
   },
   effect: "none",
 };
+
+export const diagramLabelSystemHide: LabelDTO = {
+  id: 314,
+  displayText: "System Hide Label",
+  font: "Tahoma",
+  fontSize: 14,
+  labelType: "diagram",
+  fontStyle: "regular",
+  rotationAngle: 90,
+  anchorAngle: 11.2,
+  pointOffset: 65.8,
+  textAlignment: "bottomCenter",
+  displayState: "systemHide",
+  position: {
+    x: 90,
+    y: -10,
+  },
+  effect: "none",
+};

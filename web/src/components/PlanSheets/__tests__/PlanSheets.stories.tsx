@@ -17,6 +17,7 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   diagramLabelObsBearingHide,
   diagramLabelParcelAppellation,
+  diagramLabelSystemHide,
   pageLabelWithBorder,
 } from "@/components/PlanSheets/properties/__tests__/data/LabelsData";
 import {
@@ -971,8 +972,10 @@ if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
     ...customMockPlanData.diagrams[0].lineLabels,
     diagramLabelParcelAppellation,
     diagramLabelObsBearingHide,
+    diagramLabelSystemHide,
   ];
 }
+// show object with disyplayState of hide as greyed out and don't show oject with displayState of systemHide
 export const PlanSheetWithHiddenObject: Story = {
   ...Default,
   parameters: {
