@@ -5,7 +5,7 @@ import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinat
 import { textAlignSignumHorizontal, textAlignSignumVertical } from "@/components/CytoscapeCanvas/textAlignment";
 import { useMeasureText } from "@/hooks/useMeasureText";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
-import { addIntoDelta, addIntoPosition, angleDegrees360, Delta, deltaFromPolar } from "@/util/positionUtil";
+import { addIntoDelta, addIntoPosition, clampAngleDegrees360, Delta, deltaFromPolar } from "@/util/positionUtil";
 
 export const useAdjustLoadedPlanData = () => {
   const measureTextCm = useMeasureText();
@@ -54,7 +54,7 @@ export const useAdjustLoadedPlanData = () => {
     const newShift = addIntoDelta(originalShift, unclipShift);
 
     label.pointOffset = Math.sqrt(newShift.dx ** 2 + newShift.dy ** 2) * POINTS_PER_CM;
-    label.anchorAngle = angleDegrees360(Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
+    label.anchorAngle = clampAngleDegrees360(Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
     // console.log(`relocateOffscreenLabel new pointOffset=${label.pointOffset}, new anchorAngle=${label.anchorAngle}`);
     return label;
   };

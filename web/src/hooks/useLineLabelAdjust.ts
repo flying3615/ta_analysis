@@ -8,8 +8,8 @@ import { labelToNode } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import {
   addIntoPosition,
-  angleDegrees360,
   atanDegrees360,
+  clampAngleDegrees360,
   Delta,
   midPoint,
   subtractIntoDelta,
@@ -29,8 +29,8 @@ export const useLineLabelAdjust = () => {
     const deltaMid = midPoint(startDelta, endDelta);
     const newLabelPosition = addIntoPosition(label.position, deltaMid);
 
-    const rotationAngle = angleDegrees360(label.rotationAngle + angleChange); // Note delta angles *can* be negative
-    const anchorAngle = angleDegrees360(label.anchorAngle + angleChange);
+    const rotationAngle = clampAngleDegrees360(label.rotationAngle + angleChange); // Note delta angles *can* be negative
+    const anchorAngle = clampAngleDegrees360(label.anchorAngle + angleChange);
 
     // console.log(`angleChange=${angleChange}, new anchorAngle=${anchorAngle}, rotationAngle=${rotationAngle}`);
 

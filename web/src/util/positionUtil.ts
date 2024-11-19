@@ -1,3 +1,5 @@
+import { round } from "lodash-es";
+
 export interface Position {
   x: number;
   y: number;
@@ -10,33 +12,17 @@ export interface Delta {
 
 export const atanDegrees360 = (delta: Delta) => {
   const angle = Math.atan2(delta.dy, delta.dx) * (180 / Math.PI);
-  return angleDegrees360(angle);
+  return clampAngleDegrees360(angle);
 };
 
-export function angleDegrees360<T extends number | null | undefined>(angle: T): T {
+export function clampAngleDegrees360<T extends number | null | undefined>(angle: T, roundDp: number = 4): T {
   if (!angle) return angle;
-  return (angle < 0 ? -(-angle % 360) + 360 : angle % 360) as T;
+  return round(angle < 0 ? -(-angle % 360) + 360 : angle % 360, roundDp) as T;
 }
 
 export const deltaFromPolar = (thetaDegrees: number | undefined, r: number | undefined): Delta => {
   const thetaRads = (thetaDegrees ?? 0) * (Math.PI / 180);
   return { dx: (r ?? 0) * Math.cos(thetaRads), dy: (r ?? 0) * Math.sin(thetaRads) };
-};
-
-/**
- * Normalize angle to range -90 to 90
- * @param angle
- */
-export const normalizeAngle = (angle: number): number => {
-  // Normalize angle to range 0 to 360
-  angle = Math.round((angle + 360) % 360);
-  // Adjust angle to range -180 to 180
-  if (angle > 180) angle -= 360;
-  // Further adjust angle to range -90 to 90
-  if (angle > 90) angle -= 180;
-  if (angle < -90) angle += 180;
-  // Convert 180 to 0
-  return angle === 180 ? 0 : angle;
 };
 
 export function midPoint<T extends Delta | Position>(start: T, end: T): T {

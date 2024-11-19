@@ -9,7 +9,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { getAlignedLabelNodeId, getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
-import { normalizeAngle } from "@/util/positionUtil";
+import { clampAngleDegrees360 } from "@/util/positionUtil";
 
 export const useSelectTargetLine = () => {
   const labelNodeId = useAppSelector(getAlignedLabelNodeId);
@@ -36,11 +36,18 @@ export const useSelectTargetLine = () => {
         const { x: startX, y: startY } = startNode.position();
         const { x: endX, y: endY } = endNode.position();
 
-        const lineAngle = radiansToDegrees(-Math.atan2(endY - startY, endX - startX));
+        let lineAngle = radiansToDegrees(-Math.atan2(endY - startY, endX - startX));
+
+        // Convert lineAngle to -90 to 90
+        if (lineAngle > 90) {
+          lineAngle -= 180;
+        } else if (lineAngle < -90) {
+          lineAngle += 180;
+        }
 
         if (labelNodeId && cyto) {
           const labelNode = cyto.$id(labelNodeId);
-          updateActiveDiagramsAndPageFromCytoData(labelNode.data({ textRotation: normalizeAngle(lineAngle) }));
+          updateActiveDiagramsAndPageFromCytoData(labelNode.data({ textRotation: clampAngleDegrees360(lineAngle) }));
 
           dispatch(setPlanMode(PlanMode.SelectLabel));
         }
