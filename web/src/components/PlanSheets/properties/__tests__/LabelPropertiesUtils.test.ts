@@ -242,7 +242,7 @@ describe("createLabelPropsToBeSaved", () => {
     const result = createLabelPropsToBeSaved(panelValuesToUpdate, selectedLabel);
     expect(result).toEqual({
       id: 1,
-      displayText: "New Label",
+      editedText: "New Label",
       displayState: "hide",
       displayFormat: "suppressSeconds",
       fontStyle: "bold",

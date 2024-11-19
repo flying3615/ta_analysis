@@ -79,7 +79,7 @@ export const LabelTextInput = ({
           dispatch(
             replacePage({
               updatedPage: updatePageLabels(activePage, [
-                { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText },
+                { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText },
               ]),
             }),
           );
@@ -88,7 +88,7 @@ export const LabelTextInput = ({
             replaceDiagrams(
               updateDiagramLabels(activeDiagrams, [
                 {
-                  data: { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText },
+                  data: { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText },
                   type: {
                     diagramId: labelData.diagramId.toString(),
                     elementType: labelData.elementType,
