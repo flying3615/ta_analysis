@@ -194,6 +194,24 @@ UnsavedChangesModal.play = async ({ canvasElement }) => {
   await sleep(500);
 };
 
+export const UnsavedChangesModalNavigateToSurveyCapture: Story = {
+  ...Default,
+};
+UnsavedChangesModalNavigateToSurveyCapture.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await expect(await canvas.findByText("Save layout")).toBeInTheDocument();
+
+  // Dispatch replace diagrams event to set hasChanges = true
+  store.dispatch(replaceDiagrams([]));
+  await sleep(500);
+
+  await userEvent.click(await canvas.findByText("Sheets"));
+  await userEvent.click(await canvas.findByText("Survey Capture"));
+  await sleep(500); // wait for modal to appear
+  await expect(await screen.findByText(/You have unsaved changes/)).toBeInTheDocument();
+};
+
 export const RenumberPage: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
