@@ -6,7 +6,6 @@ export const SurveyDetails = ({ surveyInfo }: { surveyInfo: ExternalSurveyInfoDt
   return (
     <div className="SurveyDetails-container">
       <div className="SurveyDetails-dataset">{`${surveyInfo.datasetSeries} ${surveyInfo.datasetId}`}</div>
-      <div className="SurveyDetails-description">{surveyInfo.description}</div>
     </div>
   );
 };

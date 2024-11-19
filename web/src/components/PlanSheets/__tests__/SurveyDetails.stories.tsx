@@ -27,11 +27,3 @@ type Story = StoryObj<typeof SurveyDetails>;
 export const Default: Story = {
   args: { surveyInfo: makeSurveyInfo() },
 };
-
-export const TruncateDescription: Story = {
-  args: {
-    surveyInfo: makeSurveyInfo({
-      description: "This is a really long description that is much longer than the horizontal space provided",
-    }),
-  },
-};

@@ -13,11 +13,4 @@
     font-weight: 600;
     white-space: nowrap;
   }
-
-  &-description {
-    color: lui.$white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
