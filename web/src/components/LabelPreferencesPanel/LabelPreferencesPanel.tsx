@@ -130,14 +130,11 @@ export const LabelPreferencesPanel = ({ transactionId }: LabelPreferencesPanelPr
             </GridUpdatingContextProvider>
           </LuiTabsPanel>
           <div className="LabelPreferencesPanel__Footer">
+            <div className="LabelPreferencesPanel__Saved" style={{ visibility: isSuccess ? "visible" : "hidden" }}>
+              <LuiIcon name="ic_check_circle_outline" size="md" alt="Saved" />
+              <div>All preferences up to date</div>
+            </div>
             <HiddenObjectsVisibleByDefault />
-            {isSuccess && (
-              <div className="LabelPreferencesPanel__Saved">
-                <LuiIcon name="ic_check_circle_outline" size="md" alt="Saved" />
-                <div>All preferences up to date</div>
-              </div>
-            )}
-            <div style={{ flex: 1 }} />
             <LuiButton level="secondary" onClick={panelClose}>
               {hasChanged ? "Cancel" : "Close"}
             </LuiButton>

@@ -196,18 +196,18 @@ export const HiddenObjectsInteraction: Story = {
     setHiddenObjectsVisibleByDefault(undefined);
   },
   play: async () => {
-    const hidden = await screen.findByText("Hidden objects visible by default");
-    const input = await screen.findByLabelText("Hidden objects visible by default");
+    const hidden = await screen.findByRole("checkbox", { name: /Hidden objects visible by default/ });
+    const label = await screen.findByTestId("hiddenObjectsVisibleByDefaultLabel");
     // default state
-    await expect(input).toBeChecked();
+    await expect(hidden).toBeChecked();
     await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
     // uncheck sets false
-    await userEvent.click(hidden);
-    await expect(input).not.toBeChecked();
+    await userEvent.click(label);
+    await expect(hidden).not.toBeChecked();
     await expect(isHiddenObjectsVisibleByDefault()).toBeFalsy();
     // check sets true
-    await userEvent.click(hidden);
-    await expect(input).toBeChecked();
+    await userEvent.click(label);
+    await expect(hidden).toBeChecked();
     await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
     // reset
     setHiddenObjectsVisibleByDefault(undefined);
@@ -220,7 +220,7 @@ export const HiddenObjectsStateHidden: Story = {
     setHiddenObjectsVisibleByDefault(false);
   },
   play: async () => {
-    const input = await screen.findByLabelText("Hidden objects visible by default");
+    const input = await screen.findByRole("checkbox", { name: /Hidden objects visible by default/ });
     await expect(input).not.toBeChecked();
     await expect(isHiddenObjectsVisibleByDefault()).toBeFalsy();
     // reset
@@ -234,7 +234,7 @@ export const HiddenObjectsStateVisible: Story = {
     setHiddenObjectsVisibleByDefault(true);
   },
   play: async () => {
-    const input = await screen.findByLabelText("Hidden objects visible by default");
+    const input = await screen.findByRole("checkbox", { name: /Hidden objects visible by default/ });
     await expect(input).toBeChecked();
     await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
     // reset

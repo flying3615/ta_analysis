@@ -1,29 +1,50 @@
 import "./HiddenObjectsVisibleByDefault.scss";
 
-import { LuiCheckboxInput } from "@linzjs/lui";
-import { ChangeEvent, ReactElement, useCallback, useState } from "react";
+import { LuiIcon, LuiMiniSpinner } from "@linzjs/lui";
+import clsx from "clsx";
+import { MouseEvent as ReactMouseEvent, ReactElement, useState } from "react";
 
 import { isHiddenObjectsVisibleByDefault, setHiddenObjectsVisibleByDefault } from "./labelPreferences";
 
 export function HiddenObjectsVisibleByDefault(): ReactElement {
   const [isVisibleByDefault, _setIsVisibleByDefault] = useState(isHiddenObjectsVisibleByDefault());
+  const [saving, setSaving] = useState(false);
 
-  const setIsVisibleByDefault = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const isVisibleByDefault = e.target.checked;
-      _setIsVisibleByDefault(isVisibleByDefault);
-      setHiddenObjectsVisibleByDefault(isVisibleByDefault);
-    },
-    [_setIsVisibleByDefault],
-  );
+  const setIsVisibleByDefault = (e: ReactMouseEvent<HTMLInputElement>) => {
+    const isVisibleByDefault = e.currentTarget.checked;
+    _setIsVisibleByDefault(isVisibleByDefault);
+    setHiddenObjectsVisibleByDefault(isVisibleByDefault);
+    setSaving(true);
+    setTimeout(() => setSaving(false), 1000);
+  };
 
   return (
-    <LuiCheckboxInput
-      className="HiddenObjectsVisibleByDefault"
-      label="Hidden objects visible by default"
-      value=""
-      onChange={setIsVisibleByDefault}
-      isChecked={isVisibleByDefault}
-    />
+    <div
+      className={clsx("LuiCheckboxInput HiddenObjectsVisibleByDefault", {
+        "LuiCheckboxInput--isChecked": isVisibleByDefault,
+      })}
+    >
+      <label className="HiddenObjectsVisibleByDefault__label" data-testid="hiddenObjectsVisibleByDefaultLabel">
+        <input
+          type="checkbox"
+          className="LuiCheckboxInput-input"
+          aria-checked={isVisibleByDefault}
+          checked={isVisibleByDefault}
+          onClick={setIsVisibleByDefault}
+        />
+
+        {saving && <LuiMiniSpinner size={18} divProps={{ className: "HiddenObjectsVisibleByDefault__spinner" }} />}
+        {!saving && (
+          <LuiIcon
+            name="ic_check"
+            className="LuiCheckboxInput-labelCheck HiddenObjectsVisibleByDefault__icon"
+            alt="Hidden objects visible by default"
+            size="sm"
+          />
+        )}
+
+        <span className="LuiCheckboxInput-label">Hidden objects visible by default</span>
+      </label>
+    </div>
   );
 }
