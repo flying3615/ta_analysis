@@ -256,6 +256,7 @@ const planSheetsSlice = createSlice({
     getPages: (state) => state.pages,
     getActiveSheet: (state) => state.activeSheet,
     getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
+    getElementTypeConfigs: (state) => state.configs?.[0]?.elementTypeConfigs ?? [],
     getPageNumberFromPageRef: (state) => (pageID: number) => {
       const page = state.pages.find((page) => page.pageType === state.activeSheet && page.id === pageID);
       return page?.pageNumber ?? null;
@@ -358,6 +359,7 @@ export const {
   getActivePage,
   getActiveSheet,
   getPageConfigs,
+  getElementTypeConfigs,
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,
   getActivePageRefFromPageNumber,

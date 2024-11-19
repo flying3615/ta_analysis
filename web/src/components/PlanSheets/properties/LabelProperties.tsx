@@ -8,11 +8,11 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelTextErrorMessage } from "@/components/LabelTextInput/LabelTextErrorMessage";
 import { LabelTextInfoMessage } from "@/components/LabelTextInput/LabelTextInfoMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { useLabelsFunctions } from "@/hooks/useLabelsFunctions";
 import { useLabelTextValidation } from "@/hooks/useLabelTextValidation";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
-import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage } from "@/redux/planSheets/planSheetsSlice";
 import { convertDegreesToDms, convertDmsToDegrees, formatDms, paddingMMSS } from "@/util/stringUtil";
 
 import {
@@ -32,7 +32,6 @@ import {
   getTextLengthErrorMessage,
   labelTypeOptions,
   parcelAppellationInfoMessage,
-  planDataLabelIdToCytoscape,
   someButNotAllHavePropertyValue,
   specialCharsRegex,
   textAlignmentEnum,
@@ -80,9 +79,9 @@ export type LabelElementTypeProps = { elementType?: PlanElementType; diagramId?:
 export type LabelPropsToUpdateWithElemType = { data: LabelPropsToUpdate; type: LabelElementTypeProps };
 
 const LabelProperties = (props: LabelPropertiesProps) => {
-  const dispatch = useAppDispatch();
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
+  const { updateLabels } = useLabelsFunctions();
 
   const selectedLabels = useMemo(() => {
     // load the selected labels from redux store
@@ -133,31 +132,8 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       createLabelPropsToBeSaved(panelValuesToUpdate, label),
     );
 
-    // Update diagram labels
-    const diagramLabelsToUpdate = labelsToUpdate.filter((label) =>
-      selectedLabels.some(
-        (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id) && !isNil(selectedLabel.diagramId),
-      ),
-    );
-    const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabelsToUpdate.map((label) => {
-      const selectedLabel = selectedLabels.find((selected) => selected.id === planDataLabelIdToCytoscape(label.id));
-      return {
-        data: label,
-        type: {
-          elementType: selectedLabel?.elementType,
-          diagramId: selectedLabel?.diagramId,
-        },
-      };
-    });
-
-    dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdateWithElemType)));
-
-    // Update page labels (do not apply onDataChanging as it is already done in replaceDiagrams, so the undo button works correctly)
-    const pageLabelsToUpdate = labelsToUpdate.filter((label) => !diagramLabelsToUpdate.includes(label));
-    dispatch(
-      replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
-    );
-  }, [panelValuesToUpdate, activePage, activeDiagrams, selectedLabels, dispatch]);
+    updateLabels(labelsToUpdate, selectedLabels);
+  }, [panelValuesToUpdate, activePage, selectedLabels, updateLabels]);
 
   /** Normalize the angle to be within 0-180 in DMS */
   const normalizeLabelAngle = (angle: string | undefined): string => {

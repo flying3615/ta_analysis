@@ -43,6 +43,7 @@ import {
   setPlanMode,
 } from "@/redux/planSheets/planSheetsSlice";
 
+import { useLabelsFunctions } from "./useLabelsFunctions";
 import { usePageLabelEdit } from "./usePageLabelEdit";
 import { usePageLineEdit } from "./usePageLineEdit";
 
@@ -58,6 +59,7 @@ export const usePlanSheetsContextMenu = () => {
   const setLineHidden = useChangeLine();
   const { deletePageLines } = usePageLineEdit();
   const { deletePageLabels, copyPageLabels, cutPageLabels } = usePageLabelEdit();
+  const { setOriginalLocation } = useLabelsFunctions();
   const highlightedLabel = useRef<NodeSingular>();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
@@ -238,7 +240,7 @@ export const usePlanSheetsContextMenu = () => {
       const stackedLabels = getStackedLabels(targetLabel, clickedPosition);
 
       return [
-        { title: "Original location", callback: () => <MoveOriginalLocation target={targetLabel} /> },
+        { title: "Original location", callback: () => setOriginalLocation(selectedLabels) },
         {
           title: "Show",
           hideWhen: () =>
