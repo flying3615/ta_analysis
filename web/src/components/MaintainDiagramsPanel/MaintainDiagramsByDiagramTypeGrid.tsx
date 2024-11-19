@@ -1,7 +1,10 @@
 import "./MaintainDiagramsGrid.scss";
 
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
-import { DiagramLayerPreferenceDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  DiagramLayerPreferenceDTO,
+  PostDiagramsRequestDTODiagramTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiSelectInput } from "@linzjs/lui";
 import { Grid } from "@linzjs/step-ag-grid";
 import { PanelInstanceContext, useLuiModalPrefab } from "@linzjs/windows";
@@ -26,6 +29,12 @@ export interface MaintainDiagramsByDiagramTypeGridProps {
   key: string;
   transactionId: number;
 }
+
+const systemGeneratedDiagramTypes = [
+  PostDiagramsRequestDTODiagramTypeEnum.SYSP,
+  PostDiagramsRequestDTODiagramTypeEnum.SYST,
+  PostDiagramsRequestDTODiagramTypeEnum.SYSN,
+] as string[];
 
 export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
   MaintainDiagramsGridRef,
@@ -96,13 +105,15 @@ export const MaintainDiagramsByDiagramTypeGrid = forwardRef<
    */
 
   const save = useCallback(async () => {
-    const result = await showPrefabModal(layerChangesWillOverwriteModal);
-    if (!result) {
-      return false;
+    if (!systemGeneratedDiagramTypes.includes(diagramTypeCode)) {
+      const result = await showPrefabModal(layerChangesWillOverwriteModal);
+      if (!result) {
+        return false;
+      }
     }
     const response = await mutateAsync({ diagramsByType });
     return response.ok;
-  }, [diagramsByType, mutateAsync, showPrefabModal]);
+  }, [diagramTypeCode, diagramsByType, mutateAsync, showPrefabModal]);
 
   /**
    * If grid has changed ask if save required and save.

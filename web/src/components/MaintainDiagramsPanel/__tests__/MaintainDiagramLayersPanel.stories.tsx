@@ -138,7 +138,7 @@ MaintainIndividualUserDefinedDiagramsDefault.play = async () => {
   await userEvent.click(maintainIndividualUserDefinedDiagramsTab);
 };
 
-export const MaintainDiagramsLayersSave: Story = {
+export const MaintainDiagramsLayersSaveSystemGeneratedDiagram: Story = {
   ...Default,
   parameters: {
     ...Default.parameters,
@@ -155,7 +155,7 @@ export const MaintainDiagramsLayersSave: Story = {
     transactionId: "123",
   },
 };
-MaintainDiagramsLayersSave.play = async ({ step }) => {
+MaintainDiagramsLayersSaveSystemGeneratedDiagram.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
   await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
@@ -167,8 +167,6 @@ MaintainDiagramsLayersSave.play = async ({ step }) => {
     await userEvent.click(saveButton);
   });
   await step("THEN updated layer preferences are saved", async () => {
-    const continueButton = await screen.findByText("Continue");
-    await userEvent.click(continueButton);
     await expect(await screen.findByText("All layers up to date")).toBeTruthy();
   });
 };
@@ -202,8 +200,6 @@ MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
     await userEvent.click(saveButton);
   });
   await step("THEN updated layer preferences are saved", async () => {
-    const continueButton = await screen.findByText("Continue");
-    await userEvent.click(continueButton);
     const toastMessage = await screen.findByText("Error updating diagram layer preferences.");
     await expect(toastMessage).toBeTruthy();
   });
