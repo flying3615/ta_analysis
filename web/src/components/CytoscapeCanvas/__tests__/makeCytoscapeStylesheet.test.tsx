@@ -149,7 +149,7 @@ describe("makeCytoscapeStylesheet", () => {
 
   test("has style for selected nodes", () => {
     const selectedNodeStyle = stylesheet.find(
-      (s) => s.selector === "node:selected, node.related-label-selected",
+      (s) => s.selector === "node[^label]:selected, node.related-label-selected",
     ) as cytoscape.Stylesheet;
     const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
     expect(styleEntry["outline-color"]).toBe("rgba(248, 27, 239, 1)");

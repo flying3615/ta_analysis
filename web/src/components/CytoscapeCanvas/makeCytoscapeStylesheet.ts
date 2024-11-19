@@ -129,7 +129,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "node:selected, node.related-label-selected",
+      selector: "node[^label]:selected, node.related-label-selected",
       style: {
         "outline-width": 2,
         "outline-offset": 2,
@@ -139,7 +139,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "node[^selected].hover",
+      selector: "node[^selected][^label].hover",
       style: {
         "background-color": ELEMENT_HOVERED_COLOR,
         "background-opacity": 0.4,
