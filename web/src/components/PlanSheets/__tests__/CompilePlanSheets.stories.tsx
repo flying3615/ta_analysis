@@ -11,13 +11,11 @@ import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
 import CompileImagesViewer from "@/components/PlanSheets/__tests__/CompileImagesViewer";
-import CompileImageViewer from "@/components/PlanSheets/__tests__/CompileImageViewer";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { fetchCompileImages } from "@/test-utils/idb-utils";
-import { ModalStoryWrapper, StorybookRouter } from "@/test-utils/storybook-utils";
+import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {
   title: "CompilePlanSheets",
@@ -64,6 +62,7 @@ export const CompilePlans: Story = {
     const modal = await screen.findByRole("dialog");
     const modalText = /Complete Plan Generation/i;
     await expect(modal.textContent).toMatch(modalText);
+    await sleep(500);
     try {
       fireEvent.click(await screen.findByText("Yes"));
     } catch (e) {
@@ -79,42 +78,24 @@ export const CompilePlans: Story = {
   },
 };
 
-// Chromatic will execute the test in the order defined in the storybook
-// this story is dependent on the previous story
+// We dont need to run this test in chromatic
 export const ViewAllCompiledImages: Story = {
-  render: () => <CompileImagesViewer />,
+  render: () => <CompileImagesViewer imageIndex="all" />,
   parameters: {
     chromatic: { disable: true },
   },
 };
 
-//let storyImageDSPT;
-//let storyImagDTPS;
-const stories: Story[] = [];
-const images = await fetchCompileImages();
-if (images.length === 0) {
-  stories.push({
-    parameters: {
-      chromatic: { delay: 1000 },
-    },
-    render: () => <CompileImageViewer />,
-  } as Story);
-  //storyImageDSPT = stories[0];
-  //storyImagDTPS = stories[0];
-} else {
-  images.forEach(([filename, blob]) => {
-    stories.push({
-      parameters: {
-        chromatic: { delay: 1000 },
-      },
-      render: () => <CompileImageViewer filename={filename} image={blob} />,
-    } as Story);
-  });
-  //storyImageDSPT = stories[0];
-  //storyImagDTPS = stories[2];
-}
+export const CompiledImageDSPT: Story = {
+  parameters: {
+    chromatic: { delay: 2000 },
+  },
+  render: () => <CompileImagesViewer imageIndex={0} />,
+};
 
-/* TODO re-enable when fixed
-export const CompiledImageDSPT = storyImageDSPT;
-export const CompiledImageDTPS = storyImagDTPS;
-*/
+export const CompiledImageDTPS: Story = {
+  parameters: {
+    chromatic: { delay: 2000 },
+  },
+  render: () => <CompileImagesViewer imageIndex={2} />,
+};

@@ -53,6 +53,9 @@ import { downloadBlob } from "@/util/downloadHelper";
 export default {
   title: "PlanSheets",
   component: PlanSheets,
+  parameters: {
+    chromatic: { delay: 300 },
+  },
 } as Meta<typeof PlanSheets>;
 
 export type Story = StoryObj<typeof PlanSheets>;

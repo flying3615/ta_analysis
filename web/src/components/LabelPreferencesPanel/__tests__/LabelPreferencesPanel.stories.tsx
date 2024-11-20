@@ -32,6 +32,9 @@ export default {
       control: "text",
     },
   },
+  parameters: {
+    chromatic: { delay: 300 },
+  },
 } as Meta<typeof LabelPreferencesPanel>;
 
 const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) => (

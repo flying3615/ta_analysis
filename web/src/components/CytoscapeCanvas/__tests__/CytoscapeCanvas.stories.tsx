@@ -63,6 +63,9 @@ export default {
   title: "CytoscapeCanvas",
   component: CytoscapeCanvas,
   decorators: [withProviderDecorator(mockedState)],
+  parameters: {
+    chromatic: { delay: 500, diffThreshold: 0.1 },
+  },
 } as Meta<typeof CytoscapeCanvas>;
 
 type Story = StoryObj<typeof CytoscapeCanvas>;
