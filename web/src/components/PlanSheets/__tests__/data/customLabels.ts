@@ -8,10 +8,10 @@ export const pageLabelWithLineBreak: LabelDTO = {
   fontSize: 16,
   fontStyle: "boldItalic",
   position: {
-    x: 0.22,
+    x: 0.23,
     y: -0.18,
   },
-  rotationAngle: 35,
+  rotationAngle: 45,
   pointOffset: 0,
   anchorAngle: 0,
   textAlignment: "centerCenter, textRight",
@@ -36,4 +36,25 @@ export const diagramLabelParcelAppellation: LabelDTO = {
   font: "Arial",
   fontSize: 16,
   fontStyle: "bold",
+};
+
+export const diagramLabelObsBearingHide: LabelDTO = {
+  id: 20,
+  labelType: "obsBearing",
+  displayText: "1800°545'04\"",
+  font: "Tahoma",
+  fontSize: 14,
+  fontStyle: "regular",
+  position: {
+    x: 95,
+    y: -75,
+  },
+  rotationAngle: 90,
+  pointOffset: 14,
+  anchorAngle: 0,
+  textAlignment: "centerCenter",
+  displayState: "display",
+  featureId: 1006,
+  featureType: "Line",
+  effect: "none",
 };
