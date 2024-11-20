@@ -4,6 +4,7 @@ import {
   CoordinateDTOCoordTypeEnum,
   DiagramDTO,
   DisplayStateEnum,
+  ElementTypeConfigDTO,
   LabelDTO,
   LabelDTOLabelTypeEnum,
   LineDTO,
@@ -623,6 +624,589 @@ export class PlanDataBuilder {
         },
       ],
     };
+    const elementTypeConfigs: ElementTypeConfigDTO[] = [
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "parcelAppellation",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngleOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "2.0",
+          },
+          {
+            attribute: "originalAnchorAngleOffset",
+            defaultValue: "270.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "arcRadius",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "2.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "270.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "parcelArea",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngleOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "2.0",
+          },
+          {
+            attribute: "originalAnchorAngleOffset",
+            defaultValue: "90.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "obsBearing",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "childDiagram",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "childDiagramPage",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngleOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "2.0",
+          },
+          {
+            attribute: "originalAnchorAngleOffset",
+            defaultValue: "90.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "obsCode",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "diagram",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "diagramType",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngleOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "2.0",
+          },
+          {
+            attribute: "originalAnchorAngleOffset",
+            defaultValue: "270.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "obsDistance",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "lineLongDescription",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "lineDescription",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "315.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "markDescription",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "1.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "45.0",
+          },
+        ],
+        nonModifiableAttribs: ["displayText"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "markName",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: [
+          "displayText",
+          "font",
+          "fontSize",
+          "fontStyle",
+          "rotationAngle",
+          "pointOffset",
+          "anchorAngle",
+          "textAlignment",
+          "effect",
+        ],
+        attribOptions: [],
+        element: "Label",
+        elementType: "nodeSymbol1",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: [
+          "displayText",
+          "font",
+          "fontSize",
+          "fontStyle",
+          "rotationAngle",
+          "pointOffset",
+          "anchorAngle",
+          "textAlignment",
+          "effect",
+        ],
+        attribOptions: [],
+        element: "Label",
+        elementType: "nodeSymbol2",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "displayState",
+            defaultValue: "display",
+          },
+          {
+            attribute: "font",
+            defaultValue: "Tahoma",
+          },
+          {
+            attribute: "fontSize",
+            defaultValue: "8",
+          },
+          {
+            attribute: "fontStyle",
+            defaultValue: "italic",
+          },
+          {
+            attribute: "rotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "pointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "anchorAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "textAlignment",
+            defaultValue: "centerCenter",
+          },
+          {
+            attribute: "effect",
+            defaultValue: "none",
+          },
+          {
+            attribute: "originalRotationAngle",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalPointOffset",
+            defaultValue: "0.0",
+          },
+          {
+            attribute: "originalAnchorAngle",
+            defaultValue: "0.0",
+          },
+        ],
+        nonModifiableAttribs: ["none"],
+        attribOptions: [
+          {
+            attribute: "font",
+            optionsList: ["Tahoma", "Times New Roman", "Arial"],
+          },
+          {
+            attribute: "fontSize",
+            optionsList: ["8", "10", "12", "14", "16"],
+          },
+        ],
+        element: "Label",
+        elementType: "userAnnotation",
+      },
+      {
+        attribDefaults: [],
+        nonModifiableAttribs: ["style", "pointWidth"],
+        attribOptions: [],
+        element: "Line",
+        elementType: "ctAbuttal",
+      },
+      {
+        attribDefaults: [],
+        nonModifiableAttribs: ["style", "pointWidth"],
+        attribOptions: [],
+        element: "Line",
+        elementType: "observation",
+      },
+      {
+        attribDefaults: [],
+        nonModifiableAttribs: ["style", "pointWidth"],
+        attribOptions: [],
+        element: "Line",
+        elementType: "parcelBoundary",
+      },
+      {
+        attribDefaults: [
+          {
+            attribute: "displayState",
+            defaultValue: "display",
+          },
+          {
+            attribute: "style",
+            defaultValue: "solid",
+          },
+          {
+            attribute: "pointWidth",
+            defaultValue: "0.7",
+          },
+        ],
+        nonModifiableAttribs: ["none"],
+        attribOptions: [
+          {
+            attribute: "style",
+            optionsList: ["solid", "peck1", "peckDot1", "arrow1", "doubleArrow1"],
+          },
+          {
+            attribute: "pointWidth",
+            optionsList: ["0.7", "1", "1.4", "2", "2.5"],
+          },
+        ],
+        element: "Line",
+        elementType: "userDefined",
+      },
+    ];
     const pageMaxId = Math.max(...this.planData.pages.map((page) => page.id));
     const lineMaxId = Math.max(...this.planData.diagrams.flatMap((diagram) => diagram.lines.map((line) => line.id)));
     const coordinateMaxId = Math.max(
@@ -633,6 +1217,7 @@ export class PlanDataBuilder {
 
     const configData = {
       pageConfigs: [pageConfigDTO],
+      elementTypeConfigs,
       maxElemIds: [
         {
           element: "Coordinate",

@@ -1,8 +1,8 @@
-import { LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 
 export const pageLabelWithLineBreak: LabelDTO = {
   id: 511,
-  labelType: "userAnnotation",
+  labelType: LabelDTOLabelTypeEnum.userAnnotation,
   displayText: "My page label\nwith a line break",
   font: "Times New Roman",
   fontSize: 16,
@@ -32,7 +32,47 @@ export const diagramLabelParcelAppellation: LabelDTO = {
     x: 95,
     y: -75,
   },
-  labelType: "parcelAppellation",
+  labelType: LabelDTOLabelTypeEnum.parcelAppellation,
+  font: "Arial",
+  fontSize: 16,
+  fontStyle: "bold",
+};
+
+export const diagramObsBearingLabel: LabelDTO = {
+  anchorAngle: 0,
+  displayState: "display",
+  effect: "none",
+  pointOffset: 0,
+  rotationAngle: 0,
+  textAlignment: "centerCenter",
+  id: 20,
+  featureId: 1002,
+  displayText: "286°00'00\"",
+  position: {
+    x: 65,
+    y: -9,
+  },
+  labelType: LabelDTOLabelTypeEnum.obsBearing,
+  font: "Arial",
+  fontSize: 16,
+  fontStyle: "bold",
+};
+
+export const diagramObsDistLabel: LabelDTO = {
+  anchorAngle: 0,
+  displayState: "display",
+  effect: "none",
+  pointOffset: 0,
+  rotationAngle: 0,
+  textAlignment: "centerCenter",
+  id: 21,
+  featureId: 1002,
+  displayText: "43.5",
+  position: {
+    x: 65,
+    y: -11,
+  },
+  labelType: LabelDTOLabelTypeEnum.obsDistance,
   font: "Arial",
   fontSize: 16,
   fontStyle: "bold",
