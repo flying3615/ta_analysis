@@ -214,6 +214,11 @@ export function toClientXY(position: [number, number]): { clientX: number; clien
   return { clientX: x, clientY: y };
 }
 
+export function toXY(position: [number, number]): { x: number; y: number } {
+  const [x, y] = position;
+  return { x: x, y: y };
+}
+
 export class TestCanvas {
   user: UserEvent;
   canvasElement: HTMLElement;
