@@ -80,6 +80,7 @@ export const RequiredLayersAreAutomaticallyEnabled: Story = {
     transactionId: "123",
   },
 };
+
 RequiredLayersAreAutomaticallyEnabled.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -110,6 +111,7 @@ export const ExistingParcelsSelectionContainsBoundaryLinesOption: Story = {
     transactionId: "123",
   },
 };
+
 ExistingParcelsSelectionContainsBoundaryLinesOption.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -133,6 +135,7 @@ export const MaintainIndividualUserDefinedDiagramsDefault: Story = {
     transactionId: "123",
   },
 };
+
 MaintainIndividualUserDefinedDiagramsDefault.play = async () => {
   const maintainIndividualUserDefinedDiagramsTab = await screen.findByText("Individual user-defined diagram");
   await userEvent.click(maintainIndividualUserDefinedDiagramsTab);
@@ -155,6 +158,7 @@ export const MaintainDiagramsLayersSaveSystemGeneratedDiagram: Story = {
     transactionId: "123",
   },
 };
+
 MaintainDiagramsLayersSaveSystemGeneratedDiagram.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -188,6 +192,7 @@ export const MaintainDiagramsLayersErrorOnSave: Story = {
     transactionId: "123",
   },
 };
+
 MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -199,28 +204,18 @@ MaintainDiagramsLayersErrorOnSave.play = async ({ step }) => {
     const saveButton = await screen.findByText("Save");
     await userEvent.click(saveButton);
   });
-  await step("THEN updated layer preferences are saved", async () => {
+  await step("THEN error is thrown", async () => {
     const toastMessage = await screen.findByText("Error updating diagram layer preferences.");
     await expect(toastMessage).toBeTruthy();
   });
 };
 export const MaintainDiagramsLayersUnsavedChangesDiscard: Story = {
   ...Default,
-  parameters: {
-    ...Default.parameters,
-    msw: {
-      handlers: [
-        ...handlers,
-        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
-          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
-        ),
-      ],
-    },
-  },
   args: {
     transactionId: "123",
   },
 };
+
 MaintainDiagramsLayersUnsavedChangesDiscard.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -300,21 +295,11 @@ export const DiscardUnsavedChangesWhenChangingTabsFromIndividual: Story = {
 
 export const MaintainDiagramsLayersUnsavedChangesCancel: Story = {
   ...Default,
-  parameters: {
-    ...Default.parameters,
-    msw: {
-      handlers: [
-        ...handlers,
-        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
-          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
-        ),
-      ],
-    },
-  },
   args: {
     transactionId: "123",
   },
 };
+
 MaintainDiagramsLayersUnsavedChangesCancel.play = async ({ step }) => {
   const table = await findQuick({ classes: ".LuiTabsPanel--active" });
 
@@ -333,4 +318,47 @@ MaintainDiagramsLayersUnsavedChangesCancel.play = async ({ step }) => {
     "THEN user stays on System Generated Primary Diagram and navigation to different diagram type is cancelled",
     async () => {},
   );
+};
+
+export const MaintainDiagramsLayersSaveUserDefinedDiagram: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    msw: {
+      handlers: [
+        ...handlers,
+        http.put(/\/123\/diagram-layers-by-diagram-type$/, () =>
+          HttpResponse.json({ ok: true }, { status: 200, statusText: "OK" }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+
+MaintainDiagramsLayersSaveUserDefinedDiagram.play = async ({ step }) => {
+  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+
+  await step("GIVEN I'm in the Diagrams tab of Maintain diagram layers", async () => {});
+  await step(
+    "WHEN I select User defined primary diagram AND click the select button for the Existing Parcels layer",
+    async () => {
+      const userDefinedDiagram = await findQuick({ classes: ".LuiSelect-select" });
+      await userEvent.click(userDefinedDiagram);
+      await userEvent.selectOptions(userDefinedDiagram, "User Defined Primary Diagram");
+      await sleep(100); // wait for diagram type to change
+      await clickLayersSelectButton("50", table);
+    },
+  );
+  await step("AND click Save button", async () => {
+    const saveButton = await screen.findByText("Save");
+    await userEvent.click(saveButton);
+  });
+  await step("THEN updated layer preferences are saved", async () => {
+    const continueButton = await screen.findByText("Continue");
+    await userEvent.click(continueButton);
+    await expect(await screen.findByText("All layers up to date")).toBeTruthy();
+  });
 };
