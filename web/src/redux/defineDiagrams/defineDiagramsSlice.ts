@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
+import { revertAll } from "@/redux/revertAll";
 
 export interface DefineDiagramsState {
   action: DefineDiagramsActionType;
@@ -13,6 +14,7 @@ const initialState: DefineDiagramsState = {
 const defineDiagramsSlice = createSlice({
   name: "defineDiagrams",
   initialState,
+  extraReducers: (builder) => builder.addCase(revertAll, () => initialState),
   reducers: {
     setActiveAction: (state, action: PayloadAction<DefineDiagramsActionType>) => {
       state.action = action.payload;

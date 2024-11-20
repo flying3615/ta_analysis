@@ -7,6 +7,7 @@ import { cloneDeep } from "lodash-es";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
+import { revertAll } from "@/redux/revertAll";
 
 export interface PlanSheetsState {
   configs?: ConfigDataDTO[];
@@ -67,6 +68,7 @@ const onDataChanging = (state: PlanSheetsState) => {
 const planSheetsSlice = createSlice({
   name: "planSheets",
   initialState,
+  extraReducers: (builder) => builder.addCase(revertAll, () => initialState),
   reducers: {
     setPlanData: (
       state,

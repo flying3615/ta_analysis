@@ -115,6 +115,7 @@ const PlanSheets = () => {
   const {
     data: planData,
     isLoading: planDataIsLoading,
+    isFetching: planDataIsFetching,
     error: planDataError,
   } = useGetPlanQuery({
     transactionId,
@@ -147,6 +148,7 @@ const PlanSheets = () => {
 
   if (
     planDataIsLoading ||
+    planDataIsFetching ||
     !planData ||
     !regenerateDoneOrNotNeeded ||
     surveyInfoIsLoading ||

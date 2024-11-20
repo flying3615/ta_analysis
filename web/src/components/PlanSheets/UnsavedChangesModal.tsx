@@ -4,6 +4,7 @@ import { useBeforeUnload, useBlocker } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { hasChanges, hasNavigateAfterSave, navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
+import { revertAll } from "@/redux/revertAll";
 
 export const UnsavedChangesModal = ({
   updatePlan,
@@ -74,6 +75,7 @@ export const UnsavedChangesModal = ({
     } else if (externalUrl) {
       setAllowExternalNavigation(true);
     }
+    dispatch(revertAll());
   };
 
   const handleSave = () => {
