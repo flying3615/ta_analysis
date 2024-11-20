@@ -88,8 +88,8 @@ export const ViewAllCompiledImages: Story = {
   },
 };
 
-let storyImageDSPT;
-let storyImagDTPS;
+//let storyImageDSPT;
+//let storyImagDTPS;
 const stories: Story[] = [];
 const images = await fetchCompileImages();
 if (images.length === 0) {
@@ -99,8 +99,8 @@ if (images.length === 0) {
     },
     render: () => <CompileImageViewer />,
   } as Story);
-  storyImageDSPT = stories[0];
-  storyImagDTPS = stories[0];
+  //storyImageDSPT = stories[0];
+  //storyImagDTPS = stories[0];
 } else {
   images.forEach(([filename, blob]) => {
     stories.push({
@@ -110,9 +110,11 @@ if (images.length === 0) {
       render: () => <CompileImageViewer filename={filename} image={blob} />,
     } as Story);
   });
-  storyImageDSPT = stories[0];
-  storyImagDTPS = stories[2];
+  //storyImageDSPT = stories[0];
+  //storyImagDTPS = stories[2];
 }
 
+/* TODO re-enable when fixed
 export const CompiledImageDSPT = storyImageDSPT;
 export const CompiledImageDTPS = storyImagDTPS;
+*/
