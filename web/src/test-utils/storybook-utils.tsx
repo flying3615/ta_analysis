@@ -431,8 +431,8 @@ export class TestCanvas {
     await userEvent.click(cancelButton);
   }
 
-  async clickButton(name: string) {
-    await userEvent.click(within(this.canvasElement).getByText(name));
+  async clickButton(buttonName: string) {
+    await userEvent.click(within(this.canvasElement).getByRole("button", { name: buttonName }));
   }
 }
 

@@ -1,29 +1,31 @@
 import { renderHook } from "@testing-library/react";
 
-import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEditContextMenu } from "@/hooks/useEditContextMenu";
 import { usePageLabelEdit } from "@/hooks/usePageLabelEdit";
+import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 import { Position } from "@/util/positionUtil";
 
 jest.mock("@/hooks/reduxHooks");
 jest.mock("@/hooks/useCytoscapeContext");
 jest.mock("@/hooks/usePageLabelEdit");
+jest.mock("@/hooks/usePageLineEdit");
 
 describe("useEditContextMenu", () => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const mockUseAppSelector = useAppSelector as jest.Mock;
+  const mockUseAppSelector = useAppSelector as unknown as jest.Mock;
   const mockUseCytoscapeContext = useCytoscapeContext as jest.Mock;
   const mockUsePageLabelEdit = usePageLabelEdit as jest.Mock;
+  const mockUsePageLineEdit = usePageLineEdit as jest.Mock;
 
   beforeEach(() => {
-    mockUseAppSelector.mockReturnValue(PlanMode.SelectLabel);
+    mockUseAppSelector.mockReturnValue({ type: "label", elements: [{ id: 1 }] });
     mockUseCytoscapeContext.mockReturnValue({ cyto: {} });
     mockUsePageLabelEdit.mockReturnValue({
       pastePageLabels: jest.fn(),
-      canPaste: true,
+    });
+    mockUsePageLineEdit.mockReturnValue({
+      pastePageLines: jest.fn(),
     });
   });
 
@@ -48,7 +50,7 @@ describe("useEditContextMenu", () => {
     ]);
   });
 
-  it("should call pastePageLabels when Paste is clicked and planMode is SelectLabel", () => {
+  it("should call pastePageLabels when Paste is clicked and copiedElements type is label", () => {
     const { result } = renderHook(() => useEditContextMenu());
     const clickPosition: Position = { x: 100, y: 100 };
     const menuItems = result.current.buildEditMenuItems(clickPosition);
@@ -62,11 +64,24 @@ describe("useEditContextMenu", () => {
     expect(mockUsePageLabelEdit().pastePageLabels).toHaveBeenCalledWith(clickPosition);
   });
 
-  it("should disable Paste when canPasteLabel is false", () => {
-    mockUsePageLabelEdit.mockReturnValue({
-      pastePageLabels: jest.fn(),
-      canPaste: false,
-    });
+  it("should call pastePageLines when Paste is clicked and copiedElements type is line", () => {
+    mockUseAppSelector.mockReturnValue({ type: "line", elements: [{ id: 1 }] });
+
+    const { result } = renderHook(() => useEditContextMenu());
+    const clickPosition: Position = { x: 100, y: 100 };
+    const menuItems = result.current.buildEditMenuItems(clickPosition);
+
+    const pasteMenuItem = menuItems.find((item) => item.title === "Paste");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    pasteMenuItem?.callback?.();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(mockUsePageLineEdit().pastePageLines).toHaveBeenCalledWith(clickPosition);
+  });
+
+  it("should disable Paste when there are no copied elements", () => {
+    mockUseAppSelector.mockReturnValue({ type: "label", elements: [] });
 
     const { result } = renderHook(() => useEditContextMenu());
     const clickPosition: Position = { x: 100, y: 100 };

@@ -42,6 +42,7 @@ import {
   setDiagramIdToMove,
   setPlanMode,
 } from "@/redux/planSheets/planSheetsSlice";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 import { useLabelsFunctions } from "./useLabelsFunctions";
 import { usePageLabelEdit } from "./usePageLabelEdit";
@@ -57,7 +58,7 @@ export const usePlanSheetsContextMenu = () => {
   const { openPanel } = useContext(PanelsContext);
   const setNodeHidden = useChangeNode();
   const setLineHidden = useChangeLine();
-  const { deletePageLines } = usePageLineEdit();
+  const { deletePageLines, cutPageLines, copyPageLines } = usePageLineEdit();
   const { deletePageLabels, copyPageLabels, cutPageLabels } = usePageLabelEdit();
   const { setOriginalLocation } = useLabelsFunctions();
   const highlightedLabel = useRef<NodeSingular>();
@@ -151,6 +152,10 @@ export const usePlanSheetsContextMenu = () => {
     };
 
     const buildLineMenus = (targetLine: EdgeSingular, selectedCollection?: CollectionReturnValue): MenuItem[] => {
+      const selectedEdges = selectedCollection?.edges();
+      if (!selectedEdges) return [];
+      const selectedLineNumber = cytoscapeUtils.countLines(selectedEdges);
+
       return [
         { title: "Original location", callback: <MoveOriginalLocation target={targetLine} /> },
         {
@@ -186,6 +191,20 @@ export const usePlanSheetsContextMenu = () => {
           },
         },
         {
+          title: "Cut",
+          divider: true,
+          disableWhen: () =>
+            selectedEdges.some((ele) => ele.data("lineType") !== "userDefined") || selectedLineNumber !== 1,
+          callback: () => cutPageLines([...selectedEdges]),
+        },
+        {
+          title: "Copy",
+          disableWhen: () =>
+            selectedEdges.some((ele) => ele.data("lineType") !== "userDefined") || selectedLineNumber !== 1,
+          callback: () => copyPageLines([...selectedEdges]),
+        },
+        { title: "Paste", disabled: true },
+        {
           title: "Delete",
           className: "delete-item",
           disableWhen: () => selectedCollection?.edges().some((ele) => ele.data("lineType") !== "userDefined") ?? true,
@@ -193,9 +212,6 @@ export const usePlanSheetsContextMenu = () => {
             deletePageLines([...(selectedCollection?.edges() ?? [])]);
           },
         },
-        // { title: "Cut", disabled: true },
-        // { title: "Copy", disabled: true },
-        // { title: "Paste", disabled: true },
         // {
         //   title: "Select",
         //   submenu: [

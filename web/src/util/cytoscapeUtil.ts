@@ -1,9 +1,17 @@
-import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTO,
+  CoordinateDTOCoordTypeEnum,
+  DisplayStateEnum,
+  LineDTO,
+  PageDTO,
+} from "@linz/survey-plan-generation-api-client";
 import cytoscape, { BoundingBox12, BoundingBoxWH } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IEdgeData, INodeData, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { LineStyle } from "@/modules/plan/styling";
 
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 10.0;
@@ -267,6 +275,77 @@ export const filterHiddenEdges = (edges: IEdgeData[]) =>
       ),
   );
 
+/**
+ * Count the number of lines from a collection of edges
+ * @param edges
+ */
+const countLines = (edges: cytoscape.EdgeCollection | undefined): number => {
+  if (!edges || edges.length === 0) {
+    return 0;
+  }
+
+  // Create a map of source to target nodes
+  const edgeMap = new Map<string, string>();
+  edges.forEach((edge) => {
+    edgeMap.set(edge.source().id(), edge.target().id());
+  });
+
+  // Find all starting edges (edges whose source is not a target of any other edge)
+  const startEdges = edges.filter((edge) => !Array.from(edgeMap.values()).includes(edge.source().id()));
+
+  // If no start edges found, it means all edges are part of a single multi-section line
+  if (startEdges.length === 0) {
+    return 1;
+  } else {
+    return startEdges.length;
+  }
+};
+
+const findMaxId = (cyto?: cytoscape.Core) => {
+  let cyMaxId = 0;
+  cyto?.elements().forEach((element) => {
+    const id = parseInt(element.id());
+    if (id > cyMaxId) {
+      cyMaxId = id;
+    }
+  });
+  return cyMaxId + 1;
+};
+
+export const addPageLineByCoordList = (
+  page: PageDTO,
+  nodeList: cytoscape.NodeDefinition[],
+  cytoCoordMapper: CytoscapeCoordinateMapper,
+  edgeId: number,
+  defaultLine?: LineDTO,
+): PageDTO => {
+  const coordList: CoordinateDTO[] = [];
+  nodeList.forEach((node) => {
+    if (node.data.id && node.position) {
+      coordList.push({
+        id: parseInt(node.data.id),
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: cytoCoordMapper.cytoscapeToPlanCoord(node.position),
+      });
+    }
+  });
+
+  const line: LineDTO = {
+    id: edgeId,
+    lineType: "userDefined",
+    style: defaultLine?.style ?? LineStyle.SOLID,
+    pointWidth: defaultLine?.pointWidth ?? 1,
+    coordRefs: nodeList.map((node) => (node.data.id ? parseInt(node.data.id) : 0)),
+    displayState: defaultLine?.displayState ?? DisplayStateEnum.display,
+  };
+
+  return {
+    ...page,
+    coordinates: [...(page.coordinates ?? []), ...coordList],
+    lines: [...(page.lines ?? []), line],
+  };
+};
+
 export const cytoscapeUtils = {
   zoomToFit,
   zoomByDelta,
@@ -276,4 +355,7 @@ export const cytoscapeUtils = {
   onViewportChange,
   getDiagramAreasLimits,
   isPositionWithinAreaLimits,
+  countLines,
+  findMaxId,
+  addPageLineByList: addPageLineByCoordList,
 };

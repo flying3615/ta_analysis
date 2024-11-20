@@ -1,29 +1,75 @@
-import { EdgeSingular } from "cytoscape";
+import { renderHook } from "@testing-library/react";
+import cytoscape from "cytoscape";
 
-describe("useDeleteLines", () => {
-  test("should delete lines", () => {
-    const dispatch = jest.fn();
-    const removePageLines = jest.fn();
-    const useAppDispatch = jest.fn().mockReturnValue(dispatch);
-    jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppDispatch }));
-    jest.doMock("@/redux/planSheets/planSheetsSlice.ts", () => ({ removePageLines }));
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 
+jest.mock("@/hooks/reduxHooks");
+
+describe("usePageLineEdit", () => {
+  const mockUseAppSelector = useAppSelector as unknown as jest.Mock;
+  const mockUseAppDispatch = useAppDispatch as unknown as jest.Mock;
+  const dispatch = jest.fn();
+
+  beforeEach(() => {
+    mockUseAppDispatch.mockReturnValue(dispatch);
+    mockUseAppSelector.mockReturnValue({
+      copiedElements: { elements: [], action: "" },
+      activePage: {},
+      maxPlanId: 1,
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should delete page lines", () => {
+    const { result } = renderHook(() => usePageLineEdit());
     const targets = [
-      { data: (key: string) => ({ id: "1_1", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "1_2", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "1_3", lineId: "1", lineType: "userDefined" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "2_1", lineId: "2", lineType: "userDefined" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "2_2", lineId: "2", lineType: "userDefined" })[key] } as EdgeSingular,
-      { data: (key: string) => ({ id: "3_1", lineId: "3", lineType: "observation" })[key] } as EdgeSingular,
+      { data: (key: string) => ({ id: "1_1", lineId: "1", lineType: "userDefined" })[key] } as cytoscape.EdgeSingular,
+      { data: (key: string) => ({ id: "1_2", lineId: "1", lineType: "userDefined" })[key] } as cytoscape.EdgeSingular,
+      { data: (key: string) => ({ id: "2_1", lineId: "2", lineType: "userDefined" })[key] } as cytoscape.EdgeSingular,
     ];
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const useDeleteLines = (require("@/hooks/usePageLineEdit") as typeof import("@/hooks/usePageLineEdit"))
-      .usePageLineEdit;
-    const { deletePageLines } = useDeleteLines();
-    deletePageLines(targets);
+    result.current.deletePageLines(targets);
 
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(removePageLines).toHaveBeenCalledWith({ lineIds: ["1", "2"] });
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ payload: { lineIds: ["1", "2"] }, type: "planSheets/removePageLines" }),
+    );
   });
+
+  it("should copy page lines", () => {
+    const { result } = renderHook(() => usePageLineEdit());
+    const targets = [
+      { data: (key: string) => ({ id: "1_1", lineId: "1", lineType: "userDefined" })[key] } as cytoscape.EdgeSingular,
+    ];
+
+    result.current.copyPageLines(targets);
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: { action: "COPY", ids: [1], type: "line" },
+        type: "planSheets/setCopiedElements",
+      }),
+    );
+  });
+
+  it("should cut page lines", () => {
+    const { result } = renderHook(() => usePageLineEdit());
+    const targets = [
+      { data: (key: string) => ({ id: "1_1", lineId: "1", lineType: "userDefined" })[key] } as cytoscape.EdgeSingular,
+    ];
+
+    result.current.cutPageLines(targets);
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: { action: "CUT", ids: [1], type: "line" },
+        type: "planSheets/setCopiedElements",
+      }),
+    );
+  });
+
+  // Paste action will be tested in the storybook
 });

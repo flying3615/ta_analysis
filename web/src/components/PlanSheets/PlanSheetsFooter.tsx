@@ -196,6 +196,8 @@ const PlanSheetsFooter = ({
       <div className="vertical-spacer" />
 
       <FooterPagination totalPages={totalPages} currentPage={currentPage} onPageChange={handlePageChange} />
+      <div className="vertical-spacer" />
+
       <PageManager />
 
       <div className="PlanSheetsFooter-right">

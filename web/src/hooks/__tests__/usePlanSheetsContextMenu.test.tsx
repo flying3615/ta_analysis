@@ -119,21 +119,34 @@ describe("PlanSheetsContextMenu", () => {
     );
   });
 
-  test("getMenuItemsForPlanMode for Select line returns line menu", () => {
+  test("getMenuItemsForPlanMode for Select diagram line returns line menu", () => {
     const mockNode = {
-      data: (key: string) => ({ id: "1001", elementType: PlanElementType.LINES })[key],
-    } as unknown as NodeSingular;
+      data: (key: string) => ({ id: "1001", lineType: "observation", elementType: PlanElementType.LINES })[key],
+      source: () => ({ id: () => ({ id: "1" }) }),
+      target: () => ({ id: () => ({ id: "2" }) }),
+    } as unknown as EdgeSingular;
+    const selectedElements = [mockNode];
+
+    const selectedCollectionReturnValue = {
+      size: () => selectedElements.length,
+      edges: () => selectedElements,
+    } as unknown as CollectionReturnValue;
+
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
         targetElement={mockNode}
+        selectedCollection={selectedCollectionReturnValue}
         expectations={(lineMenuItems) => {
           expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
             "Original location",
             "Hide",
             "Properties",
+            "Cut",
+            "Copy",
+            "Paste",
             "Delete",
           ]);
-          expect(lineMenuItems?.[3]?.disabled).toBeTruthy();
+          expect(lineMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeTruthy();
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
@@ -143,6 +156,8 @@ describe("PlanSheetsContextMenu", () => {
   test("getMenuItemsForPlanMode for Select line shows enabled Delete option when line is userDefined", () => {
     const mockNode = {
       data: (key: string) => ({ id: "1001", lineType: "userDefined", elementType: PlanElementType.LINES })[key],
+      source: () => ({ id: () => ({ id: "1" }) }),
+      target: () => ({ id: () => ({ id: "2" }) }),
     } as unknown as EdgeSingular;
     const selectedElements = [mockNode];
 
@@ -160,29 +175,12 @@ describe("PlanSheetsContextMenu", () => {
             "Original location",
             "Hide",
             "Properties",
+            "Cut",
+            "Copy",
+            "Paste",
             "Delete",
           ]);
-          expect(lineMenuItems?.[3]?.disabled).toBeFalsy();
-        }}
-      />,
-      mockedStateForPlanMode(PlanMode.SelectLine),
-    );
-  });
-
-  test("getMenuItemsForPlanMode for Select line shows Delete option when line is userDefined", () => {
-    const mockNode = {
-      data: (key: string) => ({ id: "1001", lineType: "userDefined", elementType: PlanElementType.LINES })[key],
-    } as unknown as NodeSingular;
-    renderWithReduxProvider(
-      <PlanSheetsContextMenuWrapComponent
-        targetElement={mockNode}
-        expectations={(lineMenuItems) => {
-          expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
-            "Original location",
-            "Hide",
-            "Properties",
-            "Delete",
-          ]);
+          expect(lineMenuItems?.find((item) => item.title === "Delete")?.disabled).toBeFalsy();
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),
@@ -193,18 +191,32 @@ describe("PlanSheetsContextMenu", () => {
     const mockNode = {
       data: (key: string) =>
         ({ id: "1001", elementType: PlanElementType.LINES, displayState: DisplayStateEnum.systemDisplay })[key],
-    } as unknown as NodeSingular;
+      source: () => ({ id: () => ({ id: "1" }) }),
+      target: () => ({ id: () => ({ id: "2" }) }),
+    } as unknown as EdgeSingular;
+
+    const selectedElements = [mockNode];
+
+    const selectedCollectionReturnValue = {
+      size: () => selectedElements.length,
+      edges: () => selectedElements,
+    } as unknown as CollectionReturnValue;
+
     renderWithReduxProvider(
       <PlanSheetsContextMenuWrapComponent
+        selectedCollection={selectedCollectionReturnValue}
         targetElement={mockNode}
         expectations={(lineMenuItems) => {
           expect(lineMenuItems?.map((m) => m.title)).toStrictEqual([
             "Original location",
             "Hide",
             "Properties",
+            "Cut",
+            "Copy",
+            "Paste",
             "Delete",
           ]);
-          expect(lineMenuItems?.[1]?.disabled).toBeTruthy();
+          expect(lineMenuItems?.find((item) => item.title === "Hide")?.disabled).toBeTruthy();
         }}
       />,
       mockedStateForPlanMode(PlanMode.SelectLine),

@@ -21,7 +21,12 @@ export interface PlanSheetsState {
   alignedLabelNodeId?: string;
   diagramIdToMove?: number | undefined;
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
-  copiedElements?: { elements: LabelDTO[] | LineDTO[]; action: "COPY" | "CUT" };
+  copiedElements?: {
+    elements: LabelDTO[] | LineDTO[];
+    action: "COPY" | "CUT";
+    type: "label" | "line";
+    pageId?: number;
+  };
   // undo buffer
   previousHasChanges?: boolean;
   previousDiagrams: DiagramDTO[] | null;
@@ -174,8 +179,11 @@ const planSheetsSlice = createSlice({
 
       lineToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
     },
-    setCopiedElements: (state, action: PayloadAction<{ ids: number[]; type: string; action: "COPY" | "CUT" }>) => {
-      const { ids, type } = action.payload;
+    setCopiedElements: (
+      state,
+      action: PayloadAction<{ ids: number[]; type: string; action: "COPY" | "CUT"; pageId: number }>,
+    ) => {
+      const { ids, type, pageId } = action.payload;
       if (ids.length === 0) return;
 
       if (type === "label") {
@@ -189,6 +197,8 @@ const planSheetsSlice = createSlice({
         state.copiedElements = {
           elements: targetLabels,
           action: action.payload.action,
+          type: "label",
+          pageId,
         };
       } else {
         const targetLines: LineDTO[] = [];
@@ -201,6 +211,8 @@ const planSheetsSlice = createSlice({
         state.copiedElements = {
           elements: targetLines,
           action: action.payload.action,
+          type: "line",
+          pageId,
         };
       }
     },
@@ -268,6 +280,9 @@ const planSheetsSlice = createSlice({
         (page) => page.pageType === state.activeSheet && page.pageNumber === state.activePageNumbers[state.activeSheet],
       );
       return page?.id ?? null;
+    },
+    getPageByRef: (state) => (pageID: number) => {
+      return state.pages.find((page) => page.id === pageID);
     },
     getPageRefFromPageNumber: (state) => (pageNumber: number) => {
       const page = state.pages.find((page) => page.pageType === state.activeSheet && page.pageNumber === pageNumber);
@@ -362,6 +377,7 @@ export const {
   getActiveSheet,
   getPageConfigs,
   getElementTypeConfigs,
+  getPageByRef,
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,
   getActivePageRefFromPageNumber,

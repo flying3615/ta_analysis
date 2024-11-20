@@ -230,3 +230,101 @@ export const AddLineRetainsLineStyle: Story = {
     // Chromatic will ensure the new line style is observed
   },
 };
+
+export const CutCopyPasteContextMenuValidation: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+
+    // verify that the cut, copy and paste context menu is disabled when right-click action menu is opened in white space (no line selected)
+    await test.rightClick([336, 237]); // open context menu in white space
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+
+    // verify that the cut, copy and paste context menu is disabled when right-click action menu is opened for diagram line
+    await test.rightClick([367, 400]); // open context menu for diagram line
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+
+    // verify that the cut, copy are enabled and paste menu is disabled when right-click action menu is opened for page line
+    await test.rightClick([560, 230]); // open context menu for page line
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "false");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "false");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "true");
+  },
+};
+
+export const SelectCopyPageLineKeepsLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await test.contextMenu({ at: [560, 230], select: "Copy" }); // select copy action for page line
+    await test.rightClick([336, 237]); // open context menu in white space
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "false");
+    // Chromatic will ensure the line is still present after copy action selected
+    // Chromatic will ensure the paste action is enabled in white space (stores the copied line in paste buffer)
+  },
+};
+
+export const SelectCutPageLineRemovesLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await test.contextMenu({ at: [560, 230], select: "Cut" }); // select cut action for page line
+    await test.rightClick([336, 237]); // open context menu in white space
+    await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Copy")).toHaveAttribute("aria-disabled", "true");
+    await expect(await test.findMenuItem("Paste")).toHaveAttribute("aria-disabled", "false");
+    // Chromatic will ensure the line is removed after cut action selected
+    // Chromatic will ensure the paste action is enabled in white space (stores the cut line in paste buffer)
+  },
+};
+
+export const CopyPastePageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await test.contextMenu({ at: [560, 230], select: "Copy" }); // select copy action for page line
+    await test.contextMenu({ at: [440, 53], select: "Paste" }); // select paste action in white space
+    await test.contextMenu({ at: [440, 550], select: "Paste" }); // select paste action again for page line (copied line still in paste buffer)
+    // Chromatic will ensure the line is pasted in the white space at mouse click location
+    // Chromatic will ensure selecting the paste action does not clear the paste-buffer (i.e. multiple paste operations can be done)
+  },
+};
+
+export const CutPastePageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await test.contextMenu({ at: [560, 230], select: "Cut" }); // select cut action for page line
+    await test.contextMenu({ at: [440, 550], select: "Paste" }); // select paste action for page line
+    // Chromatic will ensure the line is removed from original position and pasted in the white space at mouse click location
+  },
+};
+
+export const CopyPastePageLineAcrossPages: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await test.contextMenu({ at: [560, 230], select: "Copy" }); // select copy action for page line
+    await test.clickButton("Next"); // navigate to next page
+    await test.contextMenu({ at: [440, 300], select: "Paste" }); // select paste action in white space on next page
+    // Chromatic will ensure the line is pasted in the white space at mouse click location on the next page
+  },
+};

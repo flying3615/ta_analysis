@@ -1,5 +1,4 @@
-import { CoordinateDTO, CoordinateDTOCoordTypeEnum, LineDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -11,7 +10,7 @@ import { useEscapeKey } from "@/hooks/useEscape";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { getEdgeStyling, LineStyle } from "@/modules/plan/styling";
 import { getActivePage, getLastUpdatedLineStyle, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
-import { cytoscapeUtils } from "@/util/cytoscapeUtil";
+import { addPageLineByCoordList, cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export const AddPageLineHandler = () => {
   const { cyto } = useCytoscapeContext();
@@ -29,16 +28,7 @@ export const AddPageLineHandler = () => {
 
   const lastMousePosition = useRef<cytoscape.Position | null>(null);
 
-  const getCyMaxId = useCallback(() => {
-    let cyMaxId = 0;
-    cyto?.elements().forEach((element) => {
-      const id = parseInt(element.id());
-      if (id > cyMaxId) {
-        cyMaxId = id;
-      }
-    });
-    return cyMaxId + 1;
-  }, [cyto]);
+  const getCyMaxId = useCallback(() => cytoscapeUtils.findMaxId(cyto), [cyto]);
 
   useEscapeKey({
     callback: () => {
@@ -205,20 +195,16 @@ export const AddPageLineHandler = () => {
         let cyMaxId = getCyMaxId();
         dispatch(
           replacePage({
-            updatedPage: addPageLineByList(
-              activePage,
-              lineNodeList.current,
-              cytoCoordMapper,
-              cyMaxId++,
-              lastUpdatedLineStyle ?? LineStyle.SOLID,
-            ),
+            updatedPage: addPageLineByCoordList(activePage, lineNodeList.current, cytoCoordMapper, cyMaxId++, {
+              style: lastUpdatedLineStyle,
+            } as LineDTO),
           }),
         );
         resetInput();
         dispatch(setPlanMode(PlanMode.View));
       }
     }
-  }, [activePage, cytoCoordMapper, lastUpdatedLineStyle, dispatch, getCyMaxId, isPositionWithinAreaLimits]);
+  }, [activePage, cytoCoordMapper, dispatch, getCyMaxId, isPositionWithinAreaLimits, lastUpdatedLineStyle]);
 
   const onMouseMove = useCallback(
     (event: cytoscape.EventObject) => {
@@ -247,38 +233,4 @@ export const AddPageLineHandler = () => {
 
   // No elements to render, only have event listeners that modify the cytoscape graph
   return <></>;
-};
-
-const addPageLineByList = (
-  page: PageDTO,
-  nodeList: cytoscape.NodeDefinition[],
-  cytoCoordMapper: CytoscapeCoordinateMapper,
-  edgeId: number,
-  lineStyle: string,
-): PageDTO => {
-  const coordList: CoordinateDTO[] = [];
-  nodeList.forEach((node) => {
-    if (node.data.id && node.position) {
-      coordList.push({
-        id: parseInt(node.data.id),
-        coordType: CoordinateDTOCoordTypeEnum.userDefined,
-        position: cytoCoordMapper.cytoscapeToPlanCoord(node.position),
-      });
-    }
-  });
-
-  const line: LineDTO = {
-    id: edgeId,
-    lineType: "userDefined",
-    style: lineStyle,
-    pointWidth: 1,
-    coordRefs: nodeList.map((node) => (node.data.id ? parseInt(node.data.id) : 0)),
-    displayState: DisplayStateEnum.display,
-  };
-
-  return {
-    ...page,
-    coordinates: [...(page.coordinates ?? []), ...coordList],
-    lines: [...(page.lines ?? []), line],
-  };
 };

@@ -1,5 +1,5 @@
 import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { act, renderHook } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import cytoscape from "cytoscape";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
@@ -31,9 +31,7 @@ describe("usePageLabelEdit", () => {
       { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
     ] as unknown as cytoscape.NodeSingular[];
 
-    act(() => {
-      result.current.deletePageLabels(targets);
-    });
+    result.current.deletePageLabels(targets);
 
     expect(dispatch).toHaveBeenCalledWith(
       expect.objectContaining({ payload: { labelIds: [1] }, type: "planSheets/removePageLabels" }),
@@ -46,9 +44,7 @@ describe("usePageLabelEdit", () => {
       { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
     ] as unknown as cytoscape.NodeSingular[];
 
-    act(() => {
-      result.current.copyPageLabels(targets);
-    });
+    result.current.copyPageLabels(targets);
 
     expect(dispatch).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -64,9 +60,7 @@ describe("usePageLabelEdit", () => {
       { data: (key: string) => ({ id: "LAB_1", labelType: LabelDTOLabelTypeEnum.userAnnotation })[key] },
     ] as unknown as cytoscape.NodeSingular[];
 
-    act(() => {
-      result.current.cutPageLabels(targets);
-    });
+    result.current.cutPageLabels(targets);
 
     expect(dispatch).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,22 +70,5 @@ describe("usePageLabelEdit", () => {
     );
   });
 
-  it("should return canPaste as true when there are copied elements", () => {
-    mockUseAppSelector.mockReturnValueOnce({
-      elements: [{ id: "LAB_1" }],
-      action: "COPY",
-      activePage: {},
-      maxPlanId: 1,
-    });
-
-    const { result } = renderHook(() => usePageLabelEdit());
-
-    expect(result.current.canPaste).toBe(true);
-  });
-
-  it("should return canPaste as false when there are no copied elements", () => {
-    const { result } = renderHook(() => usePageLabelEdit());
-
-    expect(result.current.canPaste).toBe(false);
-  });
+  // Paste action will be tested in the storybook
 });

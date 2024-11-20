@@ -38,11 +38,13 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
   };
 
   const copyPageLabels = (targets: cytoscape.NodeSingular[]) => {
+    if (!activePage) return;
+
     const labelIds = targets
       .filter((target) => target.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation)
       .map((target) => cytoscapeLabelIdToPlanData(target.data("id") as string));
     if (labelIds.length === 0) return;
-    dispatch(setCopiedElements({ ids: [...new Set(labelIds)], type: "label", action: "COPY" }));
+    dispatch(setCopiedElements({ ids: [...new Set(labelIds)], type: "label", action: "COPY", pageId: activePage.id }));
   };
 
   const cutPageLabels = (targets: cytoscape.NodeSingular[]) => {
@@ -53,7 +55,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
       .map((target) => cytoscapeLabelIdToPlanData(target.data("id") as string));
     if (labelIds.length === 0) return;
 
-    dispatch(setCopiedElements({ ids: [...new Set(labelIds)], type: "label", action: "CUT" }));
+    dispatch(setCopiedElements({ ids: [...new Set(labelIds)], type: "label", action: "CUT", pageId: activePage.id }));
   };
 
   const pastePageLabels = (clickPosition: Position) => {
@@ -73,11 +75,13 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
 
       let x = 0;
       let y = 0;
-      copiedElements.elements.forEach((ele) => {
-        const label = ele as LabelDTO;
-        x += label.position.x;
-        y += label.position.y;
-      });
+      copiedElements.elements
+        .filter((ele): ele is LabelDTO => !!ele)
+        .forEach((ele) => {
+          const label = ele;
+          x += label.position.x;
+          y += label.position.y;
+        });
       return { x: x / copiedElements.elements.length, y: y / copiedElements.elements.length };
     };
 
@@ -213,6 +217,5 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
     copyPageLabels,
     pastePageLabels,
     cutPageLabels,
-    canPaste: !!(copiedElements && copiedElements.elements && copiedElements.elements.length > 0),
   };
 };
