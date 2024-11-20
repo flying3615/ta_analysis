@@ -115,15 +115,21 @@ export const DeleteMultiplePageLabels: Story = {
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
-    // select two page label and one diagram label
+    // select two page labels and one diagram label
     clickMultipleCoordinates(target, [toXY(pageLabelPosition), toXY(pageLabel2Position), toXY(diagramLabel2Position)]);
+
     // right click on diagram label, context menu shows delete menu disabled
     clickAtCoordinates(target, diagramLabel2Position, RIGHT_MOUSE_BUTTON);
     await expect(await canvas.findByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
-
     await userEvent.keyboard("{Escape}"); // close context menu
-    await userEvent.keyboard("{Delete}"); // delete the selected labels, only page label deleted and diagram label remains
-    await sleep(500);
+
+    // escape deselects - reselect two page labels and one diagram label
+    clickMultipleCoordinates(target, [toXY(pageLabelPosition), toXY(pageLabel2Position), toXY(diagramLabel2Position)]);
+    await userEvent.keyboard("{Delete}");
+    await sleep(500); // required, in case objects get deleted later
+    // delete the selected labels, only page label deleted and diagram label remains
+    // When SURVEY-26060 is implemented, all labels will remain. For now, only chromatic baseline will change
+    // TODO: SURVEY-26060 check cytoscape objects still exist
   },
 };
 
