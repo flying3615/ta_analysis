@@ -13,8 +13,13 @@ import { RouteErrorBoundary } from "@/RouteErrorBoundary";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
+import { useTransactionId } from "./hooks/useTransactionId";
+import { useSurveyDocumentTitle } from "./queries/survey";
+
 export const AppSubRoutes = (props: { mockMap?: boolean }) => {
   const { lockPreviouslyHeld } = useCreateAndMaintainLock();
+  const transactionId = useTransactionId();
+  useSurveyDocumentTitle(transactionId);
 
   const { result: isDefineDiagramsOn, loading: isDefineDiagramsToggleLoading } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_DEFINE_DIAGRAMS,

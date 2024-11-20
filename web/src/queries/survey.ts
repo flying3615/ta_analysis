@@ -27,17 +27,19 @@ export interface useGetSurveyTitleQueryProps {
   transactionId: number;
 }
 
+export const useSurveyDocumentTitle = (transactionId: number) => {
+  const { data } = useGetSurveyTitleQuery({ transactionId });
+  if (data) {
+    document.title = `${data.surveyNo} – Landonline Plan Generation`;
+  } else {
+    document.title = "Landonline Survey Plan Generation";
+  }
+};
+
 export const useGetSurveyTitleQuery = ({ transactionId }: useGetSurveyTitleQueryProps) => {
   return useQuery({
     queryKey: getSurveyTitleQueryKey(transactionId),
-    queryFn: async () => {
-      const response = await getSurveyTitle(transactionId);
-      const { surveyNo, surveyReference } = response;
-      document.title = surveyNo.length
-        ? `Landonline - Plan Generation${surveyNo ? ` - ${surveyNo}` : ""}${surveyReference?.length ? ` - ${surveyReference}` : ""}`
-        : "Landonline Survey Plan Generation";
-      return response;
-    },
+    queryFn: () => getSurveyTitle(transactionId),
   });
 };
 
