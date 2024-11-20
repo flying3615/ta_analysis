@@ -3,22 +3,13 @@ import * as fs from "fs";
 import path from "path";
 
 test.describe("Layout Plan Sheets", () => {
-  const testOutputCompileImagesDirectoryPath = path.normalize(`${__dirname}/../compare/testOutputCompileImages/`);
+  const testCompareDirectoryPath = path.normalize(`${__dirname}/../compare/testOutputCompileImages`);
 
   test.beforeAll(() => {
-    fs.mkdirSync(testOutputCompileImagesDirectoryPath, { recursive: true });
-  });
-
-  test.afterAll(() => {
-    if (process.env.CI) {
-      // Copy to output directory when running in CI so it is included in the build artifacts
-      fs.cpSync(
-        testOutputCompileImagesDirectoryPath,
-        path.normalize(`${__dirname}/../output/testOutputCompileImages/`),
-        {
-          recursive: true,
-        },
-      );
+    try {
+      fs.mkdirSync(testCompareDirectoryPath, { recursive: true });
+    } catch (e) {
+      console.error("Error creating output directories", e);
     }
   });
 
@@ -35,14 +26,14 @@ test.describe("Layout Plan Sheets", () => {
         const blob = new Blob([postData]);
         const fileUlid = request.url().split("/").pop();
         if (fileUlidSet.has(fileUlid)) {
-          const imageFilename = `${testOutputCompileImagesDirectoryPath}${transactionId}-${fileUlidSet.get(fileUlid)}`;
+          const imageFilename = `${testCompareDirectoryPath}/${transactionId}-${fileUlidSet.get(fileUlid)}`;
 
           // Convert the blob to a buffer
           const arrayBuffer = await blob.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
 
           // Save the buffer as a JPG file
-          fs.writeFileSync(imageFilename, buffer);
+          fs.writeFileSync(imageFilename, buffer, { flush: true });
         }
       }
 

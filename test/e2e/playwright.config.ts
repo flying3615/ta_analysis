@@ -39,6 +39,7 @@ const pwConfig: PlaywrightTestConfig = defineConfig({
     ["html", { open: "never", outputFolder: "output" }],
     ["junit", { open: "never", outputFile: "output/test-results.xml" }],
     ["allure-playwright"],
+    ["./plan-image-output-reporter.ts"],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

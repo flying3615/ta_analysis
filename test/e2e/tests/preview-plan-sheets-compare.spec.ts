@@ -14,13 +14,6 @@ test.describe("Layout Plan Sheets compare with expected result", () => {
     fs.mkdirSync(imageDirectoryPath, { recursive: true });
   });
 
-  test.afterAll(() => {
-    if (process.env.CI) {
-      // Copy to output directory when running in CI so it is included in the build artifacts
-      fs.cpSync(imageDirectoryPath, path.normalize(`${__dirname}/../output/planSheetImages/`), { recursive: true });
-    }
-  });
-
   [{ transactionId: 5000059 }].forEach(({ transactionId }) => {
     test(`Compare layout plan sheet with expected result file for ${transactionId} after hiding a label`, async ({
       page,
