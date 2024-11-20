@@ -3,7 +3,7 @@ import { degreesToRadians, radiansToDegrees } from "@turf/helpers";
 import { BoundingBox12 } from "cytoscape";
 import { round } from "lodash-es";
 
-import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
+import { groudCoordToCmForDiagram, PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
@@ -62,6 +62,14 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
   groundCoordToCytoscape(position: GroundMetresPosition, diagramId: number): cytoscape.Position {
     const { x, y } = this.groundCoordToCm(diagramId, position);
 
+    return {
+      x: this.planCmToCytoscape(x) + this.pixelMargin,
+      y: this.pixelMargin - this.planCmToCytoscape(y),
+    };
+  }
+
+  groundCoordToCytoCoordForDiagram(position: GroundMetresPosition, diagram: DiagramDTO): cytoscape.Position {
+    const { x, y } = groudCoordToCmForDiagram(diagram, position);
     return {
       x: this.planCmToCytoscape(x) + this.pixelMargin,
       y: this.pixelMargin - this.planCmToCytoscape(y),
@@ -263,6 +271,17 @@ export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
     return this.planCmToCytoscape(points / POINTS_PER_CM);
   }
 
+  toDiagramExtentBoundingBox = (diagram: DiagramDTO): BoundingBox12 => {
+    const { x: x1, y: y1 } = this.groundCoordToCytoCoordForDiagram({ x: 0, y: 0 }, diagram);
+    const { x: x2, y: y2 } = this.groundCoordToCytoCoordForDiagram(
+      {
+        x: diagram.bottomRightPoint.x,
+        y: diagram.bottomRightPoint.y,
+      },
+      diagram,
+    );
+    return { x1, y1, x2, y2 };
+  };
   /**
    * Convert cytoscape pixels into relative centimetres on plan
    *

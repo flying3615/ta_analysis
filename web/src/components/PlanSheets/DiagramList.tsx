@@ -5,13 +5,18 @@ import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { isArray, isEmpty, isNil } from "lodash-es";
 import { useMemo, useState } from "react";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { IDiagramNodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { DiagramTileComponent } from "@/components/PlanSheets/DiagramTileComponent";
+import { calculateRelativeScale, Resize, resizeExtent } from "@/components/PlanSheets/interactions/moveAndResizeUtil";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
+import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import {
   getActivePageNumber,
   getActiveSheet,
   getPageRefFromPageNumber,
+  replaceDiagrams,
   setActivePageNumber,
   setDiagramPageRef,
 } from "@/redux/planSheets/planSheetsSlice";
@@ -31,6 +36,7 @@ export interface DiagramDisplay {
 
 type DiagramMap = Record<number, DiagramDTO>;
 type ChildDiagramMap = Record<number, number[]>;
+type DiagramScale = Pick<IDiagramNodeDataProperties, "zoomScale">;
 
 export const DiagramList = ({ diagrams }: DiagramListProps) => {
   const diagramHierarchy = useMemo(() => buildDiagramHierarchy(diagrams), [diagrams]);
@@ -40,11 +46,23 @@ export const DiagramList = ({ diagrams }: DiagramListProps) => {
   const activePageNumber = useAppSelector(getActivePageNumber);
   const activeSheet = useAppSelector(getActiveSheet);
   const getPageRef = useAppSelector((state) => getPageRefFromPageNumber(state)(activePageNumber));
+  const { cytoCoordMapper } = usePlanSheetsDispatch();
 
   const { adjustDiagram } = useAdjustLoadedPlanData();
 
   const insertDiagram = () => {
     if (getPageRef && selectedDiagramId) {
+      const diagram = diagrams.find((d) => d.id === selectedDiagramId);
+      if (cytoCoordMapper && diagram) {
+        const updatedScale = calculateUpdatedDiagramScale(diagram, cytoCoordMapper);
+        if (updatedScale) {
+          const updatedDiagram = {
+            ...diagram,
+            zoomScale: updatedScale.zoomScale,
+          };
+          dispatch(replaceDiagrams([updatedDiagram]));
+        }
+      }
       dispatch(setDiagramPageRef({ id: selectedDiagramId, pageRef: getPageRef, adjustDiagram }));
       setSelectedDiagramId(null);
     }
@@ -163,3 +181,31 @@ const getDiagramName = (labels: LabelDTO[], diagramNumber: number): string => {
 const diagramDisplaySortFn = (a: DiagramDisplay, b: DiagramDisplay) => {
   return a.listOrder - b.listOrder;
 };
+
+function calculateUpdatedDiagramScale(
+  diagram: DiagramDTO,
+  cytoCoordMapper: CytoscapeCoordinateMapper,
+): DiagramScale | null {
+  const diagramExtent = cytoCoordMapper.toDiagramExtentBoundingBox(diagram);
+  const minHeight = cytoCoordMapper.scalePixelsPerCm * 5;
+  const diagramHeight = diagramExtent.y2 - diagramExtent.y1;
+  if (diagramHeight > minHeight) {
+    return null;
+  }
+  const diagramWidth = diagramExtent.x2 - diagramExtent.x1;
+  const scaleRatio = minHeight / diagramHeight;
+  const newDiagramWidth = diagramWidth * scaleRatio;
+  const resizedDiagramExtent = resizeExtent(
+    diagramExtent,
+    Resize.SE,
+    newDiagramWidth - diagramWidth,
+    minHeight - diagramHeight,
+    {
+      minHeight,
+    },
+  );
+  const relativeScale = calculateRelativeScale(diagramExtent, resizedDiagramExtent);
+  return {
+    zoomScale: diagram.zoomScale * relativeScale,
+  };
+}

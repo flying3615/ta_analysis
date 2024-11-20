@@ -24,7 +24,15 @@ import {
 } from "@/modules/plan/calculatePreviousDiagramAttributes";
 import { getActivePage, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice";
 
-import { getResizeLimits, isResizeControl, moveExtent, Resize, resizeExtent, ResizeLimits } from "./moveAndResizeUtil";
+import {
+  calculateRelativeScale,
+  getResizeLimits,
+  isResizeControl,
+  moveExtent,
+  Resize,
+  resizeExtent,
+  ResizeLimits,
+} from "./moveAndResizeUtil";
 
 export interface SelectedDiagramProps {
   diagram: NodeSingular;
@@ -233,8 +241,7 @@ function getNewDiagramOriginAndScale(
   const newOrigin = cytoCoordMapper.cytoscapeToGroundCoord({ x: newExtent.x1, y: newExtent.y1 }, data.diagramId);
   const originDx = newOrigin.x / data.zoomScale;
   const originDy = newOrigin.y / data.zoomScale;
-  // scale change same in either axis, since constrained
-  const relativeScale = +((data.x2 - data.x1) / (newExtent.x2 - newExtent.x1)).toFixed(5);
+  const relativeScale = calculateRelativeScale(data, newExtent);
   return {
     originPageX: data.originPageX + originDx,
     originPageY: data.originPageY + originDy,

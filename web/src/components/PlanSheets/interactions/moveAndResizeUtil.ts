@@ -1,3 +1,5 @@
+import { BoundingBox12 } from "cytoscape";
+
 export interface AspectRatio {
   h: number;
   w: number;
@@ -248,3 +250,7 @@ export function scaleExtent(
 
   return { h: scaledH, w: scaledW };
 }
+
+export const calculateRelativeScale = (original: BoundingBox12, resized: BoundingBox12) =>
+  // scale change same in either axis, since constrained
+  +((original.x2 - original.x1) / (resized.x2 - resized.x1)).toFixed(5);

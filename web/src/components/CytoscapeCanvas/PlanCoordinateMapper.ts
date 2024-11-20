@@ -27,19 +27,12 @@ export class PlanCoordinateMapper {
     if (!diagram.zoomScale) {
       throw new Error(`Diagram ${JSON.stringify(diagram)} has no zoomScale`);
     }
-
-    if (
-      position.x < 0 ||
-      position.x > diagram.bottomRightPoint.x ||
-      position.y > 0 ||
-      position.y < diagram.bottomRightPoint.y
-    ) {
-      // console.warn(
-      //   `groundCoordToCytoscape has position ${JSON.stringify(position)} outside range (0,0)->(${JSON.stringify(diagram.bottomRightPoint)}`,
-      // );
-    }
-    const xPosCm = (position?.x * 100) / diagram.zoomScale + diagram.originPageOffset.x * 100;
-    const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
-    return { x: xPosCm, y: yPosCm };
+    return groudCoordToCmForDiagram(diagram, position);
   }
 }
+
+export const groudCoordToCmForDiagram = (diagram: DiagramDTO, position: GroundMetresPosition): Position => {
+  const xPosCm = (position?.x * 100) / diagram.zoomScale + diagram.originPageOffset.x * 100;
+  const yPosCm = (position?.y * 100) / diagram.zoomScale + diagram.originPageOffset.y * 100;
+  return { x: xPosCm, y: yPosCm };
+};
