@@ -181,10 +181,10 @@ export const SurveyPage2: Story = {
   },
 };
 
-export const UnsavedChangesModal: Story = {
+export const UnsavedChangesModalAndCancelLeaveNavigationToDefineDiagrams: Story = {
   ...Default,
 };
-UnsavedChangesModal.play = async ({ canvasElement }) => {
+UnsavedChangesModalAndCancelLeaveNavigationToDefineDiagrams.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
   await expect(await canvas.findByText("Save layout")).toBeInTheDocument();
@@ -195,7 +195,12 @@ UnsavedChangesModal.play = async ({ canvasElement }) => {
 
   await userEvent.click(await canvas.findByText("Sheets"));
   await userEvent.click(await canvas.findByText("Define Diagrams"));
-  await sleep(500);
+  await userEvent.click(await screen.findByText("Cancel"));
+
+  await userEvent.click(await canvas.findByText("Sheets"));
+  await userEvent.click(await canvas.findByText("Define Diagrams"));
+  await userEvent.click(await screen.findByText("Leave"));
+  await expect(await screen.findByText("Define Diagrams Dummy Page")).toBeInTheDocument();
 };
 
 export const UnsavedChangesModalNavigateToSurveyCapture: Story = {
@@ -212,7 +217,6 @@ UnsavedChangesModalNavigateToSurveyCapture.play = async ({ canvasElement }) => {
 
   await userEvent.click(await canvas.findByText("Sheets"));
   await userEvent.click(await canvas.findByText("Survey Capture"));
-  await sleep(500); // wait for modal to appear
   await expect(await screen.findByText(/You have unsaved changes/)).toBeInTheDocument();
 };
 
