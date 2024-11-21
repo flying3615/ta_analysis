@@ -72,10 +72,10 @@ export const UnsavedChangesModal = ({
   const handleLeave = () => {
     if (blocker.state === "blocked") {
       blocker.proceed();
+      dispatch(revertAll());
     } else if (externalUrl) {
       setAllowExternalNavigation(true);
     }
-    dispatch(revertAll());
   };
 
   const handleSave = () => {

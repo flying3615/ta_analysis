@@ -47,6 +47,7 @@ import {
   StorybookRouter,
   tabletLandscapeParameters,
   TestCanvas,
+  waitForLoadingSpinnerToDisappear,
 } from "@/test-utils/storybook-utils";
 import { downloadBlob } from "@/util/downloadHelper";
 
@@ -187,7 +188,7 @@ export const UnsavedChangesModalAndCancelLeaveNavigationToDefineDiagrams: Story 
 UnsavedChangesModalAndCancelLeaveNavigationToDefineDiagrams.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
-  await expect(await canvas.findByText("Save layout")).toBeInTheDocument();
+  await waitForLoadingSpinnerToDisappear();
 
   // Dispatch replace diagrams event to set hasChanges = true
   store.dispatch(replaceDiagrams([]));
@@ -209,7 +210,7 @@ export const UnsavedChangesModalNavigateToSurveyCapture: Story = {
 UnsavedChangesModalNavigateToSurveyCapture.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
-  await expect(await canvas.findByText("Save layout")).toBeInTheDocument();
+  await waitForLoadingSpinnerToDisappear();
 
   // Dispatch replace diagrams event to set hasChanges = true
   store.dispatch(replaceDiagrams([]));

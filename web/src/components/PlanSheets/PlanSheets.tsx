@@ -146,15 +146,7 @@ const PlanSheets = () => {
     edgeData = filterEdgeData(edgeData, "hide");
   }
 
-  if (
-    planDataIsLoading ||
-    planDataIsFetching ||
-    !planData ||
-    !regenerateDoneOrNotNeeded ||
-    surveyInfoIsLoading ||
-    !surveyInfo ||
-    regenerationHasFailed
-  ) {
+  if (!regenerateDoneOrNotNeeded || surveyInfoIsLoading || !surveyInfo || regenerationHasFailed || planDataIsLoading) {
     return (
       <div ref={modalOwnerRef}>
         <Header view="Sheets" />
@@ -194,20 +186,26 @@ const PlanSheets = () => {
             <SurveyDetails surveyInfo={surveyInfo} />
             <DiagramSelector />
           </SidePanel>
-          {activePage ? (
-            <CytoscapeCanvas
-              nodeData={nodeData}
-              edgeData={edgeData}
-              diagrams={activeDiagrams}
-              selectionSelector={selectionSelector}
-              getContextMenuItems={(element, selectedCollection, clickedPosition) =>
-                getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
-              }
-              applyClasses={applyClasses}
-              data-testid="MainCytoscapeCanvas"
-            />
+          {planDataIsFetching || !planData ? (
+            <LuiLoadingSpinner />
           ) : (
-            <NoPageMessage />
+            <>
+              {activePage ? (
+                <CytoscapeCanvas
+                  nodeData={nodeData}
+                  edgeData={edgeData}
+                  diagrams={activeDiagrams}
+                  selectionSelector={selectionSelector}
+                  getContextMenuItems={(element, selectedCollection, clickedPosition) =>
+                    getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
+                  }
+                  applyClasses={applyClasses}
+                  data-testid="MainCytoscapeCanvas"
+                />
+              ) : (
+                <NoPageMessage />
+              )}
+            </>
           )}
           {planMode === PlanMode.AddLabel && <AddLabelHandler />}
           {planMode === PlanMode.SelectLabel && <SelectLabelHandler />}
@@ -224,6 +222,7 @@ const PlanSheets = () => {
           <ElementHover />
           <PageNumberTooltips />
         </div>
+
         <PlanSheetsFooter
           surveyInfo={surveyInfo}
           diagramsPanelOpen={diagramsPanelOpen}
