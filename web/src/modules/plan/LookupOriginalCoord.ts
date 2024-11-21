@@ -133,19 +133,12 @@ export function transformMovedLabelCoordinates(
     const elementData = element.data() as INodeDataProperties;
 
     if (elementData.label && initialPosition && !elementData.symbolId) {
-      let offset, angle;
-      const isDiagram = !!element.data("diagramId");
-      if (isDiagram) {
-        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.diagramLabelPositionToOffsetAndAngle(
-          element,
-          initialPosition,
-          1,
-        ));
-      } else {
-        ({ pointOffset: offset, anchorAngle: angle } = coordinateMapper.pageLabelPositionsToOffsetAndAngle(element, 1));
-      }
-
-      element.data({ pointOffset: offset, anchorAngle: angle, ignorePositionChange: isDiagram });
+      const { pointOffset: offset, anchorAngle: angle } = coordinateMapper.labelPositionToOffsetAndAngle(
+        element,
+        initialPosition,
+        1,
+      );
+      element.data({ pointOffset: offset, anchorAngle: angle, ignorePositionChange: true });
     }
   });
 

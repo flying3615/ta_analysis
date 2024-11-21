@@ -830,10 +830,10 @@ describe("MoveSelectedHandler", () => {
     mouseUpAtPosition(newCytoscapePosition);
 
     expect(updatedElements?.nodes).toHaveLength(1); // just the label
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
+    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeTruthy();
     expect(updatedElements?.nodes?.[0]?.id).toBe("LAB_23");
     expect(updatedElements?.nodes?.[0]?.label).toBe("Rotated user added text");
-    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(5.4, 1);
-    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(0.3, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(36.9, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(72.6, 1);
   });
 });

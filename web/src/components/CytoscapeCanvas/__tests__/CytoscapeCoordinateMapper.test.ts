@@ -81,7 +81,7 @@ describe("CytoscapeCoordinateMapper", () => {
     expect(outerLimits.y2).toBeCloseTo(226.417, 2);
   });
 
-  test("diagramLabelPositionToOffsetAndAngle calculates correct offset and angle", () => {
+  test("labelPositionToOffsetAndAngle calculates correct offset and angle", () => {
     const mockMovedLabel = {
       position: () => ({ x: 100, y: 200 }),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -92,7 +92,7 @@ describe("CytoscapeCoordinateMapper", () => {
       },
     } as unknown as cytoscape.NodeSingular;
 
-    const result = cytoscapeCoordinateMapper.diagramLabelPositionToOffsetAndAngle(mockMovedLabel, {
+    const result = cytoscapeCoordinateMapper.labelPositionToOffsetAndAngle(mockMovedLabel, {
       x: 50,
       y: 100,
     });
@@ -101,18 +101,7 @@ describe("CytoscapeCoordinateMapper", () => {
     expect(result.anchorAngle).toBeCloseTo(307.5933, 2);
   });
 
-  test("pageLabelPositionsToOffsetAndAngle calculates correct offset and angle", () => {
-    const mockNode = {
-      position: () => ({ x: 100, y: 200 }),
-    } as unknown as cytoscape.NodeSingular;
-
-    const result = cytoscapeCoordinateMapper.pageLabelPositionsToOffsetAndAngle(mockNode);
-
-    expect(result.pointOffset).toBeCloseTo(0.2478, 2);
-    expect(result.anchorAngle).toBeCloseTo(63.434, 2);
-  });
-
-  test("diagramLabelPositionToOffsetAndAngle calculates correct offset and angle with right dp", () => {
+  test("labelPositionToOffsetAndAngle calculates correct offset and angle with right dp", () => {
     const mockMovedLabel = {
       position: () => ({ x: 100, y: 200 }),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -123,7 +112,7 @@ describe("CytoscapeCoordinateMapper", () => {
       },
     } as unknown as cytoscape.NodeSingular;
 
-    const result = cytoscapeCoordinateMapper.diagramLabelPositionToOffsetAndAngle(
+    const result = cytoscapeCoordinateMapper.labelPositionToOffsetAndAngle(
       mockMovedLabel,
       {
         x: 50,
@@ -134,16 +123,5 @@ describe("CytoscapeCoordinateMapper", () => {
 
     expect(result.pointOffset).toBeCloseTo(315.9, 2);
     expect(result.anchorAngle).toBeCloseTo(307.6, 2);
-  });
-
-  test("pageLabelPositionsToOffsetAndAngle calculates correct offset and angle with right dp", () => {
-    const mockNode = {
-      position: () => ({ x: 100, y: 200 }),
-    } as unknown as cytoscape.NodeSingular;
-
-    const result = cytoscapeCoordinateMapper.pageLabelPositionsToOffsetAndAngle(mockNode, 1);
-
-    expect(result.pointOffset).toBeCloseTo(0.2, 2);
-    expect(result.anchorAngle).toBeCloseTo(63.4, 2);
   });
 });

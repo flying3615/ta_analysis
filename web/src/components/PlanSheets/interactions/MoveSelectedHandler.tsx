@@ -408,19 +408,8 @@ function convertMovedCoordinateLabelsToOffsets(
     const data = ele.data() as INodeDataProperties;
 
     if (data.label && movedEleStartPosition && !data.symbolId) {
-      let pointOffset, anchorAngle;
-      const isDiagramLabel = !!ele.data("diagramId");
-      if (isDiagramLabel) {
-        ({ pointOffset, anchorAngle } = cytoCoordMapper.diagramLabelPositionToOffsetAndAngle(
-          ele,
-          movedEleStartPosition,
-          1,
-        ));
-      } else {
-        ({ pointOffset, anchorAngle } = cytoCoordMapper.pageLabelPositionsToOffsetAndAngle(ele, 1));
-      }
-
-      ele.data({ pointOffset, anchorAngle, ignorePositionChange: isDiagramLabel });
+      const { pointOffset, anchorAngle } = cytoCoordMapper.labelPositionToOffsetAndAngle(ele, movedEleStartPosition, 1);
+      ele.data({ pointOffset, anchorAngle, ignorePositionChange: true });
     }
   });
 
