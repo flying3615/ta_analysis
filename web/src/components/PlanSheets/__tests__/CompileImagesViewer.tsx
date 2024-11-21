@@ -5,19 +5,21 @@ import React, { useEffect, useState } from "react";
 import { ExportedImage, fetchCompileImages } from "@/test-utils/idb-utils";
 
 interface CompileImagesViewerProps {
-  imageIndex: "all" | number;
+  imageFilename: string;
 }
 
-const CompileImagesViewer = ({ imageIndex }: CompileImagesViewerProps) => {
+const CompileImagesViewer = ({ imageFilename }: CompileImagesViewerProps) => {
   const [images, setImages] = useState<ExportedImage[]>([]);
 
   useEffect(() => {
     void fetchCompileImages().then((images) => setImages(images));
   }, []);
 
+  const image = images.find((image) => image.filename === imageFilename);
+
   return (
     <div className="CompileImagesViewerContainer">
-      {imageIndex === "all" && (
+      {imageFilename === "all" && (
         <>
           <h3>Compile Plan Image output</h3>
           <p className="notes">
@@ -29,7 +31,7 @@ const CompileImagesViewer = ({ imageIndex }: CompileImagesViewerProps) => {
           </p>
         </>
       )}
-      {imageIndex === "all" &&
+      {imageFilename === "all" &&
         images.map((image) => {
           const url = URL.createObjectURL(image.blob);
           return (
@@ -39,13 +41,13 @@ const CompileImagesViewer = ({ imageIndex }: CompileImagesViewerProps) => {
             </div>
           );
         })}
-      {typeof imageIndex === "number" && images[imageIndex] && (
+      {image && (
         <div>
-          <p className="filename">Image name: {images[imageIndex].filename}</p>
-          <img src={URL.createObjectURL(images[imageIndex].blob)} alt={images[imageIndex].filename} />
+          <p className="filename">Image name: {image.filename}</p>
+          <img src={URL.createObjectURL(image.blob)} alt={image.filename} />
         </div>
       )}
-      {typeof imageIndex === "number" && !images[imageIndex] && (
+      {!image && (
         <div>
           <p>Compile plan test needs to be run first</p>
         </div>

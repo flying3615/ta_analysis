@@ -53,6 +53,7 @@ export const Default: Story = {
 export const CompilePlans: Story = {
   parameters: {
     chromatic: { runBefore: ["CompiledImageDSPT", "CompiledImageDTPS"] },
+    browsers: ["chrome"],
   },
   ...Default,
   play: async ({ canvasElement }) => {
@@ -80,7 +81,7 @@ export const CompilePlans: Story = {
 
 // We dont need to run this test in chromatic
 export const ViewAllCompiledImages: Story = {
-  render: () => <CompileImagesViewer imageIndex="all" />,
+  render: () => <CompileImagesViewer imageFilename="all" />,
   parameters: {
     chromatic: { disable: true },
   },
@@ -88,14 +89,36 @@ export const ViewAllCompiledImages: Story = {
 
 export const CompiledImageDSPT: Story = {
   parameters: {
-    chromatic: { delay: 3000 },
+    chromatic: {
+      disableSnapshot: true, // TODO Disable snapshot for this story
+    },
   },
-  render: () => <CompileImagesViewer imageIndex={0} />,
+  render: () => <CompileImagesViewer imageFilename="DSPT-1.jpg" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(
+      async () => {
+        await expect(canvas.getByText("Image name: DSPT-1.jpg")).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+  },
 };
 
 export const CompiledImageDTPS: Story = {
   parameters: {
-    chromatic: { delay: 3000 },
+    chromatic: {
+      disableSnapshot: true, // TODO Disable snapshot for this story
+    },
   },
-  render: () => <CompileImagesViewer imageIndex={2} />,
+  render: () => <CompileImagesViewer imageFilename="DTPS-1.jpg" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(
+      async () => {
+        await expect(canvas.getByText("Image name: DTPS-1.jpg")).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+  },
 };

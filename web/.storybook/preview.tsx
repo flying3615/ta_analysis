@@ -19,9 +19,7 @@ mswInitialize({
 });
 
 const preview: Preview = {
-  decorators: [
-    mswDecorator
-  ],
+  decorators: [mswDecorator],
   parameters: {
     layout: "fullscreen",
     viewport: {
@@ -29,17 +27,28 @@ const preview: Preview = {
         standard: {
           name: "1280x1024",
           styles: {
-            width: '1280px',
-            height: '800px',
+            width: "1280px",
+            height: "800px",
           },
-        }
+        },
       },
       defaultViewport: "standard",
     },
     msw: {
       handlers: [...handlers],
     },
+    loaders: [
+      async () => ({
+        fonts: fontLoader,
+      }),
+    ],
   },
 };
+
+// Use the document.fonts API to check if fonts have loaded
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/fonts API to
+const fontLoader = async () => ({
+  fonts: await document.fonts.ready,
+});
 
 export default preview;
