@@ -1,15 +1,33 @@
+import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { degreesToRadians, point, polygon } from "@turf/helpers";
+import { EdgeSingular, NodeSingular } from "cytoscape";
 import { isNil, last, round } from "lodash-es";
 
-import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { IGraphDataProperties, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { textDimensions } from "@/components/CytoscapeCanvas/styleNodeMethods";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
-import { LabelPropertiesData, LabelPropsToUpdate } from "@/components/PlanSheets/properties/LabelProperties";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import {
+  LabelPropertiesData,
+  LabelPropsToUpdate,
+  LabelPropsToUpdateWithElemType,
+} from "@/components/PlanSheets/properties/LabelProperties";
 import {
   cytoscapeLabelIdToPlanData,
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
-import { getActivePage, getElementTypeConfigs, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePage,
+  getElementTypeConfigs,
+  replaceDiagrams,
+  replacePage,
+  setAlignedLabelNodeId,
+  setPlanMode,
+} from "@/redux/planSheets/planSheetsSlice";
 import { atanDegrees360, subtractIntoDelta } from "@/util/positionUtil";
 
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
@@ -111,8 +129,131 @@ export const useLabelsFunctions = () => {
     updateLabels(labelsOriginalLocation, selectedLabelsData);
   };
 
+  const filterNonSystemLabels = (labels: cytoscape.NodeCollection) => {
+    return labels.filter((ele) => {
+      const displayState = ele.data("displayState") as string;
+      return !([DisplayStateEnum.systemDisplay, DisplayStateEnum.systemHide] as string[]).includes(displayState);
+    });
+  };
+
+  const updateLabelsDisplayState = (labels: cytoscape.NodeCollection | undefined, displayState: "display" | "hide") => {
+    if (!labels || !activePage) return;
+    const nonSystemLabels = filterNonSystemLabels(labels);
+    const diagramLabels = nonSystemLabels?.filter((label) => label.data("diagramId") !== undefined);
+    const diagramLabelsToUpdateWithElemType: LabelPropsToUpdateWithElemType[] = diagramLabels.map((label) => {
+      const labelData = label.data() as IGraphDataProperties;
+      return {
+        data: {
+          id: cytoscapeLabelIdToPlanData(labelData.id),
+          displayState,
+        },
+        type: {
+          elementType: labelData.elementType,
+          diagramId: labelData.diagramId?.toString(),
+        },
+      };
+    });
+    dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdateWithElemType)));
+
+    const pageLabels = nonSystemLabels.filter((label) => label.data("diagramId") === undefined);
+    const pageLabelsToUpdate: LabelPropsToUpdate[] = pageLabels.map((label) => ({
+      id: cytoscapeLabelIdToPlanData(label.data("id") as string),
+      displayState,
+    }));
+    dispatch(
+      replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
+    );
+  };
+
+  const alignLabelToLine = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
+    if (event.target) {
+      const labelNodeId = event.target.data("id") as string;
+      if (!labelNodeId) return;
+      dispatch(setPlanMode(PlanMode.SelectTargetLine));
+      dispatch(setAlignedLabelNodeId({ nodeId: labelNodeId }));
+    }
+  };
+
+  const getStackedLabels = (targetLabel: NodeSingular, clickedPosition: cytoscape.Position) => {
+    const container = targetLabel.cy()?.container();
+    if (!container) return [];
+    const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
+
+    const targetClickedPosition = { x: clickedPosition.x, y: clickedPosition.y + 7 };
+    const stackedLabels: cytoscape.NodeSingular[] = [];
+
+    // Find the labels that are close to the clicked position by checking their bounding box
+    const closeLabels = targetLabel
+      .cy()
+      .nodes()
+      .filter((node) => {
+        return isPositionInElem(targetClickedPosition, node) && isLabel(node.data("elementType") as PlanElementType);
+      });
+
+    // Check if the clicked position is inside the labels actual area
+    closeLabels.forEach((label) => {
+      const textDim = textDimensions(label, cytoscapeCoordinateMapper);
+      const halfTextDimWidth = textDim.width / 2;
+      const halfTextDimHeight = textDim.height / 2;
+      const labelCenter = { x: label.position().x, y: label.position().y + 7 };
+      // [top-left, top-right, bottom-right, bottom-left]
+      const labelPolygonHoriz: cytoscape.Position[] = [
+        { x: labelCenter.x - halfTextDimWidth, y: labelCenter.y + halfTextDimHeight },
+        { x: labelCenter.x + halfTextDimWidth, y: labelCenter.y + halfTextDimHeight },
+        { x: labelCenter.x + halfTextDimWidth, y: labelCenter.y - halfTextDimHeight },
+        { x: labelCenter.x - halfTextDimWidth, y: labelCenter.y - halfTextDimHeight },
+      ];
+      const labelTextRotation = -label.data("textRotation"); // negative because is counter clockwise
+      // Rotate the label polygon
+      const labelPolygonRotated = labelPolygonHoriz.map((point) => {
+        const labelTextRotationRadians = degreesToRadians(labelTextRotation);
+        return {
+          x:
+            labelCenter.x +
+            (point.x - labelCenter.x) * Math.cos(labelTextRotationRadians) -
+            (point.y - labelCenter.y) * Math.sin(labelTextRotationRadians),
+          y:
+            labelCenter.y +
+            (point.x - labelCenter.x) * Math.sin(labelTextRotationRadians) +
+            (point.y - labelCenter.y) * Math.cos(labelTextRotationRadians),
+        };
+      });
+      const labelPolygon = labelPolygonRotated.map((point) => [point.x, point.y]);
+      const turfPoint = point([targetClickedPosition.x, targetClickedPosition.y]);
+      labelPolygon[0] && labelPolygon.push(labelPolygon[0]); //First and last Position need to be equivalent to be a turf polygon
+      const turfPolygon = polygon([labelPolygon]);
+      const isInside = booleanPointInPolygon(turfPoint, turfPolygon);
+      // filter the labels that match the clicked position and are not nodeSymbol
+      if (isInside && isNil(label.data("symbolId"))) stackedLabels.push(label);
+    });
+    return stackedLabels;
+  };
+
+  const isPositionInElem = (position: cytoscape.Position, elem: NodeSingular) => {
+    const elemBbox = elem.boundingBox();
+    return (
+      position.x >= elemBbox.x1 && position.x <= elemBbox.x2 && position.y >= elemBbox.y1 && position.y <= elemBbox.y2
+    );
+  };
+
+  const isLabel = (elementType: PlanElementType) => {
+    return [
+      PlanElementType.LABELS,
+      PlanElementType.PARCEL_LABELS,
+      PlanElementType.LINE_LABELS,
+      PlanElementType.COORDINATE_LABELS,
+      PlanElementType.CHILD_DIAGRAM_LABELS,
+    ].includes(elementType);
+  };
+
   return {
     setOriginalLocation,
     updateLabels,
+    filterNonSystemLabels,
+    updateLabelsDisplayState,
+    alignLabelToLine,
+    getStackedLabels,
+    isPositionInElem,
+    isLabel,
   };
 };
