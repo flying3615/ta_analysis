@@ -88,14 +88,14 @@ export const ViewAllCompiledImages: Story = {
 
 export const CompiledImageDSPT: Story = {
   parameters: {
-    chromatic: { delay: 2000 },
+    chromatic: { delay: 3000 },
   },
   render: () => <CompileImagesViewer imageIndex={0} />,
 };
 
 export const CompiledImageDTPS: Story = {
   parameters: {
-    chromatic: { delay: 2000 },
+    chromatic: { delay: 3000 },
   },
   render: () => <CompileImagesViewer imageIndex={2} />,
 };
