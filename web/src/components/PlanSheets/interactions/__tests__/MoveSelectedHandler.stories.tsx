@@ -69,7 +69,6 @@ export const MoveDiagramNode: Story & Required<Pick<Story, "play">> = {
   },
 };
 
-// Enforces 'play' is provided as it is used in PlanSheetsUndo
 export const MoveDiagramLabel: Story = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -89,6 +88,36 @@ export const MoveDiagramLabel: Story = {
       clientX: position2.clientX + 50,
       clientY: position2.clientY + 100,
     });
+  },
+};
+
+export const MoveChildDiagramLabel: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    // move childDiagramLabels
+    const position1 = { clientX: 510, clientY: 190 };
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position1, {
+      clientX: position1.clientX + 150,
+      clientY: position1.clientY,
+    });
+    await sleep(500);
+
+    const position2 = { clientX: 510, clientY: 200 };
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position2, {
+      clientX: position2.clientX + 150,
+      clientY: position2.clientY,
+    });
+    await sleep(500);
+
+    await checkCytoElementProperties("#LAB_41", { position: { x: 389.81, y: 132.94 } });
+    await checkCytoElementProperties("#LAB_42", { position: { x: 389.81, y: 143.63 } });
   },
 };
 

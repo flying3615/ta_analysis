@@ -50,6 +50,18 @@ export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData):
           };
         }),
       };
+    } else if (elementType === PlanElementType.CHILD_DIAGRAM_LABELS) {
+      return {
+        ...diagram,
+        childDiagrams: diagram.childDiagrams?.map((group) => {
+          return {
+            ...group,
+            labels: group.labels.map((label) =>
+              label.id === cytoscapeLabelIdToPlanData(node.id) ? mergeLabelData(label, node) : label,
+            ),
+          };
+        }),
+      };
     } else if (
       elementType === PlanElementType.LABELS ||
       elementType === PlanElementType.COORDINATE_LABELS ||

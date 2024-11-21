@@ -114,7 +114,16 @@ export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
     "diagram",
     "Tahoma",
     14.0,
-  );
+  )
+  .addChildDiagram({ diagramRef: 1 })
+  .addLabel("childDiagramLabels", 41, "Diag. ACA", {
+    x: 40,
+    y: -20,
+  })
+  .addLabel("childDiagramLabels", 42, "See T?", {
+    x: 40,
+    y: -22,
+  });
 
 export const mockPlanDataBuilder = cloneDeep(mockPlanDataBuilderDiagram1)
   .addDiagram({
