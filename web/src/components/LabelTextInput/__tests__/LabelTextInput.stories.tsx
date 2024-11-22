@@ -12,7 +12,7 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
-import { click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { checkCytoElementProperties, click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
 
 export default {
   title: "LabelTextInput",
@@ -208,6 +208,8 @@ export const EditPageLabel: Story = {
     const pageLabelPosition = { clientX: 873, clientY: 161 };
     await click(target, pageLabelPosition); // click to select
     await click(target, pageLabelPosition); // click to edit
+    await userEvent.keyboard("{delete}"); // press delete
+    await checkCytoElementProperties("#LAB_23", { displayState: "display" }); // verify the label is not deleted
     const editLabelTextBox = canvas.getByPlaceholderText("Enter some text");
     void fireEvent.input(editLabelTextBox, { target: { value: "Edited my page label" } });
     await click(target, { clientX: 800, clientY: 500 });

@@ -4,7 +4,7 @@ import "@/components/MainWindow.scss";
 import { ResponseError } from "@linz/survey-plan-generation-api-client";
 import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
@@ -57,6 +57,7 @@ const PlanSheets = () => {
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
+  const [labelTextInputOpen, setLabelTextInputOpen] = useState<boolean>(false);
 
   const {
     data: activeDiagrams,
@@ -208,7 +209,7 @@ const PlanSheets = () => {
             </>
           )}
           {planMode === PlanMode.AddLabel && <AddLabelHandler />}
-          {planMode === PlanMode.SelectLabel && <SelectLabelHandler />}
+          {planMode === PlanMode.SelectLabel && <SelectLabelHandler setLabelTextInputOpen={setLabelTextInputOpen} />}
           {planMode === PlanMode.AddLine && <AddPageLineHandler />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
           {(planMode === PlanMode.SelectCoordinates ||
@@ -216,7 +217,7 @@ const PlanSheets = () => {
             planMode === PlanMode.SelectLabel ||
             planMode === PlanMode.SelectTargetLine) && <SelectElementHandler mode={planMode} />}
           {(planMode === PlanMode.SelectLine || planMode === PlanMode.SelectLabel) && (
-            <DeleteKeyHandler mode={planMode} />
+            <DeleteKeyHandler mode={planMode} labelTextInputOpen={labelTextInputOpen} />
           )}
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />

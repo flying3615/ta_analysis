@@ -14,6 +14,7 @@ const SELECTED_PAGE_LINES = `edge[lineId][lineType="userDefined"][^invisible][^p
 
 export interface DeleteKeyHandlerProps {
   mode: SelectHandlerMode;
+  labelTextInputOpen: boolean;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface DeleteKeyHandlerProps {
  * @param param0
  * @returns
  */
-export function DeleteKeyHandler({ mode }: DeleteKeyHandlerProps): ReactElement {
+export function DeleteKeyHandler({ mode, labelTextInputOpen }: DeleteKeyHandlerProps): ReactElement {
   const { cyto } = useCytoscapeContext();
   const { deletePageLines } = usePageLineEdit();
   const { deletePageLabels } = usePageLabelEdit();
@@ -38,9 +39,14 @@ export function DeleteKeyHandler({ mode }: DeleteKeyHandlerProps): ReactElement 
       if (mode === PlanMode.SelectLine) {
         deletePageLines([...selectedElements] as EdgeSingular[]);
       } else if (mode === PlanMode.SelectLabel) {
+        if (labelTextInputOpen) {
+          // Prevent deletion of labels when editing label text
+          return;
+        }
         deletePageLabels([...selectedElements] as NodeSingular[]);
       }
     },
+    false,
   );
 
   return <></>;

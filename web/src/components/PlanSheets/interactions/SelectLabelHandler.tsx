@@ -1,6 +1,6 @@
 import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { NodeSingular } from "cytoscape";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -9,7 +9,11 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 
-export const SelectLabelHandler = () => {
+interface SelectLabelHandlerProps {
+  setLabelTextInputOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const SelectLabelHandler = ({ setLabelTextInputOpen }: SelectLabelHandlerProps) => {
   const { cyto } = useCytoscapeContext();
   const container = cyto?.container();
   const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);
@@ -45,11 +49,13 @@ export const SelectLabelHandler = () => {
       ) {
         setLabelData({ id, label, labelType, elementType, diagramId });
         setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
+        setLabelTextInputOpen(true);
       } else {
         setInputPosition(undefined);
+        setLabelTextInputOpen(false);
       }
     },
-    [cyto, cytoCoordMapper],
+    [cyto, cytoCoordMapper, setLabelTextInputOpen],
   );
 
   useEffect(() => {
