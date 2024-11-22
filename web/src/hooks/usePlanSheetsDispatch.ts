@@ -8,7 +8,7 @@ import {
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramsWithEdge, updateDiagramsWithNode, updatePageWithNode } from "@/modules/plan/updatePlanData";
-import { getActivePage, replaceDiagrams, replacePage } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, replaceDiagramsAndPage } from "@/redux/planSheets/planSheetsSlice";
 
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
 import { useCytoscapeContext } from "./useCytoscapeContext";
@@ -63,11 +63,8 @@ export function usePlanSheetsDispatch(): PlanSheetsDispatch {
         }
       });
 
-      if (updatedDiagrams !== activeDiagrams) {
-        dispatch(replaceDiagrams(updatedDiagrams));
-      }
-      if (updatedPage && updatedPage !== activePage) {
-        dispatch(replacePage({ updatedPage }));
+      if (updatedDiagrams !== activeDiagrams || (updatedPage && updatedPage !== activePage)) {
+        dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams, page: updatedPage }));
       }
     },
     [activeDiagrams, activePage, dispatch],

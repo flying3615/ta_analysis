@@ -1,4 +1,9 @@
-import { CoordinateDTOCoordTypeEnum, PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTOCoordTypeEnum,
+  DiagramDTO,
+  PageDTO,
+  PageDTOPageTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
@@ -22,6 +27,7 @@ import planSheetsSlice, {
   PlanSheetsState,
   removePageLines,
   replaceDiagrams,
+  replaceDiagramsAndPage,
   setActivePageNumber,
   setActiveSheet,
   setLineHide,
@@ -256,6 +262,38 @@ describe("planSheetsSlice", () => {
 
     expect(getPlanData(store.getState()).diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 10, y: -10 });
     expect(getPlanData(store.getState()).diagrams[1]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
+    expect(hasChanges(store.getState())).toBe(true);
+  });
+
+  test("replaceDiagramsAndPage should replace both diagrams and a specific page", () => {
+    const initialDiagrams = [
+      { id: 1, diagramType: "sysGenPrimaryDiag", bottomRightPoint: { x: 80, y: -90 } },
+      { id: 2, diagramType: "sysGenTraverseDiag", bottomRightPoint: { x: 80, y: -90 } },
+    ] as DiagramDTO[];
+    const initialPages = [
+      { id: 1, pageType: "title", pageNumber: 1, lines: [] },
+      { id: 2, pageType: "survey", pageNumber: 1, lines: [] },
+    ] as PageDTO[];
+
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams: initialDiagrams,
+        pages: initialPages,
+      },
+    });
+
+    const newDiagrams = [
+      { id: 1, diagramType: "sysGenPrimaryDiag", bottomRightPoint: { x: 10, y: -10 } },
+      { id: 2, diagramType: "sysGenTraverseDiag", bottomRightPoint: { x: 10, y: -10 } },
+    ] as DiagramDTO[];
+    const newPage = { id: 1, pageType: "title", pageNumber: 1, lines: [{ id: 101, coordRefs: [1, 2] }] } as PageDTO;
+
+    store.dispatch(replaceDiagramsAndPage({ diagrams: newDiagrams, page: newPage }));
+
+    const state = store.getState().planSheets;
+    expect(state.diagrams).toEqual(newDiagrams);
+    expect(state.pages.find((page) => page.id === newPage.id)).toEqual(newPage);
     expect(hasChanges(store.getState())).toBe(true);
   });
 

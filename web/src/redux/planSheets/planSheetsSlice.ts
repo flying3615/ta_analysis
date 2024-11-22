@@ -107,6 +107,20 @@ const planSheetsSlice = createSlice({
       const index = state.pages.findIndex((page) => page.id === updatedPage.id);
       state.pages[index] = updatedPage;
     },
+    replaceDiagramsAndPage: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>) => {
+      onDataChanging(state);
+
+      state.diagrams = action.payload.diagrams;
+
+      if (action.payload.page) {
+        const pageIndex = state.pages.findIndex((p) => p.id === action.payload.page?.id);
+        if (pageIndex !== -1) {
+          state.pages[pageIndex] = action.payload.page;
+        } else {
+          state.pages.push(action.payload.page);
+        }
+      }
+    },
     setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
       state.activeSheet = action.payload;
     },
@@ -347,6 +361,7 @@ export const {
   setPlanData,
   replaceDiagrams,
   replacePage,
+  replaceDiagramsAndPage,
   setActiveSheet,
   setActivePageNumber,
   removeDiagramPageRef,
