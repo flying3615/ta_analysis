@@ -510,6 +510,9 @@ export const checkCytoElementProperties = async (
   selector: string,
   expectedProperties: {
     displayState?: DisplayStateEnum;
+    textRotation?: number;
+    anchorAngle?: number;
+    pointOffset?: number;
     color?: string;
     styleProperty?: string;
     className?: string;
@@ -517,10 +520,26 @@ export const checkCytoElementProperties = async (
   },
 ) => {
   const element = window.cyRef.$(selector);
+  console.log("position", element.position());
   if (element.length > 0) {
     if (expectedProperties.displayState !== undefined) {
       const data = element.data() as INodeDataProperties;
       await expect(data.displayState).toBe(expectedProperties.displayState);
+    }
+
+    if (expectedProperties.textRotation !== undefined) {
+      const data = element.data() as INodeDataProperties;
+      await expect(data.textRotation).toBe(expectedProperties.textRotation);
+    }
+
+    if (expectedProperties.anchorAngle !== undefined) {
+      const data = element.data() as INodeDataProperties;
+      await expect(data.anchorAngle).toBe(expectedProperties.anchorAngle);
+    }
+
+    if (expectedProperties.pointOffset !== undefined) {
+      const data = element.data() as INodeDataProperties;
+      await expect(data.pointOffset).toBe(expectedProperties.pointOffset);
     }
 
     if (expectedProperties.color !== undefined && expectedProperties.styleProperty !== undefined) {

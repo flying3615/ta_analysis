@@ -39,10 +39,10 @@ export const diagramLabelParcelAppellation: LabelDTO = {
 };
 
 export const diagramObsBearingLabel: LabelDTO = {
-  anchorAngle: 0,
+  anchorAngle: 90,
   displayState: "display",
   effect: "none",
-  pointOffset: 0,
+  pointOffset: 2,
   rotationAngle: 0,
   textAlignment: "centerCenter",
   id: 20,
@@ -59,10 +59,10 @@ export const diagramObsBearingLabel: LabelDTO = {
 };
 
 export const diagramObsDistLabel: LabelDTO = {
-  anchorAngle: 0,
+  anchorAngle: 270,
   displayState: "display",
   effect: "none",
-  pointOffset: 0,
+  pointOffset: 2,
   rotationAngle: 0,
   textAlignment: "centerCenter",
   id: 21,
