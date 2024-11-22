@@ -25,6 +25,7 @@ export enum PlanMode {
   FormatLinesText = "Format lines text",
   SelectRectangle = "Select Rectangle",
   SelectTargetLine = "Select Target Line",
+  NotImplemented = "Not implemented",
 }
 
 export enum PlanStyleClassName {

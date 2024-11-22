@@ -47,11 +47,11 @@ export const PlanSheetsHeaderButtons = () => {
         }}
       />
       <HeaderButton
-        headerMenuLabel={PlanMode.Delete}
+        disabled={true}
+        headerMenuLabel={PlanMode.NotImplemented}
         iconName="ic_delete_forever"
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.Delete);
-          alert("Not Yet Implemented");
+          handleHeaderButtonClick(PlanMode.NotImplemented);
         }}
         selectedButtonLabel={planMode}
       />
@@ -143,11 +143,11 @@ export const PlanSheetsHeaderButtons = () => {
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanMode.SelectPolygon}
+        disabled={true}
+        headerMenuLabel={PlanMode.NotImplemented}
         iconName="ic_polygon_selection"
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.SelectPolygon);
-          alert("Not Yet Implemented");
+          handleHeaderButtonClick(PlanMode.NotImplemented);
         }}
         selectedButtonLabel={planMode}
       />
@@ -169,22 +169,22 @@ export const PlanSheetsHeaderButtons = () => {
         selectedButtonLabel={planMode}
       />
       <HeaderButton
-        headerMenuLabel={PlanMode.FormatLinesText}
+        disabled={true}
+        headerMenuLabel={PlanMode.NotImplemented}
         iconName="ic_format_lines_text"
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.FormatLinesText);
-          alert("Not Yet Implemented");
+          handleHeaderButtonClick(PlanMode.NotImplemented);
         }}
         selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
       <HeaderButton
-        headerMenuLabel={PlanMode.SelectRectangle}
+        headerMenuLabel={PlanMode.NotImplemented}
+        disabled={true}
         iconName="ic_square_selection"
         selectedButtonLabel={planMode}
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.SelectRectangle);
-          alert("Not Yet Implemented");
+          handleHeaderButtonClick(PlanMode.NotImplemented);
         }}
       />
       <div className="CommonButtons__fill" />

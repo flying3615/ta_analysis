@@ -26,18 +26,20 @@ const mockStoreRedux = setupStore({
 });
 
 describe("PlanSheetsHeaderButtons", () => {
-  const buttonLabels = [
+  const activeButtonLabels = [
     [PlanMode.Undo],
-    [PlanMode.Delete],
     [PlanMode.View],
     [PlanMode.Cursor],
     [PlanMode.SelectDiagram],
     [PlanMode.SelectLabel],
     [PlanMode.SelectCoordinates],
     [PlanMode.SelectLine],
-    [PlanMode.SelectPolygon],
     [PlanMode.AddLabel],
     [PlanMode.AddLine],
+  ];
+  const inactiveButtonLabels = [
+    [PlanMode.Delete],
+    [PlanMode.SelectPolygon],
     [PlanMode.FormatLinesText],
     [PlanMode.SelectRectangle],
   ];
@@ -57,22 +59,22 @@ describe("PlanSheetsHeaderButtons", () => {
     jest.clearAllMocks();
   });
 
-  it.each(buttonLabels)("renders the %s header button", async (label: PlanMode) => {
+  it.each(activeButtonLabels)("renders the %s header button", async (label: PlanMode) => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
     expect(await screen.findByRole("button", { name: label })).toBeInTheDocument();
   });
 
-  it.each([[PlanMode.Delete], [PlanMode.SelectPolygon], [PlanMode.FormatLinesText], [PlanMode.SelectRectangle]])(
-    "handles unimplemented button %s",
-    async (label: PlanMode) => {
-      renderWithReduxProvider(<PlanSheetsHeaderButtons />);
-      window.alert = jest.fn();
+  it.each(inactiveButtonLabels)("does not render the %s header button", (label: PlanMode) => {
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />);
+    expect(screen.queryByRole("button", { name: label })).toBeNull();
+  });
 
-      const button = screen.getByRole("button", { name: label });
-      await userEvent.click(button);
-      await waitFor(() => expect(window.alert).toHaveBeenCalledWith("Not Yet Implemented"));
-    },
-  );
+  it("should disable all buttons with Not Implemented", () => {
+    renderWithReduxProvider(<PlanSheetsHeaderButtons />);
+    const buttons = screen.queryAllByRole("button", { name: PlanMode.NotImplemented });
+    expect(buttons).toHaveLength(4);
+    buttons.forEach((button) => expect(button).toBeDisabled());
+  });
 
   it("displays Zoom In, Zoom Out, and Zoom to Fit buttons in the toolbar", () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
