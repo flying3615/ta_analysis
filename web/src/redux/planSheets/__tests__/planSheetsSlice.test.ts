@@ -353,7 +353,7 @@ describe("planSheetsSlice", () => {
     expect(store.getState().planSheets.diagrams[2]?.coordinateLabels[0]?.displayState).toBe("hide");
   });
 
-  test("setLineHide should set the displayState on the line in store", () => {
+  test("setLineHide should set the displayState on the diagram line in store", () => {
     const diagramsWithLine = emptyDiagramsBuilder()
       .addCooordinate(101, { x: 20, y: -10 })
       .addCooordinate(101, { x: 25, y: -10 })
@@ -371,6 +371,48 @@ describe("planSheetsSlice", () => {
     store.dispatch(setLineHide({ id: "1011", hide: true }));
 
     expect(store.getState().planSheets.diagrams[2]?.lines[0]?.displayState).toBe("hide");
+  });
+
+  test("setLineHide should set the displayState on the page line in store", () => {
+    const pagesWithLines = emptyDiagramsBuilder()
+      .addUserCoordinate({
+        id: 101,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 20,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 102,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 25,
+          y: -10,
+        },
+      })
+      .addUserCoordinate({
+        id: 103,
+        coordType: CoordinateDTOCoordTypeEnum.userDefined,
+        position: {
+          x: 15,
+          y: -10,
+        },
+      })
+      .addUserLine({ id: 1011, coordRefs: [101, 102, 103], lineType: "userDefined", style: "arrowhead" })
+      .build().pages;
+
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        pages: pagesWithLines,
+      },
+    });
+
+    store.dispatch(setLineHide({ id: "1011", hide: true }));
+
+    const pages = getPlanData(store.getState()).pages;
+    expect(pages[2]?.lines?.[0]?.displayState).toBe("hide");
   });
 
   test("removePageLines should set the displayState on the line in store", () => {

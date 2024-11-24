@@ -179,11 +179,24 @@ const planSheetsSlice = createSlice({
     setLineHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
       const { id, hide } = action.payload;
 
-      const lineToChange = state.diagrams.flatMap((diagram) => {
-        return diagram.lines.filter((line) => {
-          return line.id.toString() === id;
-        });
-      })[0];
+      let lineToChange = undefined;
+      searchDiagramLines: for (const diagram of state.diagrams) {
+        for (const line of diagram.lines ?? []) {
+          if (line.id.toString() === id) {
+            lineToChange = line;
+            break searchDiagramLines;
+          }
+        }
+      }
+
+      searchPageLines: for (const page of state.pages) {
+        for (const line of page.lines ?? []) {
+          if (line.id.toString() === id) {
+            lineToChange = line;
+            break searchPageLines;
+          }
+        }
+      }
 
       if (!lineToChange) return;
       const lineIsHidden = ["hide", "systemHide"].includes(lineToChange.displayState ?? "");
