@@ -191,6 +191,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
       const newY = position.y + label.position.y - centerPosition.y - (maxDeltaY || 0);
 
       const labelTobeAdded = {
+        ...label,
         id: maxPlanId + index + 1,
         displayText: label.displayText,
         position: { x: newX, y: newY },
