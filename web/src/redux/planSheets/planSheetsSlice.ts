@@ -109,8 +109,10 @@ const planSheetsSlice = createSlice({
     },
     replaceDiagramsAndPage: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>) => {
       onDataChanging(state);
-
-      state.diagrams = action.payload.diagrams;
+      action.payload.diagrams.forEach((diagram: DiagramDTO) => {
+        const index = state.diagrams.findIndex((d) => d.id === diagram.id);
+        state.diagrams[index] = diagram;
+      });
 
       if (action.payload.page) {
         const pageIndex = state.pages.findIndex((p) => p.id === action.payload.page?.id);

@@ -1,6 +1,7 @@
 import {
   CoordinateDTOCoordTypeEnum,
   DiagramDTO,
+  LabelDTO,
   PageDTO,
   PageDTOPageTypeEnum,
 } from "@linz/survey-plan-generation-api-client";
@@ -637,5 +638,39 @@ describe("planSheetsSlice", () => {
 
     store.dispatch(clearUndo());
     expect(canUndo(store.getState())).toBeFalsy();
+  });
+
+  test("replaceDiagramsAndPage only updates diagrams in payload", () => {
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        diagrams,
+      },
+    });
+    const diagramsFromStore = store.getState().planSheets?.diagrams;
+    expect(diagramsFromStore).toHaveLength(3);
+    const diagramToUpdate: DiagramDTO = { ...diagramsFromStore[0] } as DiagramDTO;
+    const newLabel: LabelDTO = {
+      id: 46,
+      labelType: "diagram",
+      displayText: "A new label",
+      position: {
+        x: 12,
+        y: -22,
+      },
+      anchorAngle: 0.1,
+      displayState: "display",
+      rotationAngle: 91,
+      pointOffset: 22,
+      effect: "halo",
+      textAlignment: "none",
+    };
+    diagramToUpdate.labels = [...(diagramToUpdate?.labels ?? []), newLabel];
+    store.dispatch(replaceDiagramsAndPage({ diagrams: [diagramToUpdate] }));
+    const diagramsAfterUpdate = store.getState().planSheets.diagrams;
+    expect(diagramsAfterUpdate).toHaveLength(3);
+    const updatedDigram = diagramsAfterUpdate.find((d) => d.id === diagramToUpdate.id);
+    const updatedLabel = updatedDigram?.labels.find((l) => l.id === newLabel.id);
+    expect(updatedLabel).toEqual(newLabel);
   });
 });
