@@ -139,7 +139,12 @@ export const usePlanSheetsContextMenu = () => {
       const selectedLineNumber = cytoscapeUtils.countLines(selectedEdges);
 
       return [
-        { title: "Original location", callback: <MoveOriginalLocation target={targetLine} /> },
+        {
+          title: "Original location",
+          disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
+            element.data("diagramId") === undefined,
+          callback: <MoveOriginalLocation target={targetLine} />,
+        },
         {
           title: "Show",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>

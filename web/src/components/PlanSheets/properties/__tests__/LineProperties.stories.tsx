@@ -68,6 +68,10 @@ export const ShowLineMenu: Story = {
     const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
     clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
     await sleep(500);
+
+    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const originalLocationMenuItem = within(ctxMenuElement).getByRole("menuitem", { name: "Original location" });
+    await expect(originalLocationMenuItem).toHaveAttribute("aria-disabled", "false");
   },
 };
 export const ShowDiagramLineMenuProperties: Story = {
@@ -125,6 +129,8 @@ export const ShowPageLineMenuProperties: Story = {
     clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
     await sleep(500);
     const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
+    const originalLocationMenuItem = within(ctxMenuElement).getByRole("menuitem", { name: "Original location" });
+    await expect(originalLocationMenuItem).toHaveAttribute("aria-disabled", "true");
     const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
     await userEvent.click(propertiesMenuItem);
   },
