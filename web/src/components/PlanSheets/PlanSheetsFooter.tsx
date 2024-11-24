@@ -82,6 +82,7 @@ const PlanSheetsFooter = ({
     isPending: updatePlanAsyncIsPending,
     isError: updatePlanHasFailed,
     error: updatePlanError,
+    reset: updatePlanReset,
   } = useAsyncTaskHandler(updatePlanMutation);
   const updatePlanIsPending = updatePlanMutation.isPending || updatePlanAsyncIsPending;
   const updatePlan = () => !updatePlanIsPending && updatePlanMutation.mutate();
@@ -234,6 +235,7 @@ const PlanSheetsFooter = ({
           updatePlan={updatePlan}
           updatePlanIsPending={updatePlanIsPending}
           updatePlanIsSuccess={updatePlanIsSuccess}
+          updatePlanReset={updatePlanReset}
         />
         {updatePlanIsPending && (
           <LuiModalV2

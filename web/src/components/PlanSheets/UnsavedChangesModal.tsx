@@ -10,10 +10,12 @@ export const UnsavedChangesModal = ({
   updatePlan,
   updatePlanIsPending,
   updatePlanIsSuccess,
+  updatePlanReset,
 }: {
   updatePlan: () => void;
   updatePlanIsPending: boolean | undefined;
   updatePlanIsSuccess: boolean;
+  updatePlanReset: () => void;
 }) => {
   const dispatch = useAppDispatch();
   const hasUnsavedChanges = useAppSelector(hasChanges);
@@ -27,8 +29,6 @@ export const UnsavedChangesModal = ({
   const shouldBlockForUnsavedChanges =
     // block when unsaved changes
     hasUnsavedChanges &&
-    // and changes weren't just saved
-    !updatePlanIsSuccess &&
     // and either no externalUrl
     (!externalUrl ||
       // or externalUrl that hasn't allowed external navigation
@@ -87,8 +87,11 @@ export const UnsavedChangesModal = ({
       setTimeout(() => {
         blocker.proceed();
       }, 20); // Short delay so that the toast message has time to be initialised
+    } else if (updatePlanIsSuccess) {
+      // reset updatePlanIsSuccess after save so future unsaved changes are blocked
+      updatePlanReset();
     }
-  }, [blocker, updatePlanIsSuccess]);
+  }, [blocker, updatePlanIsSuccess, updatePlanReset]);
 
   // blocked or externalUrl => show
   if (blocker.state !== "blocked" && !externalUrl) {

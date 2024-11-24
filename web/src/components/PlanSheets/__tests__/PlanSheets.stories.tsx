@@ -204,6 +204,35 @@ UnsavedChangesModalAndCancelLeaveNavigationToDefineDiagrams.play = async ({ canv
   await expect(await screen.findByText("Define Diagrams Dummy Page")).toBeInTheDocument();
 };
 
+export const UnsavedChangesModalSaveAndLeaveNavigationToDefineDiagrams: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitForLoadingSpinnerToDisappear();
+
+    // Dispatch replace diagrams event to set hasChanges = true
+    store.dispatch(replaceDiagrams([]));
+    await sleep(500);
+
+    await userEvent.click(await canvas.findByText("Save layout"));
+
+    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"), { timeout: 20000 });
+    await sleep(500);
+
+    // Dispatch replace diagrams event to set hasChanges = true
+    store.dispatch(replaceDiagrams([]));
+    await sleep(500);
+
+    await userEvent.click(await canvas.findByText("Sheets"));
+    await userEvent.click(await canvas.findByText("Define Diagrams"));
+    await userEvent.click(await screen.findByText("Save & leave"));
+
+    await waitFor(() => within(document.body).findByText(/Layout saving/), { timeout: 20000 });
+    await expect(await screen.findByText("Define Diagrams Dummy Page")).toBeInTheDocument();
+  },
+};
+
 export const UnsavedChangesModalNavigateToSurveyCapture: Story = {
   ...Default,
 };
