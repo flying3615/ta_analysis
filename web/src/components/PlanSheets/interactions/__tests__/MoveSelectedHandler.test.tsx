@@ -1,4 +1,4 @@
-import { CoordinateDTO, LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { CoordinateDTO, DisplayStateEnum, LabelDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, {
   CollectionArgument,
   CollectionBuildingDifferenceFunc,
@@ -45,6 +45,7 @@ describe("MoveSelectedHandler", () => {
       10,
     )
     .addSymbolLabel(10007, "96", { x: 20, y: -70 }, 10, 10006)
+    .addSymbolLabel(10010, "96", { x: 20, y: -70 }, 10, 10006, DisplayStateEnum.systemHide)
     .addLabel(
       "coordinateLabels",
       10008,
@@ -57,6 +58,7 @@ describe("MoveSelectedHandler", () => {
       10,
     )
     .addSymbolLabel(10009, "96", { x: 50, y: -70 }, 10, 10005)
+    .addSymbolLabel(10011, "96", { x: 20, y: -70 }, 10, 10006, DisplayStateEnum.systemHide)
     .addRotatedLabel("lineLabels", 15, "Line 1005", { x: 35, y: -70 }, "Arial", 14, 0, 0, 14, undefined, 1005, "Line")
     .addRotatedLabel("lineLabels", 16, "Line 1004", { x: 65, y: -70 }, "Arial", 14, 0, 0, 14, undefined, 1004, "Line")
     .build();
@@ -221,6 +223,16 @@ describe("MoveSelectedHandler", () => {
     pointOffset: 0,
     coordType: "node",
   };
+  const lab10010Definition = {
+    id: "LAB_10010",
+    label: "96",
+    position: node10006CytoscapePosition,
+    diagramId: 1,
+    symbolId: 96,
+    anchorAngle: 0,
+    pointOffset: 0,
+    coordType: "node",
+  };
   const coord10005Definition = {
     id: "10005",
     label: undefined,
@@ -239,6 +251,7 @@ describe("MoveSelectedHandler", () => {
       { ...coord10006Definition, position: node10006CytoscapePosition },
       { ...lab10006Definition, position: node10006CytoscapePosition },
       { ...lab10007Definition, position: node10006CytoscapePosition },
+      { ...lab10010Definition, position: node10006CytoscapePosition },
     ] as CytoscapeNodeData[];
 
     const mockSelectedElements = mockCytoscapeSelectedElements(selectedNodesForMarkMove);
@@ -259,7 +272,7 @@ describe("MoveSelectedHandler", () => {
 
     mouseUpAtPosition(newCytoscapePosition);
 
-    expect(updatedElements?.nodes).toHaveLength(5); // 1 mark and 2 mark labels and 2 edge labels
+    expect(updatedElements?.nodes).toHaveLength(6); // 1 mark and 3 mark labels and 2 edge labels
     const newGroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapePosition, 1);
     expect(updatedElements?.nodes?.[0]?.position).toEqual(newGroundPosition);
     expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
@@ -280,10 +293,16 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[2]?.properties?.ignorePositionChange).toBeFalsy();
     expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBe(0);
+    expect(updatedElements?.nodes?.[3]?.id).toBe("LAB_10010");
+    expect(updatedElements?.nodes?.[3]?.label).toBe("96");
+    expect(updatedElements?.nodes?.[3]?.position).toEqual(newGroundPosition);
+    expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
+    expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBe(0);
+    expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBe(0);
 
     // Line labels get shifted to centre of moved line
-    expect(updatedElements?.nodes?.[3]?.id).toBe("LAB_13");
-    expect(updatedElements?.nodes?.[3]?.label).toBe("Label 13");
+    expect(updatedElements?.nodes?.[4]?.id).toBe("LAB_13");
+    expect(updatedElements?.nodes?.[4]?.label).toBe("Label 13");
     const node10001GroundPosition = planData.diagrams[0]?.coordinates?.find((c) => c.id === 10001)?.position;
     const expectedGroundPosition13 = midPoint(
       node10001GroundPosition as Position,
@@ -295,21 +314,21 @@ describe("MoveSelectedHandler", () => {
       cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapePosition, 1),
     );
 
-    expect(updatedElements?.nodes?.[3]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
-    expect(updatedElements?.nodes?.[3]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
-    expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
-    expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[3]?.properties?.textRotation).toBeCloseTo(279.9, 1);
-
-    expect(updatedElements?.nodes?.[4]?.id).toBe("LAB_15");
-    expect(updatedElements?.nodes?.[4]?.label).toBe("Line 1005");
-    expect(updatedElements?.nodes?.[4]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
-    expect(updatedElements?.nodes?.[4]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
+    expect(updatedElements?.nodes?.[4]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
+    expect(updatedElements?.nodes?.[4]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.ignorePositionChange).toBeFalsy();
-    expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
+    expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.pointOffset).toBeCloseTo(14, 1);
-    expect(updatedElements?.nodes?.[4]?.properties?.textRotation).toBeCloseTo(341.6, 1);
+    expect(updatedElements?.nodes?.[4]?.properties?.textRotation).toBeCloseTo(279.9, 1);
+
+    expect(updatedElements?.nodes?.[5]?.id).toBe("LAB_15");
+    expect(updatedElements?.nodes?.[5]?.label).toBe("Line 1005");
+    expect(updatedElements?.nodes?.[5]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
+    expect(updatedElements?.nodes?.[5]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
+    expect(updatedElements?.nodes?.[5]?.properties?.ignorePositionChange).toBeFalsy();
+    expect(updatedElements?.nodes?.[5]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
+    expect(updatedElements?.nodes?.[5]?.properties?.pointOffset).toBeCloseTo(14, 1);
+    expect(updatedElements?.nodes?.[5]?.properties?.textRotation).toBeCloseTo(341.6, 1);
   });
 
   test("can move a label", () => {

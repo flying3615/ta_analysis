@@ -20,7 +20,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown";
 import { isStorybookTest, updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
-import { filterEdgeData, filterNodeData, keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
+import { filterEdgeData, keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
 
@@ -57,9 +57,6 @@ const CytoscapeCanvas = ({
   getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
-  const filteredNodeData = useMemo(() => {
-    return filterNodeData(nodeData, "systemHide");
-  }, [nodeData]);
   const filteredEdgeData = useMemo(() => {
     return filterEdgeData(edgeData, "systemHide");
   }, [edgeData]);
@@ -143,7 +140,7 @@ const CytoscapeCanvas = ({
       maxZoom: MAX_ZOOM,
       pan,
       elements: {
-        nodes: nodeDefinitionsFromData(filteredNodeData, cytoscapeCoordinateMapper),
+        nodes: nodeDefinitionsFromData(nodeData, cytoscapeCoordinateMapper),
         edges: edgeDefinitionsFromData(filteredEdgeData),
       },
       layout: {
@@ -189,12 +186,12 @@ const CytoscapeCanvas = ({
       return;
     }
 
-    if (cy || (filteredNodeData.length === 0 && filteredEdgeData.length === 0)) {
+    if (cy || (nodeData.length === 0 && filteredEdgeData.length === 0)) {
       return;
     }
 
     initCytoscape();
-  }, [cy, filteredNodeData, filteredEdgeData, initCytoscape]);
+  }, [cy, nodeData, filteredEdgeData, initCytoscape]);
 
   // Handle viewport resizing
   useEffect(() => {

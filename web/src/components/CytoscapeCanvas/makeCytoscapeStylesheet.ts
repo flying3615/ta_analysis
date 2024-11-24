@@ -25,10 +25,19 @@ import {
 } from "@/modules/plan/styling";
 import { PIXELS_PER_POINT, POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
-const opacityFromDisplayState = (ele: cytoscape.NodeSingular) =>
-  [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(ele.data("displayState") as string)
-    ? 0.2
-    : 1;
+const opacityFromDisplayState = (ele: cytoscape.NodeSingular) => {
+  const displayState = ele.data("displayState") as string;
+  if (displayState === DisplayStateEnum.hide.valueOf()) return 0.2;
+  if (displayState === DisplayStateEnum.systemHide.valueOf()) return 0;
+  return 1;
+};
+
+// For a label, we just want opacity zero when systemHide
+const labelOpacityFromDisplayState = (ele: cytoscape.NodeSingular) => {
+  const displayState = ele.data("displayState") as string;
+  if (displayState === DisplayStateEnum.systemHide.valueOf()) return 0;
+  return 1;
+};
 
 const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateMapper, isGreyScale = false) => {
   const svgDataForSymbol = svgDataForSymbolFun(cytoscapeCoordinateMapper);
@@ -67,6 +76,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "text-justification": textJustification,
     color: isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
     "z-index": "data(zIndex)",
+    "text-opacity": labelOpacityFromDisplayState,
     "text-background-color": "#FFFFFF",
     "text-background-opacity": "data(textBackgroundOpacity)",
     "text-border-opacity": "data(textBorderOpacity)",

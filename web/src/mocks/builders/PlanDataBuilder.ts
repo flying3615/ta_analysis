@@ -222,6 +222,7 @@ export class PlanDataBuilder {
     position: CartesianCoordsDTO,
     fontSize: number = 8,
     featureId: number | undefined = undefined,
+    displayState: DisplayStateEnum = DisplayStateEnum.display,
   ) {
     return this.addLabel(
       "coordinateLabels",
@@ -234,7 +235,7 @@ export class PlanDataBuilder {
       SYMBOLS_FONT,
       fontSize,
       undefined,
-      DisplayStateEnum.display,
+      displayState,
     );
   }
 

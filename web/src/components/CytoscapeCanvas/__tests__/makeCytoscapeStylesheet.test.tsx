@@ -7,6 +7,8 @@ import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeS
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("makeCytoscapeStylesheet", () => {
+  const LABEL_SELECTOR = "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]";
+
   const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
     { clientWidth: 500, clientHeight: 300 } as HTMLElement,
     diagrams,
@@ -187,5 +189,49 @@ describe("makeCytoscapeStylesheet", () => {
     ) as cytoscape.Stylesheet;
     const styleEntry = getStyleEntryFromStylesheet(selectedNodeStyle);
     expect(styleEntry["outline-opacity"]).toBe(0);
+  });
+
+  test("Displays with opacity 1 for a visible symbol node", () => {
+    const symbolNodeStyle = stylesheet.find((s) => s.selector === "node[symbolId]");
+
+    const styleEntry = getStyleEntryFromStylesheet(symbolNodeStyle as cytoscape.Stylesheet);
+    const opacity = styleEntry["background-image-opacity"]?.(nodeSingular({ symbolId: "63", displayState: "visible" }));
+    expect(opacity).toBe(1);
+  });
+
+  test("Displays with opacity 0.2 for a hidden symbol node", () => {
+    const symbolNodeStyle = stylesheet.find((s) => s.selector === "node[symbolId]");
+
+    const styleEntry = getStyleEntryFromStylesheet(symbolNodeStyle as cytoscape.Stylesheet);
+    const opacity = styleEntry["background-image-opacity"]?.(nodeSingular({ symbolId: "63", displayState: "hide" }));
+    expect(opacity).toBe(0.2);
+  });
+
+  test("Displays with opacity 0 for a systemHide symbol node", () => {
+    const symbolNodeStyle = stylesheet.find((s) => s.selector === "node[symbolId]");
+
+    const styleEntry = getStyleEntryFromStylesheet(symbolNodeStyle as cytoscape.Stylesheet);
+    const opacity = styleEntry["background-image-opacity"]?.(
+      nodeSingular({ symbolId: "63", displayState: "systemHide" }),
+    );
+    expect(opacity).toBe(0);
+  });
+
+  test("Displays with opacity 1 for a hidden label node", () => {
+    const labelNodeStyle = stylesheet.find((s) => s.selector === LABEL_SELECTOR);
+
+    const styleEntry = getStyleEntryFromStylesheet(labelNodeStyle as cytoscape.Stylesheet);
+    const hiddenLabel = nodeSingular({ displayState: "hide" });
+    const opacity = styleEntry["text-opacity"]?.(hiddenLabel);
+    expect(opacity).toBe(1);
+  });
+
+  test("Displays with opacity 0 for a systemHide label node", () => {
+    const labelNodeStyle = stylesheet.find((s) => s.selector === LABEL_SELECTOR);
+
+    const styleEntry = getStyleEntryFromStylesheet(labelNodeStyle as cytoscape.Stylesheet);
+    const hiddenLabel = nodeSingular({ displayState: "systemHide" });
+    const opacity = styleEntry["text-opacity"]?.(hiddenLabel);
+    expect(opacity).toBe(0);
   });
 });
