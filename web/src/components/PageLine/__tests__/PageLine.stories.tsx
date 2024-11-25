@@ -68,11 +68,14 @@ export const AddLineDoubleClick: Story = {
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
-    await test.leftClick([363, 220]);
-    await test.leftClick([241, 289]);
-    await test.leftClick([1237, 277]); // Outside the sheet. Shouldn't do anything
-    await test.leftClick([180, 182]);
-    await test.doubleClick([405, 280]);
+    await drawLine(test, [
+      [363, 220],
+      [241, 289],
+      [1237, 277], // Outside the sheet. Shouldn't do anything
+      [180, 182],
+      [405, 280],
+    ]);
+
     await test.mouseMove([354, 135]);
     // The following should be verified by chromatic:
     // The View button should be enabled, the Add line button disabled
@@ -128,7 +131,7 @@ export const AddLineWithArrowsDoubleClick: Story = {
   },
 };
 
-export const HoverLineVertex: Story = {
+export const HoverLineEnd: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -138,16 +141,14 @@ export const HoverLineVertex: Story = {
     const pointB: [number, number] = [275, 40];
     const pointC: [number, number] = [500, 200];
 
-    // Make a simple line
-    await test.leftClick(pointA);
-    await test.doubleClick(pointB);
+    await drawLine(test, [pointA, pointB]);
     await test.clickTitle("Select Lines");
 
     // Hover over the line end
     await test.mouseMove(pointB);
 
     // Move the mouse without selecting the vertex
-    await test.mouseMove(pointC);
+    await test.leftClickAndDrag(pointB, pointC);
 
     // Move back to the line end and end the test
     await test.mouseMove(pointB);
@@ -155,10 +156,41 @@ export const HoverLineVertex: Story = {
     // The following should be verified by chromatic:
     //  - The line shape should not change
     //  - The hover effect should be visible and not selected (e.g. a blue circle around the vertex with no pink circle)
+    // TODO:  SURVEY-25820: [Q2] Mouse-down-and-drag on an unselected element selects and starts moving it
   },
 };
 
-export const SelectLineVertex: Story = {
+export const HoverLineVertex: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+    const pointD: [number, number] = [275, 360];
+
+    await drawLine(test, [pointA, pointB, pointC]);
+
+    await test.clickTitle("Select Lines");
+    // Hover over the line end
+    await test.mouseMove(pointB);
+
+    // Move the mouse without selecting the vertex
+    await test.leftClickAndDrag(pointB, pointD);
+
+    // Move back to the line end and end the test
+    await test.mouseMove(pointB);
+
+    // The following should be verified by chromatic:
+    //  - The line shape should not change
+    //  - The hover effect should be visible and not selected (e.g. a blue circle around the vertex with no pink circle)
+    // TODO:  SURVEY-25820: [Q2] Mouse-down-and-drag on an unselected element selects and starts moving it
+  },
+};
+
+export const SelectLineEnd: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -167,9 +199,8 @@ export const SelectLineVertex: Story = {
     const pointA: [number, number] = [50, 200];
     const pointB: [number, number] = [275, 40];
 
-    // Make a simple line and switch to select lines mode
-    await test.leftClick(pointA);
-    await test.doubleClick(pointB);
+    await drawLine(test, [pointA, pointB]);
+
     await test.clickTitle("Select Lines");
 
     // Select the vertex
@@ -192,10 +223,7 @@ export const MovePageLine: Story = {
     const pointC: [number, number] = [500, 200];
     const pointD: [number, number] = [275, 360];
 
-    // Make a ^ shape
-    await test.leftClick(pointA);
-    await test.leftClick(pointB);
-    await test.doubleClick(pointC);
+    await drawLine(test, [pointA, pointB, pointC]);
 
     // Click the header button "Select lines"
     await test.clickTitle("Select Lines");
@@ -213,7 +241,41 @@ export const MovePageLine: Story = {
   },
 };
 
-export const MoveLineVertex: Story = {
+async function drawLine(test: TestCanvas, points: [number, number][]) {
+  await test.clickTitle("Add line");
+  const last = points.length - 1;
+  let point;
+  for (point of points.slice(0, last)) {
+    await test.leftClick(point);
+  }
+  await test.doubleClick(points[last] as [number, number]);
+}
+
+export const HoverNonSelectedVertex: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+
+    await drawLine(test, [pointA, pointB, pointC]);
+
+    // Click the header button "Select lines". Yes, this is "correct". To move a Page line vertex you need to be in
+    // "Select lines" mode and not "Select coordinates" mode.
+    await test.clickTitle("Select Lines");
+
+    // Select an end, hover over vertex
+    await test.leftClick(pointC);
+    await test.mouseMove(pointB);
+
+    // chromatic to verify the hover icon and highlight is correct
+  },
+};
+
+export const MoveLineVertexAndEnd: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -223,25 +285,63 @@ export const MoveLineVertex: Story = {
     const pointB: [number, number] = [275, 40];
     const pointC: [number, number] = [500, 200];
     const pointD: [number, number] = [275, 360];
+    const pointADMid: [number, number] = [(pointA[0] + pointD[0]) / 2, (pointA[1] + pointD[1]) / 2];
 
-    // Make a ^ shape
-    await test.leftClick(pointA);
-    await test.leftClick(pointB);
-    await test.doubleClick(pointC);
+    await drawLine(test, [pointA, pointB, pointC]);
 
     // Click the header button "Select lines". Yes, this is "correct". To move a Page line vertex you need to be in
     // "Select lines" mode and not "Select coordinates" mode.
     await test.clickTitle("Select Lines");
 
-    // Select the vertex
+    // Move all points around
     await test.leftClick(pointB);
-
-    // Move pointB downwards to make a V shape
     await test.leftClickAndDrag(pointB, pointD);
+    await test.leftClick(pointA);
+    await test.leftClickAndDrag(pointA, pointB);
+    await test.leftClick(pointC);
+    await test.leftClickAndDrag(pointC, pointA);
+    await test.hoverOver(pointADMid);
 
     // The following should be verified by chromatic:
     // The line shape should change from a ^ shape to a V shape
     // The vertex selected state should not be visible - once a line has moved, the vertex should be unselected
+    // Select Lines is still active
+    // Line is highlighted when mouse is over
+  },
+};
+
+export const MoveLineEndBoundary: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+    const pointOutside: [number, number] = [1237, 277];
+    await drawLine(test, [pointA, pointB, pointC]);
+    await test.clickTitle("Select Lines");
+    await test.leftClick(pointC);
+    await test.leftClickAndDrag(pointC, pointOutside);
+    // Chromatic to check line shape. Human being to check shape and that this line is inside the boundary
+  },
+};
+
+export const MoveLineVertexBoundary: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+
+    const pointA: [number, number] = [50, 200];
+    const pointB: [number, number] = [275, 40];
+    const pointC: [number, number] = [500, 200];
+    const pointOutside: [number, number] = [1237, 277];
+    await drawLine(test, [pointA, pointB, pointC]);
+    await test.clickTitle("Select Lines");
+    await test.leftClick(pointB);
+    await test.leftClickAndDrag(pointB, pointOutside);
   },
 };
 
@@ -250,10 +350,12 @@ export const AddLineRetainsLineStyle: Story = {
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
-    await test.leftClick([363, 220]);
-    await test.leftClick([241, 289]);
-    await test.leftClick([180, 182]);
-    await test.doubleClick([405, 280]);
+    await drawLine(test, [
+      [363, 220],
+      [241, 289],
+      [180, 182],
+      [405, 280],
+    ]);
     await test.mouseMove([354, 135]);
 
     await test.clickTitle("Select Lines");
@@ -265,10 +367,11 @@ export const AddLineRetainsLineStyle: Story = {
     // await test.user.click(widthSelector.querySelector(`input[name="1.4"]`) as Element);
     await test.clickButton("OK");
 
-    await test.clickTitle("Add line");
-    await test.leftClick([391, 132]);
-    await test.leftClick([197, 132]);
-    await test.doubleClick([207, 106]);
+    await drawLine(test, [
+      [391, 132],
+      [197, 132],
+      [207, 106],
+    ]);
 
     await test.clickTitle("Select Lines");
     await test.contextMenu({ at: [197, 132], select: "Properties" });
