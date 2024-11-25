@@ -9,17 +9,15 @@ import {
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { addPageLabels } from "@/modules/plan/updatePlanData";
 import {
+  doPastePageLabels,
   getActivePage,
   getCopiedElements,
   getMaxElemIds,
   removePageLabels,
-  replacePage,
   setCopiedElements,
   updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
-import { collectionReturnValueToNodeSingularArray } from "@/test-utils/cytoscape-utils";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
@@ -190,6 +188,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
     if (!maxId) throw Error("No maxId found");
 
     let newMaxId: number | undefined;
+
     copiedElements.elements.forEach((ele, index) => {
       const label = ele as LabelDTO;
       const newX = position.x + label.position.x - centerPosition.x + (maxDeltaX || 0);
@@ -205,19 +204,11 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
       } as LabelDTO;
       labelsTobeAdded.push(labelTobeAdded);
     });
-    dispatch(
-      replacePage({
-        updatedPage: addPageLabels(activePage, labelsTobeAdded),
-      }),
-    );
+
     newMaxId && dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
 
-    if (copiedElements.action === "CUT") {
-      const pageLabels = copiedElements.elements.map((e) => cyto.getElementById(planDataLabelIdToCytoscape(e.id)));
-      if (pageLabels.length > 0) {
-        deletePageLabels(collectionReturnValueToNodeSingularArray(pageLabels));
-      }
-    }
+    const action = copiedElements.action;
+    dispatch(doPastePageLabels({ activePage, labelsTobeAdded, action }));
   };
 
   return {

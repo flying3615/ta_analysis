@@ -7,6 +7,7 @@ import { cloneDeep } from "lodash-es";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
+import { addPageLabels } from "@/modules/plan/updatePlanData";
 import { revertAll } from "@/redux/revertAll";
 
 export interface PlanSheetsState {
@@ -107,6 +108,35 @@ const planSheetsSlice = createSlice({
       (applyOnDataChanging ?? true) && onDataChanging(state);
       const index = state.pages.findIndex((page) => page.id === updatedPage.id);
       state.pages[index] = updatedPage;
+    },
+    doPastePageLabels: (
+      state,
+      action: PayloadAction<{ activePage: PageDTO; labelsTobeAdded: LabelDTO[]; action: "COPY" | "CUT" }>,
+    ) => {
+      const { activePage, labelsTobeAdded } = action.payload;
+      const updatedPage = addPageLabels(activePage, labelsTobeAdded);
+      onDataChanging(state);
+      const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
+
+      if (action.payload.action === "CUT" && state.copiedElements) {
+        // do copy action
+        state.pages[targetPageIndex] = updatedPage;
+
+        // then remove the original label from the source page
+        const originalPageId = state.copiedElements.pageId;
+        const originalPage = state.pages.find((page) => page.id === originalPageId)!;
+        const originalIndex = state.pages.findIndex((page) => page.id === originalPageId);
+        const originalLabels = originalPage?.labels?.filter(
+          (label) => !state.copiedElements?.elements.some((el) => el.id === label.id),
+        );
+        state.pages[originalIndex] = { ...originalPage, labels: originalLabels };
+      } else {
+        // If it's a copy action, just update the page with the new labels
+        state.pages[targetPageIndex] = updatedPage;
+      }
+    },
+    doPastePageLines: () => {
+      //   TODO implement it in https://toitutewhenua.atlassian.net/browse/SURVEY-25421
     },
     replaceDiagramsAndPage: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>) => {
       onDataChanging(state);
@@ -398,6 +428,7 @@ export const {
   removeDiagramPageRef,
   setDiagramPageRef,
   updatePages,
+  doPastePageLabels,
   setPlanMode,
   setLastUpdatedLineStyle,
   setLastUpdatedLabelStyle,

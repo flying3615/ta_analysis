@@ -15,6 +15,7 @@ import { setupStore } from "@/redux/store";
 import planSheetsSlice, {
   canUndo,
   clearUndo,
+  doPastePageLabels,
   getActivePage,
   getActivePageNumber,
   getActivePages,
@@ -33,6 +34,7 @@ import planSheetsSlice, {
   replaceDiagramsAndPage,
   setActivePageNumber,
   setActiveSheet,
+  setCopiedElements,
   setLineHide,
   setPlanData,
   setSymbolHide,
@@ -323,6 +325,68 @@ describe("planSheetsSlice", () => {
 
     expect(getPlanData(store.getState()).pages[0]?.id).toBe(2);
     expect(hasChanges(store.getState())).toBe(true);
+  });
+
+  test("doPastePageLabels should cut and paste labels within the same page", () => {
+    const label1 = { id: 100, labelType: "diagram", displayText: "Label 1", position: { x: 10, y: 10 } } as LabelDTO;
+    const label2 = { id: 101, labelType: "diagram", displayText: "Label 2", position: { x: 20, y: 20 } } as LabelDTO;
+
+    const labelsToPaste: LabelDTO[] = [label1, label2];
+    const labelsTobeAdded: LabelDTO[] = [
+      { ...label1, id: 103 },
+      { ...label2, id: 104 },
+    ];
+
+    const initialPages = [
+      {
+        id: 1,
+        pageType: "title",
+        pageNumber: 1,
+        labels: labelsToPaste,
+      } as PageDTO,
+    ];
+
+    store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
+    store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
+    store.dispatch(
+      doPastePageLabels({
+        activePage: initialPages[0] as PageDTO,
+        labelsTobeAdded: labelsTobeAdded,
+        action: "CUT",
+      }),
+    );
+
+    const state = store.getState().planSheets;
+    expect(state.pages[0]).toMatchObject({ labels: labelsTobeAdded });
+    expect(state.hasChanges).toBe(true);
+  });
+
+  test("doPastePageLabels should remove labels from the source page if action is CUT", () => {
+    const label1 = { id: 100, labelType: "diagram", displayText: "Label 1", position: { x: 10, y: 10 } } as LabelDTO;
+    const label2 = { id: 101, labelType: "diagram", displayText: "Label 2", position: { x: 20, y: 20 } } as LabelDTO;
+
+    const labelsToPaste: LabelDTO[] = [label1, label2];
+
+    const labelsTobeAdded: LabelDTO[] = [
+      { ...label1, id: 103 },
+      { ...label2, id: 104 },
+    ];
+
+    const initialPages = [
+      { id: 1, pageType: "title", pageNumber: 1, labels: labelsToPaste } as PageDTO,
+      { id: 2, pageType: "survey", pageNumber: 1, labels: [] } as PageDTO,
+    ];
+
+    store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
+    store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
+    store.dispatch(
+      doPastePageLabels({ activePage: initialPages[1] as PageDTO, labelsTobeAdded: labelsTobeAdded, action: "CUT" }),
+    );
+
+    const state = store.getState().planSheets;
+    expect(state.pages[0]).toMatchObject({ labels: [] });
+    expect(state.pages[1]).toMatchObject({ labels: labelsTobeAdded });
+    expect(state.hasChanges).toBe(true);
   });
 
   test("hasChanges should return if there are changes", () => {
