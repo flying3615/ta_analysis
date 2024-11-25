@@ -528,7 +528,6 @@ export const checkCytoElementProperties = async (
   },
 ) => {
   const element = window.cyRef.$(selector);
-  console.log("position", element.position());
   if (element.length > 0) {
     if (expectedProperties.displayState !== undefined) {
       const data = element.data() as INodeDataProperties;

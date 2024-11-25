@@ -301,17 +301,6 @@ const countLines = (edges: cytoscape.EdgeCollection | undefined): number => {
   }
 };
 
-const findMaxId = (cyto?: cytoscape.Core) => {
-  let cyMaxId = 0;
-  cyto?.elements().forEach((element) => {
-    const id = parseInt(element.id());
-    if (id > cyMaxId) {
-      cyMaxId = id;
-    }
-  });
-  return cyMaxId + 1;
-};
-
 export const addPageLineByCoordList = (
   page: PageDTO,
   nodeList: cytoscape.NodeDefinition[],
@@ -356,6 +345,5 @@ export const cytoscapeUtils = {
   getDiagramAreasLimits,
   isPositionWithinAreaLimits,
   countLines,
-  findMaxId,
   addPageLineByList: addPageLineByCoordList,
 };

@@ -157,6 +157,9 @@ export const AddLabel: Story = {
     // eslint-disable-next-line testing-library/no-node-access
     cursorButton = (await canvas.findByTitle("Cursor")).parentElement;
     await expect(cursorButton).toHaveClass("selected");
+
+    const label = window.cyRef.$('node[label = "My Page Label"]');
+    await expect(label.id()).toBe("LAB_3");
   },
 };
 

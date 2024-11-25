@@ -1,4 +1,5 @@
 import {
+  ConfigDataDTO,
   CoordinateDTOCoordTypeEnum,
   DiagramDTO,
   LabelDTO,
@@ -20,6 +21,7 @@ import planSheetsSlice, {
   getActiveSheet,
   getDiagrams,
   getFilteredPages,
+  getMaxElemIds,
   getPageConfigs,
   getPages,
   getPlanData,
@@ -35,6 +37,7 @@ import planSheetsSlice, {
   setPlanData,
   setSymbolHide,
   undo,
+  updateMaxElemIds,
   updatePages,
 } from "../planSheetsSlice";
 
@@ -672,5 +675,42 @@ describe("planSheetsSlice", () => {
     const updatedDigram = diagramsAfterUpdate.find((d) => d.id === diagramToUpdate.id);
     const updatedLabel = updatedDigram?.labels.find((l) => l.id === newLabel.id);
     expect(updatedLabel).toEqual(newLabel);
+  });
+
+  test("updateMaxElemIds should update the maxId for a given element", () => {
+    const maxElemIdsConfig = [
+      {
+        element: "Coordinate",
+        maxId: 1000,
+      },
+      {
+        element: "Page",
+        maxId: 2,
+      },
+      {
+        element: "Line",
+        maxId: 12,
+      },
+      {
+        element: "Label",
+        maxId: 3,
+      },
+    ];
+    store = setupStore({
+      planSheets: {
+        ...initialState,
+        configs: [
+          {
+            maxElemIds: maxElemIdsConfig,
+          } as ConfigDataDTO,
+        ],
+      },
+    });
+
+    expect(getMaxElemIds(store.getState())).toEqual(maxElemIdsConfig);
+
+    store.dispatch(updateMaxElemIds({ element: "Label", maxId: 4 }));
+
+    expect(getMaxElemIds(store.getState()).find((elem) => elem.element === "Label")?.maxId).toBe(4);
   });
 });

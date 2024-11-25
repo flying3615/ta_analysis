@@ -9,6 +9,7 @@ import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
   ModalStoryWrapper,
+  sleep,
   StorybookRouter,
   tabletLandscapeParameters,
   TestCanvas,
@@ -55,6 +56,10 @@ export const AddLineEnter: Story = {
     // The View button should be enabled, the Add line button disabled
     // There should be a line with 3 segments.
     // The last mouse move should not produce a new segment
+    const line = window.cyRef.$('edge[lineId = "160014"]'); // the new line added
+    await expect(line.length).toBe(3); // 3 segments
+    const line_first_segment = line[0]!;
+    await expect(line_first_segment.data("coordRefs")).toEqual("[160004,160005,160006,160007]"); // the coordinates created for the line
   },
 };
 
@@ -348,6 +353,15 @@ export const CopyPastePageLine: Story = {
     await test.contextMenu({ at: [440, 550], select: "Paste" }); // select paste action again for page line (copied line still in paste buffer)
     // Chromatic will ensure the line is pasted in the white space at mouse click location
     // Chromatic will ensure selecting the paste action does not clear the paste-buffer (i.e. multiple paste operations can be done)
+    await sleep(2000);
+    const line1 = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by first paste action
+    await expect(line1.length).toBe(1); // 1 segment
+    const line1_first_segment = line1[0]!;
+    await expect(line1_first_segment.data("coordRefs")).toEqual("[160004,160005]");
+    const line2 = window.cyRef.$('edge[lineId = "160015"]'); // the new line created by second paste action
+    await expect(line2.length).toBe(1); // 1 segment
+    const line2_first_segment = line2[0]!;
+    await expect(line2_first_segment.data("coordRefs")).toEqual("[160006,160007]");
   },
 };
 
@@ -357,9 +371,16 @@ export const CutPastePageLine: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Select Lines");
     await test.waitForCytoscape();
+    const lineToCut = window.cyRef.$('edge[lineId = "10013"]'); // the line to be cut
+    await expect(lineToCut.length).toBe(1);
     await test.contextMenu({ at: [560, 230], select: "Cut" }); // select cut action for page line
     await test.contextMenu({ at: [440, 550], select: "Paste" }); // select paste action for page line
     // Chromatic will ensure the line is removed from original position and pasted in the white space at mouse click location
+    await sleep(2000);
+    const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
+    await expect(pastedLine.length).toBe(1);
+    const removedLine = window.cyRef.$('edge[lineId = "10013"]');
+    await expect(removedLine.length).toBe(0); // the line is removed after cut action
   },
 };
 
@@ -373,5 +394,9 @@ export const CopyPastePageLineAcrossPages: Story = {
     await test.clickButton("Next"); // navigate to next page
     await test.contextMenu({ at: [440, 300], select: "Paste" }); // select paste action in white space on next page
     // Chromatic will ensure the line is pasted in the white space at mouse click location on the next page
+    await sleep(2000);
+    const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
+    await expect(pastedLine.length).toBe(1);
+    await expect(pastedLine.data("coordRefs")).toEqual("[160004,160005]");
   },
 };

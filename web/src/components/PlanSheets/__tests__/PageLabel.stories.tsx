@@ -1,6 +1,7 @@
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
+import { NodeSingular } from "cytoscape";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
@@ -19,7 +20,7 @@ import {
 } from "@/test-utils/storybook-utils";
 
 export default {
-  title: "PageLabel",
+  title: "PlanSheets/PageLabel",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
@@ -242,6 +243,14 @@ export const PageLabelMultiSelectCopyPaste: Story = {
     await test.contextMenu({ at: [585, 213], select: "Copy" });
     await test.contextMenu({ at: [385, 213], select: "Paste" });
     await test.contextMenu({ at: [185, 213], select: "Paste" });
+    await sleep(2000);
+    // chromatic should now see 9 page labels while there was just one
+    const labels = window.cyRef.$('node[label = "Rotated user added text"]') as unknown as NodeSingular[];
+    await expect(labels.length).toBe(9);
+    const newLabels = labels.slice(1); // remove the original label from the Collection
+    // assert ids of new labels
+    newLabels.forEach((label, index) => {
+      void expect(label.id()).toBe(`LAB_${index + 3}`); // since maxId for element Label was 2, the first pasted label will have id 3
+    });
   },
-  // chromatic should now see 9 page labels while there was just one
 };
