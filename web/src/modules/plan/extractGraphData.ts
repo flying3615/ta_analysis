@@ -217,13 +217,14 @@ export const extractDiagramNodes = (
       };
     };
 
-    // check if diagramType starts with "userDefn" otherwise skip it
+    // check if diagramType starts with "userDefn"
+    // system generated and user defined diagram labels are processed differently
     const isUserDefnDiagram = (diagramType: string): boolean => {
       return diagramType.startsWith("userDefn");
     };
-    const userDefnLabels = isUserDefnDiagram(diagram.diagramType)
+    const diagramEntityLabels = isUserDefnDiagram(diagram.diagramType)
       ? diagram.labels.filter(notSymbol).map(diagramLabelToNode).map(setElementType(PlanElementType.LABELS))
-      : [];
+      : diagram.labels.filter((l) => l.labelType === "diagramType").map(diagramLabelToNode);
     const childDiagLabels: INodeData[] =
       diagram.childDiagrams?.flatMap((childDiagram) => {
         const pageDetails = lookupTbl ? lookupTbl[childDiagram.diagramRef] : null;
@@ -278,7 +279,7 @@ export const extractDiagramNodes = (
     return [
       parentNode,
       ...coordinates,
-      ...userDefnLabels,
+      ...diagramEntityLabels,
       ...childDiagLabels,
       ...diagram.coordinateLabels.map(diagramLabelToNode).map(setElementType(PlanElementType.COORDINATE_LABELS)),
       ...diagram.lineLabels.filter(notSymbol).map(diagramLabelToNode).map(setElementType(PlanElementType.LINE_LABELS)),

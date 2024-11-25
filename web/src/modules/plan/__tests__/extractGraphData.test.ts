@@ -2,7 +2,7 @@ import { CoordinateDTOCoordTypeEnum, LabelDTOLabelTypeEnum, LineDTO } from "@lin
 
 import { nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
-import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { mockPlanData, mockPlanDataBuilder } from "@/mocks/data/mockPlanData";
 import { getLineDashPattern, LineStyle, lineStyleValues } from "@/modules/plan/styling";
 
 import {
@@ -53,9 +53,43 @@ describe("extractGraphData", () => {
   });
 
   test("extractNodes extracts label node data", () => {
-    const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
+    const enhancedMockPlanData = mockPlanDataBuilder
+      .addDiagram({
+        bottomRightPoint: {
+          x: 150,
+          y: -115,
+        },
+        originPageOffset: {
+          x: 20,
+          y: -10,
+        },
+        zoomScale: (100 * 150) / 20,
+        diagramType: "sysGenNonPrimaryDiag",
+        box: true,
+        pageRef: 3,
+      })
+      .addLabel(
+        "labels",
+        24,
+        "Non Primary",
+        {
+          x: 29.165,
+          y: 0,
+        },
+        undefined,
+        undefined,
+        "diagramType",
+        "Tahoma",
+        10.0,
+        "none",
+        "systemDisplay",
+      )
+      .addConfigs()
+      .build();
 
-    expect(extractedNodes).toHaveLength(48); // 8 labels after mark nodes in first diagram
+    const extractedNodes = extractDiagramNodes(enhancedMockPlanData.diagrams);
+
+    expect(extractedNodes).toHaveLength(54); // 6 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["LAB_11"];
@@ -136,6 +170,11 @@ describe("extractGraphData", () => {
     expect(labelNode23?.properties?.["fontSize"]).toBe(14);
     expect(labelNode23?.properties?.["circled"]).toBeTruthy();
     expect(labelNode23?.properties?.["textBackgroundOpacity"]).toBe(1);
+
+    const labelNode24 = extractedNodeMap["LAB_24"];
+    expect(labelNode24?.id).toBe("LAB_24");
+    expect(labelNode24?.label).toBe("Non Primary");
+    expect(labelNode24?.properties.labelType).toBe("diagramType");
   });
 
   test("extractDiagramNodes displays child diagram label with '?'", () => {
@@ -195,7 +234,7 @@ describe("extractGraphData", () => {
 
   test("extractEdges extracts edge data", () => {
     const extractedEdges = extractDiagramEdges(mockPlanData.diagrams);
-    expect(extractedEdges).toHaveLength(31);
+    expect(extractedEdges).toHaveLength(35);
     const extractedEdgeMap = Object.fromEntries(extractedEdges.map((n) => [n.id, n]));
 
     expect(extractedEdgeMap["1001_0"]?.id).toBe("1001_0");
