@@ -105,7 +105,7 @@ describe("extractGraphData", () => {
     expect(labelNode11?.properties?.["fontSize"]).toBe(10);
     expect(labelNode11?.properties?.["symbolId"]).toBeUndefined();
     expect(labelNode11?.properties?.["circled"]).toBeFalsy();
-    expect(labelNode11?.properties?.["textBackgroundOpacity"]).toBe(0);
+    expect(labelNode11?.properties?.["textOutlineOpacity"]).toBe(0);
 
     const labelNode12 = extractedNodeMap["LAB_12"];
     expect(labelNode12?.id).toBe("LAB_12");
@@ -132,7 +132,7 @@ describe("extractGraphData", () => {
     expect(labelNode13?.properties?.["fontColor"]).not.toBe("black");
     expect(labelNode13?.properties?.["fontSize"]).toBe(14);
     expect(labelNode13?.properties?.["circled"]).toBeFalsy();
-    expect(labelNode13?.properties?.["textBackgroundOpacity"]).toBe(0);
+    expect(labelNode13?.properties?.["textOutlineOpacity"]).toBe(0);
 
     const labelNode14 = extractedNodeMap["LAB_14"];
     expect(labelNode14?.id).toBe("LAB_14");
@@ -169,7 +169,7 @@ describe("extractGraphData", () => {
     expect(labelNode23?.properties?.["fontColor"]).toBe("#B0B0F0");
     expect(labelNode23?.properties?.["fontSize"]).toBe(14);
     expect(labelNode23?.properties?.["circled"]).toBeTruthy();
-    expect(labelNode23?.properties?.["textBackgroundOpacity"]).toBe(1);
+    expect(labelNode23?.properties?.["textOutlineOpacity"]).toBe(1);
 
     const labelNode24 = extractedNodeMap["LAB_24"];
     expect(labelNode24?.id).toBe("LAB_24");
@@ -418,7 +418,7 @@ describe("extractGraphData", () => {
     expect(userAnnotationNode?.properties?.["fontSize"]).toBe(14);
     expect(userAnnotationNode?.properties?.["fontStyle"]).toBe("italic");
     expect(userAnnotationNode?.properties?.["textAlignment"]).toBe("centerCenter");
-    expect(userAnnotationNode?.properties?.["textBackgroundOpacity"]).toBe(0);
+    expect(userAnnotationNode?.properties?.["textOutlineOpacity"]).toBe(0);
     expect(userAnnotationNode?.properties?.["anchorAngle"]).toBe(72.7);
     expect(userAnnotationNode?.properties?.["pointOffset"]).toBe(0);
     expect(userAnnotationNode?.properties?.["textRotation"]).toBe(25);

@@ -111,8 +111,7 @@ export const getEdgeStyling = (line: Omit<LineDTO, "id"> & { id: string | number
   };
 };
 
-export const getTextBackgroundOpacity = (label: LabelDTO): number =>
-  label.effect === LabelEffect.HALO.valueOf() ? 1 : 0;
+export const getTextOutlineOpacity = (label: LabelDTO): number => (label.effect === LabelEffect.HALO.valueOf() ? 1 : 0);
 
 export const isHidden = (label: LabelDTO) =>
   [DisplayStateEnum.hide.valueOf(), DisplayStateEnum.systemHide.valueOf()].includes(label.displayState);

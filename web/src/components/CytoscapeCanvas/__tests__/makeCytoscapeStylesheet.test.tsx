@@ -7,7 +7,7 @@ import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeS
 import { nodeSingular } from "@/test-utils/cytoscape-utils";
 
 describe("makeCytoscapeStylesheet", () => {
-  const LABEL_SELECTOR = "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]";
+  const LABEL_SELECTOR = "node[label][font][fontSize][fontColor][textOutlineOpacity][^circled][^symbolId]";
 
   const cytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
     { clientWidth: 500, clientHeight: 300 } as HTMLElement,
@@ -94,7 +94,7 @@ describe("makeCytoscapeStylesheet", () => {
     render(<canvas data-id="layer2-node" />);
 
     const nodeWithLabelCircledEntry = stylesheet.find(
-      (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]",
+      (s) => s.selector === "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId]",
     ) as cytoscape.Stylesheet;
 
     const ele = nodeSingular({
@@ -123,7 +123,7 @@ describe("makeCytoscapeStylesheet", () => {
 
   test.each(fontCases)("converts font %s to %s", (startFont, expectedFont) => {
     const nodeWithLabel = stylesheet.find(
-      (s) => s.selector === "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]",
+      (s) => s.selector === "node[label][font][fontSize][fontColor][textOutlineOpacity][^circled][^symbolId]",
     ) as cytoscape.Stylesheet;
     const styleEntry = getStyleEntryFromStylesheet(nodeWithLabel);
 

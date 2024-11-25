@@ -22,7 +22,7 @@ import { planDataLabelIdToCytoscape } from "@/components/PlanSheets/properties/L
 import { SYMBOLS_FONT } from "@/constants";
 import { createNewNode } from "@/util/mapUtil";
 
-import { getEdgeStyling, getFontColor, getIsCircled, getTextBackgroundOpacity, getZIndex, LineStyle } from "./styling";
+import { getEdgeStyling, getFontColor, getIsCircled, getTextOutlineOpacity, getZIndex, LineStyle } from "./styling";
 
 const isSymbol = (label: LabelDTO) => label.font === SYMBOLS_FONT;
 const notSymbol = negate(isSymbol);
@@ -48,10 +48,10 @@ export const labelToNode = (label: LabelDTO): INodeData => {
       fontColor: getFontColor(label),
       zIndex: getZIndex(label),
       circled: getIsCircled(label),
-      textBackgroundOpacity: getTextBackgroundOpacity(label),
       textBorderOpacity: label.borderWidth ? 1 : 0,
       textBorderWidth: label.borderWidth ?? 0,
       textBackgroundPadding: label.borderWidth ? 3 : LABEL_PADDING_PX,
+      textOutlineOpacity: getTextOutlineOpacity(label),
       textRotation: label.rotationAngle,
       anchorAngle: label.anchorAngle,
       pointOffset: label.pointOffset,

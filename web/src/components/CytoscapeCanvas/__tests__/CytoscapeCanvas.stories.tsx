@@ -473,6 +473,53 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
   },
 };
 
+export const RendersLabelsOnBlack: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const effects = ["none", "halo"];
+    const displayStates = Object.values(DisplayStateEnum);
+
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 2;
+    const columnWidth = 30 / (effects.length * displayStates.length);
+
+    const builder = fromBuilder();
+    effects.forEach((effect, effectIdx) => {
+      displayStates.forEach((displayState, displayStateIdx) => {
+        const id = 100000 * (effectIdx * 100 + displayStateIdx * 10);
+        const xOffset = columnWidth * (effects.length * displayStateIdx);
+        const x = xStart + xOffset;
+        builder.addLabel(
+          "labels",
+          id,
+          `${effect}\n${displayState}`,
+          {
+            x: x,
+            y: -(yStart + effectIdx * gap + 2),
+          },
+          undefined,
+          undefined,
+          LabelDTOLabelTypeEnum.lineDescription,
+          "Tahoma",
+          28,
+          effect,
+          displayState,
+          undefined,
+          "bottomCenter,textCenter",
+        );
+      });
+    });
+
+    return <CanvasFromMockData data={builder.build()} />;
+  },
+  parameters: {
+    backgrounds: {
+      values: [{ name: "Dark", value: "black" }],
+      default: "Dark",
+    },
+  },
+};
+
 export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const centreX = 5;

@@ -55,10 +55,10 @@ export interface INodeDataProperties extends IGraphDataProperties {
   pointOffset?: number;
   symbolId?: string;
   textAlignment?: string;
-  textBackgroundOpacity?: number;
   textBorderOpacity?: number;
   textBorderWidth?: number;
   textBackgroundPadding?: number;
+  textOutlineOpacity?: number;
   textRotation?: number;
   displayFormat?: string;
   ignorePositionChange?: boolean;

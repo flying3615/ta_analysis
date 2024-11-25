@@ -78,7 +78,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "z-index": "data(zIndex)",
     "text-opacity": labelOpacityFromDisplayState,
     "text-background-color": "#FFFFFF",
-    "text-background-opacity": "data(textBackgroundOpacity)",
+    "text-background-opacity": 0,
     "text-border-opacity": "data(textBorderOpacity)",
     "text-border-width": "data(textBorderWidth)",
     "text-border-color": isGreyScale ? FOREGROUND_COLOUR_BLACK : "data(fontColor)",
@@ -88,7 +88,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     "bounds-expansion": 12, // ensure circles are visible
     "text-outline-color": "white",
     "text-outline-width": "0.5px",
-    "text-outline-opacity": 0,
+    "text-outline-opacity": "data(textOutlineOpacity)",
     "z-index-compare": "manual",
   };
 
@@ -158,7 +158,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       },
     },
     {
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected",
+      selector: "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId]:selected",
       style: {
         "outline-opacity": 0,
       },
@@ -259,7 +259,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
   const labelStyles = [
     {
       // Node with label, circled
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]",
+      selector: "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId]",
       style: (() => {
         return {
           ...labelBaseStyle,
@@ -272,15 +272,14 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
       })(),
     },
     {
-      selector:
-        "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId].selectable-label.hover",
+      selector: "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId].selectable-label.hover",
       style: {
         "background-image": (ele: cytoscape.NodeSingular) =>
           circleLabel(ele, cytoscapeCoordinateMapper, { labelColor: ELEMENT_HOVERED_COLOR }).svg,
       },
     },
     {
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected",
+      selector: "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId]:selected",
       style: {
         "background-image": (ele: cytoscape.NodeSingular) =>
           circleLabel(ele, cytoscapeCoordinateMapper, { backgroundColor: ELEMENT_SELECTED_COLOR }).svg,
@@ -288,7 +287,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     },
     {
       selector:
-        "node[label][font][fontSize][fontColor][textBackgroundOpacity][circled][^symbolId]:selected.selectable-label.hover",
+        "node[label][font][fontSize][fontColor][textOutlineOpacity][circled][^symbolId]:selected.selectable-label.hover",
       style: {
         "background-image": (ele: cytoscape.NodeSingular) =>
           circleLabel(ele, cytoscapeCoordinateMapper, {
@@ -299,7 +298,7 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
     },
     {
       // Node with label
-      selector: "node[label][font][fontSize][fontColor][textBackgroundOpacity][^circled][^symbolId]",
+      selector: "node[label][font][fontSize][fontColor][textOutlineOpacity][^circled][^symbolId]",
 
       style: {
         ...labelBaseStyle,
