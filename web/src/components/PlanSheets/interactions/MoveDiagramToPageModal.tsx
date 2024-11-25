@@ -27,6 +27,7 @@ import {
   setDiagramPageRef,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
+import { helpNodeIds, helpUrl } from "@/util/httpUtil";
 import { newPageAfterCurrent, newPageAtTheEnd, newPageAtTheStart } from "@/util/pageUtil";
 
 export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => {
@@ -166,7 +167,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   return (
     <LuiModalAsync closeOnOverlayClick={false}>
       <LuiModalAsyncMain>
-        <LuiModalAsyncHeader title="Move diagram to page" onHelpClick={() => alert("help link")} />
+        <LuiModalAsyncHeader title="Move diagram to page" helpLink={helpUrl(helpNodeIds.LAYOUT_PLAN_SHEETS)} />
         <LuiModalAsyncContent>
           <div className="MoveDiagramToPage">
             <fieldset>

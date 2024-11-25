@@ -12,6 +12,8 @@ interface ActionHeaderButtonProps {
   icon: IconName;
   action?: DefineDiagramsActionType;
   disabled?: boolean;
+  href?: string;
+  openInNewTab?: boolean;
   loading?: boolean;
   onClick?: (ev: React.MouseEvent) => void;
   className?: string;
@@ -21,7 +23,9 @@ interface ActionHeaderButtonProps {
 export const ActionHeaderButton = ({
   title,
   action,
+  href,
   onClick,
+  openInNewTab = false,
   className,
   icon,
   disabled,
@@ -49,6 +53,8 @@ export const ActionHeaderButton = ({
       <LuiButton
         disabled={disabled}
         level="tertiary"
+        href={href}
+        openInNewTab={openInNewTab}
         onClick={onClickHandler}
         data-testid={testid}
         className={clsx("lui-button-icon-only", className, { selected: action === activeAction })}

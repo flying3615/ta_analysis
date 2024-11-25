@@ -15,7 +15,7 @@ import { Paths } from "@/Paths";
 import { useSurveyInfoQuery } from "@/queries/survey";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
-import { hostProtoForApplication } from "@/util/httpUtil";
+import { getHelpUrl, hostProtoForApplication } from "@/util/httpUtil";
 
 interface BigButtonProps {
   icon: IconName;
@@ -58,7 +58,7 @@ const LandingPage = () => {
           Back to Survey Capture
         </LuiButton>
         <div className="CommonButtons__fill" />
-        <ActionHeaderButton title="Help" icon="ic_help_outline" onClick={() => alert("Not implemented")} />
+        <ActionHeaderButton title="Help" icon="ic_help_outline" href={getHelpUrl()} openInNewTab={true} />
       </header>
       <div className="LandingPage-inner">
         <div className="LandingPage-title">

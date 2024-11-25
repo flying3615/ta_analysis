@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { MaintainDiagramsByDiagramIdGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramIdGrid";
 import { MaintainDiagramsByDiagramTypeGrid } from "@/components/MaintainDiagramsPanel/MaintainDiagramsByDiagramTypeGrid";
 import { MaintainDiagramsGridRef } from "@/components/MaintainDiagramsPanel/MaintainDiagramsGridRef";
+import { helpNodeIds, helpUrl } from "@/util/httpUtil";
 
 const maintainDiagramsByType = "maintainDiagramsByType";
 const maintainDiagramsById = "maintainDiagramsById";
@@ -52,7 +53,7 @@ export const MaintainDiagramsPanel = ({ transactionId, selectedDiagramIds }: Mai
       >
         <PanelHeader
           icon="ic_layers"
-          onHelpClick={() => alert("Help!!!")}
+          helpUrl={helpUrl(helpNodeIds.MAINTAIN_DIAGRAM_LAYERS)}
           disablePopout={true}
           disableClose={true}
           extraLeft={
