@@ -133,19 +133,21 @@ const PlanSheets = () => {
     }
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
-  let nodeData = useMemo(
-    () => [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData],
-    [pageConfigsNodeData, diagramNodeData, pageNodeData],
-  );
-  let edgeData = useMemo(
-    () => [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData],
-    [pageConfigsEdgeData, diagramEdgeData, pageEdgeData],
-  );
+  const nodeData = useMemo(() => {
+    let combinedNodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
+    if (!canViewHiddenLabels) {
+      combinedNodeData = filterNodeData(combinedNodeData, "hide");
+    }
+    return combinedNodeData;
+  }, [pageConfigsNodeData, diagramNodeData, pageNodeData, canViewHiddenLabels]);
 
-  if (!canViewHiddenLabels) {
-    nodeData = filterNodeData(nodeData, "hide");
-    edgeData = filterEdgeData(edgeData, "hide");
-  }
+  const edgeData = useMemo(() => {
+    let combinedEdgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
+    if (!canViewHiddenLabels) {
+      combinedEdgeData = filterEdgeData(combinedEdgeData, "hide");
+    }
+    return combinedEdgeData;
+  }, [pageConfigsEdgeData, diagramEdgeData, pageEdgeData, canViewHiddenLabels]);
 
   if (!regenerateDoneOrNotNeeded || surveyInfoIsLoading || !surveyInfo || regenerationHasFailed || planDataIsLoading) {
     return (
