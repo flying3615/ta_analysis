@@ -349,7 +349,8 @@ export class TestCanvas {
     layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node",
   ) {
     await this.waitForCytoscape();
-    fireEvent.mouseMove(this.getLayer(layer), { ...this.toClientXY(location) });
+    await userEvent.pointer({ target: this.getLayer(layer), coords: this.toClientXY(location) });
+    // fireEvent.mouseMove(, { ...this.toClientXY(location) });
   }
 
   async enterAt(location: [number, number], layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node") {
@@ -404,25 +405,32 @@ export class TestCanvas {
     throw Error(`Menu item ${item} could not be found.`);
   }
 
-  findProperty(luiType: "TextInput" | "RadioInput", withLabel: string): Element {
+  findProperty(luiType: "TextInput" | "RadioInput" | "Select", withLabel: string): Element {
     // can probably do this better with findQuick
+    const propertySelector = new Map<string, string>([
+      ["TextInput", ".LuiTextInput-input"],
+      ["RadioInput", ".LuiRadioInput-fieldset"],
+      ["Select", ".LuiSelect-select"],
+    ]).get(luiType);
     for (const element of this.canvasElement.querySelectorAll("div.property-wrap")) {
       // eslint-disable-next-line testing-library/no-node-access
-      let e = element.querySelector(`span`);
-      if (e === null) continue;
-      if (e.textContent === withLabel) {
-        const propertySelectors = new Map<string, string>([
-          ["TextInput", ".LuiTextInput-input"],
-          ["RadioInput", ".LuiRadioInput-fieldset"],
-        ]);
-
+      const candidates = [
         // eslint-disable-next-line testing-library/no-node-access
-        e = element.querySelector(propertySelectors.get(luiType) as string);
-        if (e === null) continue;
-        return e;
+        ...element.querySelectorAll(`span`),
+        // eslint-disable-next-line testing-library/no-node-access
+        element,
+      ];
+      for (const candidate of candidates) {
+        // eslint-disable-next-line testing-library/no-node-access
+        const label = candidate.querySelector(`span`);
+        if (label !== null && label.textContent === withLabel) {
+          // eslint-disable-next-line testing-library/no-node-access
+          const properties = candidate.querySelectorAll(propertySelector as string);
+          if (properties.length === 1) return properties[0] as Element;
+        }
       }
     }
-    throw Error(`Could not find div.property-wrap element with .Lui${luiType}-label-text text matching ${withLabel}`);
+    throw Error(`Could not find div.property-wrap element with ${propertySelector} and text matching ${withLabel}`);
   }
 
   async clickCancelFooter() {

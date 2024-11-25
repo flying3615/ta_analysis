@@ -62,6 +62,23 @@ export const DeselectLabel: Story = {
   },
 };
 
+export const NewLabelTakesLastSetStyle: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [586, 111] /* Rotated user added text */, select: "Properties" });
+    await userEvent.selectOptions(test.findProperty("Select", "Font"), "Tinos (was Times New Roman)");
+    await userEvent.selectOptions(test.findProperty("Select", "Size(pts)"), "8");
+    await test.clickButton("OK");
+
+    await addLabel(canvasElement, test.toClientXY([280, 56] /* Some random white space */), "xxx");
+    await test.clickTitle("Select Labels");
+    await test.contextMenu({ at: [280, 56] /* the newly added label */, select: "Properties" });
+    await expect(test.findProperty("Select", "Font")).toHaveDisplayValue("Tinos (was Times New Roman)");
+    await expect(test.findProperty("Select", "Size(pts)")).toHaveDisplayValue("8");
+  },
+};
+
 export const SelectMultipleLabels: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
@@ -211,6 +228,11 @@ export const PageLabelMultiSelectCopyPaste: Story = {
     const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" });
     await test.contextMenu({ at: [585, 213] /* whitespace */, select: "Paste" });
+    await test.contextMenu({ at: [585, 213] /* copied page label */, select: "Properties" });
+    await expect(test.findProperty("Select", "Font")).toHaveDisplayValue("Roboto (was Tahoma)");
+    await expect(test.findProperty("Select", "Size(pts)")).toHaveDisplayValue("14");
+    await test.clickButton("Cancel");
+    await test.click([585, 313]);
     await test.contextMenu({ at: [585, 313] /* other white space */, select: "Paste" });
     await test.multiSelect([
       [585, 113],

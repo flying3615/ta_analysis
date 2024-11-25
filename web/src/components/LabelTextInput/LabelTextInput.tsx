@@ -23,6 +23,7 @@ import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { addPageLabels, updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import {
   getActivePage,
+  getLastUpdatedLabelStyle,
   getMaxElemIds,
   getPlanMode,
   replaceDiagrams,
@@ -55,6 +56,7 @@ export const LabelTextInput = ({
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const planMode = useAppSelector(getPlanMode);
+  const lastUpdatedLabelStyle = useAppSelector(getLastUpdatedLabelStyle);
   const maxElemIds = useAppSelector(getMaxElemIds);
 
   const [labelText, setLabelText] = useState(labelData?.label ?? "");
@@ -110,7 +112,15 @@ export const LabelTextInput = ({
         const newMaxId = maxId + 1;
         dispatch(
           replacePage({
-            updatedPage: addPageLabels(activePage, [{ id: newMaxId, displayText: labelText, position }]),
+            updatedPage: addPageLabels(activePage, [
+              {
+                id: newMaxId,
+                displayText: labelText,
+                position,
+                font: lastUpdatedLabelStyle?.font ?? "Tahoma",
+                fontSize: lastUpdatedLabelStyle?.fontSize ?? 14,
+              },
+            ]),
           }),
         );
         dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
@@ -127,6 +137,7 @@ export const LabelTextInput = ({
     labelPosition,
     labelData,
     planMode,
+    lastUpdatedLabelStyle,
     maxElemIds,
   ]);
 

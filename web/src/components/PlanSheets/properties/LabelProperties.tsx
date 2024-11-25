@@ -4,6 +4,7 @@ import { TextInputFormatted } from "@linzjs/step-ag-grid";
 import clsx from "clsx";
 import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { LabelTextErrorMessage } from "@/components/LabelTextInput/LabelTextErrorMessage";
 import { LabelTextInfoMessage } from "@/components/LabelTextInput/LabelTextInfoMessage";
@@ -12,7 +13,7 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { useLabelsFunctions } from "@/hooks/useLabelsFunctions";
 import { useLabelTextValidation } from "@/hooks/useLabelTextValidation";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { getActivePage } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, setLastUpdatedLabelStyle } from "@/redux/planSheets/planSheetsSlice";
 import { convertDegreesToDms, convertDmsToDegrees, formatDms, paddingMMSS } from "@/util/stringUtil";
 
 import {
@@ -82,6 +83,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const { updateLabels } = useLabelsFunctions();
+  const dispatch = useDispatch();
 
   const selectedLabels = useMemo(() => {
     // load the selected labels from redux store
@@ -132,8 +134,17 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       createLabelPropsToBeSaved(panelValuesToUpdate, label),
     );
 
+    if (panelValuesToUpdate.font || panelValuesToUpdate.fontSize) {
+      dispatch(
+        setLastUpdatedLabelStyle({
+          font: panelValuesToUpdate.font,
+          fontSize: panelValuesToUpdate.fontSize ? Number(panelValuesToUpdate.fontSize) : undefined,
+        }),
+      );
+    }
+
     updateLabels(labelsToUpdate, selectedLabels);
-  }, [panelValuesToUpdate, activePage, selectedLabels, updateLabels]);
+  }, [panelValuesToUpdate, activePage, selectedLabels, updateLabels, dispatch]);
 
   /** Normalize the angle to be within 0-180 in DMS */
   const normalizeLabelAngle = (angle: string | undefined): string => {
