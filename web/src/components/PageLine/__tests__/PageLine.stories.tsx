@@ -76,6 +76,53 @@ export const AddLineDoubleClick: Story = {
   },
 };
 
+export const AddLineWithArrowsEnter: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+    await test.leftClick([363, 220]);
+    await test.leftClick([241, 289]);
+    await test.leftClick([180, 182]);
+    await test.leftClick([405, 280]);
+    await test.enterAt([405, 280]); // Hitting enter at the same point as the last click replicates a problem
+
+    await test.clickTitle("Select Lines");
+    await test.contextMenu({ at: [405, 280], select: "Properties" });
+    const styleSelector = test.findProperty("RadioInput", "Line style");
+    await test.user.click(styleSelector.querySelector(`input[name="doubleArrow1"]`) as Element);
+    await test.clickButton("OK");
+
+    // The following should be verified by chromatic:
+    // The View button should be enabled, the Add line button disabled
+    // There should be a line with 3 segments.
+    // The line should have a double arrow style (arrows at both ends of the line)
+  },
+};
+
+export const AddLineWithArrowsDoubleClick: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Add line");
+    await test.leftClick([363, 220]);
+    await test.leftClick([241, 289]);
+    await test.leftClick([1237, 277]); // Outside the sheet. Shouldn't do anything
+    await test.leftClick([180, 182]);
+    await test.doubleClick([405, 280]); // Double click was adding a zero length line
+
+    await test.clickTitle("Select Lines");
+    await test.contextMenu({ at: [180, 182], select: "Properties" });
+    const styleSelector = test.findProperty("RadioInput", "Line style");
+    await test.user.click(styleSelector.querySelector(`input[name="doubleArrow1"]`) as Element);
+    await test.clickButton("OK");
+
+    // The following should be verified by chromatic:
+    // There should be a line with 3 segments.
+    // The line should have a double arrow style (arrows at both ends of the line)
+  },
+};
+
 export const HoverLineVertex: Story = {
   ...Default,
   ...tabletLandscapeParameters,

@@ -108,14 +108,14 @@ export const AddPageLineHandler = () => {
     [cyto, cytoCoordMapper],
   );
 
+  const length = (p1: cytoscape.Position, p2: cytoscape.Position) => {
+    return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+  };
+
   const onMouseClick = useCallback(
     (event: cytoscape.EventObject) => {
       if (!newMaxLineIdRef.current || !newMaxCoordIdRef)
         throw new Error("newMaxLineIdRef or newMaxCoordIdRef is undefined");
-
-      const length = (p1: cytoscape.Position, p2: cytoscape.Position) => {
-        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
-      };
 
       const addNode = (node: cytoscape.NodeDefinition) => {
         if (cyto && node.data.id && cyto.getElementById(node.data.id).length === 0) {
@@ -212,7 +212,7 @@ export const AddPageLineHandler = () => {
     [cyto, isPositionWithinAreaLimits, newLineEdge],
   );
 
-  const onMouseDoubleClick = useCallback(() => {
+  const finishLine = useCallback(() => {
     if (
       lineSegmentStart.current &&
       lineSegmentEnd.current &&
@@ -223,6 +223,19 @@ export const AddPageLineHandler = () => {
       !isNil(newMaxCoordIdRef.current)
     ) {
       if (isPositionWithinAreaLimits(lastMousePosition.current)) {
+        // Cytoscape always fires two single click events before a double click event. The user could also left-click
+        // then hit "enter" without moving the mouse. In both situation this was creating a zero length line
+        // segment that would then go onto causing other problems. This code removes the last node if the line segment
+        // it would otherwise create is zero length.
+        const lastNode = lineNodeList.current[lineNodeList.current.length - 1];
+        const secondLastNode = lineNodeList.current[lineNodeList.current.length - 2];
+        if (lastNode && secondLastNode && lastNode.position && secondLastNode.position) {
+          const removeLastNode = length(lastNode.position, secondLastNode.position) === 0;
+          if (removeLastNode) {
+            lineNodeList.current.pop();
+          }
+        }
+
         dispatch(
           replacePage({
             updatedPage: addPageLineByCoordList(
@@ -257,19 +270,19 @@ export const AddPageLineHandler = () => {
     [cyto, isPositionWithinAreaLimits],
   );
 
-  useOnKeyDown("Enter", onMouseDoubleClick);
+  useOnKeyDown("Enter", finishLine);
 
   useEffect(() => {
     cyto?.addListener("click", onMouseClick);
-    cyto?.addListener("dblclick", onMouseDoubleClick);
+    cyto?.addListener("dblclick", finishLine);
     cyto?.addListener("mousemove", onMouseMove);
 
     return () => {
       cyto?.removeListener("click", onMouseClick);
-      cyto?.removeListener("dblclick", onMouseDoubleClick);
+      cyto?.removeListener("dblclick", finishLine);
       cyto?.removeListener("mousemove", onMouseMove);
     };
-  }, [cyto, onMouseClick, onMouseDoubleClick, onMouseMove]);
+  }, [cyto, finishLine, onMouseClick, onMouseMove]);
 
   // No elements to render, only have event listeners that modify the cytoscape graph
   return <></>;
