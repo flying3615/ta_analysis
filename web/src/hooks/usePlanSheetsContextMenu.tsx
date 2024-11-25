@@ -46,7 +46,7 @@ export const usePlanSheetsContextMenu = () => {
   const highlightedLabel = useRef<NodeSingular>();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
-    const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: movetoPage }];
+    const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: moveDiagramToPage }];
     if (!previousDiagramAttributes) {
       return baseDiagramMenu;
     }
@@ -299,7 +299,6 @@ export const usePlanSheetsContextMenu = () => {
         },
         // Add the "Rotate label" menu item only if singleSelected is true
         ...(singleSelected ? [{ title: "Align label to line", callback: alignLabelToLine }] : []),
-        { title: "Move to page", callback: movetoPage },
         ...(singleSelected
           ? [{ title: "Rotate label", submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }] }]
           : []),
@@ -380,7 +379,7 @@ export const usePlanSheetsContextMenu = () => {
     }
   };
 
-  const movetoPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
+  const moveDiagramToPage = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
     const diagramId = event.target?.data("diagramId") as number;
     if (!diagramId) {
       return;
