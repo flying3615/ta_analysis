@@ -9,14 +9,15 @@ import {
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { selectMaxPlanId } from "@/modules/plan/selectGraphData";
 import { addPageLabels } from "@/modules/plan/updatePlanData";
 import {
   getActivePage,
   getCopiedElements,
+  getMaxElemIds,
   removePageLabels,
   replacePage,
   setCopiedElements,
+  updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
 import { collectionReturnValueToNodeSingularArray } from "@/test-utils/cytoscape-utils";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
@@ -28,7 +29,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
   const dispatch = useAppDispatch();
   const copiedElements = useAppSelector(getCopiedElements);
   const activePage = useAppSelector(getActivePage);
-  const maxPlanId = useAppSelector(selectMaxPlanId);
+  const maxElemIds = useAppSelector(getMaxElemIds);
 
   const deletePageLabels = (targets: cytoscape.NodeSingular[]) => {
     const labelIds = targets
@@ -185,15 +186,20 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
     const maxDeltaY =
       deltaYs.length > 0 ? (deltaYs.every((delta) => delta > 0) ? Math.max(...deltaYs) : Math.min(...deltaYs)) : 0;
 
+    const maxId = maxElemIds.find((elem) => elem.element === "Label")?.maxId;
+    if (!maxId) throw Error("No maxId found");
+
+    let newMaxId: number | undefined;
     copiedElements.elements.forEach((ele, index) => {
       const label = ele as LabelDTO;
       const newX = position.x + label.position.x - centerPosition.x + (maxDeltaX || 0);
       const newY = position.y + label.position.y - centerPosition.y - (maxDeltaY || 0);
+      newMaxId = maxId + index + 1;
 
       const labelTobeAdded = {
         ...label,
-        id: maxPlanId + index + 1,
-        displayText: label.displayText,
+        id: newMaxId,
+        displayText: label.editedText || label.displayText,
         position: { x: newX, y: newY },
         rotationAngle: label.rotationAngle,
       } as LabelDTO;
@@ -204,6 +210,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
         updatedPage: addPageLabels(activePage, labelsTobeAdded),
       }),
     );
+    newMaxId && dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
 
     if (copiedElements.action === "CUT") {
       const pageLabels = copiedElements.elements.map((e) => cyto.getElementById(planDataLabelIdToCytoscape(e.id)));

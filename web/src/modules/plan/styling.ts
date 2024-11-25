@@ -72,7 +72,7 @@ export const lineStyleValues = {
   [LineStyle.DOUBLE_ARROW_1]: {},
 } as { [key: string]: StyledLineStyle };
 
-const arrowStyles = (line: LineDTO, segmentIndex: number) => {
+const arrowStyles = (line: Omit<LineDTO, "id"> & { id: string | number }, segmentIndex: number) => {
   const lastSegmentIndex = line.coordRefs.length - 2;
 
   if (line.style === LineStyle.DOUBLE_ARROW_1) {
@@ -93,7 +93,7 @@ const arrowStyles = (line: LineDTO, segmentIndex: number) => {
   return {};
 };
 
-export const getEdgeStyling = (line: LineDTO, index: number) => {
+export const getEdgeStyling = (line: Omit<LineDTO, "id"> & { id: string | number }, index: number) => {
   let applyStyle = lineStyleValues[line.style];
   if (!applyStyle) {
     console.warn(`extractEdges: line ${line.id} has unsupported style ${line.style} - will use solid`);

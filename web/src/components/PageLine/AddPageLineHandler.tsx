@@ -1,5 +1,6 @@
 import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape from "cytoscape";
+import { isNil } from "lodash-es";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -9,7 +10,14 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { getEdgeStyling, LineStyle } from "@/modules/plan/styling";
-import { getActivePage, getLastUpdatedLineStyle, replacePage, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePage,
+  getLastUpdatedLineStyle,
+  getMaxElemIds,
+  replacePage,
+  setPlanMode,
+  updateMaxElemIds,
+} from "@/redux/planSheets/planSheetsSlice";
 import { addPageLineByCoordList, cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export const AddPageLineHandler = () => {
@@ -26,9 +34,14 @@ export const AddPageLineHandler = () => {
   const lineEdgeList = useRef<cytoscape.ElementDefinition[]>([]);
   const dispatch = useAppDispatch();
 
-  const lastMousePosition = useRef<cytoscape.Position | null>(null);
+  const maxElemIds = useAppSelector(getMaxElemIds);
+  const maxLineId = maxElemIds.find((elem) => elem.element === "Line")?.maxId;
+  const maxCoordId = maxElemIds.find((elem) => elem.element === "Coordinate")?.maxId;
+  const newMaxLineIdRef = useRef<number | undefined>(!isNil(maxLineId) ? maxLineId + 1 : undefined);
+  const newMaxCoordIdRef = useRef<number | undefined>(!isNil(maxCoordId) ? maxCoordId + 1 : undefined);
+  const maxLineSegmentIdRef = useRef<number>(0);
 
-  const getCyMaxId = useCallback(() => cytoscapeUtils.findMaxId(cyto), [cyto]);
+  const lastMousePosition = useRef<cytoscape.Position | null>(null);
 
   useEscapeKey({
     callback: () => {
@@ -41,6 +54,9 @@ export const AddPageLineHandler = () => {
     lineSegmentStart.current = null;
     lineSegmentEnd.current = null;
     lineNodeList.current = [];
+    newMaxLineIdRef.current = undefined;
+    newMaxCoordIdRef.current = undefined;
+    maxLineSegmentIdRef.current = 0;
   };
 
   const newLineNode = (nodeId: number, position: cytoscape.Position): cytoscape.NodeDefinition => {
@@ -55,7 +71,7 @@ export const AddPageLineHandler = () => {
   };
 
   const newLineEdge = useCallback(
-    (edgeId: number, startNodeId: string, endNodeId: string, segmentIndex: number): cytoscape.ElementDefinition => {
+    (edgeId: string, startNodeId: string, endNodeId: string, segmentIndex: number): cytoscape.ElementDefinition => {
       const styles = getEdgeStyling(
         {
           id: edgeId,
@@ -94,7 +110,8 @@ export const AddPageLineHandler = () => {
 
   const onMouseClick = useCallback(
     (event: cytoscape.EventObject) => {
-      let cyMaxId = getCyMaxId();
+      if (!newMaxLineIdRef.current || !newMaxCoordIdRef)
+        throw new Error("newMaxLineIdRef or newMaxCoordIdRef is undefined");
 
       const length = (p1: cytoscape.Position, p2: cytoscape.Position) => {
         return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
@@ -122,9 +139,9 @@ export const AddPageLineHandler = () => {
           lineEdgeList.current.push(edge);
           cyto.add(edge);
           //update the style of the previous line segment (for arrow styles)
-          if (previousEdge) {
+          if (previousEdge && previousEdge.data.id) {
             const updatedEdge = newLineEdge(
-              Number(previousEdge.data.id),
+              previousEdge.data.id,
               previousEdge.data.source as string,
               previousEdge.data.target as string,
               lineEdgeList.current.length - 2,
@@ -135,7 +152,7 @@ export const AddPageLineHandler = () => {
         }
       };
 
-      const addLine = (edgeId: number, node1: cytoscape.NodeDefinition, node2: cytoscape.NodeDefinition) => {
+      const addLine = (edgeId: string, node1: cytoscape.NodeDefinition, node2: cytoscape.NodeDefinition) => {
         if (cyto && node1.data.id && node2.data.id) {
           addNode(node1);
           addNode(node2);
@@ -144,9 +161,15 @@ export const AddPageLineHandler = () => {
       };
 
       const startLine = (eventPosition: cytoscape.Position) => {
-        lineSegmentStart.current = newLineNode(cyMaxId++, eventPosition);
-        lineSegmentEnd.current = newLineNode(cyMaxId++, eventPosition);
-        addLine(cyMaxId++, lineSegmentStart.current, lineSegmentEnd.current);
+        if (!newMaxLineIdRef.current || !newMaxCoordIdRef.current)
+          throw new Error("maxLineIdRef or maxCoordIdRef is undefined");
+        lineSegmentStart.current = newLineNode(newMaxCoordIdRef.current++, eventPosition);
+        lineSegmentEnd.current = newLineNode(newMaxCoordIdRef.current++, eventPosition);
+        addLine(
+          `${newMaxLineIdRef.current}_${maxLineSegmentIdRef.current++}`,
+          lineSegmentStart.current,
+          lineSegmentEnd.current,
+        );
       };
 
       const extendLine = (position: cytoscape.Position) => {
@@ -154,12 +177,18 @@ export const AddPageLineHandler = () => {
           lineSegmentStart.current &&
           lineSegmentEnd.current &&
           lineSegmentStart.current.position &&
-          lineSegmentEnd.current.position
+          lineSegmentEnd.current.position &&
+          !isNil(newMaxLineIdRef.current) &&
+          !isNil(newMaxCoordIdRef.current)
         ) {
           if (length(lineSegmentStart.current.position, lineSegmentEnd.current.position) > 0) {
             lineSegmentStart.current = lineSegmentEnd.current;
-            lineSegmentEnd.current = newLineNode(cyMaxId++, position);
-            addLine(cyMaxId++, lineSegmentStart.current, lineSegmentEnd.current);
+            lineSegmentEnd.current = newLineNode(newMaxCoordIdRef.current++, position);
+            addLine(
+              `${newMaxLineIdRef.current}_${maxLineSegmentIdRef.current++}`,
+              lineSegmentStart.current,
+              lineSegmentEnd.current,
+            );
           } else {
             // else zero length line, so just swallow the event and don't do anything
           }
@@ -180,7 +209,7 @@ export const AddPageLineHandler = () => {
 
       handleSingleClick(event.position);
     },
-    [cyto, getCyMaxId, isPositionWithinAreaLimits, newLineEdge],
+    [cyto, isPositionWithinAreaLimits, newLineEdge],
   );
 
   const onMouseDoubleClick = useCallback(() => {
@@ -189,22 +218,33 @@ export const AddPageLineHandler = () => {
       lineSegmentEnd.current &&
       activePage &&
       cytoCoordMapper &&
-      lastMousePosition.current
+      lastMousePosition.current &&
+      !isNil(newMaxLineIdRef.current) &&
+      !isNil(newMaxCoordIdRef.current)
     ) {
       if (isPositionWithinAreaLimits(lastMousePosition.current)) {
-        let cyMaxId = getCyMaxId();
         dispatch(
           replacePage({
-            updatedPage: addPageLineByCoordList(activePage, lineNodeList.current, cytoCoordMapper, cyMaxId++, {
-              style: lastUpdatedLineStyle,
-            } as LineDTO),
+            updatedPage: addPageLineByCoordList(
+              activePage,
+              lineNodeList.current,
+              cytoCoordMapper,
+              newMaxLineIdRef.current,
+              {
+                style: lastUpdatedLineStyle,
+              } as LineDTO,
+            ),
           }),
         );
+
+        dispatch(updateMaxElemIds({ element: "Coordinate", maxId: newMaxCoordIdRef.current - 1 }));
+        dispatch(updateMaxElemIds({ element: "Line", maxId: newMaxLineIdRef.current }));
+
         resetInput();
         dispatch(setPlanMode(PlanMode.View));
       }
     }
-  }, [activePage, cytoCoordMapper, dispatch, getCyMaxId, isPositionWithinAreaLimits, lastUpdatedLineStyle]);
+  }, [activePage, cytoCoordMapper, dispatch, isPositionWithinAreaLimits, lastUpdatedLineStyle]);
 
   const onMouseMove = useCallback(
     (event: cytoscape.EventObject) => {

@@ -19,14 +19,16 @@ import {
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useLabelTextValidation } from "@/hooks/useLabelTextValidation";
-import { selectActiveDiagrams, selectMaxPlanId } from "@/modules/plan/selectGraphData";
+import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { addPageLabels, updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import {
   getActivePage,
+  getMaxElemIds,
   getPlanMode,
   replaceDiagrams,
   replacePage,
   setPlanMode,
+  updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
 
 import { LabelTextInfoMessage } from "./LabelTextInfoMessage";
@@ -52,8 +54,8 @@ export const LabelTextInput = ({
 
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
-  const maxPlanId = useAppSelector(selectMaxPlanId);
   const planMode = useAppSelector(getPlanMode);
+  const maxElemIds = useAppSelector(getMaxElemIds);
 
   const [labelText, setLabelText] = useState(labelData?.label ?? "");
 
@@ -103,11 +105,15 @@ export const LabelTextInput = ({
     } else if (planMode === PlanMode.AddLabel) {
       if (labelText && labelPosition) {
         const position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
+        const maxId = maxElemIds.find((elem) => elem.element === "Label")?.maxId;
+        if (!maxId) throw Error("No maxId found");
+        const newMaxId = maxId + 1;
         dispatch(
           replacePage({
-            updatedPage: addPageLabels(activePage, [{ id: maxPlanId + 1, displayText: labelText, position }]),
+            updatedPage: addPageLabels(activePage, [{ id: newMaxId, displayText: labelText, position }]),
           }),
         );
+        dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
         dispatch(setPlanMode(PlanMode.Cursor));
       }
     }
@@ -120,8 +126,8 @@ export const LabelTextInput = ({
     labelText,
     labelPosition,
     labelData,
-    maxPlanId,
     planMode,
+    maxElemIds,
   ]);
 
   return (

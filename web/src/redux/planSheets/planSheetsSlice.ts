@@ -292,6 +292,16 @@ const planSheetsSlice = createSlice({
     navigateAfterSave: (state, action: PayloadAction<string | undefined>) => {
       state.navigateAfterSave = action.payload;
     },
+    updateMaxElemIds: (state, action: PayloadAction<{ element: string; maxId: number }>) => {
+      const { element, maxId } = action.payload;
+      if (state.configs && state.configs[0]) {
+        state.configs[0].maxElemIds.forEach((elem) => {
+          if (elem.element === element) {
+            elem.maxId = maxId;
+          }
+        });
+      }
+    },
   },
   selectors: {
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
@@ -300,6 +310,7 @@ const planSheetsSlice = createSlice({
     getActiveSheet: (state) => state.activeSheet,
     getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
     getElementTypeConfigs: (state) => state.configs?.[0]?.elementTypeConfigs ?? [],
+    getMaxElemIds: (state) => state.configs?.[0]?.maxElemIds ?? [],
     getPageNumberFromPageRef: (state) => (pageID: number) => {
       const page = state.pages.find((page) => page.pageType === state.activeSheet && page.id === pageID);
       return page?.pageNumber ?? null;
@@ -396,6 +407,7 @@ export const {
   clearUndo,
   setCanViewHiddenLabels,
   navigateAfterSave,
+  updateMaxElemIds,
 } = planSheetsSlice.actions;
 
 export const {
@@ -407,6 +419,7 @@ export const {
   getActiveSheet,
   getPageConfigs,
   getElementTypeConfigs,
+  getMaxElemIds,
   getPageByRef,
   getPageNumberFromPageRef,
   getPageRefFromPageNumber,

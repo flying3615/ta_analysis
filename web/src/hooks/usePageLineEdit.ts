@@ -1,16 +1,17 @@
 import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { Position } from "cytoscape";
-import { useCallback } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import {
   getActivePage,
   getCopiedElements,
+  getMaxElemIds,
   getPageByRef,
   removePageLines,
   replacePage,
   setCopiedElements,
+  updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
 import { addPageLineByCoordList, cytoscapeUtils } from "@/util/cytoscapeUtil";
 
@@ -22,7 +23,7 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
   const cytoCoordMapper = container && new CytoscapeCoordinateMapper(container, []);
   const diagramAreasLimits = cytoCoordMapper && cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto);
   const copiedElements = useAppSelector(getCopiedElements);
-  const getCyMaxId = useCallback(() => cytoscapeUtils.findMaxId(cyto), [cyto]);
+  const maxElemIds = useAppSelector(getMaxElemIds);
 
   const deletePageLines = (targets: cytoscape.EdgeSingular[]) => {
     const lineIds = targets
@@ -69,9 +70,15 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
     const originalPage = getPageByPageId(copiedElements.pageId ?? activePage.id);
     if (!originalPage) return;
 
+    let updatedPage = activePage;
+    let maxLineId = maxElemIds.find((elem) => elem.element === "Line")?.maxId;
+    maxLineId = maxLineId ? maxLineId + 1 : undefined;
+    let maxCoordId = maxElemIds.find((elem) => elem.element === "Coordinate")?.maxId;
+
     copiedElements?.elements
       .filter((ele): ele is LineDTO => !!ele)
-      .forEach((line) => {
+      .forEach((line, line_index) => {
+        if (!maxLineId || !maxCoordId) throw Error("No maxLineId or maxCoordId found");
         const copiedLine = line;
         const coordPositions = copiedLine.coordRefs.map((coordRef) => {
           return originalPage.coordinates?.find((coord) => coord.id === coordRef)?.position;
@@ -126,12 +133,12 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
           movedDistance.deltaY = cyClickPosition.y - center.y;
         }
 
-        const cyMaxId = getCyMaxId();
         const coordNodeList: cytoscape.NodeDefinition[] = copiedLine.coordRefs.map((coordRef, index) => {
           const coord = originalPage.coordinates?.find((coord) => coord.id === coordRef);
+          if (!maxCoordId) throw Error("maxCoordId is undefined");
           return {
             group: "nodes",
-            data: { id: `${cyMaxId + index + 1}` },
+            data: { id: `${maxCoordId + index + 1}` },
             position: cytoCoordMapper.planCoordToCytoscape({
               x: (coord?.position.x ?? 0) + movedDistance.deltaX,
               y: (coord?.position.y ?? 0) + movedDistance.deltaY,
@@ -139,22 +146,19 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
           } as cytoscape.NodeDefinition;
         });
 
-        let newMaxIdAfterAddingCoords = cyMaxId + copiedLine.coordRefs.length + 1;
-        dispatch(
-          replacePage({
-            updatedPage: addPageLineByCoordList(
-              activePage,
-              coordNodeList,
-              cytoCoordMapper,
-              newMaxIdAfterAddingCoords++,
-              copiedLine,
-            ),
-          }),
-        );
+        maxCoordId += copiedLine.coordRefs.length;
+        maxLineId += line_index;
+
+        updatedPage = addPageLineByCoordList(updatedPage, coordNodeList, cytoCoordMapper, maxLineId, copiedLine);
       });
 
-    if (copiedElements.action === "CUT") {
-      dispatch(removePageLines({ lineIds: copiedElements.elements.map((line) => `${line.id}`) }));
+    if (maxCoordId && maxLineId) {
+      dispatch(replacePage({ updatedPage }));
+      dispatch(updateMaxElemIds({ element: "Coordinate", maxId: maxCoordId }));
+      dispatch(updateMaxElemIds({ element: "Line", maxId: maxLineId }));
+      if (copiedElements.action === "CUT") {
+        dispatch(removePageLines({ lineIds: copiedElements.elements.map((line) => `${line.id}`) }));
+      }
     }
   };
 
