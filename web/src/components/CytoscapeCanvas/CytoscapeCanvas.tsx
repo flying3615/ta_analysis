@@ -2,7 +2,7 @@ import "./CytoscapeCanvas.scss";
 
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
-import { debounce, isArray } from "lodash-es";
+import { debounce } from "lodash-es";
 import { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -35,8 +35,6 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   diagrams: DiagramDTO[];
   initZoom?: IInitZoom;
   onCyInit?: (cy: cytoscape.Core) => void;
-  applyClasses?: Record<string, string | string[]>;
-  selectionSelector?: string;
   getContextMenuItems: (
     element: NodeSingular | EdgeSingular | cytoscape.Core,
     selectedCollection: CollectionReturnValue,
@@ -52,8 +50,6 @@ const CytoscapeCanvas = ({
   diagrams,
   initZoom,
   onCyInit,
-  applyClasses,
-  selectionSelector,
   getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
@@ -160,18 +156,6 @@ const CytoscapeCanvas = ({
     cyRef.nodes().ungrabify();
     cyRef.elements().unselectify();
     cyRef.elements().style("events", "no");
-    if (selectionSelector) {
-      cyRef.$(selectionSelector).selectify();
-      cyRef.$(selectionSelector).style("events", "yes");
-    }
-
-    Object.entries(applyClasses ?? {}).forEach(([selector, classNames]) => {
-      if (isArray(classNames)) {
-        classNames.forEach((cn) => cyRef.elements(selector).addClass(cn));
-      } else {
-        cyRef.elements(selector).addClass(classNames);
-      }
-    });
 
     updateCytoscapeStateForTesting(cyRef, testId);
     if (isStorybookTest()) {

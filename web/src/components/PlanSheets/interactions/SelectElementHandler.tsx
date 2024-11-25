@@ -29,7 +29,7 @@ const SYMBOL_LABELS = `node[symbolId]`;
 const SELECTOR_COORDINATES = `${DIAGRAM_COORDINATES}, ${SYMBOL_LABELS}`;
 
 // labels are _all labels_ except _symbol labels_
-const SELECTOR_LABELS = `node[label][^invisible][^symbolId]`;
+const SELECTOR_LABELS = `node[label][labelType][^invisible][^symbolId]`;
 
 // The selector for "lines" is more complex, because the defined requirement for the "Select line" header button
 // needs to select/move lines and also separately select/move coordinates. This is how legacy works. It was discussed
@@ -133,9 +133,12 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     };
 
     const selector = getSelector(mode);
+    const selectableClass = getSelectableClass(mode);
+
     cyto.on("select", onSelect);
     cyto.on("unselect", onUnselect);
     cyto.on("click", selector, onClick);
+    selectableClass && cyto.$(selector).addClass(selectableClass);
     cyto.$(selector).selectify().style("events", "yes");
 
     return () => {
@@ -183,4 +186,11 @@ function getSelector(mode?: SelectHandlerMode) {
 
   // TODO: "generic" to allow all types for first, then restrict?
   throw new Error(`SelectElementHandler mode=${mode} not implemented yet`);
+}
+
+function getSelectableClass(mode?: SelectHandlerMode) {
+  if (mode === PlanMode.SelectLabel) {
+    return "selectable-label";
+  }
+  return undefined;
 }

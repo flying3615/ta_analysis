@@ -166,16 +166,6 @@ const PlanSheets = () => {
     );
   }
 
-  let selectionSelector = "";
-  let applyClasses;
-  switch (planMode) {
-    case PlanMode.SelectLabel:
-      // TODO: remove this once SelectElementHandler updated for PlanMode.SelectLabel
-      selectionSelector = "node[label][^symbolId]";
-      applyClasses = { "node[label][^symbolId]": "selectable-label" };
-      break;
-  }
-
   return (
     <CytoscapeContextProvider>
       <div className="MainWindow">
@@ -196,11 +186,9 @@ const PlanSheets = () => {
                   nodeData={nodeData}
                   edgeData={edgeData}
                   diagrams={activeDiagrams}
-                  selectionSelector={selectionSelector}
                   getContextMenuItems={(element, selectedCollection, clickedPosition) =>
                     getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
                   }
-                  applyClasses={applyClasses}
                   data-testid="MainCytoscapeCanvas"
                 />
               ) : (
