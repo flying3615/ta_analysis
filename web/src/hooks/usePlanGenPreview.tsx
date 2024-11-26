@@ -24,9 +24,9 @@ import {
   extractPageNodes,
 } from "@/modules/plan/extractGraphData";
 import { ExternalSurveyInfoDto } from "@/queries/survey";
-import { getActiveSheet, getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { getActiveSheet, getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
-import { filterHiddenEdges, filterHiddenNodes } from "@/util/cytoscapeUtil";
+import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
 import { createNewNode } from "@/util/mapUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 import { wrapText } from "@/util/stringUtil";
@@ -74,6 +74,7 @@ export const usePlanGenPreview = (props: {
   const activeSheet = useAppSelector(getActiveSheet);
   const pages = useAppSelector(getPages);
   const diagrams = useAppSelector(getDiagrams);
+  const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
   const sortedNodes = useRef(
     props.pageConfigsNodeData?.sort((a, b) => {
       if (a.position.x === b.position.x) {
@@ -189,10 +190,14 @@ export const usePlanGenPreview = (props: {
           maxPageNumber,
         );
 
-        const filteredDiagramNodes = filterHiddenNodes(extractPageNodes([currentPage]));
-        const filteredPageNodes = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams, undefined, true));
-        const filteredDiagramEdges = filterHiddenEdges(extractDiagramEdges(currentPageDiagrams));
-        const filteredPageEdges = filterHiddenEdges(extractPageEdges([currentPage]));
+        const filteredDiagramNodes = filterNodeData(extractPageNodes([currentPage]), "hide", viewableLabelTypes);
+        const filteredPageNodes = filterNodeData(
+          extractDiagramNodes(currentPageDiagrams, undefined, true),
+          "hide",
+          viewableLabelTypes,
+        );
+        const filteredDiagramEdges = filterEdgeData(extractDiagramEdges(currentPageDiagrams), "hide");
+        const filteredPageEdges = filterEdgeData(extractPageEdges([currentPage]), "hide");
 
         const nodeData = [
           ...surveyInfoNodes, // survey info text nodes

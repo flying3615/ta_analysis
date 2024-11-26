@@ -11,7 +11,7 @@ export enum PlanMode {
   ZoomIn = "Zoom in tool",
   ZoomPrevious = "Zoom previous",
   ZoomCentre = "Zoom centre",
-  ManageLabels = "Manage labels",
+  ViewLabels = "View labels",
   DropdownIcon = "Dropdown icon",
   View = "View hidden objects",
   Cursor = "Cursor",

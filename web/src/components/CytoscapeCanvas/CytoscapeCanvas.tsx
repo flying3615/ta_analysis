@@ -3,7 +3,7 @@ import "./CytoscapeCanvas.scss";
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 import { debounce } from "lodash-es";
-import { PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
@@ -20,7 +20,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown";
 import { isStorybookTest, updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
-import { filterEdgeData, keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
+import { keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
 
 import { CytoscapeContextMenu } from "./CytoscapeContextMenu";
 
@@ -53,10 +53,6 @@ const CytoscapeCanvas = ({
   getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
-  const filteredEdgeData = useMemo(() => {
-    return filterEdgeData(edgeData, "systemHide");
-  }, [edgeData]);
-
   const testId = dataTestId ?? "CytoscapeCanvas";
   const canvasRef = useRef<HTMLDivElement>(null);
   const [cy, setCy] = useState<cytoscape.Core>();
@@ -137,7 +133,7 @@ const CytoscapeCanvas = ({
       pan,
       elements: {
         nodes: nodeDefinitionsFromData(nodeData, cytoscapeCoordinateMapper),
-        edges: edgeDefinitionsFromData(filteredEdgeData),
+        edges: edgeDefinitionsFromData(edgeData),
       },
       layout: {
         name: "preset",
@@ -170,12 +166,12 @@ const CytoscapeCanvas = ({
       return;
     }
 
-    if (cy || (nodeData.length === 0 && filteredEdgeData.length === 0)) {
+    if (cy || (nodeData.length === 0 && edgeData.length === 0)) {
       return;
     }
 
     initCytoscape();
-  }, [cy, nodeData, filteredEdgeData, initCytoscape]);
+  }, [cy, nodeData, edgeData, initCytoscape]);
 
   // Handle viewport resizing
   useEffect(() => {

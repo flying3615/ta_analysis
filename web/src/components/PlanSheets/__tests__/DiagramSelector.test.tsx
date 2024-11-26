@@ -6,6 +6,7 @@ import { generatePath, Route } from "react-router-dom";
 import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
@@ -17,6 +18,7 @@ describe("Diagram Selector panel", () => {
     pages: [],
     hasChanges: false,
     planMode: PlanMode.View,
+    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
   };
 
   beforeAll(() => {

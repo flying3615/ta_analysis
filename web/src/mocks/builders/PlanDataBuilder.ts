@@ -365,6 +365,7 @@ export class PlanDataBuilder {
     symbolType: string | undefined = undefined,
     featureId?: number,
     featureType?: string,
+    labelType: LabelDTOLabelTypeEnum = LabelDTOLabelTypeEnum.markName,
   ) {
     if (this.planData.diagrams.length === 0) {
       throw new Error(
@@ -382,7 +383,7 @@ export class PlanDataBuilder {
       id,
       displayText,
       position,
-      labelType: LabelDTOLabelTypeEnum.markName,
+      labelType,
       font,
       fontSize,
       symbolType,

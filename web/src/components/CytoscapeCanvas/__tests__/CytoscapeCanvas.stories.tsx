@@ -368,7 +368,7 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
 export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const effects = ["none", "halo"];
-    const displayStates = Object.values(DisplayStateEnum);
+    const displayStates = [DisplayStateEnum.display, DisplayStateEnum.hide, DisplayStateEnum.systemDisplay];
 
     const gap = 2;
     const xStart = 5;

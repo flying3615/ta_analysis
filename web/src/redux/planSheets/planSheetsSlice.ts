@@ -5,6 +5,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { revertAll } from "@/redux/revertAll";
@@ -35,6 +36,7 @@ export interface PlanSheetsState {
   originalPositions?: CoordLookup;
   canViewHiddenLabels: boolean;
   navigateAfterSave?: string;
+  viewableLabelTypes: string[];
 }
 
 const initialState: PlanSheetsState = {
@@ -53,6 +55,7 @@ const initialState: PlanSheetsState = {
   previousPages: null,
   originalPositions: {},
   canViewHiddenLabels: true,
+  viewableLabelTypes: defaultOptionalVisibileLabelTypes,
 };
 
 /**
@@ -322,6 +325,9 @@ const planSheetsSlice = createSlice({
     navigateAfterSave: (state, action: PayloadAction<string | undefined>) => {
       state.navigateAfterSave = action.payload;
     },
+    setViewableLabelTypes: (state, action: PayloadAction<string[]>) => {
+      state.viewableLabelTypes = action.payload;
+    },
     updateMaxElemIds: (state, action: PayloadAction<{ element: string; maxId: number }>) => {
       const { element, maxId } = action.payload;
       if (state.configs && state.configs[0]) {
@@ -411,6 +417,7 @@ const planSheetsSlice = createSlice({
     canUndo: (state) => state.previousDiagrams != null && state.previousPages != null,
     getCanViewHiddenLabels: (state) => state.canViewHiddenLabels,
     hasNavigateAfterSave: (state) => state.navigateAfterSave,
+    getViewableLabelTypes: (state) => state.viewableLabelTypes,
   },
 });
 
@@ -440,6 +447,7 @@ export const {
   clearUndo,
   setCanViewHiddenLabels,
   navigateAfterSave,
+  setViewableLabelTypes,
   updateMaxElemIds,
 } = planSheetsSlice.actions;
 
@@ -471,6 +479,7 @@ export const {
   canUndo,
   getCanViewHiddenLabels,
   hasNavigateAfterSave,
+  getViewableLabelTypes,
 } = planSheetsSlice.selectors;
 
 export default planSheetsSlice;

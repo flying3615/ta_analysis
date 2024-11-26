@@ -1,0 +1,23 @@
+@use "@linzjs/lui/dist/scss/Core" as lui;
+
+.view-label-types-panel {
+  .LuiCheckboxInput {
+    margin-bottom: 8px;
+  }
+
+  .WindowPanel-content {
+    padding: 16px 16px 8px 16px;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 0;
+    margin-bottom: 10px;
+    border-top: 1px solid #dad7d6;
+    .lui-button {
+      flex: 1;
+    }
+  }
+}

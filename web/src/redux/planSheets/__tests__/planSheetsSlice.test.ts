@@ -59,6 +59,7 @@ describe("planSheetsSlice", () => {
     previousDiagrams: null,
     previousPages: null,
     canViewHiddenLabels: true,
+    viewableLabelTypes: [],
   };
 
   let store = setupStore();

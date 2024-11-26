@@ -15,5 +15,6 @@ export const mockStore = {
     previousDiagrams: null,
     previousPages: null,
     canViewHiddenLabels: true,
+    viewableLabelTypes: [],
   },
 };

@@ -1,11 +1,10 @@
 import { LuiButton, LuiIcon } from "@linzjs/lui";
-import { MenuHeader, MenuItem } from "@szhsin/react-menu";
-import React, { useState } from "react";
+import { PanelsContext } from "@linzjs/windows";
+import React, { useContext, useState } from "react";
 
 import { CommonButtons } from "@/components/CommonButtons";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
-import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
@@ -19,9 +18,12 @@ import {
 import { ZOOM_DELTA } from "@/util/cytoscapeUtil";
 
 import { PlanMode } from "./PlanSheetType";
+import { ViewLabelTypes } from "./ViewLabelTypes";
 
 export const PlanSheetsHeaderButtons = () => {
   const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+
+  const { openPanel } = useContext(PanelsContext);
   const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
   const dispatch = useAppDispatch();
   const planMode = useAppSelector(getPlanMode);
@@ -77,15 +79,12 @@ export const PlanSheetsHeaderButtons = () => {
         selectedButtonLabel={planMode}
       />
       <VerticalSpacer />
-      <HeaderMenu
-        primaryButtonLabel={PlanMode.ManageLabels}
-        primaryButtonIcon="ic_manage_labels"
+      <HeaderButton
+        headerMenuLabel={PlanMode.ViewLabels}
+        iconName="ic_manage_labels"
+        onClick={() => openPanel("View labels", () => <ViewLabelTypes />)}
         selectedButtonLabel={selectedButtonLabel}
-        setSelectedButtonLabel={setSelectedButtonLabel}
-      >
-        <MenuHeader>View labels</MenuHeader>
-        <MenuItem>Dynamically gen list</MenuItem>
-      </HeaderMenu>
+      />
 
       <LuiButton
         onClick={() => {

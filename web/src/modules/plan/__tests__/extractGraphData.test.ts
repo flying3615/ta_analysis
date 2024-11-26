@@ -17,9 +17,9 @@ import {
 describe("extractGraphData", () => {
   test("extractNodes extracts node data", () => {
     const extractedNodes = extractDiagramNodes(mockPlanData.diagrams);
-    // 19 mark nodes + 6 labels one symbol label (we don’t extract if the label type is not user-defined)
+    // 19 mark nodes + 7 labels one symbol label (we don’t extract if the label type is not user-defined)
     // + six synthetic nodes the broken line
-    expect(extractedNodes).toHaveLength(48);
+    expect(extractedNodes).toHaveLength(49);
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
     const node10001 = extractedNodeMap["10001"];
     expect(node10001?.id).toBe("10001");
@@ -89,7 +89,7 @@ describe("extractGraphData", () => {
 
     const extractedNodes = extractDiagramNodes(enhancedMockPlanData.diagrams);
 
-    expect(extractedNodes).toHaveLength(54); // 6 labels after mark nodes in first diagram
+    expect(extractedNodes).toHaveLength(55); // 7 labels after mark nodes in first diagram
     const extractedNodeMap = Object.fromEntries(extractedNodes.map((n) => [n.id, n]));
 
     const labelNode11 = extractedNodeMap["LAB_11"];

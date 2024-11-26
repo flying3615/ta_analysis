@@ -35,7 +35,12 @@ import {
 import { useGetPlanQuery } from "@/queries/plan";
 import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
-import { getCanViewHiddenLabels, getDiagramIdToMove, getPlanMode } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getCanViewHiddenLabels,
+  getDiagramIdToMove,
+  getPlanMode,
+  getViewableLabelTypes,
+} from "@/redux/planSheets/planSheetsSlice";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
 
 import { AddLabelHandler } from "./interactions/AddLabelHandler";
@@ -52,6 +57,7 @@ import { SurveyDetails } from "./SurveyDetails";
 const PlanSheets = () => {
   const transactionId = useTransactionId();
   const canViewHiddenLabels = useAppSelector(getCanViewHiddenLabels);
+  const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
 
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -134,20 +140,14 @@ const PlanSheets = () => {
   }, [planDataError, transactionId, navigate, showPrefabModal]);
 
   const nodeData = useMemo(() => {
-    let combinedNodeData = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
-    if (!canViewHiddenLabels) {
-      combinedNodeData = filterNodeData(combinedNodeData, "hide");
-    }
-    return combinedNodeData;
-  }, [pageConfigsNodeData, diagramNodeData, pageNodeData, canViewHiddenLabels]);
-
-  const edgeData = useMemo(() => {
-    let combinedEdgeData = [...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData];
-    if (!canViewHiddenLabels) {
-      combinedEdgeData = filterEdgeData(combinedEdgeData, "hide");
-    }
-    return combinedEdgeData;
-  }, [pageConfigsEdgeData, diagramEdgeData, pageEdgeData, canViewHiddenLabels]);
+    const data = [...pageConfigsNodeData, ...diagramNodeData, ...pageNodeData];
+    return filterNodeData(data, canViewHiddenLabels ? "" : "hide", viewableLabelTypes);
+  }, [pageConfigsNodeData, diagramNodeData, pageNodeData, canViewHiddenLabels, viewableLabelTypes]);
+  const edgeData = useMemo(
+    () =>
+      filterEdgeData([...pageConfigsEdgeData, ...diagramEdgeData, ...pageEdgeData], canViewHiddenLabels ? "" : "hide"),
+    [pageConfigsEdgeData, diagramEdgeData, pageEdgeData, canViewHiddenLabels],
+  );
 
   if (!regenerateDoneOrNotNeeded || surveyInfoIsLoading || !surveyInfo || regenerationHasFailed || planDataIsLoading) {
     return (

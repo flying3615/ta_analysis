@@ -7,6 +7,7 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 import { nestedSurveyPlan, nestedTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { DiagramList } from "@/components/PlanSheets/DiagramList";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { Paths } from "@/Paths";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
@@ -119,6 +120,7 @@ describe("Insert a diagram onto the plansheet", () => {
     previousDiagrams: null,
     previousPages: null,
     canViewHiddenLabels: true,
+    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
   };
 
   it("Inserting a diagram is resized to the minimum size", async () => {

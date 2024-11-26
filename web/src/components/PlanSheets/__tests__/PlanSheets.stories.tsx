@@ -16,6 +16,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   diagramLabelObsBearingHide,
+  diagramLabelObsCode,
   diagramLabelParcelAppellation,
   diagramLabelSystemHide,
   pageLabelWithBorder,
@@ -38,6 +39,7 @@ import {
   checkCytoElementProperties,
   clickAtCoordinates,
   clickMultipleCoordinates,
+  getCytoElement,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   ModalStoryWrapper,
@@ -1009,6 +1011,7 @@ if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
     ...customMockPlanData.diagrams[0].lineLabels,
     diagramLabelParcelAppellation,
     diagramLabelObsBearingHide,
+    diagramLabelObsCode,
     diagramLabelSystemHide,
   ];
 }
@@ -1058,5 +1061,99 @@ export const ShowHiddenObject: Story = {
     await userEvent.click(await canvas.findByTitle("View hidden objects"));
     await sleep(500); // final screenshot - chromatic will check that hidden line and labels are back on screen
     await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon changed to on
+  },
+};
+
+export const ViewLabelsDefaultView: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("View labels"));
+    await sleep(500);
+    await expect(await canvas.findByText("View labels")).toBeInTheDocument();
+    // verify default viewablity of labels
+    const allCheckbox = canvas.getByRole("checkbox", { name: "All Indeterminate Check" });
+    await expect(allCheckbox).toBeChecked(); // All checkbox is partially checked
+    const markDescriptionsCheckbox = canvas.getByRole("checkbox", { name: "Mark descriptions Check" });
+    await expect(markDescriptionsCheckbox).toBeChecked(); // Mark description checkbox is checked
+    const markNamesCheckbox = canvas.getByRole("checkbox", { name: "Mark names Check" });
+    await expect(markNamesCheckbox).toBeChecked(); // Mark names checkbox is checked
+    const observationCodeCheckbox = canvas.getByRole("checkbox", { name: "Observation codes Check" });
+    await expect(observationCodeCheckbox).not.toBeChecked(); // Observation code checkbox is not checked
+    const okButton = canvas.getByRole("button", { name: "OK" });
+    await expect(okButton).toBeDisabled(); // ok button disabled
+    // chromatic to check the default view of all labels and styling
+  },
+};
+
+export const ViewLabelsOK: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    //elements are removed form the graph data when they are not visible
+    await expect(getCytoElement("#LAB_11")).toBeDefined(); // check hidden mark name label is visible
+    await expect(getCytoElement("#LAB_13")).toBeDefined(); // check not-hidden mark name label is visible
+    await expect(getCytoElement("#LAB_31")).not.toBeDefined(); // check observation code is not visible
+
+    await userEvent.click(await canvas.findByTitle("View labels"));
+    await sleep(500);
+    await expect(await canvas.findByText("View labels")).toBeInTheDocument();
+    const okButton = canvas.getByRole("button", { name: "OK" });
+    await expect(okButton).toBeDisabled(); // OK button should be disabled as not changes have been made
+
+    const observationCodeCheckbox = canvas.getByRole("checkbox", { name: /observation codes/i });
+    const markNamesCheckbox = canvas.getByRole("checkbox", { name: /mark names/i });
+    await userEvent.click(observationCodeCheckbox);
+    await userEvent.click(markNamesCheckbox);
+    await expect(okButton).toBeEnabled(); // OK button should be enabled now that we've made changes
+
+    await userEvent.click(okButton);
+    await sleep(500);
+
+    await expect(getCytoElement("#LAB_11")).not.toBeDefined(); // check hidden mark name label is now not visible
+    await expect(getCytoElement("#LAB_13")).not.toBeDefined(); // check not-hidden mark name label is now not visible
+    await expect(getCytoElement("#LAB_31")).toBeDefined(); // check observation code is now visible
+    // chromatic will verify observation code is visible and mark names are not
+  },
+};
+
+export const ViewLabelsCancel: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    //elements are removed form the graph data when they are not visible
+    await expect(getCytoElement("#LAB_11")).toBeDefined(); //check mark name label is visible
+    await expect(getCytoElement("#LAB_31")).not.toBeDefined(); //check observation code is not visible
+
+    await userEvent.click(await canvas.findByTitle("View labels"));
+    await sleep(500);
+    await expect(await canvas.findByText("View labels")).toBeInTheDocument();
+    const cancelButton = canvas.getByText("Cancel");
+    let observationCodeCheckbox = canvas.getByRole("checkbox", { name: /observation codes/i });
+    let markNamesCheckbox = canvas.getByRole("checkbox", { name: /mark names/i });
+
+    await userEvent.click(observationCodeCheckbox);
+    await userEvent.click(markNamesCheckbox);
+    await expect(observationCodeCheckbox).toBeChecked(); // Observation code checkbox is now checked
+    await expect(markNamesCheckbox).not.toBeChecked(); // Mark names checkbox is now not checked
+
+    await userEvent.click(cancelButton); // cancel the changes
+    await sleep(500);
+
+    await expect(getCytoElement("#LAB_11")).toBeDefined(); //check mark name label is still visible
+    await expect(getCytoElement("#LAB_31")).not.toBeDefined(); //check observation code is still not visible
+
+    await userEvent.click(await canvas.findByTitle("View labels")); // open the view labels dialog again
+    await sleep(500);
+    observationCodeCheckbox = canvas.getByRole("checkbox", { name: /observation codes/i });
+    markNamesCheckbox = canvas.getByRole("checkbox", { name: /mark names/i });
+    await expect(observationCodeCheckbox).not.toBeChecked(); // verify change not saved
+    await expect(markNamesCheckbox).toBeChecked(); // verify change not saved
+    // chromatic will verify button not selected with correct styling
+    // chromatic will verify the changes are not saved (observation code is not visible and mark names are on cytoscape)
   },
 };

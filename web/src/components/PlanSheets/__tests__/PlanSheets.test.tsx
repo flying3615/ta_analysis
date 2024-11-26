@@ -8,6 +8,7 @@ import { generatePath, Route } from "react-router-dom";
 import LandingPage from "@/components/LandingPage/LandingPage";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
@@ -53,6 +54,7 @@ const planSheetsState: PlanSheetsState = {
   previousDiagrams: null,
   previousPages: null,
   canViewHiddenLabels: true,
+  viewableLabelTypes: defaultOptionalVisibileLabelTypes,
 };
 
 const mockGetPlanResponse = {
@@ -150,6 +152,7 @@ describe("PlanSheets", () => {
       previousDiagrams: null,
       previousPages: null,
       canViewHiddenLabels: true,
+      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
     };
 
     server.use(
@@ -218,6 +221,7 @@ describe("PlanSheets", () => {
       previousDiagrams: null,
       previousPages: null,
       canViewHiddenLabels: true,
+      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
     };
 
     server.use(

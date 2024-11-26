@@ -32,9 +32,9 @@ import {
   extractPageNodes,
 } from "@/modules/plan/extractGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
-import { getDiagrams, getPages } from "@/redux/planSheets/planSheetsSlice";
+import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
-import { filterHiddenEdges, filterHiddenNodes } from "@/util/cytoscapeUtil";
+import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
 import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 
@@ -48,6 +48,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
   const { error: errorToast } = useToast();
   const pages = useAppSelector(getPages);
   const diagrams = useAppSelector(getDiagrams);
+  const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core>();
@@ -188,7 +189,7 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
           const currentPageId = currentPage?.id;
-          const filteredPageNodes = filterHiddenNodes(extractPageNodes([currentPage!]));
+          const filteredPageNodes = filterNodeData(extractPageNodes([currentPage!]), "hide", viewableLabelTypes);
           const currentPageNodes = currentPage ? filteredPageNodes : [];
 
           if (!currentPageId) continue;
@@ -209,7 +210,11 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const currentPageDiagrams = diagrams.filter((d) => d.pageRef === currentPageId);
 
           // filter out hidden nodes
-          let diagramNodeData = filterHiddenNodes(extractDiagramNodes(currentPageDiagrams, undefined, true));
+          let diagramNodeData = filterNodeData(
+            extractDiagramNodes(currentPageDiagrams, undefined, true),
+            "hide",
+            viewableLabelTypes,
+          );
 
           // filter out the mark name if the sheet type is title plan title
           if (obj.typeAbbr === PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE) {
@@ -218,8 +223,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
             );
           }
 
-          const diagramEdgeData = filterHiddenEdges(extractDiagramEdges(currentPageDiagrams));
-          const currentPageEdges = filterHiddenEdges(extractPageEdges([currentPage]));
+          const diagramEdgeData = filterEdgeData(extractDiagramEdges(currentPageDiagrams), "hide");
+          const currentPageEdges = filterEdgeData(extractPageEdges([currentPage]), "hide");
 
           const nodeData = [...diagramNodeData, ...currentPageNodes];
           const edgeData = [...diagramEdgeData, ...currentPageEdges];

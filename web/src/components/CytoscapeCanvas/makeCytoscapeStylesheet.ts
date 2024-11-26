@@ -128,7 +128,6 @@ const makeCytoscapeStylesheet = (cytoscapeCoordinateMapper: CytoscapeCoordinateM
         "background-image-opacity": opacityFromDisplayState,
       },
     },
-
     {
       // Node with no label
       selector: "node[^label]",

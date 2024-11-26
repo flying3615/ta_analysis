@@ -25,6 +25,31 @@ export const labelTypeOptions: SelectOptions[] = [
   { value: LabelDTOLabelTypeEnum.lineLongDescription, label: "Line long description" },
 ];
 
+export const viewLabelTypeOptions: SelectOptions[] = [
+  { value: LabelDTOLabelTypeEnum.markDescription, label: "Mark descriptions" },
+  { value: LabelDTOLabelTypeEnum.markName, label: "Mark names" },
+  { value: `${LabelDTOLabelTypeEnum.nodeSymbol1},${LabelDTOLabelTypeEnum.nodeSymbol2}`, label: "Node symbols" },
+  { value: LabelDTOLabelTypeEnum.arcRadius, label: "Observation arc radii" },
+  { value: LabelDTOLabelTypeEnum.obsBearing, label: "Observation bearings" },
+  { value: LabelDTOLabelTypeEnum.obsCode, label: "Observation codes" },
+  { value: LabelDTOLabelTypeEnum.obsDistance, label: "Observation distances" },
+  { value: LabelDTOLabelTypeEnum.parcelAppellation, label: "Parcel appellations" },
+  { value: LabelDTOLabelTypeEnum.parcelArea, label: "Parcel areas" },
+  { value: LabelDTOLabelTypeEnum.lineDescription, label: "Water/irregular boundary" },
+];
+
+export const defaultOptionalVisibileLabelTypes = viewLabelTypeOptions
+  .flatMap((o) => o.value.split(","))
+  .filter((v) => v !== LabelDTOLabelTypeEnum.obsCode);
+
+export const alwaysVisibleLabelTypes: string[] = [
+  LabelDTOLabelTypeEnum.userAnnotation,
+  LabelDTOLabelTypeEnum.childDiagram,
+  LabelDTOLabelTypeEnum.childDiagramPage,
+  LabelDTOLabelTypeEnum.diagram,
+  LabelDTOLabelTypeEnum.diagramType,
+];
+
 export const fontOptions: SelectOptions[] = [
   { value: "Arial", label: "Arimo (was Arial)" },
   { value: "Tahoma", label: "Roboto (was Tahoma)" },

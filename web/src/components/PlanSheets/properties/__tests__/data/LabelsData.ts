@@ -79,6 +79,27 @@ export const diagramLabelObsBearingHide: LabelDTO = {
   effect: "none",
 };
 
+export const diagramLabelObsCode: LabelDTO = {
+  id: 31,
+  labelType: "obsCode",
+  displayText: "Label 31",
+  font: "Tahoma",
+  fontSize: 14,
+  fontStyle: "regular",
+  position: {
+    x: 16,
+    y: -40,
+  },
+  rotationAngle: 270,
+  pointOffset: 14,
+  anchorAngle: 0,
+  textAlignment: "centerCenter",
+  displayState: "display",
+  featureId: 1006,
+  featureType: "Line",
+  effect: "none",
+};
+
 export const diagramLabelObsBearingSuppressSeconds: LabelDTO = {
   id: 21,
   labelType: "obsBearing",

@@ -1,4 +1,9 @@
-import { CoordinateDTOCoordTypeEnum, LabelDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTOCoordTypeEnum,
+  DisplayStateEnum,
+  LabelDTO,
+  LabelDTOLabelTypeEnum,
+} from "@linz/survey-plan-generation-api-client";
 import { cloneDeep } from "lodash-es";
 
 import { LabelDTOBuilder } from "@/mocks/builders/LabelDTOBuilder";
@@ -114,6 +119,20 @@ export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
     "diagram",
     "Tahoma",
     14.0,
+  )
+  //this label has been added to test that systemHide lines are never displayed. Should not show up in any of the PlanSheet tests.
+  .addLabel(
+    "parcelLabels",
+    16,
+    "System Hidden Label",
+    { x: 120, y: -35 },
+    1,
+    undefined,
+    undefined,
+    "Tahoma",
+    18,
+    undefined,
+    DisplayStateEnum.systemHide,
   )
   .addChildDiagram({ diagramRef: 1 })
   .addLabel("childDiagramLabels", 41, "Diag. ACA", {

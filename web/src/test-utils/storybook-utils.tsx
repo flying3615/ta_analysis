@@ -514,6 +514,17 @@ export async function multiSelectAndDrag(
   fireEvent.mouseUp(canvas, steps[steps.length - 1]);
 }
 
+export const getCytoElement = (selector: string) => {
+  console.log(selector);
+  const element = window.cyRef.$(selector);
+  if (element.length === 1) {
+    return element[0];
+  } else {
+    console.log(`Element with ID ${selector} not found or too many elements found.`);
+    return undefined;
+  }
+};
+
 export const checkCytoElementProperties = async (
   selector: string,
   expectedProperties: {

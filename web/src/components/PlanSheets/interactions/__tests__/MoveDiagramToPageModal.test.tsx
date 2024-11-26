@@ -3,6 +3,7 @@ import { fireEvent, screen } from "@testing-library/react";
 
 import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
+import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
@@ -103,6 +104,7 @@ describe("MoveDiagramToPageModal", () => {
     previousDiagrams: null,
     previousPages: null,
     canViewHiddenLabels: true,
+    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
   };
 
   it("can move a diagram to an existing page", async () => {
