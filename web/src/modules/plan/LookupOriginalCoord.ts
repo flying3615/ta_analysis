@@ -138,7 +138,7 @@ export function transformMovedLabelCoordinates(
         initialPosition,
         1,
       );
-      element.data({ pointOffset: offset, anchorAngle: angle, ignorePositionChange: true });
+      element.data({ pointOffset: offset, anchorAngle: angle });
     }
   });
 
