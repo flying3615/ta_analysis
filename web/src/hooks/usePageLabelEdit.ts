@@ -9,6 +9,7 @@ import {
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { addPageLabels } from "@/modules/plan/updatePlanData";
 import {
   doPastePageLabels,
   getActivePage,
@@ -207,8 +208,9 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
 
     newMaxId && dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
 
+    const updatedPage = addPageLabels(activePage, labelsTobeAdded);
     const action = copiedElements.action;
-    dispatch(doPastePageLabels({ activePage, labelsTobeAdded, action }));
+    dispatch(doPastePageLabels({ updatedPage, action }));
   };
 
   return {

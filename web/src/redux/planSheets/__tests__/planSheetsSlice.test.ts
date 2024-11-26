@@ -349,11 +349,7 @@ describe("planSheetsSlice", () => {
     store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
     store.dispatch(
-      doPastePageLabels({
-        activePage: initialPages[0] as PageDTO,
-        labelsTobeAdded: labelsTobeAdded,
-        action: "CUT",
-      }),
+      doPastePageLabels({ updatedPage: { ...initialPages[0], labels: labelsTobeAdded } as PageDTO, action: "CUT" }),
     );
 
     const state = store.getState().planSheets;
@@ -380,7 +376,7 @@ describe("planSheetsSlice", () => {
     store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
     store.dispatch(
-      doPastePageLabels({ activePage: initialPages[1] as PageDTO, labelsTobeAdded: labelsTobeAdded, action: "CUT" }),
+      doPastePageLabels({ updatedPage: { ...initialPages[1], labels: labelsTobeAdded } as PageDTO, action: "CUT" }),
     );
 
     const state = store.getState().planSheets;

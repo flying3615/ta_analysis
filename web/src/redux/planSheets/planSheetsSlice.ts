@@ -7,7 +7,6 @@ import { cloneDeep } from "lodash-es";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
-import { addPageLabels } from "@/modules/plan/updatePlanData";
 import { revertAll } from "@/redux/revertAll";
 
 export interface PlanSheetsState {
@@ -109,12 +108,8 @@ const planSheetsSlice = createSlice({
       const index = state.pages.findIndex((page) => page.id === updatedPage.id);
       state.pages[index] = updatedPage;
     },
-    doPastePageLabels: (
-      state,
-      action: PayloadAction<{ activePage: PageDTO; labelsTobeAdded: LabelDTO[]; action: "COPY" | "CUT" }>,
-    ) => {
-      const { activePage, labelsTobeAdded } = action.payload;
-      const updatedPage = addPageLabels(activePage, labelsTobeAdded);
+    doPastePageLabels: (state, action: PayloadAction<{ updatedPage: PageDTO; action: "COPY" | "CUT" }>) => {
+      const { updatedPage } = action.payload;
       onDataChanging(state);
       const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
 
@@ -306,6 +301,7 @@ const planSheetsSlice = createSlice({
     },
     undo: (state) => {
       if (!state.previousDiagrams || !state.previousPages) return;
+      if (state.copiedElements) state.copiedElements = undefined;
 
       state.hasChanges = state.previousHasChanges ?? false;
 
