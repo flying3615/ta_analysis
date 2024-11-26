@@ -7,6 +7,7 @@ import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.sto
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
+  checkCytoElementProperties,
   click,
   clickAtCoordinates,
   clickMultipleCoordinates,
@@ -251,6 +252,38 @@ export const PageLabelMultiSelectCopyPaste: Story = {
     // assert ids of new labels
     newLabels.forEach((label, index) => {
       void expect(label.id()).toBe(`LAB_${index + 3}`); // since maxId for element Label was 2, the first pasted label will have id 3
+    });
+  },
+};
+
+// Enforces 'play' is provided as it is used in PlanSheetsUndo
+export const MovePageAndDiagramLabels: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const diagramLabelOriginalLocation: [number, number] = [213.1, 213.1];
+    const diagramLabelNewLocation: [number, number] = [348.24, 450.02];
+    const pageLabelOriginalLocation: [number, number] = [591.19, 110.23];
+    const pageLabelNewLocation: [number, number] = [726.32, 347.15];
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+
+    // verify the original positions of the labels
+    await checkCytoElementProperties("#LAB_14" /* diagram label */, {
+      position: { x: diagramLabelOriginalLocation[0], y: diagramLabelOriginalLocation[1] },
+    });
+    await checkCytoElementProperties("#LAB_23" /* page label */, {
+      position: { x: pageLabelOriginalLocation[0], y: pageLabelOriginalLocation[1] },
+    });
+
+    await test.multiSelect([diagramLabelOriginalLocation, pageLabelOriginalLocation]);
+    await test.leftClickAndDrag(diagramLabelOriginalLocation, diagramLabelNewLocation);
+    await test.waitForCytoscape();
+
+    // verify the new positions of the labels
+    await checkCytoElementProperties("#LAB_14" /* diagram label */, {
+      position: { x: diagramLabelNewLocation[0], y: diagramLabelNewLocation[1] },
+    });
+    await checkCytoElementProperties("#LAB_23" /* page label */, {
+      position: { x: pageLabelNewLocation[0], y: pageLabelNewLocation[1] },
     });
   },
 };

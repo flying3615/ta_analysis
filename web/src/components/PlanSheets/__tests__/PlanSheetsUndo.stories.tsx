@@ -2,6 +2,7 @@ import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
 
+import { MovePageAndDiagramLabels } from "@/components/PlanSheets/__tests__/PageLabel.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { sleep, tabletLandscapeParameters } from "@/test-utils/storybook-utils";
 
@@ -43,3 +44,4 @@ export const UndoHideLine = undo(HideLine);
 
 export const UndoMoveDiagramLine = undo(MoveDiagramLine);
 export const UndoMoveDiagramNode = undo(MoveDiagramNode);
+export const UndoMoveDiagramAndPageLabel = undo(MovePageAndDiagramLabels);
