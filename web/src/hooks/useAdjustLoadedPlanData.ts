@@ -1,61 +1,58 @@
 import { DiagramDTO, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { max, min } from "lodash-es";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
-import { textAlignSignumHorizontal, textAlignSignumVertical } from "@/components/CytoscapeCanvas/textAlignment";
 import { useMeasureText } from "@/hooks/useMeasureText";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
-import { addIntoDelta, addIntoPosition, clampAngleDegrees360, Delta, deltaFromPolar } from "@/util/positionUtil";
+import { BoundingBoxWithShift, calculateLabelBoundingBox } from "@/util/labelUtil";
+import { atanDegrees360, hypotenuse } from "@/util/positionUtil";
+
+const shiftIntoBounds = ({ originalShift, xL, xR, yT, yB }: BoundingBoxWithShift) => {
+  const newXL = max([xL, CytoscapeCoordinateMapper.diagramLimitOriginX]) ?? 0;
+  const newXR = min([xR, CytoscapeCoordinateMapper.diagramLimitBottomRightX]) ?? 0;
+  const newYT = min([yT, CytoscapeCoordinateMapper.diagramLimitOriginY]) ?? 0;
+  const newYB = max([yB, CytoscapeCoordinateMapper.diagramLimitBottomRightY]) ?? 0;
+
+  const shift = {
+    dx: newXL > xL ? originalShift.dx + (newXL - xL) : newXR < xR ? originalShift.dx + newXR - xR : originalShift.dx,
+    dy: newYT < yT ? originalShift.dy + newYT - yT : newYB > yB ? originalShift.dy + newYB - yB : originalShift.dy,
+  };
+
+  const pointOffset = hypotenuse(shift) * POINTS_PER_CM;
+  const anchorAngle = atanDegrees360(shift);
+  return { pointOffset, anchorAngle };
+};
+
+const outsideBounds = ({ xL, xR, yT, yB }: BoundingBoxWithShift) =>
+  xL >= CytoscapeCoordinateMapper.diagramLimitOriginX &&
+  xR <= CytoscapeCoordinateMapper.diagramLimitBottomRightX &&
+  yT <= CytoscapeCoordinateMapper.diagramLimitOriginY &&
+  yB >= CytoscapeCoordinateMapper.diagramLimitBottomRightY;
 
 export const useAdjustLoadedPlanData = () => {
   const measureTextCm = useMeasureText();
 
-  const centrePointOffset = (textAlignment: string, labelSizeCm: Delta): Delta => {
-    return {
-      dx: (textAlignSignumHorizontal(textAlignment) * labelSizeCm.dx) / 2,
-      dy: (textAlignSignumVertical(textAlignment) * labelSizeCm.dy) / 2,
-    };
-  };
-
   const relocateOffscreenLabel = (planCoordinateMapper: PlanCoordinateMapper, diagramId: number, label: LabelDTO) => {
+    const labelPositionCm = planCoordinateMapper.groundCoordToCm(diagramId, label.position);
     const labelSizeCm = measureTextCm(label.editedText ?? label.displayText ?? "", label.font, label.fontSize);
 
-    const offset = centrePointOffset(label.textAlignment, labelSizeCm);
+    const labelBounds = calculateLabelBoundingBox(
+      labelPositionCm,
+      labelSizeCm,
+      label.textAlignment,
+      label.anchorAngle,
+      label.pointOffset,
+      label.rotationAngle,
+    );
 
-    const rOffsetCm = (label.pointOffset ?? 0) / POINTS_PER_CM;
-
-    const originalShift = deltaFromPolar(label.anchorAngle, rOffsetCm);
-
-    const labelPositionCm = planCoordinateMapper.groundCoordToCm(diagramId, label.position);
-
-    const origLabelCentre = addIntoPosition(addIntoPosition(labelPositionCm, offset), originalShift);
-
-    // console.log(`relocateOffscreenLabel label: ${JSON.stringify(label)}`);
-    // console.log(
-    //   `relocateOffscreenLabel labelSizeCm=${JSON.stringify(labelSizeCm)}, labelPositionCm=${JSON.stringify(labelPositionCm)}, offset=${JSON.stringify(offset)}, originalShift=${JSON.stringify(originalShift)}, origLabelCentre=${JSON.stringify(origLabelCentre)}`,
-    // );
-
-    const xL = origLabelCentre.x - labelSizeCm.dx / 2;
-    const offsideL = CytoscapeCoordinateMapper.diagramLimitOriginX - xL;
-    const xR = origLabelCentre.x + labelSizeCm.dx / 2;
-    const offsideR = xR - CytoscapeCoordinateMapper.diagramLimitBottomRightX;
-    const yT = origLabelCentre.y + labelSizeCm.dy / 2;
-    const offsideT = yT - CytoscapeCoordinateMapper.diagramLimitOriginY;
-    const yB = origLabelCentre.y - labelSizeCm.dy / 2;
-    const offsideB = CytoscapeCoordinateMapper.diagramLimitBottomRightY - yB;
-
-    if (offsideL <= 0 && offsideR <= 0 && offsideT <= 0 && offsideB <= 0) return label;
-
-    const unclipShift = {
-      dx: offsideL > 0 ? offsideL : offsideR > 0 ? -offsideR : 0,
-      dy: offsideT > 0 ? -offsideT : offsideB > 0 ? offsideB : 0,
-    };
-
-    const newShift = addIntoDelta(originalShift, unclipShift);
-
-    label.pointOffset = Math.sqrt(newShift.dx ** 2 + newShift.dy ** 2) * POINTS_PER_CM;
-    label.anchorAngle = clampAngleDegrees360(Math.atan2(newShift.dy, newShift.dx) * (180 / Math.PI));
-    // console.log(`relocateOffscreenLabel new pointOffset=${label.pointOffset}, new anchorAngle=${label.anchorAngle}`);
+    if (outsideBounds(labelBounds)) {
+      return label;
+    }
+    const shift = shiftIntoBounds(labelBounds);
+    label.pointOffset = shift.pointOffset;
+    label.anchorAngle = shift.anchorAngle;
     return label;
   };
 
@@ -80,6 +77,9 @@ export const useAdjustLoadedPlanData = () => {
       coordinateLabels: originAdjustedDiagram.coordinateLabels?.map((label) => {
         return relocateOffscreenLabel(planCoordinateMapper, originAdjustedDiagram.id, label);
       }),
+      lineLabels: originAdjustedDiagram.lineLabels?.map((label) => {
+        return relocateOffscreenLabel(planCoordinateMapper, originAdjustedDiagram.id, label);
+      }),
       parcelLabelGroups: originAdjustedDiagram.parcelLabelGroups?.map((group) => {
         return {
           ...group,
@@ -100,8 +100,54 @@ export const useAdjustLoadedPlanData = () => {
     };
   };
 
+  const adjustLabelNodes = (nodes: INodeData[], diagrams: DiagramDTO[]): INodeData[] => {
+    if (nodes.every((ele) => ele.label)) {
+      return nodes;
+    }
+
+    const planCoordinateMapper = new PlanCoordinateMapper(diagrams);
+
+    return nodes.map((unadjustedNode) => {
+      const labelPositionCm = unadjustedNode.properties.diagramId
+        ? planCoordinateMapper.groundCoordToCm(unadjustedNode.properties.diagramId, unadjustedNode.position)
+        : unadjustedNode.position;
+
+      const labelSizeCm = measureTextCm(
+        unadjustedNode.label ?? "",
+        unadjustedNode.properties.font,
+        unadjustedNode.properties.fontSize,
+      );
+
+      console.log(`label: ${JSON.stringify(unadjustedNode.label)}`);
+
+      const labelBounds = calculateLabelBoundingBox(
+        labelPositionCm,
+        labelSizeCm,
+        unadjustedNode.properties.textAlignment,
+        unadjustedNode.properties.anchorAngle,
+        unadjustedNode.properties.pointOffset,
+        unadjustedNode.properties.textRotation,
+      );
+
+      if (outsideBounds(labelBounds)) {
+        return unadjustedNode;
+      }
+      const { pointOffset, anchorAngle } = shiftIntoBounds(labelBounds);
+
+      return {
+        ...unadjustedNode,
+        properties: {
+          ...unadjustedNode.properties,
+          pointOffset: pointOffset,
+          anchorAngle: anchorAngle,
+        },
+      } as INodeData;
+    });
+  };
+
   return {
     adjustPlanData,
     adjustDiagram,
+    adjustLabelNodes,
   };
 };

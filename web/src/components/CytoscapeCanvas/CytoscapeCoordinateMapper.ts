@@ -8,7 +8,7 @@ import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import { GroundMetresPosition } from "./cytoscapeDefinitionsFromData";
 
-const CSS_PIXELS_PER_CM = 38.3;
+export const CSS_PIXELS_PER_CM = 37.79;
 
 export class CytoscapeCoordinateMapper extends PlanCoordinateMapper {
   public readonly scalePixelsPerCm: number;

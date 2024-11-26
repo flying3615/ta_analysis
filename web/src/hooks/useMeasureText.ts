@@ -1,9 +1,9 @@
 import { max, sum } from "lodash-es";
 import { useEffect, useState } from "react";
 
+import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { measureTextFallback } from "@/util/labelUtil";
 import { Delta } from "@/util/positionUtil";
-
-const PIXELS_PER_CM = 37.79;
 
 export const useMeasureText = () => {
   const [measuringContext, setMeasuringContext] = useState<OffscreenCanvasRenderingContext2D>();
@@ -27,13 +27,11 @@ export const useMeasureText = () => {
 
       const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
       const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
-      return { dx: width / PIXELS_PER_CM, dy: height / PIXELS_PER_CM };
+      return { dx: width / CSS_PIXELS_PER_CM, dy: height / CSS_PIXELS_PER_CM };
     }
 
     // Fallback if we couldn't get the canvas context
     console.warn("Warning: couldn't get canvas context for measuring text size");
-    const height = (lines.length * fontSize) / PIXELS_PER_CM;
-    const width = ((max(lines.map((l: string) => l.length)) ?? 0) * fontSize) / PIXELS_PER_CM;
-    return { dx: width, dy: height };
+    return measureTextFallback(lines, fontSize);
   };
 };

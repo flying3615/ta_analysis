@@ -28,7 +28,7 @@ export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
     id: 10012,
     coordType: CoordinateDTOCoordTypeEnum.userDefined,
     position: {
-      x: 50,
+      x: 30,
       y: -10,
     },
   })

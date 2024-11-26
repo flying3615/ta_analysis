@@ -2,16 +2,17 @@ import cytoscape from "cytoscape";
 import { max, sum } from "lodash-es";
 
 import CircleSVG from "@/assets/symbols/circle.svg?raw";
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { CSS_PIXELS_PER_CM, CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { cytoscapeToDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
 import { symbolSvgs } from "@/components/CytoscapeCanvas/symbolSvgs";
 import { memoizedTextAlign, TextAlignment } from "@/components/CytoscapeCanvas/textAlignment";
 import { makeScaledSVG } from "@/modules/plan/makeScaledSVG";
 import { FOREGROUND_COLOUR, FOREGROUND_COLOUR_BLACK } from "@/modules/plan/styling";
 import { PIXELS_PER_POINT, POINTS_PER_CM } from "@/util/cytoscapeUtil";
+import { measureTextFallback } from "@/util/labelUtil";
+import { Delta } from "@/util/positionUtil";
 
 export const LABEL_PADDING_PX = 1;
-const PIXELS_PER_CM = 37.79;
 
 export interface StyleData {
   anchorAngle?: number;
@@ -33,10 +34,10 @@ export const getStyleData = (ele: cytoscape.NodeSingular): StyleData => {
   };
 };
 
-export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
+export const textDimensionsCm = (ele: cytoscape.NodeSingular): Delta => {
   const { font, fontSize, label } = getStyleData(ele);
   if (!font || !fontSize || !label) {
-    return { height: 0, width: 0 };
+    return { dy: 0, dx: 0 };
   }
 
   const lines = label.split("\n");
@@ -52,13 +53,10 @@ export const textDimensionsCm = (ele: cytoscape.NodeSingular) => {
     const width = max<number>(lineSizes.map((ls: TextMetrics) => ls.width)) ?? 0;
     const height = sum(lineSizes.map((ls: TextMetrics) => ls.fontBoundingBoxAscent + ls.fontBoundingBoxDescent));
 
-    return { height: height / PIXELS_PER_CM, width: width / PIXELS_PER_CM };
+    return { dy: height / CSS_PIXELS_PER_CM, dx: width / CSS_PIXELS_PER_CM };
   }
 
-  // Fallback if we couldn't get the canvas contex
-  const height = lines.length * fontSize;
-  const width = (max(lines.map((l: string) => l.length)) ?? 0) * fontSize;
-  return { height: height / PIXELS_PER_CM, width: width / PIXELS_PER_CM };
+  return measureTextFallback(lines, fontSize);
 };
 
 export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateMapper: CytoscapeCoordinateMapper) => {
@@ -91,8 +89,8 @@ export const textDimensions = (ele: cytoscape.NodeSingular, cytoscapeCoordinateM
 };
 
 export const textDiameterCm = (ele: cytoscape.NodeSingular) => {
-  const { height, width } = textDimensionsCm(ele);
-  const longestSide = max([height, width]) ?? 0;
+  const { dx, dy } = textDimensionsCm(ele);
+  const longestSide = max([dy, dx]) ?? 0;
 
   return Math.sqrt(2) * longestSide;
 };
@@ -192,7 +190,7 @@ export const calculateTextAlignmentPolar = (
 };
 
 export const calculateCircleSvgParamsCm = (diameterCm: number) => {
-  const circleEdgePadding = 2 / PIXELS_PER_CM; // pad to stop edge of SVG clipping circle
+  const circleEdgePadding = 2 / CSS_PIXELS_PER_CM; // pad to stop edge of SVG clipping circle
 
   // Calculate the width and height of the SVG in measured pixels without text alignment
   // The SVG is centred on the node and has to have room for the circle, hence the *2
@@ -220,7 +218,7 @@ export const circleLabel = (
 ) => {
   const diameterCm = textDiameterCm(ele);
   const { svgWidth, svgHeight, svgCentreX, svgCentreY, svgCircleRadius } = calculateCircleSvgParamsCm(diameterCm);
-  const { height, width } = textDimensionsCm(ele);
+  const { dy, dx } = textDimensionsCm(ele);
 
   return {
     svg: makeScaledSVG({
@@ -237,8 +235,8 @@ export const circleLabel = (
       background: params?.backgroundColor
         ? {
             color: params.backgroundColor,
-            height,
-            width: width * 1.2, // adds x padding
+            height: dy,
+            width: dx * 1.2, // adds x padding
           }
         : undefined,
     }),

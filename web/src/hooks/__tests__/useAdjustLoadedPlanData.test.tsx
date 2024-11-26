@@ -2,8 +2,10 @@ import { CartesianCoordsDTO, LabelDTO, PlanResponseDTO } from "@linz/survey-plan
 import { render, screen } from "@testing-library/react";
 import { cloneDeep } from "lodash-es";
 
+import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
+import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 describe("useAdjustLoadedPlanData", () => {
   const TestAdjustLoadedPlanData = (props: {
@@ -28,6 +30,7 @@ describe("useAdjustLoadedPlanData", () => {
             y: -0.015,
           },
           labels: [],
+          lineLabels: undefined,
           coordinateLabels: [],
           parcelLabelGroups: undefined,
         },
@@ -65,6 +68,7 @@ describe("useAdjustLoadedPlanData", () => {
             y: -0.015,
           },
           labels: [],
+          lineLabels: undefined,
           coordinateLabels: [],
           parcelLabelGroups: undefined,
         },
@@ -150,5 +154,45 @@ describe("useAdjustLoadedPlanData", () => {
       );
       expect(await screen.findByText("Adjusted 3")).toBeInTheDocument();
     }, 30000);
+  });
+
+  describe("with an offscreen line label", () => {
+    const loadedDataOffscreen = new PlanDataBuilder()
+      .addDiagram({
+        bottomRightPoint: { x: 1625.39, y: -1165.179 },
+        zoomScale: 24016,
+        originPageOffset: { x: 0.015, y: -0.015 },
+      })
+      // A label at y==0 and rotated 90 degrees
+      // should overlap the screen edge by half its width
+      // so 4/2 * 14 pixels
+      .addLabel("lineLabels", {
+        id: 1000,
+        displayText: "Line",
+        position: { x: 812.695, y: 0 } as CartesianCoordsDTO,
+        fontSize: 14,
+        textAlignment: "centerCenter",
+        anchorAngle: 0,
+        pointOffset: 0,
+        rotationAngle: 90,
+      } as LabelDTO)
+      .build();
+
+    it("applies offset and angle to push the label inside bounds", async () => {
+      render(
+        <TestAdjustLoadedPlanData
+          loadedData={loadedDataOffscreen}
+          expect={(adjustedData) => {
+            expect(adjustedData.diagrams[0]?.lineLabels?.[0]?.rotationAngle).toBeCloseTo(90);
+            expect(adjustedData.diagrams[0]?.lineLabels?.[0]?.anchorAngle).toBeCloseTo(270);
+            expect(adjustedData.diagrams[0]?.lineLabels?.[0]?.pointOffset).toBeCloseTo(
+              ((4 / 2) * 14 * POINTS_PER_CM) / CSS_PIXELS_PER_CM,
+              1,
+            );
+          }}
+        />,
+      );
+      expect(await screen.findByText("Adjusted")).toBeInTheDocument();
+    });
   });
 });

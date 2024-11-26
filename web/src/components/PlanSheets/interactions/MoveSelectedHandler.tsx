@@ -20,6 +20,7 @@ import {
   INodeDataProperties,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
@@ -86,6 +87,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
   } = usePlanSheetsDispatch();
   const diagrams = useAppSelector(selectActiveDiagrams);
   const adjustLabelsWithLine = useLineLabelAdjust();
+  const { adjustLabelNodes } = useAdjustLoadedPlanData();
 
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
@@ -161,8 +163,11 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
         const adjustedLabels = adjustLabelsWithLine(movedNodesById);
+        const changedNodes = [...movingData.nodes, ...adjustedLabels];
 
-        updateActiveDiagramsAndPage({ nodes: [...movingData.nodes, ...adjustedLabels], edges: movingData.edges });
+        const changedNodesInsideBounds = adjustLabelNodes(changedNodes, diagrams);
+
+        updateActiveDiagramsAndPage({ nodes: changedNodesInsideBounds, edges: movingData.edges });
       }
       cleanupMove();
     };
@@ -221,6 +226,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     cytoDataToNodeAndEdgeData,
     diagrams,
     updateActiveDiagramsAndPage,
+    adjustLabelNodes,
   ]);
 
   return <></>;
@@ -395,7 +401,7 @@ function convertMovedCoordinateLabelsToOffsets(
 ): CollectionReturnValue {
   if (!areAllElementsLabels(movedElements)) {
     // It's a line or mark move
-    // The labels stick to the marks and linesd
+    // The labels stick to the marks and lines
     return movedElements;
   }
 

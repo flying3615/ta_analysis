@@ -34,7 +34,7 @@ describe("styleNodeMethods", () => {
   test(`textDimensionsCm should measure single line text`, () => {
     renderDummyCanvas();
     const dimensions = textDimensionsCm(testEle);
-    expect(dimensions.width).toBeCloseTo(0.31, 1); // jest-mock is not very good at measure
+    expect(dimensions.dx).toBeCloseTo(0.31, 1); // jest-mock is not very good at measure
   });
 
   test("textDiameterCm should return calculated diameter", () => {

@@ -20,6 +20,10 @@ export function clampAngleDegrees360<T extends number | null | undefined>(angle:
   return round(angle < 0 ? -(-angle % 360) + 360 : angle % 360, roundDp) as T;
 }
 
+export const hypotenuse = (delta: Delta) => {
+  return Math.sqrt(delta.dx * delta.dx + delta.dy * delta.dy);
+};
+
 export const deltaFromPolar = (thetaDegrees: number | undefined, r: number | undefined): Delta => {
   const thetaRads = (thetaDegrees ?? 0) * (Math.PI / 180);
   return { dx: (r ?? 0) * Math.cos(thetaRads), dy: (r ?? 0) * Math.sin(thetaRads) };
@@ -85,3 +89,10 @@ export function subtractIntoDelta(a: Delta | Position, b: Delta | Position): Del
   const coordB = asCoord(b);
   return asDelta([coordA[0] - coordB[0], coordA[1] - coordB[1]]);
 }
+
+export const rotatePosition = (p: Position, aroundPoint: Position, theta: number): Position => {
+  const pointFromCentre = subtractIntoDelta(p, aroundPoint);
+  const r = Math.sqrt(pointFromCentre.dx * pointFromCentre.dx + pointFromCentre.dy * pointFromCentre.dy);
+  const t = (Math.atan2(pointFromCentre.dy, pointFromCentre.dx) * 180) / Math.PI;
+  return addIntoPosition(aroundPoint, deltaFromPolar(t + theta, r));
+};

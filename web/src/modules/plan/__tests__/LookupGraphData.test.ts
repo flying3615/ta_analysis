@@ -11,7 +11,7 @@ describe("lookupSource", () => {
     const result = lookupGraphData.lookupSource(PlanElementType.COORDINATES, "10012");
     expect(result?.resultType).toBe("CoordinateDTO");
     expect(result?.result.id).toBe(10012);
-    expect((result?.result as CoordinateDTO).position.x).toBe(50);
+    expect((result?.result as CoordinateDTO).position.x).toBe(30);
     expect((result?.result as CoordinateDTO).position.y).toBe(-10);
   });
   test("finds a coordinate by type and id", () => {

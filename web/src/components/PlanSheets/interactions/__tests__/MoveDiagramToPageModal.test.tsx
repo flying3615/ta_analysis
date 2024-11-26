@@ -1,9 +1,11 @@
 import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { fireEvent, screen } from "@testing-library/react";
 
+import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
+import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import { MoveDiagramToPageModal } from "../MoveDiagramToPageModal";
 
@@ -25,6 +27,18 @@ describe("MoveDiagramToPageModal", () => {
         font: "Arial",
         fontSize: 16,
         position: { x: 20, y: -0.005 },
+      },
+    ],
+    lineLabels: [
+      {
+        id: 1002,
+        displayText: "Line Label",
+        font: "Arial",
+        fontSize: 16,
+        pointOffset: 6,
+        anchorAngle: 90,
+        textAlignment: "centerCenter",
+        position: { x: 20, y: 0 },
       },
     ],
     coordinateLabels: [
@@ -172,6 +186,7 @@ describe("MoveDiagramToPageModal", () => {
     expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.anchorAngle).toBeCloseTo(0);
     expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.pointOffset).toBeCloseTo(62.84);
     expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.position).toStrictEqual({ x: -0.1, y: -10 });
+
     expect(updatedState.diagrams[0]?.parcelLabelGroups).toHaveLength(1);
     expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.id).toBe(1002);
     expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels).toHaveLength(2);
@@ -185,6 +200,15 @@ describe("MoveDiagramToPageModal", () => {
     expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.anchorAngle).toBe(270);
     expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.pointOffset).toBeCloseTo(47.77);
     expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.position).toStrictEqual({ x: 25, y: 1.5 });
+
+    console.log(updatedState.diagrams[0]?.lineLabels);
+    expect(updatedState.diagrams[0]?.lineLabels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.id).toBe(1002);
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.position).toStrictEqual({ x: 20, y: 0 });
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.pointOffset).toBeCloseTo(
+      ((16 / 2) * POINTS_PER_CM) / CSS_PIXELS_PER_CM,
+    );
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.anchorAngle).toBe(270);
 
     expect(updatedState.pages).toStrictEqual([
       page1,

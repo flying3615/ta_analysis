@@ -10,6 +10,7 @@ import {
   deltaFromPolar,
   midPoint,
   Position,
+  rotatePosition,
   subtractIntoDelta,
   subtractIntoPosition,
 } from "@/util/positionUtil";
@@ -133,5 +134,37 @@ describe("subtractIntoDelta", () => {
 
   test("Subtracts Delta to Position", () => {
     expect(subtractIntoDelta({ dx: 8, dy: 11 }, { x: 3, y: 5 })).toStrictEqual({ dx: 5, dy: 6 });
+  });
+});
+
+describe("rotatePosition", () => {
+  test("Rotates by 90 degrees", () => {
+    const rp = rotatePosition({ x: 20, y: 10 }, { x: 0, y: 0 }, 90);
+    expect(rp.x).toBeCloseTo(-10);
+    expect(rp.y).toBeCloseTo(20);
+  });
+
+  test("Rotates by 120 degrees", () => {
+    const rp = rotatePosition({ x: 20, y: 10 }, { x: 10, y: 0 }, 120);
+    expect(rp.x).toBeCloseTo(-3.66);
+    expect(rp.y).toBeCloseTo(3.66);
+  });
+
+  test("Rotates by 330 degrees", () => {
+    const rp = rotatePosition({ x: 10, y: 0 }, { x: 0, y: 0 }, 330);
+    expect(rp.x).toBeCloseTo(8.66);
+    expect(rp.y).toBeCloseTo(-5);
+  });
+
+  test("Rotates by 360 degrees to same value", () => {
+    const rp = rotatePosition({ x: 10, y: 10 }, { x: 0, y: 0 }, 360);
+    expect(rp.x).toBeCloseTo(10);
+    expect(rp.y).toBeCloseTo(10);
+  });
+
+  test("Rotates by 90 degrees around an offset", () => {
+    const rp = rotatePosition({ x: 8.5, y: -19.5 }, { x: 10, y: -19.75 }, 90);
+    expect(rp.x).toBeCloseTo(9.75); // 10 - 0.25
+    expect(rp.y).toBeCloseTo(-21.25); // -19.75 - 1.5
   });
 });
