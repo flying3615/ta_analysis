@@ -49,6 +49,9 @@
     ]
   },
   "dependencies": {
+    "@fontsource/arimo": "^5.1.0",
+    "@fontsource/roboto": "^5.1.0",
+    "@fontsource/tinos": "^5.1.0",
     "@linz/landonline-common-js": "^6.2.4",
     "@linz/lol-auth-js": "^2.2.0",
     "@linz/luck-syscodes": "^12.9.0",

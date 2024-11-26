@@ -2,6 +2,7 @@ import "@linzjs/step-ag-grid/dist/GridTheme.scss";
 import "@linzjs/step-ag-grid/dist/index.css";
 import "@linzjs/lui/dist/fonts";
 import "@linzjs/lui/dist/scss/base.scss";
+import "./fonts";
 
 import { LOLUserContextProviderV2 } from "@linz/landonline-common-js";
 import { OidcConfig, patchFetch, UserAccessesData, UserProfile } from "@linz/lol-auth-js";

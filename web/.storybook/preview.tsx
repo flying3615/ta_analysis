@@ -5,6 +5,7 @@ import "@/index.scss";
 import "@szhsin/react-menu/dist/index.css";
 import "@linzjs/step-ag-grid/dist/GridTheme.scss";
 import "@linzjs/step-ag-grid/dist/index.css";
+import "../src/fonts";
 
 import { mswDecorator, mswInitialize } from "./mswDecorator";
 import { handlers } from "../src/mocks/mockHandlers";
