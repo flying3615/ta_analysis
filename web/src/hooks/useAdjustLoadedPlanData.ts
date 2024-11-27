@@ -118,8 +118,6 @@ export const useAdjustLoadedPlanData = () => {
         unadjustedNode.properties.fontSize,
       );
 
-      console.log(`label: ${JSON.stringify(unadjustedNode.label)}`);
-
       const labelBounds = calculateLabelBoundingBox(
         labelPositionCm,
         labelSizeCm,

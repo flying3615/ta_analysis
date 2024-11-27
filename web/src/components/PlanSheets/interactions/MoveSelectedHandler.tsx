@@ -19,6 +19,8 @@ import {
   IGraphDataProperties,
   INodeDataProperties,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { SelectHandlerMode } from "@/components/PlanSheets/interactions/SelectElementHandler";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
@@ -32,6 +34,7 @@ import { getRelatedLabels } from "./selectUtil";
 
 export interface SelectedElementProps {
   selectedElements: CollectionReturnValue;
+  mode?: SelectHandlerMode;
 }
 
 // for cursor
@@ -76,7 +79,7 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  *   selected elements that when clicked can start the move.
  *
  */
-export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) {
+export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementProps) {
   const {
     cyto,
     cytoCanvas,
@@ -93,7 +96,15 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
     }
+    const diagramAreaLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
+    const offset = mode === PlanMode.SelectLine ? 0 : 13.5;
 
+    const expandedDiagramAreaLimits = {
+      x1: diagramAreaLimits.x1 - offset,
+      y1: diagramAreaLimits.y1 - offset,
+      x2: diagramAreaLimits.x2 + offset,
+      y2: diagramAreaLimits.y2 + offset,
+    };
     // move selected, connected nodes, and related labels
     const movingElements = selectedElements.union(selectedElements.connectedNodes());
     movingElements.merge(getRelatedLabels(movingElements));
@@ -187,7 +198,12 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
       if (!moveElementsExtent || !moveStart || !moveStartPositions) {
         return;
       }
-      const newExtent = moveExtent(moveElementsExtent, event.position.x - moveStart.x, event.position.y - moveStart.y);
+      const newExtent = moveExtent(
+        moveElementsExtent,
+        event.position.x - moveStart.x,
+        event.position.y - moveStart.y,
+        expandedDiagramAreaLimits,
+      );
       const dx = newExtent.x1 - moveElementsExtent.x1;
       const dy = newExtent.y1 - moveElementsExtent.y1;
       setPositions(movingElements, moveStartPositions, dx, dy);
@@ -227,6 +243,7 @@ export function MoveSelectedHandler({ selectedElements }: SelectedElementProps) 
     diagrams,
     updateActiveDiagramsAndPage,
     adjustLabelNodes,
+    mode,
   ]);
 
   return <></>;

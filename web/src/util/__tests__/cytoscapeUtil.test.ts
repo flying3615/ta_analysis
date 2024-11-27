@@ -90,12 +90,6 @@ describe("cytoscapeUtil: keepNodeWithinAreaLimit", () => {
     expect(mockNode.position()).toEqual(initialPosition);
   });
 
-  test(`should constrain node position within area limits for ${LabelDTOLabelTypeEnum.userAnnotation} label type`, () => {
-    currentPosition = { x: 1100, y: 1100 }; // Set initial position outside the border
-    keepNodeWithinAreaLimit(mockEvent);
-    expect(mockNode.position()).toEqual({ x: 925, y: 950 });
-  });
-
   test(`should not change position if within area limits for ${LabelDTOLabelTypeEnum.markName} label type`, () => {
     mockData.mockReturnValueOnce({
       elementType: PlanElementType.COORDINATE_LABELS,
@@ -113,7 +107,7 @@ describe("cytoscapeUtil: keepNodeWithinAreaLimit", () => {
     });
     currentPosition = { x: 1100, y: 1100 }; // Set initial position outside the border
     keepNodeWithinAreaLimit(mockEvent);
-    expect(mockNode.position()).toEqual({ x: 950, y: 975 });
+    expect(mockNode.position()).toEqual({ x: 950, y: 950 });
   });
 
   test(`should not change position if within area limits for ${PlanElementType.PARCEL_LABELS}`, () => {
@@ -123,14 +117,5 @@ describe("cytoscapeUtil: keepNodeWithinAreaLimit", () => {
     const initialPosition = mockNode.position();
     keepNodeWithinAreaLimit(mockEvent);
     expect(mockNode.position()).toEqual(initialPosition);
-  });
-
-  test(`should constrain node position within area limits for ${PlanElementType.PARCEL_LABELS}`, () => {
-    mockData.mockReturnValueOnce({
-      elementType: PlanElementType.PARCEL_LABELS,
-    });
-    currentPosition = { x: 1100, y: 1100 }; // Set initial position outside the border
-    keepNodeWithinAreaLimit(mockEvent);
-    expect(mockNode.position()).toEqual({ x: 950, y: 975 });
   });
 });

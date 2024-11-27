@@ -191,7 +191,7 @@ export const MoveNodeConstrained: Story & Required<Pick<Story, "play">> = {
       clientY: position.clientY,
     });
     await sleep(1500);
-    await checkCytoElementProperties("#10001", { position: { x: 961.43, y: 79.51 } });
+    await checkCytoElementProperties("#10001", { position: { x: 959.97, y: 79.51 } });
   },
 };
 
@@ -211,7 +211,7 @@ export const MoveLineConstrained: Story & Required<Pick<Story, "play">> = {
       clientY: position.clientY,
     });
     await sleep(1500);
-    await checkCytoElementProperties("#10001", { position: { x: 961.43, y: 79.51 } });
+    await checkCytoElementProperties("#10001", { position: { x: 802.23, y: 79.51 } });
   },
 };
 

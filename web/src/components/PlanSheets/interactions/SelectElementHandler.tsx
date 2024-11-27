@@ -167,7 +167,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
   return (
     <>
-      {selected && <MoveSelectedHandler selectedElements={selected} />}
+      {selected && <MoveSelectedHandler selectedElements={selected} mode={mode} />}
       <Tooltips mode={mode} />
     </>
   );

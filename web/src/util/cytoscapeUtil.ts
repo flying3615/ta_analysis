@@ -175,24 +175,20 @@ export const keepNodeWithinAreaLimit = (evt: cytoscape.EventObject): void => {
 
   if (!border1 || !border2) return;
 
-  const boundingBox: cytoscape.BoundingBox12 =
-    (data.elementType === PlanElementType.COORDINATE_LABELS && data.labelType === LabelDTOLabelTypeEnum.markName) ||
-    data.elementType === PlanElementType.PARCEL_LABELS
-      ? { x1: border1.x + nodeBB.w / 2, y1: border1.y, x2: border2.x - nodeBB.w / 2, y2: border2.y }
-      : data.elementType === PlanElementType.LABELS && data.labelType === LabelDTOLabelTypeEnum.userAnnotation
-        ? {
-            x1: border1.x + nodeBB.w,
-            y1: border1.y + nodeBB.h / 2,
-            x2: border2.x - nodeBB.w,
-            y2: border2.y - nodeBB.h / 2,
-          }
-        : { x1: border1.x, y1: border1.y, x2: border2.x, y2: border2.y };
+  if (data.elementType === PlanElementType.COORDINATE_LABELS && data.labelType === LabelDTOLabelTypeEnum.markName) {
+    const boundingBox: cytoscape.BoundingBox12 = {
+      x1: border1.x + nodeBB.w / 2,
+      y1: border1.y + nodeBB.h / 2,
+      x2: border2.x - nodeBB.w / 2,
+      y2: border2.y - nodeBB.h / 2,
+    };
 
-  const { x, y } = boxPosition(boundingBox)(node);
-  const { x: currentX, y: currentY } = node.position();
+    const { x, y } = boxPosition(boundingBox)(node);
+    const { x: currentX, y: currentY } = node.position();
 
-  if (x !== currentX || y !== currentY) {
-    node.position({ x, y });
+    if (x !== currentX || y !== currentY) {
+      node.position({ x, y });
+    }
   }
 };
 

@@ -34,11 +34,6 @@ export const calculateLabelBoundingBox = (
   const unshiftedLabelCentre = addIntoPosition(labelPositionCm, offset);
   const origLabelCentre = addIntoPosition(unshiftedLabelCentre, originalShift);
 
-  // console.log(`relocateOffscreenLabel label: ${JSON.stringify(label)}`);
-  console.log(
-    `calculateLabelBoundingBox labelSizeCm=${JSON.stringify(labelSizeCm)}, labelPositionCm=${JSON.stringify(labelPositionCm)}, offset=${JSON.stringify(offset)}, originalShift=${JSON.stringify(originalShift)}, origLabelCentre=${JSON.stringify(origLabelCentre)}`,
-  );
-
   if (!rotationAngle || rotationAngle === 0) {
     const xL = origLabelCentre.x - labelSizeCm.dx / 2;
     const xR = origLabelCentre.x + labelSizeCm.dx / 2;
@@ -59,7 +54,6 @@ export const calculateLabelBoundingBox = (
     { x: xR, y: yB },
   ];
   const rotatedCorners = corners.map((cp) => rotatePosition(cp, labelPositionCm, rotationAngle));
-  console.log(`calculateLabelBoundingBox rotatedCorners=${JSON.stringify(rotatedCorners)}`);
   const shiftedRotatedCorners = rotatedCorners.map((cp) => addIntoPosition(cp, originalShift));
   const xCorners = shiftedRotatedCorners.map((cp) => cp.x);
   const yCorners = shiftedRotatedCorners.map((cp) => cp.y);
