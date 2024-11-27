@@ -185,7 +185,19 @@ export const CutPageLabelDoesRemove: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.contextMenu({ at: [585, 113] /* page label */, select: "Cut" });
-    // chomatic checks that the line has been removed
+    await test.waitForCytoscape();
+    // chomatic checks that the label has been removed
+  },
+};
+
+export const PageLabelUndoCut: Story = {
+  ...Default,
+  play: async (context) => {
+    await CutPageLabelDoesRemove.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    const labels = window.cyRef.$('node[label = "Rotated user added text"]') as unknown as NodeSingular[];
+    await expect(labels.length).toBe(1);
   },
 };
 
@@ -253,6 +265,52 @@ export const PageLabelMultiSelectCopyPaste: Story = {
     newLabels.forEach((label, index) => {
       void expect(label.id()).toBe(`LAB_${index + 3}`); // since maxId for element Label was 2, the first pasted label will have id 3
     });
+  },
+};
+
+export const PageLabelUndoMultiSelectCopyPaste: Story = {
+  ...Default,
+  play: async (context) => {
+    await PageLabelMultiSelectCopyPaste.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    const labels = window.cyRef.$('node[label = "Rotated user added text"]') as unknown as NodeSingular[];
+    await expect(labels.length).toBe(6);
+  },
+};
+
+export const PageLabelMultiSelectCutUndoPaste: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [585, 113] /* page label */, select: "Copy" });
+    await test.contextMenu({ at: [585, 213] /* whitespace */, select: "Paste" });
+    await test.contextMenu({ at: [585, 213] /* copied page label */, select: "Properties" });
+    await expect(test.findProperty("Select", "Font")).toHaveDisplayValue("Roboto (was Tahoma)");
+    await expect(test.findProperty("Select", "Size(pts)")).toHaveDisplayValue("14");
+    await test.clickButton("Cancel");
+    await test.click([585, 313]);
+    await test.contextMenu({ at: [585, 313] /* other white space */, select: "Paste" });
+    await test.multiSelect([
+      [585, 113],
+      [585, 213],
+      [585, 313],
+    ]);
+    await test.contextMenu({ at: [585, 213], select: "Cut" });
+    await test.clickTitle("Undo");
+    await test.contextMenu({ at: [385, 213], select: "Paste" });
+    await test.clickTitle("Undo");
+    await test.contextMenu({ at: [185, 213], select: "Paste" });
+    await test.waitForCytoscape();
+    const labels = window.cyRef.$('node[label = "Rotated user added text"]') as unknown as NodeSingular[];
+    await expect(labels.map((label, _) => label.id())).toEqual([
+      "LAB_23",
+      "LAB_3",
+      "LAB_4",
+      "LAB_8",
+      "LAB_9",
+      "LAB_10",
+    ]);
   },
 };
 

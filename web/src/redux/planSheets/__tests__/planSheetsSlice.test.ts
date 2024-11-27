@@ -349,9 +349,7 @@ describe("planSheetsSlice", () => {
 
     store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
-    store.dispatch(
-      doPastePageLabels({ updatedPage: { ...initialPages[0], labels: labelsTobeAdded } as PageDTO, action: "CUT" }),
-    );
+    store.dispatch(doPastePageLabels({ updatedPage: { ...initialPages[0], labels: labelsTobeAdded } as PageDTO }));
 
     const state = store.getState().planSheets;
     expect(state.pages[0]).toMatchObject({ labels: labelsTobeAdded });
@@ -376,9 +374,7 @@ describe("planSheetsSlice", () => {
 
     store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
-    store.dispatch(
-      doPastePageLabels({ updatedPage: { ...initialPages[1], labels: labelsTobeAdded } as PageDTO, action: "CUT" }),
-    );
+    store.dispatch(doPastePageLabels({ updatedPage: { ...initialPages[1], labels: labelsTobeAdded } as PageDTO }));
 
     const state = store.getState().planSheets;
     expect(state.pages[0]).toMatchObject({ labels: [] });

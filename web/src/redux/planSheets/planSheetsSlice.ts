@@ -25,7 +25,7 @@ export interface PlanSheetsState {
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
   copiedElements?: {
     elements: LabelDTO[] | LineDTO[];
-    action: "COPY" | "CUT";
+    action: "COPY" | "CUT" | "PASTE";
     type: "label" | "line";
     pageId?: number;
   };
@@ -111,12 +111,14 @@ const planSheetsSlice = createSlice({
       const index = state.pages.findIndex((page) => page.id === updatedPage.id);
       state.pages[index] = updatedPage;
     },
-    doPastePageLabels: (state, action: PayloadAction<{ updatedPage: PageDTO; action: "COPY" | "CUT" }>) => {
+    doPastePageLabels: (state, action: PayloadAction<{ updatedPage: PageDTO }>) => {
       const { updatedPage } = action.payload;
       onDataChanging(state);
       const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
 
-      if (action.payload.action === "CUT" && state.copiedElements) {
+      if (!state.copiedElements) return;
+
+      if (state.copiedElements.action === "CUT") {
         // do copy action
         state.pages[targetPageIndex] = updatedPage;
 
@@ -132,6 +134,7 @@ const planSheetsSlice = createSlice({
         // If it's a copy action, just update the page with the new labels
         state.pages[targetPageIndex] = updatedPage;
       }
+      state.copiedElements.action = "PASTE";
     },
     doPastePageLines: () => {
       //   TODO implement it in https://toitutewhenua.atlassian.net/browse/SURVEY-25421
@@ -247,6 +250,10 @@ const planSheetsSlice = createSlice({
       const { ids, type, pageId } = action.payload;
       if (ids.length === 0) return;
 
+      if (action.payload.action === "CUT") {
+        onDataChanging(state);
+      }
+
       if (type === "label") {
         const targetLabels: LabelDTO[] = [];
         state.pages.forEach((page) => {
@@ -304,7 +311,10 @@ const planSheetsSlice = createSlice({
     },
     undo: (state) => {
       if (!state.previousDiagrams || !state.previousPages) return;
-      if (state.copiedElements) state.copiedElements = undefined;
+
+      if (state.copiedElements && (state.copiedElements.action === "CUT" || state.copiedElements.action === "PASTE")) {
+        state.copiedElements.action = "COPY";
+      }
 
       state.hasChanges = state.previousHasChanges ?? false;
 

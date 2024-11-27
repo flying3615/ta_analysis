@@ -209,8 +209,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
     newMaxId && dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
 
     const updatedPage = addPageLabels(activePage, labelsTobeAdded);
-    const action = copiedElements.action;
-    dispatch(doPastePageLabels({ updatedPage, action }));
+    dispatch(doPastePageLabels({ updatedPage }));
   };
 
   return {
