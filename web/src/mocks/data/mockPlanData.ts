@@ -42,6 +42,7 @@ export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
     coordRefs: [10011, 10012],
     lineType: "userDefined",
     style: "arrowhead",
+    displayState: "display",
   })
   .addPage(2)
   .addCooordinate(10001, { x: 20, y: -10 }, CoordinateDTOCoordTypeEnum.node, { x: 20, y: -10 })

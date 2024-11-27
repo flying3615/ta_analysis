@@ -4,10 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { Paths } from "@/Paths";
 import { store } from "@/redux/store";
 import {
+  checkCytoElementProperties,
   ModalStoryWrapper,
   sleep,
   StorybookRouter,
@@ -501,5 +503,29 @@ export const CopyPastePageLineAcrossPages: Story = {
     const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
     await expect(pastedLine.length).toBe(1);
     await expect(pastedLine.data("coordRefs")).toEqual("[160004,160005]");
+  },
+};
+
+export const ShowPageLine: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await checkCytoElementProperties("#10021_0", { displayState: "hide" });
+    await test.contextMenu({ at: [470, 166], select: "Show" }); // select show action for hidden page line
+    await test.waitForCytoscape();
+    await checkCytoElementProperties("#10021_0", { displayState: "display" });
+  },
+};
+
+export const HidePageLine: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    await checkCytoElementProperties("#10013_0", { displayState: "display" });
+    await test.contextMenu({ at: [554, 230], select: "Hide" }); // select hide action for page line
+    await test.waitForCytoscape();
+    await checkCytoElementProperties("#10013_0", { displayState: "hide" });
   },
 };
