@@ -481,11 +481,53 @@ export const CutPastePageLine: Story = {
     await test.contextMenu({ at: [560, 230], select: "Cut" }); // select cut action for page line
     await test.contextMenu({ at: [440, 550], select: "Paste" }); // select paste action for page line
     // Chromatic will ensure the line is removed from original position and pasted in the white space at mouse click location
-    await sleep(2000);
+    await test.waitForCytoscape();
     const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
     await expect(pastedLine.length).toBe(1);
     const removedLine = window.cyRef.$('edge[lineId = "10013"]');
     await expect(removedLine.length).toBe(0); // the line is removed after cut action
+  },
+};
+
+export const UndoCutPastePageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async (context) => {
+    await CutPastePageLine.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste is removed
+    await expect(pastedLine.length).toBe(0);
+    const removedLine = window.cyRef.$('edge[lineId = "10013"]');
+    await expect(removedLine.length).toBe(1); // the removed line is restored
+  },
+};
+
+export const CutPageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.waitForCytoscape();
+    const lineToCut = window.cyRef.$('edge[lineId = "10013"]'); // the line to be cut
+    await expect(lineToCut.length).toBe(1);
+    await test.contextMenu({ at: [560, 230], select: "Cut" }); // select cut action for page line
+    // Chromatic will ensure the line is removed from original position and pasted in the white space at mouse click location
+    await test.waitForCytoscape();
+    const removedLine = window.cyRef.$('edge[lineId = "10013"]');
+    await expect(removedLine.length).toBe(0); // the line is removed after cut action
+  },
+};
+
+export const UndoCutPageLine: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async (context) => {
+    await CutPageLine.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    const removedLine = window.cyRef.$('edge[lineId = "10013"]');
+    await expect(removedLine.length).toBe(1); // the removed line is restored
   },
 };
 
@@ -503,6 +545,19 @@ export const CopyPastePageLineAcrossPages: Story = {
     const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
     await expect(pastedLine.length).toBe(1);
     await expect(pastedLine.data("coordRefs")).toEqual("[160004,160005]");
+  },
+};
+
+export const UndoCopyPastePageLineAcrossPages: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async (context) => {
+    await CopyPastePageLineAcrossPages.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    const pastedLine = window.cyRef.$('edge[lineId = "160014"]'); // the new line created by paste action
+    await expect(pastedLine.length).toBe(0); // is removed
+    // Chromatic will ensure the line is pasted in the white space at mouse click location on the next page
   },
 };
 

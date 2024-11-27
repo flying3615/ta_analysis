@@ -4,12 +4,12 @@ import cytoscape, { Position } from "cytoscape";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import {
+  doPastePageLines,
   getActivePage,
   getCopiedElements,
   getMaxElemIds,
   getPageByRef,
   removePageLines,
-  replacePage,
   setCopiedElements,
   updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
@@ -153,12 +153,9 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
       });
 
     if (maxCoordId && maxLineId) {
-      dispatch(replacePage({ updatedPage }));
       dispatch(updateMaxElemIds({ element: "Coordinate", maxId: maxCoordId }));
       dispatch(updateMaxElemIds({ element: "Line", maxId: maxLineId }));
-      if (copiedElements.action === "CUT") {
-        dispatch(removePageLines({ lineIds: copiedElements.elements.map((line) => `${line.id}`) }));
-      }
+      dispatch(doPastePageLines({ updatedPage }));
     }
   };
 

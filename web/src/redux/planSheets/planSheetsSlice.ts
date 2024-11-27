@@ -125,19 +125,52 @@ const planSheetsSlice = createSlice({
         // then remove the original label from the source page
         const originalPageId = state.copiedElements.pageId;
         const originalPage = state.pages.find((page) => page.id === originalPageId)!;
-        const originalIndex = state.pages.findIndex((page) => page.id === originalPageId);
+        const originalPageIndex = state.pages.findIndex((page) => page.id === originalPageId);
         const originalLabels = originalPage?.labels?.filter(
           (label) => !state.copiedElements?.elements.some((el) => el.id === label.id),
         );
-        state.pages[originalIndex] = { ...originalPage, labels: originalLabels };
+        state.pages[originalPageIndex] = { ...originalPage, labels: originalLabels };
       } else {
         // If it's a copy action, just update the page with the new labels
         state.pages[targetPageIndex] = updatedPage;
       }
       state.copiedElements.action = "PASTE";
     },
-    doPastePageLines: () => {
-      //   TODO implement it in https://toitutewhenua.atlassian.net/browse/SURVEY-25421
+    doPastePageLines: (state, action: PayloadAction<{ updatedPage: PageDTO }>) => {
+      const { updatedPage } = action.payload;
+      onDataChanging(state);
+
+      if (!state.copiedElements) return;
+
+      const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
+      if (state.copiedElements.action === "CUT") {
+        // do copy action
+        state.pages[targetPageIndex] = updatedPage;
+
+        // then remove the original lines and coords from the source page
+        const copiedLineIds = state.copiedElements.elements.map((line) => line.id);
+        const originalPageId = state.copiedElements.pageId;
+        const originalPage = state.pages.find((page) => page.id === originalPageId)!;
+        const originalPageIndex = state.pages.findIndex((page) => page.id === originalPageId);
+
+        const filteredOriginalCoordinates = originalPage.coordinates?.filter(
+          (coord) =>
+            !originalPage.lines
+              ?.filter((line) => copiedLineIds.includes(line.id))
+              .some((line) => line.coordRefs.includes(coord.id)),
+        );
+
+        const filteredOriginalLines = originalPage.lines?.filter((line) => !copiedLineIds.includes(line.id));
+
+        state.pages[originalPageIndex] = {
+          ...originalPage,
+          coordinates: filteredOriginalCoordinates,
+          lines: filteredOriginalLines,
+        };
+      } else {
+        // If it's a copy action, just update the page with the new lines and coords
+        state.pages[targetPageIndex] = updatedPage;
+      }
     },
     replaceDiagramsAndPage: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>) => {
       onDataChanging(state);
@@ -442,6 +475,7 @@ export const {
   setDiagramPageRef,
   updatePages,
   doPastePageLabels,
+  doPastePageLines,
   setPlanMode,
   setLastUpdatedLineStyle,
   setLastUpdatedLabelStyle,

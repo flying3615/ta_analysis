@@ -3,6 +3,7 @@ import {
   CoordinateDTOCoordTypeEnum,
   DiagramDTO,
   LabelDTO,
+  LineDTO,
   PageDTO,
   PageDTOPageTypeEnum,
 } from "@linz/survey-plan-generation-api-client";
@@ -16,6 +17,7 @@ import planSheetsSlice, {
   canUndo,
   clearUndo,
   doPastePageLabels,
+  doPastePageLines,
   getActivePage,
   getActivePageNumber,
   getActivePages,
@@ -379,6 +381,76 @@ describe("planSheetsSlice", () => {
     const state = store.getState().planSheets;
     expect(state.pages[0]).toMatchObject({ labels: [] });
     expect(state.pages[1]).toMatchObject({ labels: labelsTobeAdded });
+    expect(state.hasChanges).toBe(true);
+  });
+
+  test("doPastePageLines should paste lines to the active page", () => {
+    const initialPages = [
+      { id: 1, pageType: "title", pageNumber: 1, lines: [] } as PageDTO,
+      { id: 2, pageType: "survey", pageNumber: 1, lines: [] } as PageDTO,
+    ];
+
+    store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
+
+    const linesToPaste: LineDTO[] = [
+      { id: 201, lineType: "userDefined", coordRefs: [1, 2], style: "solid" },
+      { id: 202, lineType: "userDefined", coordRefs: [3, 4], style: "dashed" },
+    ];
+
+    store.dispatch(setCopiedElements({ ids: [201, 202], type: "line", action: "COPY", pageId: 1 }));
+    store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[0], lines: linesToPaste } as PageDTO }));
+
+    const state = store.getState().planSheets;
+    expect(state.pages[0]!.lines).toMatchObject(linesToPaste);
+    expect(state.hasChanges).toBe(true);
+  });
+
+  test("doPastePageLines should remove lines from the source page if action is CUT", () => {
+    const linesToPaste: LineDTO[] = [{ id: 201, lineType: "userDefined", coordRefs: [1, 2], style: "solid" }];
+
+    const initialPages = [
+      {
+        id: 1,
+        pageType: "title",
+        pageNumber: 1,
+        lines: linesToPaste,
+        coordinates: [
+          { id: 1, coordType: CoordinateDTOCoordTypeEnum.userDefined, position: { x: 10, y: 10 } },
+          { id: 2, coordType: CoordinateDTOCoordTypeEnum.userDefined, position: { x: 20, y: 20 } },
+        ],
+      } as PageDTO,
+      { id: 2, pageType: "survey", pageNumber: 1, lines: [] } as PageDTO,
+    ];
+
+    store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
+    store.dispatch(setCopiedElements({ ids: [201], type: "line", action: "CUT", pageId: 1 }));
+    store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[1], lines: linesToPaste } as PageDTO }));
+
+    const state = store.getState().planSheets;
+    expect(state.pages[0]!.lines).toMatchObject([]);
+    expect(state.pages[1]!.lines).toMatchObject(linesToPaste);
+    expect(state.hasChanges).toBe(true);
+  });
+
+  test("doPastePageLines should cut and paste lines within the same page", () => {
+    const linesToPaste: LineDTO[] = [
+      { id: 201, lineType: "userDefined", coordRefs: [1, 2], style: "solid" },
+      { id: 202, lineType: "userDefined", coordRefs: [3, 4], style: "dashed" },
+    ];
+
+    const linesTobeAdded: LineDTO[] = [
+      { ...linesToPaste[0], id: 203 } as LineDTO,
+      { ...linesToPaste[1], id: 204 } as LineDTO,
+    ];
+
+    const initialPages = [{ id: 1, pageType: "title", pageNumber: 1, lines: linesToPaste } as PageDTO];
+
+    store = setupStore({ planSheets: { ...initialState, pages: initialPages } });
+    store.dispatch(setCopiedElements({ ids: [201, 202], type: "line", action: "CUT", pageId: 1 }));
+    store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[0], lines: linesTobeAdded } as PageDTO }));
+
+    const state = store.getState().planSheets;
+    expect(state.pages[0]!.lines).toMatchObject(linesTobeAdded);
     expect(state.hasChanges).toBe(true);
   });
 
