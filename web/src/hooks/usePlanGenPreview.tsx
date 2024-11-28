@@ -113,13 +113,7 @@ export const usePlanGenPreview = (props: {
       if (!canvasRef.current) {
         throw Error("CytoscapeCanvas::initCytoscape - not ready");
       }
-      cyMapper.current = new CytoscapeCoordinateMapper(
-        canvasRef.current,
-        diagrams,
-        window.screen.width, // get user's screen max width and height
-        window.screen.height,
-        -50,
-      );
+      cyMapper.current = new CytoscapeCoordinateMapper(canvasRef.current, diagrams, 1920, 1080, -50);
       cyRef.current = cytoscape({
         container: canvasRef.current,
         layout: { name: "grid", boundingBox: { x1: 0, y1: 0, x2: 0, y2: 0 } },
@@ -311,8 +305,8 @@ export const usePlanGenPreview = (props: {
   };
 
   const generatePreviewPDF = async (imageFiles: ImageFile[]) => {
-    if(!previewWorker) {
-      console.error("No available preview web worker")
+    if (!previewWorker) {
+      console.error("No available preview web worker");
       return;
     }
 
@@ -328,7 +322,7 @@ export const usePlanGenPreview = (props: {
     };
     previewWorker.onerror = (e) => {
       console.error(e);
-      stopPreviewing()
+      stopPreviewing();
     };
   };
 

@@ -54,6 +54,8 @@ export const compressImage = async (imageFile: ImageFile) => {
     maxSizeMB: 1, // Maximum file size in MB
     fileType: "image/jpeg", // Output file type
     useWebWorker: true,
+    initialQuality: 0.5,
+    alwaysKeepResolution: true,
   };
   const compressedImage = await imageCompression(file, options);
   return { compressedImage, name: imageFile.name };

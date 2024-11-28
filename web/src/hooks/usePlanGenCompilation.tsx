@@ -130,8 +130,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
         canvasRef.current,
         // eslint-disable-next-line react/prop-types
         diagrams,
-        window.screen.width, // get user's screen max width and height
-        window.screen.height,
+        1920,
+        1080,
         -50,
       );
       cyRef.current = cytoscape({
@@ -258,8 +258,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           const jpg = cyRefCurrent?.jpg({
             ...cyImageExportConfig,
-            maxWidth: 9202,
-            maxHeight: 5824,
+            maxWidth: 9204, // width between the borders of the page
+            maxHeight: 5832, // height between the borders of the page upto the footer
             quality: 1,
           });
 
