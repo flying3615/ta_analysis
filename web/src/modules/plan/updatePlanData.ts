@@ -219,7 +219,6 @@ const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
   const textAlignment = updated.textAlignment ?? label.textAlignment;
   const displayState = updated.displayState ?? label.displayState;
   const ignorePositionChange = updated["ignorePositionChange"];
-
   return {
     ...label,
     displayText: updatedNode.label ?? label.displayText,
