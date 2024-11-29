@@ -1,7 +1,12 @@
 module.exports = {
   roots: ["<rootDir>/src"],
   collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],
-  setupFiles: ["react-app-polyfill/jsdom", "<rootDir>/src/jest.polyfills.ts", "<rootDir>/src/hide-console-errors.ts"],
+  setupFiles: [
+    "fake-indexeddb/auto",
+    "react-app-polyfill/jsdom",
+    "<rootDir>/src/jest.polyfills.ts",
+    "<rootDir>/src/hide-console-errors.ts",
+  ],
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
   testMatch: ["<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"],
   testEnvironment: "allure-jest/jsdom",

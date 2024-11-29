@@ -146,6 +146,7 @@ export const handlers: HttpHandler[] = [
   ),
 
   http.get(/\/123\/plan$/, () => HttpResponse.json(mockPlanData, { status: 200, statusText: "OK" })),
+
   http.put(/\/123\/plan$/, () =>
     HttpResponse.json(
       new AsyncTaskBuilder()

@@ -25,6 +25,7 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
+import { usePlanAutoRecover } from "@/hooks/usePlanAutoRecover";
 import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
@@ -115,19 +116,21 @@ const PlanSheets = () => {
     })();
   }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
 
-  const { data: surveyInfo, isLoading: surveyInfoIsLoading } = useSurveyInfoQuery({ transactionId });
+  const { data: surveyInfo } = useSurveyInfoQuery({ transactionId });
   const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
   const diagramIdToMove = useAppSelector(getDiagramIdToMove);
+
   const {
     data: planData,
-    isLoading: planDataIsLoading,
-    isFetching: planDataIsFetching,
     error: planDataError,
+    // could block UI while loading after save
+    // isFetching: isPlanDataFetching,
   } = useGetPlanQuery({
     transactionId,
     enabled: regenerateDoneOrNotNeeded, // Don't fetch features until the dataset is prepared
   });
+  const isPlanDataReady = usePlanAutoRecover(transactionId, planData);
 
   useEffect(() => {
     if (planDataError) {
@@ -149,7 +152,7 @@ const PlanSheets = () => {
     [pageConfigsEdgeData, diagramEdgeData, pageEdgeData, canViewHiddenLabels],
   );
 
-  if (!regenerateDoneOrNotNeeded || surveyInfoIsLoading || !surveyInfo || regenerationHasFailed || planDataIsLoading) {
+  if (!isPlanDataReady || !surveyInfo) {
     return (
       <div ref={modalOwnerRef}>
         <Header view="Sheets" />
@@ -179,24 +182,18 @@ const PlanSheets = () => {
             <SurveyDetails surveyInfo={surveyInfo} />
             <DiagramSelector />
           </SidePanel>
-          {planDataIsFetching || !planData ? (
-            <LuiLoadingSpinner />
+          {activePage ? (
+            <CytoscapeCanvas
+              nodeData={nodeData}
+              edgeData={edgeData}
+              diagrams={activeDiagrams}
+              getContextMenuItems={(element, selectedCollection, clickedPosition) =>
+                getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
+              }
+              data-testid="MainCytoscapeCanvas"
+            />
           ) : (
-            <>
-              {activePage ? (
-                <CytoscapeCanvas
-                  nodeData={nodeData}
-                  edgeData={edgeData}
-                  diagrams={activeDiagrams}
-                  getContextMenuItems={(element, selectedCollection, clickedPosition) =>
-                    getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
-                  }
-                  data-testid="MainCytoscapeCanvas"
-                />
-              ) : (
-                <NoPageMessage />
-              )}
-            </>
+            <NoPageMessage />
           )}
           {planMode === PlanMode.AddLabel && <AddLabelHandler />}
           {planMode === PlanMode.SelectLabel && <SelectLabelHandler setLabelTextInputOpen={setLabelTextInputOpen} />}

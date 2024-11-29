@@ -1,27 +1,21 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
-import { Provider } from "react-redux";
-import { generatePath, Route } from "react-router-dom";
 
+import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
-import { Paths } from "@/Paths";
-import { store } from "@/redux/store";
 import {
   click,
   clickAtPosition,
   clickMultipleCoordinates,
   getCytoCanvas,
-  ModalStoryWrapper,
   RIGHT_MOUSE_BUTTON,
   sleep,
-  StorybookRouter,
 } from "@/test-utils/storybook-utils";
 
 import {
@@ -38,24 +32,6 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-type Story = StoryObj<typeof PlanSheets>;
-
-const queryClient = new QueryClient();
-
-const PlanSheetsTemplate = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ModalStoryWrapper>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-          </StorybookRouter>
-        </ModalStoryWrapper>
-      </Provider>
-    </QueryClientProvider>
-  );
-};
-
 const pageLabelPosition = { clientX: 900, clientY: 200 };
 const diagramLabelPosition = { clientX: 484, clientY: 269 };
 const whiteSpace = { clientX: 585, clientY: 300 };
@@ -63,10 +39,6 @@ const pageLabelWithLineBreakPosition = { clientX: 802, clientY: 478 };
 const hiddenDiagramLabelPosition = { clientX: 475, clientY: 344 };
 const hiddenPageLabelPosition = { clientX: 695, clientY: 589 };
 const diagramLabelSystemDisplayPosition = { clientX: 788, clientY: 89 };
-
-export const Default: Story = {
-  render: () => <PlanSheetsTemplate />,
-};
 
 export const ShowLabelContextMenu: Story = {
   ...Default,

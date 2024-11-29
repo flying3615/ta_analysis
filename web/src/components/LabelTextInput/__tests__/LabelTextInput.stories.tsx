@@ -1,53 +1,17 @@
-import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { expect } from "@storybook/jest";
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
 import { waitFor } from "@storybook/testing-library";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider } from "react-redux";
-import { generatePath, Route } from "react-router-dom";
 
+import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
-import { Paths } from "@/Paths";
-import { store } from "@/redux/store";
-import { checkCytoElementProperties, click, getCytoCanvas, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { checkCytoElementProperties, click, getCytoCanvas, sleep } from "@/test-utils/storybook-utils";
 
 export default {
   title: "LabelTextInput",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
-
-type Story = StoryObj<typeof PlanSheets>;
-
-const queryClient = new QueryClient();
-
-const PlanSheetsTemplate = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-          <Route
-            path={Paths.layoutPlanSheets}
-            element={
-              <MockUserContextProvider
-                user={singleFirmUserExtsurv1}
-                initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
-              >
-                <PlanSheets />
-              </MockUserContextProvider>
-            }
-          />
-        </StorybookRouter>
-      </Provider>
-    </QueryClientProvider>
-  );
-};
-
-export const Default: Story = {
-  render: () => <PlanSheetsTemplate />,
-};
 
 export const InputLabelValidation: Story = {
   ...Default,

@@ -1,9 +1,17 @@
-import { DiagramDTO, PageConfigDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, PageConfigDTO, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { createSelector } from "@reduxjs/toolkit";
 import { max } from "lodash-es";
 
 import { INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-import { getActivePage, getDiagrams, getPageConfigs, getPlanData } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePage,
+  getConfigs,
+  getDiagrams,
+  getLastChangedAt,
+  getPageConfigs,
+  getPages,
+  getPlanData,
+} from "@/redux/planSheets/planSheetsSlice";
 
 import {
   extractDiagramEdges,
@@ -64,6 +72,24 @@ export const selectActivePageEdgesAndNodes = createSelector(
 export const selectLookupGraphData = createSelector(
   getPlanData,
   ({ diagrams, pages }) => new LookupGraphData({ diagrams, pages, configs: [] }),
+);
+
+export const selectLastUserEdit = createSelector(
+  getDiagrams,
+  getConfigs,
+  getLastChangedAt,
+  getPages,
+  (diagrams, configs, lastChangedAt, pages): PlanResponseDTO | undefined => {
+    if (!configs || !lastChangedAt) {
+      return undefined;
+    }
+    return {
+      configs,
+      diagrams,
+      lastModifiedAt: lastChangedAt,
+      pages,
+    };
+  },
 );
 
 /**

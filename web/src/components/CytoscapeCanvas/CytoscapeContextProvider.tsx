@@ -16,6 +16,7 @@ export interface CytoscapeContextType {
   onViewportChange: (cy: cytoscape.Core) => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CytoscapeContext = createContext<CytoscapeContextType | undefined>(undefined);
 
 interface ProviderProps {

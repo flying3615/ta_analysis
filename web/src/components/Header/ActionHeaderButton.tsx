@@ -64,23 +64,15 @@ export const ActionHeaderButton = ({
     </div>
   );
 
-  return (
-    <>
-      {loading ? (
-        <LuiButton level="tertiary" className="loading-spinner">
-          <LuiMiniSpinner size={20} />
-        </LuiButton>
-      ) : (
-        <>
-          {title ? (
-            <LuiTooltip message={title} placement="bottom" appendTo="parent">
-              {innerButton}
-            </LuiTooltip>
-          ) : (
-            { innerButton }
-          )}
-        </>
-      )}
-    </>
+  return loading ? (
+    <LuiButton level="tertiary" className="loading-spinner">
+      <LuiMiniSpinner size={20} />
+    </LuiButton>
+  ) : title ? (
+    <LuiTooltip message={title} placement="bottom" appendTo="parent">
+      {innerButton}
+    </LuiTooltip>
+  ) : (
+    innerButton
   );
 };

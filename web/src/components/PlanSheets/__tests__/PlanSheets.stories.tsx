@@ -1,6 +1,7 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
+import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { PageDTOPageTypeEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
@@ -26,10 +27,12 @@ import {
   userCoordinate1,
   userCoordinate2,
 } from "@/components/PlanSheets/properties/__tests__/data/LineData";
+import { clearLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
+import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
@@ -67,24 +70,30 @@ const queryClient = new QueryClient();
 
 const PlanSheetsTemplate = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LuiModalAsyncContextProvider>
+    <LuiModalAsyncContextProvider>
+      <MockUserContextProvider
+        user={singleFirmUserExtsurv1}
+        initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
+      >
         <FeatureFlagProvider>
-          <Provider store={cloneDeep(store)}>
-            <ModalStoryWrapper>
-              <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-                <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-                <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
-              </StorybookRouter>
-            </ModalStoryWrapper>
-          </Provider>
+          <QueryClientProvider client={queryClient}>
+            <Provider store={cloneDeep(store)}>
+              <ModalStoryWrapper>
+                <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+                  <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+                  <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+                </StorybookRouter>
+              </ModalStoryWrapper>
+            </Provider>
+          </QueryClientProvider>
         </FeatureFlagProvider>
-      </LuiModalAsyncContextProvider>
-    </QueryClientProvider>
+      </MockUserContextProvider>
+    </LuiModalAsyncContextProvider>
   );
 };
 
 export const Default: Story = {
+  beforeEach: clearLayoutAutoSave,
   render: () => <PlanSheetsTemplate />,
 };
 
@@ -1090,7 +1099,7 @@ export const ViewLabelsOK: Story = {
   ...PlanSheetWithHiddenObject,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    await (await TestCanvas.Create(canvasElement)).waitForCytoscape();
 
     //elements are removed form the graph data when they are not visible
     await expect(getCytoElement("#LAB_11")).toBeDefined(); // check hidden mark name label is visible
@@ -1123,7 +1132,7 @@ export const ViewLabelsCancel: Story = {
   ...PlanSheetWithHiddenObject,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    await (await TestCanvas.Create(canvasElement)).waitForCytoscape();
 
     //elements are removed form the graph data when they are not visible
     await expect(getCytoElement("#LAB_11")).toBeDefined(); //check mark name label is visible

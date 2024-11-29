@@ -1,53 +1,20 @@
 // react-menu styles
 import "@szhsin/react-menu/dist/index.css";
 
-import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta } from "@storybook/react";
 import { fireEvent, screen, waitFor, within } from "@storybook/testing-library";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cloneDeep } from "lodash-es";
-import { Provider } from "react-redux";
-import { generatePath, Route } from "react-router-dom";
 
 import CompileImagesViewer from "@/components/PlanSheets/__tests__/CompileImagesViewer";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { Paths } from "@/Paths";
-import { store } from "@/redux/store";
-import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { ModalStoryWrapper, sleep, StorybookRouter } from "@/test-utils/storybook-utils";
+import { sleep } from "@/test-utils/storybook-utils";
+
+import { Default, Story } from "./PlanSheets.stories";
 
 export default {
   title: "CompilePlanSheets",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
-
-export type Story = StoryObj<typeof PlanSheets>;
-
-const queryClient = new QueryClient();
-
-const PlanSheetsTemplate = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <LuiModalAsyncContextProvider>
-        <FeatureFlagProvider>
-          <Provider store={cloneDeep(store)}>
-            <ModalStoryWrapper>
-              <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-                <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-                <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
-              </StorybookRouter>
-            </ModalStoryWrapper>
-          </Provider>
-        </FeatureFlagProvider>
-      </LuiModalAsyncContextProvider>
-    </QueryClientProvider>
-  );
-};
-
-export const Default: Story = {
-  render: () => <PlanSheetsTemplate />,
-};
 
 // Chromatic will execute the test in the order defined in the storybook
 export const CompilePlans: Story = {

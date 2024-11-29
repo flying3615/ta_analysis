@@ -1,4 +1,10 @@
-import { ConfigDataDTO, DiagramDTO, DisplayStateEnum, PageDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  ConfigDataDTO,
+  DiagramDTO,
+  DisplayStateEnum,
+  PageDTO,
+  PlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { LabelDTO } from "@linz/survey-plan-generation-api-client/src/models/LabelDTO";
 import { LineDTO } from "@linz/survey-plan-generation-api-client/src/models/LineDTO";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -11,9 +17,13 @@ import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttribu
 import { revertAll } from "@/redux/revertAll";
 
 export interface PlanSheetsState {
+  // plan data
   configs?: ConfigDataDTO[];
   diagrams: DiagramDTO[];
   pages: PageDTO[];
+  // auto recovery
+  lastChangedAt?: string;
+  // UI state
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };
   hasChanges: boolean;
@@ -72,6 +82,8 @@ const onDataChanging = (state: PlanSheetsState) => {
   state.previousDiagrams = cloneDeep(state.diagrams);
   state.previousPages = cloneDeep(state.pages);
   state.hasChanges = true;
+  // for auto-recovery to detect when data changed
+  state.lastChangedAt = new Date().toISOString();
 };
 
 const planSheetsSlice = createSlice({
@@ -87,6 +99,7 @@ const planSheetsSlice = createSlice({
       state.diagrams = action.payload.diagrams;
       state.pages = action.payload.pages;
       state.hasChanges = false;
+      state.lastChangedAt = undefined;
       state.previousDiagrams = null;
       state.previousPages = null;
 
@@ -97,6 +110,13 @@ const planSheetsSlice = createSlice({
         }
       });
       state.originalPositions = LookupOriginalCoord(action.payload.diagrams);
+    },
+    recoverAutoSave: (state, action: PayloadAction<PlanResponseDTO>) => {
+      // set data as usual
+      planSheetsSlice.caseReducers.setPlanData(state, action);
+      // but mark as changed
+      state.hasChanges = true;
+      state.lastChangedAt = action.payload.lastModifiedAt;
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       onDataChanging(state);
@@ -350,6 +370,9 @@ const planSheetsSlice = createSlice({
       }
 
       state.hasChanges = state.previousHasChanges ?? false;
+      if (!state.hasChanges) {
+        state.lastChangedAt = undefined;
+      }
 
       state.diagrams = cloneDeep(state.previousDiagrams);
       state.pages = cloneDeep(state.previousPages);
@@ -386,6 +409,7 @@ const planSheetsSlice = createSlice({
     getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
     getDiagrams: (state) => state.diagrams,
     getPages: (state) => state.pages,
+    getConfigs: (state) => state.configs,
     getActiveSheet: (state) => state.activeSheet,
     getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
     getElementTypeConfigs: (state) => state.configs?.[0]?.elementTypeConfigs ?? [],
@@ -447,6 +471,7 @@ const planSheetsSlice = createSlice({
     },
     getOriginalPositions: (state) => state.originalPositions,
     hasChanges: (state) => state.hasChanges,
+    getLastChangedAt: (state) => state.lastChangedAt,
     getPlanMode: (state) => state.planMode,
     getLastUpdatedLineStyle: (state) => state.lastUpdatedLineStyle,
     getLastUpdatedLabelStyle: (state) => state.lastUpdatedLabelStyle,
@@ -466,6 +491,7 @@ const planSheetsSlice = createSlice({
 
 export const {
   setPlanData,
+  recoverAutoSave,
   replaceDiagrams,
   replacePage,
   replaceDiagramsAndPage,
@@ -497,6 +523,7 @@ export const {
 
 export const {
   getPlanData,
+  getConfigs,
   getDiagrams,
   getPages,
   getActivePages,
@@ -513,6 +540,7 @@ export const {
   getFilteredPages,
   getOriginalPositions,
   hasChanges,
+  getLastChangedAt,
   getPlanMode,
   getLastUpdatedLineStyle,
   getLastUpdatedLabelStyle,

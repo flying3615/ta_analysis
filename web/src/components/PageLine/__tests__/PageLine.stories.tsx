@@ -1,48 +1,14 @@
 import { expect } from "@storybook/jest";
-import { Meta, StoryObj } from "@storybook/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider } from "react-redux";
-import { generatePath, Route } from "react-router-dom";
+import { Meta } from "@storybook/react";
 
-import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
+import { Default, PlanSheetWithHiddenObject, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { Paths } from "@/Paths";
-import { store } from "@/redux/store";
-import {
-  checkCytoElementProperties,
-  ModalStoryWrapper,
-  sleep,
-  StorybookRouter,
-  tabletLandscapeParameters,
-  TestCanvas,
-} from "@/test-utils/storybook-utils";
+import { checkCytoElementProperties, sleep, tabletLandscapeParameters, TestCanvas } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/PageLine",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
-
-type Story = StoryObj<typeof PlanSheets>;
-
-const queryClient = new QueryClient();
-
-const PlanSheetsTemplate = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ModalStoryWrapper>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-          </StorybookRouter>
-        </ModalStoryWrapper>
-      </Provider>
-    </QueryClientProvider>
-  );
-};
-
-export const Default: Story = {
-  render: () => <PlanSheetsTemplate />,
-};
 
 export const AddLineEnter: Story = {
   ...Default,

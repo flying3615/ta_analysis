@@ -8,17 +8,16 @@ import {
 import { useToast } from "@linzjs/lui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
-import { getPlanData, setPlanData } from "@/redux/planSheets/planSheetsSlice";
+import { getPlanData } from "@/redux/planSheets/planSheetsSlice";
 import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
 export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactionId];
 
 export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, enabled }) => {
-  const dispatch = useAppDispatch();
   const { adjustPlanData } = useAdjustLoadedPlanData();
 
   return useQuery({
@@ -30,10 +29,7 @@ export const useGetPlanQuery: PlanGenQuery<PlanResponseDTO> = ({ transactionId, 
       const adjustedResponse = await performanceMeasure("adjustedResponse", transactionId, {
         workflow: "loadPlanXML",
       })(() => Promise.resolve(adjustPlanData(response)));
-      await performanceMeasure("setPlanData", transactionId, {
-        workflow: "loadPlanXML",
-      })(() => Promise.resolve(dispatch(setPlanData(adjustedResponse))));
-      return response;
+      return adjustedResponse;
     },
     enabled,
   });

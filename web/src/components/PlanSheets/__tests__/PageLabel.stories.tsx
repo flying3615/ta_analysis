@@ -228,6 +228,7 @@ export const MultiLabelTypeClipboardEditIsDisabled: Story = {
 export const EmptyClipboardNoSelectionEditIsDisabled: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
+    await sleep(1500);
     const test = await TestCanvas.Create(canvasElement);
     await test.contextMenu({ at: whiteSpace, select: "" });
     await expect(await test.findMenuItem("Cut")).toHaveAttribute("aria-disabled", "true");

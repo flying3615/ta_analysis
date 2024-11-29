@@ -1246,6 +1246,10 @@ export class PlanDataBuilder {
   }
 
   build() {
-    return this.planData;
+    return {
+      ...this.planData,
+      // "15 minutes ago"
+      lastModifiedAt: new Date(new Date().getTime() - 900000).toISOString(),
+    };
   }
 }

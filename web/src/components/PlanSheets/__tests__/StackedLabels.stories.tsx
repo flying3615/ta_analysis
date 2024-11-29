@@ -1,48 +1,22 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
-import { Meta, StoryObj } from "@storybook/react/*";
+import { Meta } from "@storybook/react/*";
 import { within } from "@storybook/testing-library";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
-import { Provider } from "react-redux";
-import { generatePath, Route } from "react-router-dom";
 
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
-import { Paths } from "@/Paths";
-import { store } from "@/redux/store";
-import { ModalStoryWrapper, StorybookRouter, TestCanvas } from "@/test-utils/storybook-utils";
+import { TestCanvas } from "@/test-utils/storybook-utils";
 
 import PlanSheets from "../PlanSheets";
 import { PlanMode } from "../PlanSheetType";
 import { diagramLabelObsBearingHide, diagramLabelParcelAppellation, pageLabelWithLineBreak } from "./data/customLabels";
+import { Default, Story } from "./PlanSheets.stories";
 
 export default {
   title: "PlanSheets/StackedLabels",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
-
-type Story = StoryObj<typeof PlanSheets>;
-
-const queryClient = new QueryClient();
-
-const PlanSheetsTemplate = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ModalStoryWrapper>
-          <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-            <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-          </StorybookRouter>
-        </ModalStoryWrapper>
-      </Provider>
-    </QueryClientProvider>
-  );
-};
-
-const Default: Story = {
-  render: () => <PlanSheetsTemplate />,
-};
 
 const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
 if (customMockPlanData.pages[0]) {

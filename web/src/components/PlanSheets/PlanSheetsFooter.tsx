@@ -17,6 +17,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
+import { setLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
 import { usePlanGenPreview } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -92,6 +93,7 @@ const PlanSheetsFooter = ({
 
   useEffect(() => {
     if (updatePlanIsSuccess) {
+      void setLayoutAutoSave(transactionId, undefined); // clear auto-save history
       void queryClient.invalidateQueries({ queryKey: getPlanQueryKey(transactionId) });
       successToast("Layout saved successfully");
       dispatch(clearUndo()); // Clear undo history after saving, you can't undo save
