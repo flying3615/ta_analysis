@@ -59,6 +59,10 @@ export const CompilePlans: Story = {
   play: async ({ canvasElement }) => {
     indexedDB.deleteDatabase("compileImages");
     const canvas = within(canvasElement);
+    fireEvent.click(await canvas.findByTitle("View labels"));
+    fireEvent.click(await canvas.findByText("Parcel appellations")); // uncheck parcel appellations
+    fireEvent.click(canvas.getByRole("button", { name: "OK" })); // save the changes
+    await sleep(500);
     fireEvent.click(await canvas.findByText("Compile plan(s)"));
     const modal = await screen.findByRole("dialog");
     const modalText = /Complete Plan Generation/i;

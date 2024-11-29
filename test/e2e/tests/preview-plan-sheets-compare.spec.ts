@@ -15,7 +15,12 @@ test.describe("Layout Plan Sheets compare with expected result", () => {
   });
 
   [{ transactionId: 5000059 }].forEach(({ transactionId }) => {
-    test(`Compare layout plan sheet with expected result file for ${transactionId} after hiding a label`, async ({
+    /**
+     * Compare preview layout plan sheet with expected result file for a transaction after below updates
+     * 1. Turn off parcel appelation in view labels
+     * 2. Hide a label i.e. 0.0411Ha
+     */
+    test(`Compare preview layout plan sheet with expected result file for ${transactionId} after updates`, async ({
       page,
       baseURL,
     }) => {
@@ -25,10 +30,16 @@ test.describe("Layout Plan Sheets compare with expected result", () => {
 
       await page.goto(`/plan-generation/${transactionId}/layout-plan-sheets`);
       await expect(page.getByRole("heading", { name: "Title sheet diagrams" })).toBeVisible({ timeout: 60000 });
+
+      // turn off parcel appelations in view labels
+      await page.getByRole("button", { name: "View Labels" }).click();
+      await page.getByText("Parcel appellations").click(); // uncheck parcel appelations
+      await page.getByRole("button", { name: "Ok" }).click(); // save the changes
+      await page.waitForTimeout(2000); // wait for the changes to reflect
+
       const nodeLabelToHide = "0.0411Ha";
       (await planSheetsPage.fetchCytoscapeData()).getCytoscapeData();
       const { position: cytoscapeNodePosition } = planSheetsPage.getCytoscapeNodeByLabel(nodeLabelToHide);
-      console.log(`From position: ${JSON.stringify(cytoscapeNodePosition)}`);
 
       //select hide label option
       await page.getByRole("button", { name: "Select Labels" }).click();
