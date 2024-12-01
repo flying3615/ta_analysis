@@ -1,6 +1,6 @@
 import "./MoveSelectedHandler.scss";
 
-import cytoscape, {
+import {
   BoundingBox12,
   CollectionReturnValue,
   EdgeDefinition,
@@ -13,12 +13,7 @@ import cytoscape, {
 } from "cytoscape";
 import { useEffect } from "react";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
-import {
-  IEdgeDataProperties,
-  IGraphDataProperties,
-  INodeDataProperties,
-} from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SelectHandlerMode } from "@/components/PlanSheets/interactions/SelectElementHandler";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -27,7 +22,6 @@ import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { Position } from "@/util/positionUtil";
 
 import { moveExtent } from "./moveAndResizeUtil";
 import { getRelatedLabels } from "./selectUtil";
@@ -163,13 +157,8 @@ export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementP
           return;
         }
 
-        const movingElementsOffsetCoords = convertMovedCoordinateLabelsToOffsets(
-          cytoCoordMapper,
-          movingElements,
-          moveStartPositions,
-        );
+        const movingData = cytoDataToNodeAndEdgeData(movingElements);
 
-        const movingData = cytoDataToNodeAndEdgeData(movingElementsOffsetCoords);
         const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
@@ -406,35 +395,4 @@ function setPositions(
       y: position.y + dy,
     };
   });
-}
-
-const areAllElementsLabels = (elements: CollectionReturnValue): boolean =>
-  elements.every((ele) => !!((ele as cytoscape.NodeSingular).isNode() && ele.data("label")));
-
-function convertMovedCoordinateLabelsToOffsets(
-  cytoCoordMapper: CytoscapeCoordinateMapper,
-  movedElements: CollectionReturnValue,
-  startPositions: Record<string, Position>,
-): CollectionReturnValue {
-  if (!areAllElementsLabels(movedElements)) {
-    // It's a line or mark move
-    // The labels stick to the marks and lines
-    return movedElements;
-  }
-
-  movedElements.forEach((ele) => {
-    if (!ele.isNode()) {
-      return;
-    }
-
-    const movedEleStartPosition = startPositions[ele.id()];
-    const data = ele.data() as INodeDataProperties;
-
-    if (data.label && movedEleStartPosition && !data.symbolId) {
-      const { pointOffset, anchorAngle } = cytoCoordMapper.labelPositionToOffsetAndAngle(ele, movedEleStartPosition, 1);
-      ele.data({ pointOffset, anchorAngle, ignorePositionChange: true });
-    }
-  });
-
-  return movedElements;
 }

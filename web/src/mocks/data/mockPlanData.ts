@@ -136,11 +136,11 @@ export const mockPlanDataBuilderDiagram1 = new PlanDataBuilder()
     DisplayStateEnum.systemHide,
   )
   .addChildDiagram({ diagramRef: 1 })
-  .addLabel("childDiagramLabels", 41, "Diag. ACA", {
+  .addLabel("childDiagrams", 41, "Diag. ACA", {
     x: 40,
     y: -20,
   })
-  .addLabel("childDiagramLabels", 42, "See T?", {
+  .addLabel("childDiagrams", 42, "See T?", {
     x: 40,
     y: -22,
   });

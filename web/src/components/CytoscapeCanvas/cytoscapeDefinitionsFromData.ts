@@ -61,7 +61,6 @@ export interface INodeDataProperties extends IGraphDataProperties {
   textOutlineOpacity?: number;
   textRotation?: number;
   displayFormat?: string;
-  ignorePositionChange?: boolean;
 }
 
 export interface IDiagramNodeDataProperties extends INodeDataProperties {

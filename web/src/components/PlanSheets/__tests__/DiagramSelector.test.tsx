@@ -134,14 +134,14 @@ describe("Diagram Selector panel", () => {
       console.error("Second diagram label is undefined");
     }
     expect(firstDiagramLabel).toHaveClass("selected");
-    expect(within(firstDiagramLabel!).getByText("Diagram 1")).not.toHaveClass("disabled");
+    expect(within(firstDiagramLabel!).getByText("System Generated Primary Diagram")).not.toHaveClass("disabled");
     expect(within(firstDiagramLabel!).queryByText(/T2/i)).not.toBeInTheDocument();
     expect(within(firstDiagramLabel!).queryByRole("button", { name: "Remove from sheet" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Insert diagram/ })).toBeInTheDocument();
 
     await userEvent.click(await screen.findByRole("button", { name: /Insert diagram/ }));
 
-    expect(within(firstDiagramLabel!).getByText("Diagram 1")).toHaveClass("disabled");
+    expect(within(firstDiagramLabel!).getByText("System Generated Primary Diagram")).toHaveClass("disabled");
     expect(within(firstDiagramLabel!).getByRole("button", { name: "Remove from sheet" })).toBeInTheDocument();
   });
 

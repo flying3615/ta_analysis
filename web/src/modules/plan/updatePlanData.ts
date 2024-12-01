@@ -13,6 +13,13 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { LabelPropsToUpdate, LabelPropsToUpdateWithElemType } from "@/components/PlanSheets/properties/LabelProperties";
 import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { LinePropsToUpdate } from "@/components/PlanSheets/properties/LineProperties";
+import { mapDiagramLabels } from "@/util/diagramUtil";
+import { Position } from "@/util/positionUtil";
+
+// Extend the PageLabel so we can keep the originalPosition
+export interface LabelWithPositionMemo extends LabelDTO {
+  originalPosition: Position | undefined;
+}
 
 export const updateDiagramsWithNode = (diagrams: DiagramDTO[], node: INodeData): DiagramDTO[] => {
   return diagrams.map((diagram) => {
@@ -153,7 +160,8 @@ export const updateDiagramLabels = (
         | PlanElementType.LABELS
         | PlanElementType.COORDINATE_LABELS
         | PlanElementType.LINE_LABELS
-        | PlanElementType.PARCEL_LABELS;
+        | PlanElementType.PARCEL_LABELS
+        | PlanElementType.CHILD_DIAGRAM_LABELS;
 
       if (elemType === PlanElementType.PARCEL_LABELS) {
         updatedDiagram = {
@@ -167,6 +175,10 @@ export const updateDiagramLabels = (
             };
           }),
         };
+      } else if (elemType === PlanElementType.CHILD_DIAGRAM_LABELS) {
+        updatedDiagram = mapDiagramLabels(updatedDiagram, "childDiagrams", (label) =>
+          label.id === updatedLabel.data.id ? { ...label, ...updatedLabel.data } : label,
+        );
       } else {
         updatedDiagram = {
           ...updatedDiagram,
@@ -218,17 +230,21 @@ const mergeLabelData = (label: LabelDTO, updatedNode: INodeData): LabelDTO => {
   const pointOffset = updated.pointOffset ?? label.pointOffset;
   const textAlignment = updated.textAlignment ?? label.textAlignment;
   const displayState = updated.displayState ?? label.displayState;
-  const ignorePositionChange = updated["ignorePositionChange"];
+
+  // Preserve an `originalPosition` for revert to original
+  // If we have no `originalPosition` set for a page label, then create one
+  // this gets the position before it is changed by this method
   return {
     ...label,
     displayText: updatedNode.label ?? label.displayText,
-    ...(ignorePositionChange ? {} : { position: updatedNode.position }),
+    position: updatedNode.position,
+    originalPosition: (label as LabelWithPositionMemo).originalPosition ?? label.position,
     rotationAngle,
     anchorAngle,
     pointOffset,
     textAlignment,
     displayState,
-  };
+  } as LabelDTO;
 };
 
 const mergeCoordinateData = (coordinate: CoordinateDTO, updatedNode: INodeData): CoordinateDTO => {

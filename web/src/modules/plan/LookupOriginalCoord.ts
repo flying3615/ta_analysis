@@ -1,7 +1,6 @@
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue } from "cytoscape";
 
-import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 
@@ -117,30 +116,4 @@ export function extractPositions(elements: CollectionReturnValue): Record<string
     }
   });
   return posMap;
-}
-
-export function transformMovedLabelCoordinates(
-  coordinateMapper: CytoscapeCoordinateMapper,
-  elements: CollectionReturnValue,
-  initialPositions: Record<string, cytoscape.Position>,
-): CollectionReturnValue {
-  elements.forEach((element) => {
-    if (!element.isNode()) {
-      return;
-    }
-
-    const initialPosition = initialPositions[element.id()];
-    const elementData = element.data() as INodeDataProperties;
-
-    if (elementData.label && initialPosition && !elementData.symbolId) {
-      const { pointOffset: offset, anchorAngle: angle } = coordinateMapper.labelPositionToOffsetAndAngle(
-        element,
-        initialPosition,
-        1,
-      );
-      element.data({ pointOffset: offset, anchorAngle: angle });
-    }
-  });
-
-  return elements;
 }

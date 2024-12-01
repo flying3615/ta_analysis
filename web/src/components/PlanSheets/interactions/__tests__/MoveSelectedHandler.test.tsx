@@ -390,7 +390,7 @@ describe("MoveSelectedHandler", () => {
     const newGroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapePosition, 1);
     expect(updatedElements?.nodes?.[0]?.id).toBe("10006");
     expect(updatedElements?.nodes?.[0]?.position).toEqual(newGroundPosition);
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[0]?.id).toBe("10006");
     expect(updatedElements?.nodes?.[0]?.label).toBeUndefined();
     expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBe(0);
@@ -399,19 +399,19 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[1]?.label).toBe("Mark 10006");
     expect(updatedElements?.nodes?.[1]?.position).toEqual(newGroundPosition);
     // Mark labels (including symbols) stay at the updated node position and retain any anchor and offset
-    expect(updatedElements?.nodes?.[1]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[1]?.properties?.pointOffset).toBe(0);
     expect(updatedElements?.nodes?.[2]?.id).toBe("LAB_10007");
     expect(updatedElements?.nodes?.[2]?.label).toBe("96");
     expect(updatedElements?.nodes?.[2]?.position).toEqual(newGroundPosition);
-    expect(updatedElements?.nodes?.[2]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBe(0);
     expect(updatedElements?.nodes?.[3]?.id).toBe("LAB_10010");
     expect(updatedElements?.nodes?.[3]?.label).toBe("96");
     expect(updatedElements?.nodes?.[3]?.position).toEqual(newGroundPosition);
-    expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBe(0);
 
@@ -431,7 +431,7 @@ describe("MoveSelectedHandler", () => {
 
     expect(updatedElements?.nodes?.[4]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
     expect(updatedElements?.nodes?.[4]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
-    expect(updatedElements?.nodes?.[4]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[4]?.properties?.textRotation).toBeCloseTo(279.9, 1);
@@ -440,7 +440,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[5]?.label).toBe("Line 1005");
     expect(updatedElements?.nodes?.[5]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
     expect(updatedElements?.nodes?.[5]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
-    expect(updatedElements?.nodes?.[5]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[5]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
     expect(updatedElements?.nodes?.[5]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[5]?.properties?.textRotation).toBeCloseTo(341.6, 1);
@@ -466,11 +466,14 @@ describe("MoveSelectedHandler", () => {
     mouseUpAtPosition(newCytoscapePosition);
 
     expect(updatedElements?.nodes).toHaveLength(1); // just the label
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeTruthy();
     expect(updatedElements?.nodes?.[0]?.id).toBe("LAB_10006");
     expect(updatedElements?.nodes?.[0]?.label).toBe("Mark 10006");
-    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(36.9, 1);
-    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(72.6, 1);
+    // We convert position shifts in normalizePlanData now
+    expect(updatedElements?.nodes?.[0]?.position).toEqual(
+      cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapePosition, 1),
+    );
+    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(0, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(0, 1);
   });
 
   test("can move a line", () => {
@@ -499,7 +502,7 @@ describe("MoveSelectedHandler", () => {
 
     const newNode10006GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode10006Position, 1);
     expect(updatedElements?.nodes?.[0]?.position).toEqual(newNode10006GroundPosition);
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[0]?.id).toBe("10006");
     expect(updatedElements?.nodes?.[0]?.label).toBeUndefined();
     expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBe(0);
@@ -507,7 +510,7 @@ describe("MoveSelectedHandler", () => {
 
     const newNode10005GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode10005Position, 1);
     expect(updatedElements?.nodes?.[1]?.position).toEqual(newNode10005GroundPosition);
-    expect(updatedElements?.nodes?.[1]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[1]?.id).toBe("10005");
     expect(updatedElements?.nodes?.[1]?.label).toBeUndefined();
     expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBe(0);
@@ -517,27 +520,27 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[2]?.id).toBe("LAB_10006");
     expect(updatedElements?.nodes?.[2]?.label).toBe("Mark 10006");
     expect(updatedElements?.nodes?.[2]?.position).toEqual(newNode10006GroundPosition);
-    expect(updatedElements?.nodes?.[2]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBe(0);
     expect(updatedElements?.nodes?.[3]?.id).toBe("LAB_10007");
     expect(updatedElements?.nodes?.[3]?.label).toBe("96");
     expect(updatedElements?.nodes?.[3]?.position).toEqual(newNode10006GroundPosition);
-    expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBe(0);
 
     expect(updatedElements?.nodes?.[4]?.id).toBe("LAB_10009");
     expect(updatedElements?.nodes?.[4]?.label).toBe("96");
     expect(updatedElements?.nodes?.[4]?.position).toEqual(newNode10005GroundPosition);
-    expect(updatedElements?.nodes?.[4]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[4]?.properties?.pointOffset).toBe(0);
 
     expect(updatedElements?.nodes?.[5]?.id).toBe("LAB_10008");
     expect(updatedElements?.nodes?.[5]?.label).toBe("Mark 10005");
     expect(updatedElements?.nodes?.[5]?.position).toEqual(newNode10005GroundPosition);
-    expect(updatedElements?.nodes?.[5]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[5]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[5]?.properties?.pointOffset).toBe(0);
 
@@ -552,7 +555,7 @@ describe("MoveSelectedHandler", () => {
 
     expect(updatedElements?.nodes?.[6]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
     expect(updatedElements?.nodes?.[6]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
-    expect(updatedElements?.nodes?.[6]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[6]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.textRotation).toBeCloseTo(279.9, 1);
@@ -561,7 +564,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[7]?.label).toBe("Line 1005");
     expect(updatedElements?.nodes?.[7]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
     expect(updatedElements?.nodes?.[7]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
-    expect(updatedElements?.nodes?.[7]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[7]?.properties?.anchorAngle).toBeCloseTo(0, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.textRotation).toBeCloseTo(0, 1);
@@ -570,7 +573,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[8]?.label).toBe("Line 1004");
     expect(updatedElements?.nodes?.[8]?.position?.x).toBeCloseTo(expectedGroundPosition1004.x, 1);
     expect(updatedElements?.nodes?.[8]?.position?.y).toBeCloseTo(expectedGroundPosition1004.y, 1);
-    expect(updatedElements?.nodes?.[8]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[8]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.textRotation).toBeCloseTo(341.6, 1);
@@ -618,7 +621,7 @@ describe("MoveSelectedHandler", () => {
 
     const node10005GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode10005Position, 1);
     expect(updatedElements?.nodes?.[0]?.position).toEqual(node10005GroundPosition);
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[0]?.id).toBe("10005");
     expect(updatedElements?.nodes?.[0]?.label).toBeUndefined();
     expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBe(0);
@@ -626,7 +629,7 @@ describe("MoveSelectedHandler", () => {
 
     const node10006GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode10006Position, 1);
     expect(updatedElements?.nodes?.[1]?.position).toEqual(node10006GroundPosition);
-    expect(updatedElements?.nodes?.[1]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[1]?.id).toBe("10006");
     expect(updatedElements?.nodes?.[1]?.label).toBeUndefined();
     expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBe(0);
@@ -636,27 +639,27 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[2]?.id).toBe("LAB_10006");
     expect(updatedElements?.nodes?.[2]?.label).toBe("Mark 10006");
     expect(updatedElements?.nodes?.[2]?.position).toEqual(node10006GroundPosition);
-    expect(updatedElements?.nodes?.[2]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBe(0);
     expect(updatedElements?.nodes?.[3]?.id).toBe("LAB_10007");
     expect(updatedElements?.nodes?.[3]?.label).toBe("96");
     expect(updatedElements?.nodes?.[3]?.position).toEqual(node10006GroundPosition);
-    expect(updatedElements?.nodes?.[3]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[3]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[3]?.properties?.pointOffset).toBe(0);
 
     expect(updatedElements?.nodes?.[5]?.id).toBe("LAB_10009");
     expect(updatedElements?.nodes?.[5]?.label).toBe("96");
     expect(updatedElements?.nodes?.[5]?.position).toEqual(node10005GroundPosition);
-    expect(updatedElements?.nodes?.[5]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[5]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[5]?.properties?.pointOffset).toBe(0);
 
     expect(updatedElements?.nodes?.[4]?.id).toBe("LAB_10008");
     expect(updatedElements?.nodes?.[4]?.label).toBe("Mark 10005");
     expect(updatedElements?.nodes?.[4]?.position).toEqual(node10005GroundPosition);
-    expect(updatedElements?.nodes?.[4]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[4]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[4]?.properties?.pointOffset).toBe(0);
 
@@ -671,7 +674,7 @@ describe("MoveSelectedHandler", () => {
 
     expect(updatedElements?.nodes?.[6]?.position?.x).toBeCloseTo(expectedGroundPosition13.x, 1);
     expect(updatedElements?.nodes?.[6]?.position?.y).toBeCloseTo(expectedGroundPosition13.y, 1);
-    expect(updatedElements?.nodes?.[6]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[6]?.properties?.anchorAngle).toBeCloseTo(9.9, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[6]?.properties?.textRotation).toBeCloseTo(279.9, 1);
@@ -680,7 +683,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[7]?.label).toBe("Line 1005");
     expect(updatedElements?.nodes?.[7]?.position?.x).toBeCloseTo(expectedGroundPosition1005.x, 1);
     expect(updatedElements?.nodes?.[7]?.position?.y).toBeCloseTo(expectedGroundPosition1005.y, 1);
-    expect(updatedElements?.nodes?.[7]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[7]?.properties?.anchorAngle).toBeCloseTo(0, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[7]?.properties?.textRotation).toBeCloseTo(0, 1);
@@ -689,7 +692,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[8]?.label).toBe("Line 1004");
     expect(updatedElements?.nodes?.[8]?.position?.x).toBeCloseTo(expectedGroundPosition1004.x, 1);
     expect(updatedElements?.nodes?.[8]?.position?.y).toBeCloseTo(expectedGroundPosition1004.y, 1);
-    expect(updatedElements?.nodes?.[8]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[8]?.properties?.anchorAngle).toBeCloseTo(341.6, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.pointOffset).toBeCloseTo(14, 1);
     expect(updatedElements?.nodes?.[8]?.properties?.textRotation).toBeCloseTo(341.6, 1);
@@ -767,27 +770,24 @@ describe("MoveSelectedHandler", () => {
 
     const node13GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode13Position, 1);
     expect(updatedElements?.nodes?.[0]?.position).toEqual(node13GroundPosition);
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBe(true);
     expect(updatedElements?.nodes?.[0]?.id).toBe("LAB_13");
     expect(updatedElements?.nodes?.[0]?.label).toBe("Label 13");
-    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(36.9, 1);
-    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(72.6, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(0, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(0, 1);
 
     const node10006GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode10006Position, 1);
     expect(updatedElements?.nodes?.[1]?.position).toEqual(node10006GroundPosition);
-    expect(updatedElements?.nodes?.[1]?.properties?.ignorePositionChange).toBe(true);
     expect(updatedElements?.nodes?.[1]?.id).toBe("LAB_10006");
     expect(updatedElements?.nodes?.[1]?.label).toBe("Mark 10006");
-    expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBeCloseTo(36.9, 1);
-    expect(updatedElements?.nodes?.[1]?.properties?.pointOffset).toBeCloseTo(72.6, 1);
+    expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBeCloseTo(0, 1);
+    expect(updatedElements?.nodes?.[1]?.properties?.pointOffset).toBeCloseTo(0, 1);
 
     const node15GroundPosition = cytoCoordMapper.cytoscapeToGroundCoord(newCytoscapeNode15Position, 1);
     expect(updatedElements?.nodes?.[2]?.position).toEqual(node15GroundPosition);
-    expect(updatedElements?.nodes?.[2]?.properties?.ignorePositionChange).toBe(true);
     expect(updatedElements?.nodes?.[2]?.id).toBe("LAB_15");
     expect(updatedElements?.nodes?.[2]?.label).toBe("Line 1005");
-    expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBeCloseTo(129.9, 1);
-    expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBeCloseTo(56.8, 1);
+    expect(updatedElements?.nodes?.[2]?.properties?.anchorAngle).toBeCloseTo(0, 1);
+    expect(updatedElements?.nodes?.[2]?.properties?.pointOffset).toBeCloseTo(0, 1);
   });
 
   test("can move a user-defined line", () => {
@@ -828,7 +828,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[0]?.id).toBe("10011");
     const node10011GroundPosition = cytoCoordMapper.cytoscapeToPlanCoord(newCytoscapeNode10011Position);
     expect(updatedElements?.nodes?.[0]?.position).toEqual(node10011GroundPosition);
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[0]?.properties?.diagramId).toBeUndefined();
     expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBe(0);
@@ -836,7 +836,7 @@ describe("MoveSelectedHandler", () => {
     expect(updatedElements?.nodes?.[1]?.id).toBe("10012");
     const node10012GroundPosition = cytoCoordMapper.cytoscapeToPlanCoord(newCytoscapeNode10012Position);
     expect(updatedElements?.nodes?.[1]?.position).toEqual(node10012GroundPosition);
-    expect(updatedElements?.nodes?.[1]?.properties?.ignorePositionChange).toBeFalsy();
+
     expect(updatedElements?.nodes?.[1]?.properties?.diagramId).toBeUndefined();
     expect(updatedElements?.nodes?.[1]?.properties?.anchorAngle).toBe(0);
     expect(updatedElements?.nodes?.[1]?.properties?.pointOffset).toBe(0);
@@ -878,11 +878,14 @@ describe("MoveSelectedHandler", () => {
     mouseUpAtPosition(newCytoscapePosition);
 
     expect(updatedElements?.nodes).toHaveLength(1); // just the label
-    expect(updatedElements?.nodes?.[0]?.properties?.ignorePositionChange).toBeTruthy();
     expect(updatedElements?.nodes?.[0]?.id).toBe("LAB_23");
+    const pageLabelPositionMetres = cytoCoordMapper.pageLabelCytoscapeToCoord(newCytoscapePosition);
+    const pageLabelPositionCm = { x: pageLabelPositionMetres.x * 100, y: pageLabelPositionMetres.y * 100 };
+    expect(updatedElements?.nodes?.[0]?.position?.x).toBeCloseTo(pageLabelPositionCm.x);
+    expect(updatedElements?.nodes?.[0]?.position?.y).toBeCloseTo(pageLabelPositionCm.y);
     expect(updatedElements?.nodes?.[0]?.label).toBe("Rotated user added text");
-    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(36.9, 1);
-    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(72.6, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.anchorAngle).toBeCloseTo(0, 1);
+    expect(updatedElements?.nodes?.[0]?.properties?.pointOffset).toBeCloseTo(0, 1);
   });
 
   test("when moving a mark coordinate places a label outside bounds, adjusts that position", () => {
@@ -897,8 +900,9 @@ describe("MoveSelectedHandler", () => {
 
     mouseDownAtPosition(node10006CytoscapePosition);
 
+    // This pushes the mark label out of bounds but not the symbol
     const newCytoscapePosition = {
-      x: clientWidth - 1,
+      x: clientWidth - 20,
       y: node10006CytoscapePosition.y - 15,
     } as cytoscape.Position;
     testNodeData.forEach((n) => {
@@ -923,11 +927,11 @@ describe("MoveSelectedHandler", () => {
 
     const newCytoscapeNode10006Position = {
       x: node10006CytoscapePosition.x,
-      y: clientHeight - 1,
+      y: clientHeight - 70,
     } as cytoscape.Position;
     const newCytoscapeNode10005Position = {
       x: node10005CytoscapePosition.x,
-      y: clientHeight - 1,
+      y: clientHeight - 60,
     } as cytoscape.Position;
     moveLineInData(testNodeData, newCytoscapeNode10006Position, newCytoscapeNode10005Position);
 

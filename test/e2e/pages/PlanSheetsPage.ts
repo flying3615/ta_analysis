@@ -54,7 +54,7 @@ export class PlanSheetsPage {
     if (!node) {
       throw new Error(`Cytoscape node with label ${label} not found`);
     }
-    console.log(`Found label node ${JSON.stringify(label)}`);
+    // console.log(`Found label node ${JSON.stringify(label)}`);
     return node;
   }
 

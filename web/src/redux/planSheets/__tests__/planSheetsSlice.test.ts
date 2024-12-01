@@ -471,7 +471,7 @@ describe("planSheetsSlice", () => {
   test("setSymbolHide should set the displayState on the coordinate in store", () => {
     const diagramsWithMark = emptyDiagramsBuilder()
       .addCooordinate(101, { x: 20, y: -10 })
-      .addSymbolLabel(1011, "*", { x: 20, y: -10 })
+      .addSymbolLabel(1011, "*", { x: 20, y: -10 }, 10, 101)
       .build().diagrams;
     store = setupStore({
       planSheets: {

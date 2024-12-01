@@ -450,10 +450,10 @@ const planData = () => {
       100,
       "System Generated Primary Diagram",
       {
-        x: 40,
-        y: -5,
+        x: 0,
+        y: 0,
       },
-      undefined,
+      10001,
       undefined,
       "diagram",
       "Tahoma",
@@ -497,10 +497,10 @@ const planData = () => {
       200,
       "System Generated Traverse Diagram",
       {
-        x: 40,
-        y: -5,
+        x: 78,
+        y: 0,
       },
-      undefined,
+      20002,
       undefined,
       "diagram",
       "Tahoma",
@@ -540,7 +540,7 @@ const planData = () => {
     .addLine(3003, [30003, 30004], 1.75, "observation", "solid")
     .addLine(3004, [30004, 30001], 1.75, "observation", "solid")
     .addLabel(
-      "coordinateLabels",
+      "labels",
       300,
       "User defined A",
       {
@@ -587,7 +587,7 @@ const planData = () => {
     .addLine(4003, [40003, 40004], 1.75, "observation", "solid")
     .addLine(4004, [40004, 40001], 1.75, "observation", "solid")
     .addLabel(
-      "coordinateLabels",
+      "labels",
       400,
       "User defined B",
       {

@@ -18,6 +18,7 @@ import { last } from "lodash-es";
 
 import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SYMBOLS_FONT } from "@/constants";
+import { DiagramLabelField } from "@/util/diagramUtil";
 
 interface DiagramOptions {
   id?: number;
@@ -31,8 +32,6 @@ interface DiagramOptions {
   listParentRef?: number;
   box?: boolean; // draw a box around
 }
-
-type IntoWhereForLabels = "labels" | "parcelLabels" | "coordinateLabels" | "lineLabels" | "childDiagramLabels";
 
 export class PlanDataBuilder {
   planData: PlanResponseDTO = {
@@ -225,9 +224,10 @@ export class PlanDataBuilder {
     fontSize: number = 8,
     featureId: number | undefined = undefined,
     displayState: DisplayStateEnum = DisplayStateEnum.display,
+    intoWhere: DiagramLabelField = "coordinateLabels",
   ) {
     return this.addLabel(
-      "coordinateLabels",
+      intoWhere,
       id,
       displayText,
       position,
@@ -242,7 +242,7 @@ export class PlanDataBuilder {
   }
 
   addLabel(
-    intoWhere: IntoWhereForLabels,
+    intoWhere: DiagramLabelField,
     idOrOptions: number | LabelDTO,
     displayText: string = "",
     position?: CartesianCoordsDTO,
@@ -286,6 +286,10 @@ export class PlanDataBuilder {
           }
         : idOrOptions;
 
+    if (intoWhere === "coordinateLabels" && featureId === undefined) {
+      throw new Error("coordinateLabels must have a featureId");
+    }
+
     if (intoWhere === "parcelLabels") {
       last(this.planData.diagrams)?.parcelLabelGroups?.push({
         id: label.id,
@@ -294,7 +298,7 @@ export class PlanDataBuilder {
       return this;
     }
 
-    if (intoWhere === "childDiagramLabels") {
+    if (intoWhere === "childDiagrams") {
       label.labelType = !label.displayText.match(/See.+/)
         ? LabelDTOLabelTypeEnum.childDiagram
         : LabelDTOLabelTypeEnum.childDiagramPage;

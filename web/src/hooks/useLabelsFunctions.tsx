@@ -1,4 +1,4 @@
-import { DisplayStateEnum } from "@linz/survey-plan-generation-api-client";
+import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { degreesToRadians, point, polygon } from "@turf/helpers";
 import { EdgeSingular, NodeSingular } from "cytoscape";
@@ -19,7 +19,7 @@ import {
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
+import { LabelWithPositionMemo, updateDiagramLabels, updatePageLabels } from "@/modules/plan/updatePlanData";
 import {
   getActivePage,
   getElementTypeConfigs,
@@ -28,7 +28,8 @@ import {
   setAlignedLabelNodeId,
   setPlanMode,
 } from "@/redux/planSheets/planSheetsSlice";
-import { atanDegrees360, subtractIntoDelta } from "@/util/positionUtil";
+import { DiagramLabelField, findLabelById } from "@/util/diagramUtil";
+import { atanDegrees360, clampAngleDegrees360, midPoint, subtractIntoDelta } from "@/util/positionUtil";
 
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
 
@@ -58,8 +59,22 @@ export const useLabelsFunctions = () => {
 
     const defaultElemConfig = labelData.labelType ? getDefaultElementConfig(labelData.labelType) : undefined;
     if (!defaultElemConfig) return;
+    if (!labelData.elementType) {
+      throw new Error(`Element type not found for label with id ${labelData.id}`);
+    }
 
-    if (labelData.elementType === PlanElementType.LINE_LABELS) {
+    if (labelData.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
+      const pageLabel = activePage?.labels?.find((label) => `LAB_${label.id}` === labelData.id);
+      if ((pageLabel as LabelWithPositionMemo | undefined)?.originalPosition) {
+        // If we are a page label then revert to the original position
+        // which is set in `mergeLabelData` (if the label has been moved)
+        newObj.position = (pageLabel as LabelWithPositionMemo).originalPosition;
+      }
+
+      newObj.rotationAngle = Number(defaultElemConfig.defaultRotationAngle);
+      newObj.anchorAngle = Number(defaultElemConfig.defaultAnchorAngle);
+      newObj.pointOffset = Number(defaultElemConfig.defaultPointOffset);
+    } else if (labelData.elementType === PlanElementType.LINE_LABELS) {
       const activeLines = activeDiagrams.flatMap((diagram) => diagram?.lines);
       const line = activeLines.find((line) => line?.id === labelData.featureId);
       const diagram = activeDiagrams.find((diagram) => diagram.id === labelData.diagramId);
@@ -69,13 +84,51 @@ export const useLabelsFunctions = () => {
       const lineEndCoord = diagram?.coordinates.find((coord) => coord.id === lineEndId);
       if (!lineStartCoord || !lineEndCoord) return;
       const lineAngle = round(atanDegrees360(subtractIntoDelta(lineEndCoord.position, lineStartCoord.position)), 1);
+      newObj.position = midPoint(lineStartCoord.position, lineEndCoord.position);
       newObj.rotationAngle = lineAngle;
-      newObj.anchorAngle = lineAngle + Number(defaultElemConfig.defaultAnchorAngle);
+      newObj.anchorAngle = clampAngleDegrees360(lineAngle + Number(defaultElemConfig.defaultAnchorAngle));
       newObj.pointOffset = Number(defaultElemConfig.defaultPointOffset);
-    } else {
+    } else if (labelData.elementType === PlanElementType.COORDINATE_LABELS) {
+      const diagram = activeDiagrams.find((diagram) => diagram.id === labelData.diagramId);
+      const coord = diagram?.coordinates.find((coord) => coord.id === labelData.featureId);
+      if (!coord) {
+        throw new Error(`Coordinate with id ${labelData.featureId} not found in diagram ${labelData.diagramId}`);
+      }
+      newObj.position = coord.position;
       newObj.rotationAngle = Number(defaultElemConfig.defaultRotationAngle);
       newObj.anchorAngle = Number(defaultElemConfig.defaultAnchorAngle);
       newObj.pointOffset = Number(defaultElemConfig.defaultPointOffset);
+    } else if (
+      [
+        PlanElementType.LABELS,
+        PlanElementType.PARCEL_LABELS,
+        PlanElementType.CHILD_DIAGRAM_LABELS,
+        PlanElementType.DIAGRAM,
+        PlanElementType.CHILD_DIAGRAM_LABELS,
+      ].includes(labelData.elementType)
+    ) {
+      const diagram = activeDiagrams.find((diagram) => diagram.id === labelData.diagramId);
+      if (!diagram) {
+        throw new Error(`Diagram with id ${labelData.diagramId} not found`);
+      }
+      const label = findLabelById(
+        diagram,
+        labelData.elementType?.valueOf() as DiagramLabelField,
+        labelData.id as string,
+      );
+      if (!label) {
+        throw new Error(`Label with id ${labelData.featureId} not found in diagram ${labelData.diagramId}`);
+      }
+      if ((label as LabelWithPositionMemo | undefined)?.originalPosition) {
+        // If we are a parcel label then revert to the original position
+        // which is set in `mergeLabelData` (if the label has been moved)
+        newObj.position = (label as LabelWithPositionMemo).originalPosition;
+        // console.log(`revert position to originalPosition=${JSON.stringify(newObj.position)}`);
+      }
+      newObj.rotationAngle = Number(defaultElemConfig.defaultRotationAngle);
+      newObj.anchorAngle = Number(defaultElemConfig.defaultAnchorAngle);
+      newObj.pointOffset = Number(defaultElemConfig.defaultPointOffset);
+      // console.log(`Reverted newObj to ${JSON.stringify(newObj)}`);
     }
     return newObj;
   };

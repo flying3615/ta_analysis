@@ -703,10 +703,18 @@ const addOffsetLabel = (
 ) => {
   const pointOffset = (50 * 72) / 96; // 50px in points
 
-  builder.addSymbolLabel(idBase * 100 + 1, "63", {
-    x,
-    y,
-  });
+  builder.addSymbolLabel(
+    idBase * 100 + 1,
+    "63",
+    {
+      x,
+      y,
+    },
+    8,
+    undefined,
+    DisplayStateEnum.display,
+    "labels",
+  );
   builder.addRotatedLabel(
     "labels",
     idBase * 100,
@@ -759,10 +767,16 @@ const addRotatedLabel = (
   hasSymbol: boolean = true,
 ) => {
   hasSymbol &&
-    builder.addSymbolLabel(idBase * 100 + 1, "63", {
-      x,
-      y,
-    });
+    builder.addSymbolLabel(
+      idBase * 100 + 1,
+      "63",
+      {
+        x,
+        y,
+      },
+      8,
+      idBase,
+    );
   builder.addLabel("labels", {
     id: idBase * 100,
     displayText: label,
@@ -775,6 +789,7 @@ const addRotatedLabel = (
     rotationAngle,
     textAlignment,
     symbolType: circle ? "circle" : undefined,
+    featureId: idBase,
   } as LabelDTO);
 };
 
@@ -998,7 +1013,7 @@ export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = 
         idx,
         textAlignment.replace(",", "\n"),
         { x, y },
-        undefined,
+        idx,
         undefined,
         undefined,
         "Arial",
@@ -1009,10 +1024,16 @@ export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = 
         textAlignment,
         0.7,
       );
-      builder.addSymbolLabel(10000 + idx, "63", {
-        x,
-        y,
-      });
+      builder.addSymbolLabel(
+        10000 + idx,
+        "63",
+        {
+          x,
+          y,
+        },
+        8,
+        idx,
+      );
     });
 
     return <CanvasFromMockData data={builder.build()} />;
@@ -1056,7 +1077,7 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
         idx,
         "I",
         { x, y },
-        undefined,
+        idx,
         undefined,
         undefined,
         "Arial",
@@ -1067,10 +1088,16 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
         textAlignment,
         0.7,
       );
-      builder.addSymbolLabel(10000 + idx, "63", {
-        x,
-        y,
-      });
+      builder.addSymbolLabel(
+        10000 + idx,
+        "63",
+        {
+          x,
+          y,
+        },
+        8,
+        idx,
+      );
     });
 
     return <CanvasFromMockData data={builder.build()} />;
@@ -1207,10 +1234,27 @@ RendersSelectedLabels.play = async () => {
 export const RendersSelectedLabelsWithRelatedElements: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
-    builder.addSymbolLabel(9000000, "181", {
-      x: 10,
-      y: -5,
-    });
+    builder.addCooordinate(9000000, { x: 5, y: -5 });
+    builder.addSymbolLabel(
+      9000000,
+      "181",
+      {
+        x: 10,
+        y: -5,
+      },
+      8,
+      9000000,
+    );
+    builder.addSymbolLabel(
+      9000000,
+      "181",
+      {
+        x: 10,
+        y: -5,
+      },
+      8,
+      9000000,
+    );
     builder.addLabel(
       "coordinateLabels",
       9000001,
@@ -1275,10 +1319,17 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
     allSymbolCodes.forEach((code, idx) => {
       const ypos = -2 - 2 * idx;
 
-      builder.addSymbolLabel(idx * 10, code.toString(), {
-        x: 5,
-        y: ypos,
-      });
+      builder.addCooordinate(idx, { x: 10, y: ypos }, CoordinateDTOCoordTypeEnum.node);
+      builder.addSymbolLabel(
+        idx * 10,
+        code.toString(),
+        {
+          x: 5,
+          y: ypos,
+        },
+        10,
+        idx,
+      );
       builder.addLabel(
         "coordinateLabels",
         idx * 10 + 1,
@@ -1287,7 +1338,7 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
           x: 10,
           y: ypos,
         },
-        idx * 10,
+        idx,
         "coordinate",
         LabelDTOLabelTypeEnum.lineDescription,
         "Tahoma",
@@ -1312,22 +1363,35 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
 
     allSymbolCodes.forEach((code, idx) => {
       // Codes can be ascii codes or characters
+      const coordId = (idx + 1) * 10;
       builder.addCooordinate(
-        (idx + 1) * 10,
+        coordId,
         {
           x: 8 + idx * 5 * spacingPixels,
           y: -7.5,
         },
         CoordinateDTOCoordTypeEnum.node,
       );
-      builder.addSymbolLabel((idx + 1) * 10, String.fromCharCode(code), {
-        x: 8 + idx * 5 * spacingPixels,
-        y: -7.5,
-      });
-      builder.addSymbolLabel((idx + 1) * 10 + 1, code.toString(), {
-        x: 8 + idx * 5 * spacingPixels,
-        y: -7.5 - 5 * spacingPixels,
-      });
+      builder.addSymbolLabel(
+        (idx + 1) * 10,
+        String.fromCharCode(code),
+        {
+          x: 8 + idx * 5 * spacingPixels,
+          y: -7.5,
+        },
+        8,
+        coordId,
+      );
+      builder.addSymbolLabel(
+        (idx + 1) * 10 + 1,
+        code.toString(),
+        {
+          x: 8 + idx * 5 * spacingPixels,
+          y: -7.5 - 5 * spacingPixels,
+        },
+        8,
+        coordId,
+      );
       builder.addCooordinate(
         (idx + 1) * 10 + 1,
         {
@@ -1359,10 +1423,16 @@ export const SymbolNodesSelected: StoryObj<typeof CytoscapeCanvas> = {
     allSymbolCodes.forEach((code, idx) => {
       const ypos = -2 - 2 * idx;
 
-      builder.addSymbolLabel(idx * 10, code.toString(), {
-        x: 5,
-        y: ypos,
-      });
+      builder.addSymbolLabel(
+        idx * 10,
+        code.toString(),
+        {
+          x: 5,
+          y: ypos,
+        },
+        8,
+        idx,
+      );
     });
     return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 1.5, pan: { x: 0, y: 0 } }} />;
   },

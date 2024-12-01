@@ -97,6 +97,7 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
     connectedElements.merge(getRelatedLabels(connectedElements));
     const adjacentEdges = connectedElements.connectedEdges().difference(connectedElements);
     const allElements = connectedElements.union(adjacentEdges).union(getRelatedLabels(adjacentEdges));
+
     moveStartPositions = extractPositions(allElements);
 
     const originalCoordinates: ElementLookupData[] = [];

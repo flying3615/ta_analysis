@@ -32,8 +32,6 @@ export const useLineLabelAdjust = () => {
     const rotationAngle = clampAngleDegrees360(label.rotationAngle + angleChange); // Note delta angles *can* be negative
     const anchorAngle = clampAngleDegrees360(label.anchorAngle + angleChange);
 
-    // console.log(`angleChange=${angleChange}, new anchorAngle=${anchorAngle}, rotationAngle=${rotationAngle}`);
-
     return {
       ...label,
       position: newLabelPosition,
@@ -72,7 +70,7 @@ export const useLineLabelAdjust = () => {
     };
   };
 
-  const adjustLabelsWithLine = (movedNodesById: Record<number, INodeData>): INodeData[] => {
+  return (movedNodesById: Record<number, INodeData>): INodeData[] => {
     const activeLines = activeDiagrams.flatMap((diagram) => diagram?.lines);
     const affectedLines = activeLines.filter((line) => {
       return (
@@ -106,6 +104,4 @@ export const useLineLabelAdjust = () => {
       return node;
     });
   };
-
-  return adjustLabelsWithLine;
 };

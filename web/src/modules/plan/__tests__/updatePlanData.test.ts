@@ -230,6 +230,10 @@ describe("updatePlanData", () => {
               x: 99,
               y: -99,
             },
+            originalPosition: {
+              x: 55,
+              y: -10,
+            },
             labelType: LabelDTOLabelTypeEnum.markDescription,
             font: "Arial",
             fontSize: 12,
@@ -238,7 +242,7 @@ describe("updatePlanData", () => {
             textAlignment: "centerCenter",
             borderWidth: undefined,
             symbolType: undefined,
-          } satisfies LabelDTO,
+          } as LabelDTO,
         ],
       },
     ]);

@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
+import { normalizePlanData } from "@/modules/plan/normalizePlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData } from "@/redux/planSheets/planSheetsSlice";
@@ -51,12 +52,12 @@ export const usePreCompilePlanCheck: PlanGenMutation<PreCompilePlanResponseDTO> 
 export const updatePlanQueryKey = (transactionId: number) => ["updatePlan", transactionId];
 
 export const useUpdatePlanMutation = (transactionId: number) => {
-  const planData = useAppSelector(getPlanData);
-
+  const planData = useAppSelector(getPlanData) as PlanResponseDTO;
   return useMutation({
     mutationKey: updatePlanQueryKey(transactionId),
     mutationFn: () => {
-      const body = new Blob([JSON.stringify(planData)], { type: "application/json" });
+      const normalizedPlanData = normalizePlanData(planData);
+      const body = new Blob([JSON.stringify(normalizedPlanData)], { type: "application/json" });
       return new PlanControllerApi(apiConfig()).updatePlan({ transactionId, body });
     },
     // Explicitly don't invalidate the plan data here, as the async task won't have completed yet

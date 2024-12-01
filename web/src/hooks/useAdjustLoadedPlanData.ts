@@ -108,6 +108,9 @@ export const useAdjustLoadedPlanData = () => {
     const planCoordinateMapper = new PlanCoordinateMapper(diagrams);
 
     return nodes.map((unadjustedNode) => {
+      // We don't shove symbols back in
+      if (!unadjustedNode.label || unadjustedNode.properties.symbolId) return unadjustedNode;
+
       const labelPositionCm = unadjustedNode.properties.diagramId
         ? planCoordinateMapper.groundCoordToCm(unadjustedNode.properties.diagramId, unadjustedNode.position)
         : unadjustedNode.position;

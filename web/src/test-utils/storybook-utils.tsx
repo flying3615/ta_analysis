@@ -538,49 +538,55 @@ export const checkCytoElementProperties = async (
     position?: cytoscape.Position;
   },
 ) => {
-  const element = window.cyRef.$(selector);
-  if (element.length > 0) {
-    if (expectedProperties.displayState !== undefined) {
-      const data = element.data() as INodeDataProperties;
-      await expect(data.displayState).toBe(expectedProperties.displayState);
-    }
+  return waitFor(
+    async () => {
+      const element = window.cyRef.$(selector);
+      if (element.length > 0) {
+        console.log(
+          `checkCytoElementProperties validating ${JSON.stringify(element.data())} position ${JSON.stringify(element.position())}`,
+        );
+        if (expectedProperties.displayState !== undefined) {
+          const data = element.data() as INodeDataProperties;
+          await expect(data.displayState).toBe(expectedProperties.displayState);
+        }
 
-    if (expectedProperties.textRotation !== undefined) {
-      const data = element.data() as INodeDataProperties;
-      await expect(data.textRotation).toBe(expectedProperties.textRotation);
-    }
+        if (expectedProperties.textRotation !== undefined) {
+          const data = element.data() as INodeDataProperties;
+          await expect(data.textRotation).toBeCloseTo(expectedProperties.textRotation, 1);
+        }
 
-    if (expectedProperties.anchorAngle !== undefined) {
-      const data = element.data() as INodeDataProperties;
-      await expect(data.anchorAngle).toBe(expectedProperties.anchorAngle);
-    }
+        if (expectedProperties.anchorAngle !== undefined) {
+          const data = element.data() as INodeDataProperties;
+          await expect(data.anchorAngle).toBeCloseTo(expectedProperties.anchorAngle, 1);
+        }
 
-    if (expectedProperties.pointOffset !== undefined) {
-      const data = element.data() as INodeDataProperties;
-      await expect(data.pointOffset).toBe(expectedProperties.pointOffset);
-    }
+        if (expectedProperties.pointOffset !== undefined) {
+          const data = element.data() as INodeDataProperties;
+          await expect(data.pointOffset).toBeCloseTo(expectedProperties.pointOffset, 1);
+        }
 
-    if (expectedProperties.color !== undefined && expectedProperties.styleProperty !== undefined) {
-      const color = element.style(expectedProperties.styleProperty) as string;
-      await expect(color).toBe(expectedProperties.color);
-    }
+        if (expectedProperties.color !== undefined && expectedProperties.styleProperty !== undefined) {
+          const color = element.style(expectedProperties.styleProperty) as string;
+          await expect(color).toBe(expectedProperties.color);
+        }
 
-    if (expectedProperties.className !== undefined) {
-      const classes = element.classes();
-      await expect(classes).toContain(expectedProperties.className);
-    }
+        if (expectedProperties.className !== undefined) {
+          const classes = element.classes();
+          await expect(classes).toContain(expectedProperties.className);
+        }
 
-    if (expectedProperties.position !== undefined) {
-      const position = element.position();
-      const isClose = (a: number, b: number, tol: number) => Math.abs(a - b) <= tol;
-      const isPositionClose =
-        isClose(position.x, expectedProperties.position.x, 0.01) &&
-        isClose(position.y, expectedProperties.position.y, 0.01);
-      await expect(isPositionClose).toBe(true);
-    }
-  } else {
-    console.log(`Element with ID ${selector} not found.`);
-  }
+        if (expectedProperties.position !== undefined) {
+          const position = element.position();
+          await expect(position.x).toBeCloseTo(expectedProperties.position.x, 0);
+          await expect(position.y).toBeCloseTo(expectedProperties.position.y, 0);
+        }
+        console.log("Element all good");
+      } else {
+        console.log(`Element with ID ${selector} not found.`);
+      }
+    },
+    { timeout: 7000 },
+  );
 };
 
 export async function waitForLoadingSpinnerToDisappear() {

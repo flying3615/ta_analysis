@@ -48,11 +48,11 @@ export const nestedTitlePlan = new PlanDataBuilder()
     "diagram",
   )
   .addChildDiagram({ diagramRef: 6 })
-  .addLabel("childDiagramLabels", 41, "Diag. ACA", {
+  .addLabel("childDiagrams", 41, "Diag. ACA", {
     x: 7.824,
     y: 0,
   })
-  .addLabel("childDiagramLabels", 42, "See T?", {
+  .addLabel("childDiagrams", 42, "See T?", {
     x: 7.924,
     y: 0,
   })
@@ -403,7 +403,7 @@ export const nestedMiniTitlePlan = new PlanDataBuilder()
     zoomScale: 200, // meter per cm
   })
   .addLabel(
-    "coordinateLabels",
+    "labels",
     100,
     "System Generated Primary Diagram",
     { x: 40, y: -5 },
