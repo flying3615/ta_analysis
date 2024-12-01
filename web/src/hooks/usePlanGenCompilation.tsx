@@ -11,6 +11,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   edgeDefinitionsFromData,
+  IEdgeData,
+  INodeData,
   nodeDefinitionsFromData,
   nodePositionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -35,7 +37,7 @@ import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
-import { compressImage, generateBlankJpegBlob } from "@/util/imageUtil";
+import { compressImage } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 
 export interface PlanGenCompilation {
@@ -44,7 +46,10 @@ export interface PlanGenCompilation {
   compiling: boolean;
 }
 
-export const usePlanGenCompilation = (): PlanGenCompilation => {
+export const usePlanGenCompilation = (props: {
+  pageConfigsEdgeData?: IEdgeData[];
+  pageConfigsNodeData?: INodeData[];
+}): PlanGenCompilation => {
   const { error: errorToast } = useToast();
   const pages = useAppSelector(getPages);
   const diagrams = useAppSelector(getDiagrams);
@@ -226,17 +231,14 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
           const diagramEdgeData = filterEdgeData(extractDiagramEdges(currentPageDiagrams), "hide");
           const currentPageEdges = filterEdgeData(extractPageEdges([currentPage]), "hide");
 
-          const nodeData = [...diagramNodeData, ...currentPageNodes];
-          const edgeData = [...diagramEdgeData, ...currentPageEdges];
+          // Filter out the page counter nodes and edges
+          const pageCounterId = "border_page_no";
+          const borderNodes = props.pageConfigsNodeData?.filter((node) => !node.id.startsWith(pageCounterId));
+          const borderEdges = props.pageConfigsEdgeData?.filter((edge) => !edge.sourceNodeId.startsWith(pageCounterId));
 
-          if (nodeData.length === 0 && edgeData.length === 0) {
-            // generate a blank 100x100 white image for empty page
-            void generateBlankJpegBlob(100, 100).then((blob) => {
-              imageFiles.push({ name: imageName, blob: blob });
-            });
+          const nodeData = [...diagramNodeData, ...currentPageNodes, ...(borderNodes ?? [])];
+          const edgeData = [...diagramEdgeData, ...currentPageEdges, ...(borderEdges ?? [])];
 
-            continue;
-          }
           cyRefCurrent.remove(cyRefCurrent.elements());
 
           cyRefCurrent.add({
@@ -258,8 +260,8 @@ export const usePlanGenCompilation = (): PlanGenCompilation => {
 
           const jpg = cyRefCurrent?.jpg({
             ...cyImageExportConfig,
-            maxWidth: 9204, // width between the borders of the page
-            maxHeight: 5832, // height between the borders of the page upto the footer
+            maxWidth: 9302, // 9302 is the max width of the image between the borders of the page
+            maxHeight: 6395, // 6395 is the max height of the image between the borders of the page
             quality: 1,
           });
 

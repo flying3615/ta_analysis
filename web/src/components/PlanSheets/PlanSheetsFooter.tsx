@@ -75,7 +75,10 @@ const PlanSheetsFooter = ({
     pageConfigsEdgeData,
   });
 
-  const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation();
+  const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation({
+    pageConfigsNodeData,
+    pageConfigsEdgeData,
+  });
 
   const updatePlanMutation = useUpdatePlanMutation(transactionId);
   const {

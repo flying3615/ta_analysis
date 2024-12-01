@@ -58,7 +58,10 @@ describe("usePlanGenCompilation hook", () => {
   let startCompile: () => Promise<void>;
   let CompilationExportCanvas: React.FC;
   const MockComponentWithHook = () => {
-    ({ startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation());
+    ({ startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation({
+      pageConfigsEdgeData: [],
+      pageConfigsNodeData: [],
+    }));
 
     return (
       <div>

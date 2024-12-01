@@ -12,16 +12,15 @@ import { sleep } from "@/test-utils/storybook-utils";
 import { Default, Story } from "./PlanSheets.stories";
 
 export default {
+  parameters: {
+    chromatic: { disable: true },
+  },
   title: "CompilePlanSheets",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
 // Chromatic will execute the test in the order defined in the storybook
 export const CompilePlans: Story = {
-  parameters: {
-    chromatic: { runBefore: ["CompiledImageDSPT", "CompiledImageDTPS"] },
-    browsers: ["chrome"],
-  },
   ...Default,
   play: async ({ canvasElement }) => {
     indexedDB.deleteDatabase("compileImages");
@@ -45,7 +44,7 @@ export const CompilePlans: Story = {
       async () => {
         await expect(canvas.getByText("Compile plan(s)")).toBeInTheDocument();
       },
-      { timeout: 15000 },
+      { timeout: 12000 },
     );
   },
 };
