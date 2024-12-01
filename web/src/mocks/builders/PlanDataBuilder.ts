@@ -199,6 +199,7 @@ export class PlanDataBuilder {
     pointWidth: number = 1.0,
     lineType: string = "observation",
     style: string = "solid",
+    displayState?: DisplayStateEnum,
   ): PlanDataBuilder {
     if (this.planData.diagrams.length === 0) {
       throw new Error(
@@ -212,6 +213,7 @@ export class PlanDataBuilder {
       lineType,
       pointWidth,
       style,
+      displayState,
     });
     return this;
   }

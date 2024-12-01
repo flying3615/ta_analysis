@@ -487,6 +487,7 @@ describe("updatePlanData", () => {
         lineType: "observation",
         pointWidth: 2,
         style: "peck1",
+        displayState: undefined,
       },
     ]);
   });

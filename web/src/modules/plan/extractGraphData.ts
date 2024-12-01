@@ -364,6 +364,7 @@ const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
       lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
+      displayState: line.displayState,
     },
   };
 
@@ -379,6 +380,7 @@ const breakLine = (line: LineDTO, diagram: DiagramDTO): IEdgeData[] => {
       lineId: `${line.id}`,
       lineType: line.lineType,
       coordRefs: JSON.stringify(line.coordRefs),
+      displayState: line.displayState,
     },
   } as IEdgeData;
 

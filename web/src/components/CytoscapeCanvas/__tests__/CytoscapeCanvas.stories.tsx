@@ -266,6 +266,117 @@ RendersSpecifiedLineTypesSelected.play = async () => {
   cy.$("edge").select();
 };
 
+export const RendersSpecifiedLineTypesHide: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const lineStyles = [
+      "solid",
+      "peck1",
+      "dot1",
+      "dot2",
+      "arrow1",
+      "doubleArrow1",
+      "peckDot1",
+      "brokenSolid1",
+      "brokenPeck1",
+      "brokenDot1",
+      "brokenDot2",
+    ];
+
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 5;
+    const xEnd = 30;
+
+    const builder = fromBuilder();
+    lineStyles.forEach((lineStyle, index) => {
+      const idFrom = (index + 1) * 10;
+      const idTo = (index + 1) * 10 + 1;
+      const yPos = -(index * gap + yStart);
+
+      builder.addCooordinate(idFrom, { x: xStart, y: yPos });
+      builder.addCooordinate(idTo, { x: xEnd, y: yPos });
+
+      builder.addLine((index + 1) * 1000, [idFrom, idTo], 1, "observation", lineStyle, "hide");
+    });
+    const mockLineTypes = builder.build();
+    return <CanvasFromMockData data={mockLineTypes} />;
+  },
+};
+
+export const RendersSpecifiedLineTypesSystemHide: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const lineStyles = [
+      "solid",
+      "peck1",
+      "dot1",
+      "dot2",
+      "arrow1",
+      "doubleArrow1",
+      "peckDot1",
+      "brokenSolid1",
+      "brokenPeck1",
+      "brokenDot1",
+      "brokenDot2",
+    ];
+
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 5;
+    const xEnd = 30;
+
+    const builder = fromBuilder();
+    lineStyles.forEach((lineStyle, index) => {
+      const idFrom = (index + 1) * 10;
+      const idTo = (index + 1) * 10 + 1;
+      const yPos = -(index * gap + yStart);
+
+      builder.addCooordinate(idFrom, { x: xStart, y: yPos });
+      builder.addCooordinate(idTo, { x: xEnd, y: yPos });
+
+      builder.addLine((index + 1) * 1000, [idFrom, idTo], 1, "observation", lineStyle, "systemHide");
+    });
+    const mockLineTypes = builder.build();
+    return <CanvasFromMockData data={mockLineTypes} />;
+  },
+};
+
+export const RendersSpecifiedLineTypesSystemDisplay: StoryObj<typeof CytoscapeCanvas> = {
+  render: () => {
+    const lineStyles = [
+      "solid",
+      "peck1",
+      "dot1",
+      "dot2",
+      "arrow1",
+      "doubleArrow1",
+      "peckDot1",
+      "brokenSolid1",
+      "brokenPeck1",
+      "brokenDot1",
+      "brokenDot2",
+    ];
+
+    const gap = 2;
+    const xStart = 5;
+    const yStart = 5;
+    const xEnd = 30;
+
+    const builder = fromBuilder();
+    lineStyles.forEach((lineStyle, index) => {
+      const idFrom = (index + 1) * 10;
+      const idTo = (index + 1) * 10 + 1;
+      const yPos = -(index * gap + yStart);
+
+      builder.addCooordinate(idFrom, { x: xStart, y: yPos });
+      builder.addCooordinate(idTo, { x: xEnd, y: yPos });
+
+      builder.addLine((index + 1) * 1000, [idFrom, idTo], 1, "observation", lineStyle, "systemDisplay");
+    });
+    const mockLineTypes = builder.build();
+    return <CanvasFromMockData data={mockLineTypes} />;
+  },
+};
+
 export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const fonts = ["Roboto", "Arimo", "Tinos"];
