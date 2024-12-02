@@ -9,8 +9,8 @@ import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 
 export type SelectHandlerMode = PlanMode.SelectLine | PlanMode.SelectLabel;
 
-const SELECTED_PAGE_LABELS = `node[label][labelType="userAnnotation"][^invisible][^symbolId]:selected`;
-const SELECTED_PAGE_LINES = `edge[lineId][lineType="userDefined"][^invisible][^pageConfig]:selected`;
+export const SELECTED_PAGE_LABELS = `node[label][labelType="userAnnotation"][^invisible][^symbolId]:selected`;
+export const SELECTED_PAGE_LINES = `edge[lineId][lineType="userDefined"][^invisible][^pageConfig]:selected`;
 
 export interface DeleteKeyHandlerProps {
   mode: SelectHandlerMode;

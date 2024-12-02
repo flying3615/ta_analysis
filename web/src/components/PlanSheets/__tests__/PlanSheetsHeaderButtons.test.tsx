@@ -29,6 +29,7 @@ describe("PlanSheetsHeaderButtons", () => {
   const activeButtonLabels = [
     [PlanMode.Undo],
     [PlanMode.View],
+    [PlanMode.Delete],
     [PlanMode.Cursor],
     [PlanMode.SelectDiagram],
     [PlanMode.SelectLabel],
@@ -37,12 +38,7 @@ describe("PlanSheetsHeaderButtons", () => {
     [PlanMode.AddLabel],
     [PlanMode.AddLine],
   ];
-  const inactiveButtonLabels = [
-    [PlanMode.Delete],
-    [PlanMode.SelectPolygon],
-    [PlanMode.FormatLinesText],
-    [PlanMode.SelectRectangle],
-  ];
+  const inactiveButtonLabels = [[PlanMode.SelectPolygon], [PlanMode.FormatLinesText], [PlanMode.SelectRectangle]];
 
   const zoomByDeltaMock = jest.fn();
   const zoomToFitMock = jest.fn();
@@ -72,7 +68,7 @@ describe("PlanSheetsHeaderButtons", () => {
   it("should disable all buttons with Not Implemented", () => {
     renderWithReduxProvider(<PlanSheetsHeaderButtons />);
     const buttons = screen.queryAllByRole("button", { name: PlanMode.NotImplemented });
-    expect(buttons).toHaveLength(4);
+    expect(buttons).toHaveLength(3);
     buttons.forEach((button) => expect(button).toBeDisabled());
   });
 

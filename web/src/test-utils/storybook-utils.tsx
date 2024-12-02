@@ -6,6 +6,7 @@ import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
 import { screen } from "@storybook/testing-library";
 import { fireEvent, userEvent, waitFor, within } from "@storybook/testing-library";
+import { GetByRole } from "@testing-library/react";
 import { UserEvent } from "@testing-library/user-event";
 import cytoscape from "cytoscape";
 import React, { PropsWithChildren, useEffect, useState } from "react";
@@ -441,6 +442,15 @@ export class TestCanvas {
 
   async clickButton(buttonName: string) {
     await userEvent.click(within(this.canvasElement).getByRole("button", { name: buttonName }));
+  }
+
+  getButton(buttonName: string): ReturnType<GetByRole> {
+    return within(this.canvasElement).getByRole("button", { name: buttonName });
+  }
+
+  async pressDelete(layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node") {
+    await this.waitForCytoscape();
+    fireEvent.keyDown(this.getLayer(layer), { key: "Delete" });
   }
 }
 

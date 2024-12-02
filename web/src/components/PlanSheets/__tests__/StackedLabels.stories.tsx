@@ -51,9 +51,10 @@ export const ClickOnPositionWithStackedLabels: Story = {
   ...CustomLabels,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLabel);
-    await test.leftClick([547, 416]); // top most object is selected
-    await test.contextMenu({ at: [547, 416], select: "Select" }, "hover");
+    await test.leftClick([538, 415]); // top most object is selected
+    await test.contextMenu({ at: [538, 415], select: "Select" }, "hover");
     await expect(await test.findMenuItem("Lot 123 Section 1")).toBeInTheDocument();
+    await expect(await test.findMenuItem("1800°545'04\"")).toBeInTheDocument();
     await expect(await test.findMenuItem("My page label\nwith a line break")).toBeInTheDocument();
     // The following should be verified by chromatic:
     // select sub menu should show all stacked labels

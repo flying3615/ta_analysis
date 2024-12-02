@@ -6,28 +6,21 @@ import { NodeSingular } from "cytoscape";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { CustomLabels } from "@/components/PlanSheets/properties/__tests__/LabelPropertiesPanel.stories";
 import {
   checkCytoElementProperties,
   click,
-  clickAtCoordinates,
-  clickMultipleCoordinates,
   getCytoCanvas,
-  RIGHT_MOUSE_BUTTON,
+  getCytoElement,
   sleep,
   tabletLandscapeParameters,
   TestCanvas,
-  toClientXY,
-  toXY,
 } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/PageLabel",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
-
-const diagramLabel2Position: [number, number] = [490, 270];
-const pageLabelPosition: [number, number] = [900, 200];
-const pageLabel2Position: [number, number] = [800, 300];
 const whiteSpace: [number, number] = [585, 296 + 30];
 
 const addLabel = async (
@@ -101,70 +94,107 @@ export const DeselectMultipleLabels: Story = {
 };
 
 export const DeletePageLabel: Story = {
-  ...Default,
+  ...CustomLabels,
   play: async ({ canvasElement }) => {
-    // setup - add a page label
-    const canvas = within(canvasElement);
-    await addPageLabel(canvasElement, toClientXY(pageLabelPosition), "My page label");
+    const pageLabelPosition: [number, number] = [510, 410];
+    const diagramLabelPosition: [number, number] = [214, 206];
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLabel);
+    await test.waitForCytoscape();
 
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
-    await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    //delete menu is disabled for diagram line
+    await test.rightClick(diagramLabelPosition); // right click on diagram line
+    await expect(await test.findMenuItem("Delete")).toHaveAttribute("aria-disabled", "true");
 
-    // right click on diagram label, context menu shows delete menu disabled
-    clickAtCoordinates(target, diagramLabel2Position, RIGHT_MOUSE_BUTTON);
-    await expect(await canvas.findByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
+    // delete using context menu
+    await expect(test.getButton("Undo")).toBeDisabled();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the label is present
+    await test.contextMenu({ at: pageLabelPosition, select: "Delete" }); // select delete action for page label
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the label is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the label is restored
 
-    // delete the page label
-    clickAtCoordinates(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
-    await userEvent.click(await canvas.findByRole("menuitem", { name: "Delete" }));
-    await sleep(500);
+    // delete using keyboard
+    await test.click(pageLabelPosition); // select the label
+    await test.pressDelete(); // delete the line using keyboard
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the label is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the label is restored
+
+    // delete using the header delete icon
+    await expect(test.getButton("Delete")).toBeDisabled();
+    await test.click(pageLabelPosition); // select the label
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeEnabled();
+    await test.clickButton("Delete"); // delete the label using header delete icon
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the label is removed
+    await expect(test.getButton("Delete")).toBeDisabled();
   },
 };
 
 export const DeleteMultiplePageLabels: Story = {
-  ...Default,
+  ...CustomLabels,
   play: async ({ canvasElement }) => {
-    // setup - add a page label
-    const canvas = within(canvasElement);
-    await addPageLabel(canvasElement, toClientXY(pageLabelPosition), "My page label 1");
-    await addPageLabel(canvasElement, toClientXY(pageLabel2Position), "My page label 2");
+    const visiblePageLabelPosition: [number, number] = [510, 410];
+    const hiddenPageLabelPosition: [number, number] = [406, 535];
+    const diagramLabelPosition: [number, number] = [214, 206];
 
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
-    await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLabel);
+    await test.waitForCytoscape();
 
-    // select two page labels and one diagram label
-    clickMultipleCoordinates(target, [toXY(pageLabelPosition), toXY(pageLabel2Position), toXY(diagramLabel2Position)]);
-
-    // right click on diagram label, context menu shows delete menu disabled
-    clickAtCoordinates(target, diagramLabel2Position, RIGHT_MOUSE_BUTTON);
-    await expect(await canvas.findByRole("menuitem", { name: "Delete" })).toHaveAttribute("aria-disabled", "true");
+    // delete menu is disabled for multiselect page labels and diagram label
+    await test.multiSelect([visiblePageLabelPosition, diagramLabelPosition]); // select a page label and a diagram label
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled
+    await test.rightClick(visiblePageLabelPosition); // right click to open context menu
+    await expect(await test.findMenuItem("Delete")).toHaveAttribute("aria-disabled", "true"); // delete menu is disabled
     await userEvent.keyboard("{Escape}"); // close context menu
+    await test.waitForCytoscape();
 
-    // escape deselects - reselect two page labels and one diagram label
-    clickMultipleCoordinates(target, [toXY(pageLabelPosition), toXY(pageLabel2Position), toXY(diagramLabel2Position)]);
-    await userEvent.keyboard("{Delete}");
-    await sleep(500); // required, in case objects get deleted later
-    // delete the selected labels, only page label deleted and diagram label remains
-    // When SURVEY-26060 is implemented, all labels will remain. For now, only chromatic baseline will change
-    // TODO: SURVEY-26060 check cytoscape objects still exist
+    // delete using context menu
+    await expect(test.getButton("Undo")).toBeDisabled();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the visible page label is present
+    await expect(getCytoElement("#LAB_512")).toBeDefined(); // the hidden page label is present
+    await test.multiSelect([visiblePageLabelPosition, hiddenPageLabelPosition]); // select the 2 page labels
+    await test.contextMenu({ at: visiblePageLabelPosition, select: "Delete" }); // select delete action for page line
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the visible page label is removed
+    await expect(getCytoElement("#LAB_512")).not.toBeDefined(); // the hidden page label is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the visible page label is restored
+    await expect(getCytoElement("#LAB_512")).toBeDefined(); // the hidden page label is restored
+
+    // delete using the header delete icon
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled
+    await test.multiSelect([visiblePageLabelPosition, hiddenPageLabelPosition]); // select the 2 page labels
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeEnabled();
+    await test.clickButton("Delete"); // delete the labels using header delete icon
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the visible page label is removed
+    await expect(getCytoElement("#LAB_512")).not.toBeDefined(); // the hidden page label is remove
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled after delete action
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).toBeDefined(); // the visible page label is restored
+    await expect(getCytoElement("#LAB_512")).toBeDefined(); // the hidden page label is restored
+
+    // delete using keyboard
+    await test.multiSelect([visiblePageLabelPosition, hiddenPageLabelPosition, diagramLabelPosition]); // select the 2 page labels and the diagram label
+    await test.pressDelete(); // delete the labels using keyboard
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the visible page label is removed
+    await expect(getCytoElement("#LAB_511")).not.toBeDefined(); // the hidden page label is remove
+    await expect(getCytoElement("#LAB_14")).toBeDefined(); // the diagram label is not removed
+    // // delete the selected labels, only page label deleted and diagram label remains
+    // // When SURVEY-26060 is implemented, all labels will remain. For now, only chromatic baseline will change
+    // // TODO: SURVEY-26060 check cytoscape objects still exist
   },
-};
-
-const addPageLabel = async (
-  canvasElement: HTMLElement,
-  labelPosition: { clientX: number; clientY: number },
-  pageLabel: string,
-) => {
-  const canvas = within(canvasElement);
-  await sleep(500);
-  await userEvent.click(await canvas.findByTitle(PlanMode.AddLabel));
-  await sleep(500);
-  const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-  await addLabel(canvasElement, labelPosition, pageLabel);
-  await click(target, { clientX: whiteSpace[0], clientY: whiteSpace[1] }); // click outside the textarea to save the label
-  await sleep(500);
 };
 
 export const CopyPageLabelDoesNotRemove: Story = {

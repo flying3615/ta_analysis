@@ -1,12 +1,17 @@
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiButton, LuiIcon } from "@linzjs/lui";
 import { PanelsContext } from "@linzjs/windows";
-import React, { useContext, useState } from "react";
+import { EdgeSingular, EventObject, NodeSingular } from "cytoscape";
+import React, { useContext, useEffect, useState } from "react";
 
 import { CommonButtons } from "@/components/CommonButtons";
 import { VerticalSpacer } from "@/components/Header/Header";
 import { HeaderButton } from "@/components/Header/HeaderButton";
+import { SELECTED_PAGE_LABELS, SELECTED_PAGE_LINES } from "@/components/PlanSheets/interactions/DeleteKeyHandler";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { usePageLabelEdit } from "@/hooks/usePageLabelEdit";
+import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 import {
   canUndo,
   getCanViewHiddenLabels,
@@ -21,14 +26,17 @@ import { PlanMode } from "./PlanSheetType";
 import { ViewLabelTypes } from "./ViewLabelTypes";
 
 export const PlanSheetsHeaderButtons = () => {
-  const [selectedButtonLabel, setSelectedButtonLabel] = useState("");
+  const [selectedButtonLabel, setSelectedButtonLabel] = useState<PlanMode>();
 
   const { openPanel } = useContext(PanelsContext);
-  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom } = useCytoscapeContext();
+  const { zoomToFit, zoomByDelta, isMaxZoom, isMinZoom, cyto } = useCytoscapeContext();
   const dispatch = useAppDispatch();
   const planMode = useAppSelector(getPlanMode);
   const enableUndo = useAppSelector(canUndo);
   const canViewHiddenLabels = useAppSelector(getCanViewHiddenLabels);
+  const [canDelete, setCanDelete] = useState(false);
+  const { deletePageLines } = usePageLineEdit();
+  const { deletePageLabels } = usePageLabelEdit();
 
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
@@ -37,6 +45,27 @@ export const PlanSheetsHeaderButtons = () => {
     setSelectedButtonLabel(label);
     dispatch(setPlanMode(label));
   };
+
+  const checkCanDelete = (event: EventObject): boolean => {
+    const selectedElements = event.cy.elements(":selected");
+    if (selectedElements.length === 0) return false;
+    return selectedElements.every(
+      (ele) =>
+        ele.data("coordType") === "userDefined" ||
+        ele.data("lineType") === "userDefined" ||
+        ele.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation,
+    );
+  };
+
+  useEffect(() => {
+    const setCanDeleteHandler = (event: EventObject) => setCanDelete(checkCanDelete(event));
+    if (selectedButtonLabel && [PlanMode.SelectLine, PlanMode.SelectLabel].includes(selectedButtonLabel)) {
+      cyto?.on("render", setCanDeleteHandler);
+    }
+    return () => {
+      cyto?.off("render", setCanDeleteHandler);
+    };
+  }, [cyto, selectedButtonLabel]);
 
   return (
     <>
@@ -49,11 +78,21 @@ export const PlanSheetsHeaderButtons = () => {
         }}
       />
       <HeaderButton
-        disabled={true}
-        headerMenuLabel={PlanMode.NotImplemented}
+        disabled={!canDelete}
+        headerMenuLabel={PlanMode.Delete}
         iconName="ic_delete_forever"
         onClick={() => {
-          handleHeaderButtonClick(PlanMode.NotImplemented);
+          if (selectedButtonLabel === PlanMode.SelectLine) {
+            const selectedElements = cyto?.$(SELECTED_PAGE_LINES);
+            if (!selectedElements || selectedElements.length === 0) return;
+            deletePageLines([...selectedElements] as EdgeSingular[]);
+          }
+
+          if (selectedButtonLabel === PlanMode.SelectLabel) {
+            const selectedElements = cyto?.$(SELECTED_PAGE_LABELS);
+            if (!selectedElements || selectedElements.length === 0) return;
+            deletePageLabels([...selectedElements] as NodeSingular[]);
+          }
         }}
         selectedButtonLabel={planMode}
       />

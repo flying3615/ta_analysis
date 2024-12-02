@@ -7,7 +7,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { sleep, tabletLandscapeParameters } from "@/test-utils/storybook-utils";
 
 import { MoveDiagramLine, MoveDiagramNode } from "../interactions/__tests__/MoveSelectedHandler.stories";
-import { Default, DeletePage, HideCoordinate, HideLine, MoveDiagram, Story } from "./PlanSheets.stories";
+import { Default, DeletePage, HideCoordinate, HideDiagramLine, MoveDiagram, Story } from "./PlanSheets.stories";
 
 export default {
   title: "PlanSheets/Undo",
@@ -40,7 +40,7 @@ const undo = (component: Story & Required<Pick<Story, "play">>): Story => ({
 export const UndoDeletePage = undo(DeletePage);
 export const UndoMoveDiagram = undo(MoveDiagram);
 export const UndoHideCoordinate = undo(HideCoordinate);
-export const UndoHideLine = undo(HideLine);
+export const UndoHideDiagramLine = undo(HideDiagramLine);
 
 export const UndoMoveDiagramLine = undo(MoveDiagramLine);
 export const UndoMoveDiagramNode = undo(MoveDiagramNode);

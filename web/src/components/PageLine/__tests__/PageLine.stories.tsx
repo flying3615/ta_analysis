@@ -1,9 +1,17 @@
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
+import { userEvent } from "@storybook/test";
 
 import { Default, PlanSheetWithHiddenObject, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { checkCytoElementProperties, sleep, tabletLandscapeParameters, TestCanvas } from "@/test-utils/storybook-utils";
+import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import {
+  checkCytoElementProperties,
+  getCytoElement,
+  sleep,
+  tabletLandscapeParameters,
+  TestCanvas,
+} from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/PageLine",
@@ -548,5 +556,106 @@ export const HidePageLine: Story = {
     await test.contextMenu({ at: [554, 230], select: "Hide" }); // select hide action for page line
     await test.waitForCytoscape();
     await checkCytoElementProperties("#10013_0", { displayState: "hide" });
+  },
+};
+
+export const DeletePageLine: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const pageLinePosition: [number, number] = [513, 229];
+    const diagramLine: [number, number] = [373, 82];
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLine);
+    await test.waitForCytoscape();
+
+    // delete is disabled for diagram line
+    await test.rightClick(diagramLine); // open context menu for diagram line
+    await test.waitForCytoscape();
+    await expect(await test.findMenuItem("Delete")).toHaveAttribute("aria-disabled", "true"); // delete action is disabled for diagram line
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled
+
+    // delete using context menu
+    await expect(test.getButton("Undo")).toBeDisabled();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the line is present
+    await test.contextMenu({ at: pageLinePosition, select: "Delete" }); // select delete action for page line
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the line is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the line is restored
+
+    // delete using keyboard
+    await test.click(pageLinePosition); // select the line
+    await test.pressDelete(); // delete the line using keyboard
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the line is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the line is restored
+
+    // delete using the header delete icon
+    await expect(test.getButton("Delete")).toBeDisabled();
+    await test.click(pageLinePosition); // select the line
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeEnabled();
+    await test.clickButton("Delete"); // delete the line using header delete icon
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the line is removed
+    await expect(test.getButton("Delete")).toBeDisabled();
+  },
+};
+
+export const DeleteMultiplePageLines: Story = {
+  ...PlanSheetWithHiddenObject,
+  play: async ({ canvasElement }) => {
+    const visiblePageLine: [number, number] = [513, 229];
+    const hiddenPageLine: [number, number] = [473, 163];
+    const diagramLine: [number, number] = [373, 82];
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLine);
+    await test.waitForCytoscape();
+
+    // delete is disabled when page line and diagram line is selected
+    await test.multiSelect([visiblePageLine, diagramLine]); // select the page line and diagram line
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled
+    await test.rightClick(visiblePageLine); // open context menu
+    await expect(await test.findMenuItem("Delete")).toHaveAttribute("aria-disabled", "true"); // delete action is disabled
+    await userEvent.keyboard("{Escape}"); // deselect the selected lines
+    await test.waitForCytoscape();
+
+    // delete using context menu
+    await expect(test.getButton("Undo")).toBeDisabled();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the visible page line is present
+    await expect(getCytoElement("#10021_0")).toBeDefined(); // the hidden page line is present
+    await test.multiSelect([visiblePageLine, hiddenPageLine]); // select the 2 page lines
+    await test.contextMenu({ at: visiblePageLine, select: "Delete" }); // select delete action for page line
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the visible page line is removed
+    await expect(getCytoElement("#10021_0")).not.toBeDefined(); // the hidden page line is removed
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the visible page line is restored
+    await expect(getCytoElement("#10021_0")).toBeDefined(); // the hidden page line is restored
+
+    // delete using keyboard
+    await test.multiSelect([visiblePageLine, hiddenPageLine]); // select the 2 page lines
+    await test.pressDelete(); // delete the lines using keyboard
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the visible page line is removed
+    await expect(getCytoElement("#10021_0")).not.toBeDefined(); // the hidden page line is remove
+    await test.clickButton("Undo"); // undo delete action
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).toBeDefined(); // the visible page line is restored
+    await expect(getCytoElement("#10021_0")).toBeDefined(); // the hidden page line is restored
+
+    // delete using the header delete icon
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled
+    await test.multiSelect([visiblePageLine, hiddenPageLine]); // select the 2 page lines
+    await test.waitForCytoscape();
+    await expect(test.getButton("Delete")).toBeEnabled();
+    await test.clickButton("Delete"); // delete the lines using header delete icon
+    await test.waitForCytoscape();
+    await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the visible page line is removed
+    await expect(getCytoElement("#10021_0")).not.toBeDefined(); // the hidden page line is remove
+    await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled after delete action
   },
 };
