@@ -105,7 +105,7 @@ export const UnsavedChangesModal = ({
 
   return (
     <LuiAlertModalV2 level="warning" headingText="You have unsaved changes" onClose={handleCancel}>
-      <p>If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes</p>
+      <p>If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes.</p>
       <LuiModalV2.Buttons>
         <LuiButton level="tertiary" onClick={handleCancel}>
           Cancel

@@ -504,7 +504,7 @@ describe("PlanSheetsFooter", () => {
     expect(await screen.findByText("You have unsaved changes")).toBeInTheDocument();
     expect(
       await screen.findByText(
-        "If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes",
+        "If you navigate away from Layout Plan Sheets without saving, you will lose any unsaved changes.",
       ),
     ).toBeInTheDocument();
 
