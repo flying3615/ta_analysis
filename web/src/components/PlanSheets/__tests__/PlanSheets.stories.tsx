@@ -27,7 +27,7 @@ import {
   userCoordinate1,
   userCoordinate2,
 } from "@/components/PlanSheets/properties/__tests__/data/LineData";
-import { clearLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
+import { clearLayoutAutoSave, getLayoutAutoSave, setLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
@@ -1164,5 +1164,83 @@ export const ViewLabelsCancel: Story = {
     await expect(markNamesCheckbox).toBeChecked(); // verify change not saved
     // chromatic will verify button not selected with correct styling
     // chromatic will verify the changes are not saved (observation code is not visible and mark names are on cytoscape)
+  },
+};
+
+export const AutoRecoverPopUpModal: Story = {
+  ...Default,
+  beforeEach: async () => {
+    await clearLayoutAutoSave();
+    // setting mocks with recent lastModifiedAt date to trigger auto recover
+    const mockData: PlanResponseDTO = {
+      ...mockPlanData,
+      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+    };
+    await setLayoutAutoSave(123, mockData);
+  },
+  play: async () => {
+    await expect(await screen.findByRole("button", { name: "Start again" }, { timeout: 2000 })).toBeTruthy();
+  },
+};
+
+export const AutoRecoverPopUpModalStartAgain: Story = {
+  ...Default,
+  beforeEach: async () => {
+    await clearLayoutAutoSave();
+    // setting mocks with recent lastModifiedAt date to trigger auto recover
+    const mockData: PlanResponseDTO = {
+      ...mockPlanData,
+      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+    };
+    await setLayoutAutoSave(123, mockData);
+  },
+  play: async () => {
+    await userEvent.click(await screen.findByRole("button", { name: "Start again" }, { timeout: 2000 }));
+    await sleep(500); // wait for data to be cleared
+    await expect(await getLayoutAutoSave(123)).toBeUndefined();
+  },
+};
+
+export const AutoRecoverPopUpModalRecoverLastState: Story = {
+  ...Default,
+  beforeEach: async () => {
+    await clearLayoutAutoSave();
+    // setting mocks with recent lastModifiedAt date to trigger auto recover
+    const mockData: PlanResponseDTO = {
+      ...mockPlanData,
+      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+    };
+    await setLayoutAutoSave(123, mockData);
+  },
+  play: async () => {
+    const dataBeforeRecovery = await getLayoutAutoSave(123);
+    await userEvent.click(await screen.findByRole("button", { name: "Recover last state" }, { timeout: 2000 }));
+    // wait for some time to make sure data is not cleared
+    await sleep(500);
+    const dataAfterRecovery = await getLayoutAutoSave(123);
+    await expect(dataAfterRecovery).toStrictEqual(dataBeforeRecovery);
+  },
+};
+
+export const AutoRecoverClearDataAfterSave: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitForLoadingSpinnerToDisappear();
+
+    // Dispatch replace diagrams event to set hasChanges = true
+    store.dispatch(replaceDiagrams([]));
+    await sleep(500); // wait for event to be processed
+
+    // check that data exists before save
+    const dataBeforeSave = await getLayoutAutoSave(123);
+    await expect(dataBeforeSave).toBeDefined();
+
+    await userEvent.click(await canvas.findByText("Save layout"));
+    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"), { timeout: 20000 });
+
+    // check that data is cleared after save
+    const dataAfterSave = await getLayoutAutoSave(123);
+    await expect(dataAfterSave).toBeUndefined();
   },
 };
