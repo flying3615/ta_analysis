@@ -23,8 +23,8 @@ PLANGEN_LAYOUT_DB.version(PLANGEN_LAYOUT_DB_VERSION).stores({
   autoSave: "transactionId",
 });
 
-export async function clearLayoutAutoSave(): Promise<void> {
-  return PLANGEN_LAYOUT_DB.autoSave.clear();
+export async function clearLayoutAutoSave(transactionId: number) {
+  await setLayoutAutoSave(transactionId, undefined);
 }
 
 export async function getLayoutAutoSave(transactionId: number): Promise<PlanResponseDTO | undefined> {
@@ -48,6 +48,10 @@ export async function getAndValidateAutoSave(
     return undefined;
   }
   return autoSave;
+}
+
+export async function resetAllLayoutAutoSave() {
+  await PLANGEN_LAYOUT_DB.autoSave.clear();
 }
 
 export async function setLayoutAutoSave(transactionId: number, data: PlanResponseDTO | undefined): Promise<unknown> {

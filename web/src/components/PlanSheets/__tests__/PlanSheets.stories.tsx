@@ -28,7 +28,7 @@ import {
   userCoordinate1,
   userCoordinate2,
 } from "@/components/PlanSheets/properties/__tests__/data/LineData";
-import { clearLayoutAutoSave, getLayoutAutoSave, setLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
+import { getLayoutAutoSave, resetAllLayoutAutoSave, setLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
 import { AsyncTaskBuilder } from "@/mocks/builders/AsyncTaskBuilder";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
@@ -95,7 +95,7 @@ const PlanSheetsTemplate = () => {
 };
 
 export const Default: Story = {
-  beforeEach: clearLayoutAutoSave,
+  beforeEach: resetAllLayoutAutoSave,
   render: () => <PlanSheetsTemplate />,
 };
 
@@ -1167,7 +1167,7 @@ export const ViewLabelsCancel: Story = {
 export const AutoRecoverPopUpModal: Story = {
   ...Default,
   beforeEach: async () => {
-    await clearLayoutAutoSave();
+    await resetAllLayoutAutoSave();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
     const mockData: PlanResponseDTO = {
       ...mockPlanData,
@@ -1183,7 +1183,7 @@ export const AutoRecoverPopUpModal: Story = {
 export const AutoRecoverPopUpModalLastUserEditedSave: Story = {
   ...Default,
   beforeEach: async () => {
-    await clearLayoutAutoSave();
+    await resetAllLayoutAutoSave();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
     const mockData: PlanResponseDTO = {
       ...mockPlanData,
@@ -1201,7 +1201,7 @@ export const AutoRecoverPopUpModalLastUserEditedSave: Story = {
 export const AutoRecoverPopUpModalAutoRecoveryVersion: Story = {
   ...Default,
   beforeEach: async () => {
-    await clearLayoutAutoSave();
+    await resetAllLayoutAutoSave();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
     const mockData: PlanResponseDTO = {
       ...mockPlanData,
