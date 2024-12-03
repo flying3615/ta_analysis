@@ -35,7 +35,10 @@ export const viewLabelTypeOptions: SelectOptions[] = [
   { value: LabelDTOLabelTypeEnum.obsDistance, label: "Observation distances" },
   { value: LabelDTOLabelTypeEnum.parcelAppellation, label: "Parcel appellations" },
   { value: LabelDTOLabelTypeEnum.parcelArea, label: "Parcel areas" },
-  { value: LabelDTOLabelTypeEnum.lineDescription, label: "Water/irregular boundary" },
+  {
+    value: `${LabelDTOLabelTypeEnum.lineDescription},${LabelDTOLabelTypeEnum.lineLongDescription}`,
+    label: "Water/irregular boundary",
+  },
 ];
 
 export const defaultOptionalVisibileLabelTypes = viewLabelTypeOptions
