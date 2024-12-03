@@ -7,13 +7,16 @@ import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
+import { Provider } from "react-redux";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
 import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
+import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { mockStore } from "@/test-utils/store-mock";
 import { findCell, findCellContains, openAndClickMenuOption, selectCell } from "@/test-utils/storybook-ag-grid-utils";
 import {
   PanelInstanceContextMock,
@@ -38,22 +41,24 @@ export default {
 } as Meta<typeof LabelPreferencesPanel>;
 
 const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) => (
-  <QueryClientProvider client={queryClient}>
-    <FeatureFlagProvider>
-      <PanelsContextProvider>
-        <StorybookRouter url={generatePath(Paths.root, { transactionId })}>
-          <Route
-            path={Paths.root}
-            element={
-              <PanelInstanceContextMock>
-                <LabelPreferencesPanel transactionId={123} />
-              </PanelInstanceContextMock>
-            }
-          />
-        </StorybookRouter>
-      </PanelsContextProvider>
-    </FeatureFlagProvider>
-  </QueryClientProvider>
+  <Provider store={setupStore({ ...mockStore })}>
+    <QueryClientProvider client={queryClient}>
+      <FeatureFlagProvider>
+        <PanelsContextProvider>
+          <StorybookRouter url={generatePath(Paths.root, { transactionId })}>
+            <Route
+              path={Paths.root}
+              element={
+                <PanelInstanceContextMock>
+                  <LabelPreferencesPanel transactionId={123} />
+                </PanelInstanceContextMock>
+              }
+            />
+          </StorybookRouter>
+        </PanelsContextProvider>
+      </FeatureFlagProvider>
+    </QueryClientProvider>
+  </Provider>
 );
 type Story = StoryObj<typeof LabelPreferencesWrapper>;
 

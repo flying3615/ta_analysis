@@ -49,6 +49,8 @@ export interface PlanSheetsState {
   viewableLabelTypes: string[];
 }
 
+const IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY = "plangen.isHiddenObjectsVisibleByDefault";
+
 const initialState: PlanSheetsState = {
   configs: [],
   diagrams: [],
@@ -64,7 +66,7 @@ const initialState: PlanSheetsState = {
   previousDiagrams: null,
   previousPages: null,
   originalPositions: {},
-  canViewHiddenLabels: true,
+  canViewHiddenLabels: localStorage.getItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY) !== "false",
   viewableLabelTypes: defaultOptionalVisibileLabelTypes,
 };
 

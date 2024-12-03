@@ -4,16 +4,21 @@ import { LuiIcon, LuiMiniSpinner } from "@linzjs/lui";
 import clsx from "clsx";
 import { MouseEvent as ReactMouseEvent, ReactElement, useState } from "react";
 
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { setCanViewHiddenLabels } from "@/redux/planSheets/planSheetsSlice";
+
 import { isHiddenObjectsVisibleByDefault, setHiddenObjectsVisibleByDefault } from "./labelPreferences";
 
 export function HiddenObjectsVisibleByDefault(): ReactElement {
   const [isVisibleByDefault, _setIsVisibleByDefault] = useState(isHiddenObjectsVisibleByDefault());
   const [saving, setSaving] = useState(false);
+  const dispatch = useAppDispatch();
 
   const setIsVisibleByDefault = (e: ReactMouseEvent<HTMLInputElement>) => {
     const isVisibleByDefault = e.currentTarget.checked;
     _setIsVisibleByDefault(isVisibleByDefault);
     setHiddenObjectsVisibleByDefault(isVisibleByDefault);
+    dispatch(setCanViewHiddenLabels(isVisibleByDefault));
     setSaving(true);
     setTimeout(() => setSaving(false), 1000);
   };
