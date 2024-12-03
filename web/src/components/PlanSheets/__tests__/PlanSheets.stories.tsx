@@ -1241,3 +1241,28 @@ export const AutoRecoverClearDataAfterSave: Story = {
     await expect(dataAfterSave).toBeUndefined();
   },
 };
+
+export const AutoRecoverClearDataAfterLeave: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitForLoadingSpinnerToDisappear();
+
+    // Dispatch replace diagrams event to set hasChanges = true
+    store.dispatch(replaceDiagrams([]));
+    await sleep(500);
+
+    // check that data exists before leave
+    const dataBeforeSave = await getLayoutAutoSave(123);
+    await expect(dataBeforeSave).toBeDefined();
+
+    await userEvent.click(await canvas.findByText("Sheets"));
+    await userEvent.click(await canvas.findByText("Define Diagrams"));
+    await userEvent.click(await screen.findByText("Leave"));
+
+    // check that data is cleared after leave
+    const dataAfterSave = await getLayoutAutoSave(123);
+    await expect(dataAfterSave).toBeUndefined();
+  },
+};
