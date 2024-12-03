@@ -63,13 +63,13 @@ export async function setLayoutAutoSave(transactionId: number, data: PlanRespons
  */
 const AUTO_RECOVER_MODAL: PropsWithChildren<Omit<LuiModalAsyncPrefabProps<boolean>, "close" | "resolve">> = {
   buttons: [
-    { level: "tertiary", title: "Start again", value: false },
-    { default: true, level: "tertiary", title: "Recover last state", value: true },
+    { level: "tertiary", title: "Last user-edited save", value: false },
+    { default: true, level: "tertiary", title: "Auto-recovery version", value: true },
   ],
   children: (
     <>
-      It looks like the last time you were using Plan Generation you may have closed the session without saving. Would
-      you like to start again or recover the last saved state?
+      It looks like the last time you were using Plan Generation it closed unexpectedly. Would you like to use the last
+      user-edited save or the auto-recovery version?
     </>
   ),
   closeOnOverlayClick: false,

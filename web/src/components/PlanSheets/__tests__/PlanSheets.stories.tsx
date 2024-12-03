@@ -1176,11 +1176,11 @@ export const AutoRecoverPopUpModal: Story = {
     await setLayoutAutoSave(123, mockData);
   },
   play: async () => {
-    await expect(await screen.findByRole("button", { name: "Start again" }, { timeout: 2000 })).toBeTruthy();
+    await expect(await screen.findByRole("button", { name: "Last user-edited save" }, { timeout: 2000 })).toBeTruthy();
   },
 };
 
-export const AutoRecoverPopUpModalStartAgain: Story = {
+export const AutoRecoverPopUpModalLastUserEditedSave: Story = {
   ...Default,
   beforeEach: async () => {
     await clearLayoutAutoSave();
@@ -1192,13 +1192,13 @@ export const AutoRecoverPopUpModalStartAgain: Story = {
     await setLayoutAutoSave(123, mockData);
   },
   play: async () => {
-    await userEvent.click(await screen.findByRole("button", { name: "Start again" }, { timeout: 2000 }));
+    await userEvent.click(await screen.findByRole("button", { name: "Last user-edited save" }, { timeout: 2000 }));
     await sleep(500); // wait for data to be cleared
     await expect(await getLayoutAutoSave(123)).toBeUndefined();
   },
 };
 
-export const AutoRecoverPopUpModalRecoverLastState: Story = {
+export const AutoRecoverPopUpModalAutoRecoveryVersion: Story = {
   ...Default,
   beforeEach: async () => {
     await clearLayoutAutoSave();
@@ -1211,7 +1211,7 @@ export const AutoRecoverPopUpModalRecoverLastState: Story = {
   },
   play: async () => {
     const dataBeforeRecovery = await getLayoutAutoSave(123);
-    await userEvent.click(await screen.findByRole("button", { name: "Recover last state" }, { timeout: 2000 }));
+    await userEvent.click(await screen.findByRole("button", { name: "Auto-recovery version" }, { timeout: 2000 }));
     // wait for some time to make sure data is not cleared
     await sleep(500);
     const dataAfterRecovery = await getLayoutAutoSave(123);
