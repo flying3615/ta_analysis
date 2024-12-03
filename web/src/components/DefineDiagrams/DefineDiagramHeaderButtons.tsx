@@ -2,7 +2,7 @@ import "./DefineDiagramsHeaderButtons.scss";
 
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { PanelsContext } from "@linzjs/windows";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 
 import { CommonButtons } from "@/components/CommonButtons";
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
@@ -40,6 +40,13 @@ export const DefineDiagramMenuButtons = () => {
   const activeAction = useAppSelector(getActiveAction);
 
   const { openPanel } = useContext(PanelsContext);
+
+  // Reset header button state on load/reload
+  useEffect(() => {
+    return () => {
+      dispatch(setActiveAction("idle"));
+    };
+  }, [dispatch]);
 
   const { result: labelPreferencesAllowed, loading: splitLoading } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,

@@ -15,6 +15,7 @@ import { generatePath } from "react-router-dom";
 
 import { drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
+import LandingPage from "@/components/LandingPage/LandingPage";
 import { unmarkedPointBuilder } from "@/mocks/data/mockMarks";
 import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
@@ -48,6 +49,7 @@ const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => 
           <FeatureFlagProvider>
             <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
               <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+              <Route path={Paths.root} element={<LandingPage />} />
             </StorybookRouter>
           </FeatureFlagProvider>
         </Provider>
@@ -407,6 +409,27 @@ DeleteRTLines.play = async () => {
   const deleteSelectedButton = await screen.findByLabelText("Delete selected feature(s)");
   await userEvent.click(deleteSelectedButton);
   await expect(await screen.findByText("RT line removed successfully")).toBeInTheDocument();
+};
+
+export const DefineDiagramsHeaderButtonStateIsResetOnLeavingPage: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "124",
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitForInitialMapLoadsToComplete();
+    const selectLineButton = await screen.findByLabelText("Select line");
+    await userEvent.click(selectLineButton);
+    await userEvent.click(await canvas.findByText("Diagrams"));
+    await userEvent.click(await canvas.findByText("Landing Page"));
+    await userEvent.click(await canvas.findByText("Define Diagrams"));
+    await sleep(500); // This sleep is needed to ensure the page has settled before the comparison snapshot is taken
+  },
 };
 
 export const DeleteDiagram: Story = {

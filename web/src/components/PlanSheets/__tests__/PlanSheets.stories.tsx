@@ -13,6 +13,7 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import LandingPage from "@/components/LandingPage/LandingPage";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
@@ -82,6 +83,7 @@ const PlanSheetsTemplate = () => {
                 <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
                   <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
                   <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+                  <Route path={Paths.root} element={<LandingPage />} />
                 </StorybookRouter>
               </ModalStoryWrapper>
             </Provider>
@@ -259,6 +261,19 @@ UnsavedChangesModalNavigateToSurveyCapture.play = async ({ canvasElement }) => {
   await userEvent.click(await canvas.findByText("Sheets"));
   await userEvent.click(await canvas.findByText("Survey Capture"));
   await expect(await screen.findByText(/You have unsaved changes/)).toBeInTheDocument();
+};
+
+export const LayoutPlansheetsHeaderButtonStateIsResetOnLeavingPage: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectLineButton = await screen.findByLabelText("Select Lines");
+    await userEvent.click(selectLineButton);
+    await userEvent.click(await canvas.findByText("Sheets"));
+    await userEvent.click(await canvas.findByText("Landing Page"));
+    await userEvent.click(await canvas.findByText("Layout Plan Sheets"));
+    await sleep(500); // This sleep is needed to ensure the page has settled before the comparison snapshot is taken
+  },
 };
 
 export const RenumberPage: Story = {

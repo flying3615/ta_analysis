@@ -38,6 +38,13 @@ export const PlanSheetsHeaderButtons = () => {
   const { deletePageLines } = usePageLineEdit();
   const { deletePageLabels } = usePageLabelEdit();
 
+  // Reset header button state on load/reload
+  useEffect(() => {
+    return () => {
+      dispatch(setPlanMode(PlanMode.View));
+    };
+  }, [dispatch]);
+
   const zoomIn = () => zoomByDelta(ZOOM_DELTA);
   const zoomOut = () => zoomByDelta(-ZOOM_DELTA);
 
