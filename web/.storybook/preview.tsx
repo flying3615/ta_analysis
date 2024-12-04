@@ -31,6 +31,13 @@ const preview: Preview = {
             width: "1280px",
             height: "800px",
           },
+          long: {
+            name: "1920",
+            styles: {
+              width: "1920px",
+              height: "2000px",
+            },
+          },
         },
       },
       defaultViewport: "standard",
