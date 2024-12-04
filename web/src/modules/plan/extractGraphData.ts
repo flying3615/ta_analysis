@@ -38,7 +38,8 @@ export const labelToNode = (label: LabelDTO): INodeData => {
   return {
     id: planDataLabelIdToCytoscape(label.id),
     position: label.position,
-    label: label.editedText ?? label.displayText,
+    // Legacy uses ~r as line break on editedText of labels of type lineLongDescription. Replace it with \n for proper rendering.
+    label: label.editedText?.replaceAll("~r", "\n") ?? label.displayText,
     properties: {
       elementType: PlanElementType.LABELS,
       labelType: label.labelType,
