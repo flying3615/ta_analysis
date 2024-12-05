@@ -3,6 +3,7 @@ import { LuiModalAsyncPrefabProps, useLuiModalPrefab } from "@linzjs/windows";
 import { Dexie, type EntityTable } from "dexie";
 import { PropsWithChildren, useEffect, useState } from "react";
 
+import { DateTime } from "@/components/DateTime";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { selectLastUserEdit } from "@/modules/plan/selectGraphData";
 import { recoverAutoSave, setPlanData } from "@/redux/planSheets/planSheetsSlice";
@@ -10,12 +11,12 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
-interface TransactionPlanResponseDTO extends PlanResponseDTO {
+interface RecoveryFile extends PlanResponseDTO {
   transactionId: number;
 }
 
 export const PLANGEN_LAYOUT_DB = new Dexie("PLANGEN_LAYOUT_DB") as Dexie & {
-  autoSave: EntityTable<TransactionPlanResponseDTO, "transactionId">;
+  autoSave: EntityTable<RecoveryFile, "transactionId">;
 };
 // must be integer
 export const PLANGEN_LAYOUT_DB_VERSION = 1;
@@ -23,19 +24,23 @@ PLANGEN_LAYOUT_DB.version(PLANGEN_LAYOUT_DB_VERSION).stores({
   autoSave: "transactionId",
 });
 
-export async function clearLayoutAutoSave(transactionId: number) {
-  await setLayoutAutoSave(transactionId, undefined);
+export async function clearAllRecoveryFiles() {
+  await PLANGEN_LAYOUT_DB.autoSave.clear();
 }
 
-export async function getLayoutAutoSave(transactionId: number): Promise<PlanResponseDTO | undefined> {
+export async function clearRecoveryFile(transactionId: number) {
+  await setRecoveryFile(transactionId, undefined);
+}
+
+export async function getRecoveryFile(transactionId: number): Promise<PlanResponseDTO | undefined> {
   return PLANGEN_LAYOUT_DB.autoSave.get(transactionId);
 }
 
-export async function getAndValidateAutoSave(
+export async function getAndValidateRecoveryFile(
   transactionId: number,
   apiData: PlanResponseDTO,
 ): Promise<PlanResponseDTO | undefined> {
-  const autoSave = await getLayoutAutoSave(transactionId);
+  const autoSave = await getRecoveryFile(transactionId);
   if (
     !autoSave?.lastModifiedAt ||
     !apiData.lastModifiedAt ||
@@ -43,18 +48,14 @@ export async function getAndValidateAutoSave(
   ) {
     if (autoSave) {
       // clear invalid/outdated autosave
-      await setLayoutAutoSave(transactionId, undefined);
+      await setRecoveryFile(transactionId, undefined);
     }
     return undefined;
   }
   return autoSave;
 }
 
-export async function resetAllLayoutAutoSave() {
-  await PLANGEN_LAYOUT_DB.autoSave.clear();
-}
-
-export async function setLayoutAutoSave(transactionId: number, data: PlanResponseDTO | undefined): Promise<unknown> {
+export async function setRecoveryFile(transactionId: number, data: PlanResponseDTO | undefined): Promise<unknown> {
   if (!data) {
     return PLANGEN_LAYOUT_DB.autoSave.delete(transactionId);
   } else {
@@ -62,27 +63,41 @@ export async function setLayoutAutoSave(transactionId: number, data: PlanRespons
   }
 }
 
+interface AutoRecoveryModalProps {
+  planData: PlanResponseDTO;
+  recoveryFile: PlanResponseDTO;
+}
+
 /**
- * @returns true to recover auto save, false to start again
+ * @returns true to use recovery file, false to start again
  */
-const AUTO_RECOVER_MODAL: PropsWithChildren<Omit<LuiModalAsyncPrefabProps<boolean>, "close" | "resolve">> = {
-  buttons: [
-    { level: "tertiary", title: "Last user-edited save", value: false },
-    { default: true, level: "tertiary", title: "Auto-recovery version", value: true },
-  ],
-  children: (
-    <>
-      It looks like the last time you were using Plan Generation it closed unexpectedly. Would you like to use the last
-      user-edited save or the auto-recovery version?
-    </>
-  ),
-  closeOnOverlayClick: false,
-  level: "info",
-  style: {
-    width: 480,
-  },
-  title: "Last saved state",
-};
+function autoRecoveryModal({
+  planData,
+  recoveryFile,
+}: AutoRecoveryModalProps): PropsWithChildren<Omit<LuiModalAsyncPrefabProps<boolean>, "close" | "resolve">> {
+  return {
+    buttons: [
+      { level: "tertiary", title: "No", value: false },
+      { default: true, level: "tertiary", title: "Yes", value: true },
+    ],
+    children: (
+      <>
+        It looks like the last time you were using Plan Generation it closed unexpectedly.
+        <p>
+          A recovery file was created at <DateTime datetime={recoveryFile.lastModifiedAt} />.<br />
+          The plan was last saved at <DateTime datetime={planData.lastModifiedAt} />.
+        </p>
+        <p>Would you like to recover from this recovery file?</p>
+      </>
+    ),
+    closeOnOverlayClick: false,
+    level: "info",
+    style: {
+      width: 480,
+    },
+    title: "Recovery file detected",
+  };
+}
 
 export function usePlanAutoRecover(transactionId: number, planData?: PlanResponseDTO) {
   const dispatch = useAppDispatch();
@@ -101,7 +116,7 @@ export function usePlanAutoRecover(transactionId: number, planData?: PlanRespons
     }
 
     if (isInitialLoadComplete) {
-      void setLayoutAutoSave(transactionId, lastUserEdit);
+      void setRecoveryFile(transactionId, lastUserEdit);
     }
   }, [isFeatureLoading, isFeatureEnabled, isInitialLoadComplete, lastUserEdit, transactionId]);
 
@@ -124,31 +139,31 @@ export function usePlanAutoRecover(transactionId: number, planData?: PlanRespons
       return;
     }
 
-    const loadAutoSave = performanceMeasure("getAutoSave", transactionId, {
+    const loadRecoveryFile = performanceMeasure("loadRecoveryFile", transactionId, {
       workflow: "loadPlanXML",
     })(() =>
-      getAndValidateAutoSave(transactionId, planData).catch(() => {
+      getAndValidateRecoveryFile(transactionId, planData).catch(() => {
         // error loading autosave, continue without autosave
         return undefined;
       }),
     );
 
-    const promptToRecoverAutoSave = loadAutoSave.then(
-      async (autoSave: PlanResponseDTO | undefined): Promise<PlanResponseDTO | undefined> => {
-        if (autoSave && (await showPrefabModal(AUTO_RECOVER_MODAL))) {
-          return autoSave;
+    const promptToAutoRecover = loadRecoveryFile.then(
+      async (recoveryFile: PlanResponseDTO | undefined): Promise<PlanResponseDTO | undefined> => {
+        if (recoveryFile && (await showPrefabModal(autoRecoveryModal({ planData, recoveryFile })))) {
+          return recoveryFile;
         }
         return undefined;
       },
     );
 
-    const initialDataLoad = promptToRecoverAutoSave.then((autoSave: PlanResponseDTO | undefined) =>
+    const loadPlanData = promptToAutoRecover.then((recoveryFile: PlanResponseDTO | undefined) =>
       performanceMeasure("setPlanData", transactionId, {
         workflow: "loadPlanXML",
       })(() =>
         Promise.resolve().then(() => {
-          if (autoSave) {
-            return dispatch(recoverAutoSave(autoSave));
+          if (recoveryFile) {
+            return dispatch(recoverAutoSave(recoveryFile));
           } else {
             return dispatch(setPlanData(planData));
           }
@@ -156,7 +171,7 @@ export function usePlanAutoRecover(transactionId: number, planData?: PlanRespons
       ),
     );
 
-    void initialDataLoad.then(() => setIsInitialLoadComplete(true));
+    void loadPlanData.then(() => setIsInitialLoadComplete(true));
   }, [dispatch, isFeatureEnabled, isFeatureLoading, planData, showPrefabModal, transactionId]);
 
   return isInitialLoadComplete;

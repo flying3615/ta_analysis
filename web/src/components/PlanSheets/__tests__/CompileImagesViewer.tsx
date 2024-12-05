@@ -3,7 +3,7 @@ import "./CompileImagesViewer.scss";
 import { LuiButton } from "@linzjs/lui";
 import React, { ReactNode, useEffect, useState } from "react";
 
-import { ExportedImage, fetchCompileImages } from "@/test-utils/idb-utils";
+import { ExportedImage, fetchCompileImages } from "@/test-utils/compile-images-utils";
 
 interface CompileImagesViewerProps {
   imageFilename: string;

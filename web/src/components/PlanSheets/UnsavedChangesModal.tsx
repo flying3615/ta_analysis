@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useBeforeUnload, useBlocker } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { clearLayoutAutoSave } from "@/hooks/usePlanAutoRecover";
+import { clearRecoveryFile } from "@/hooks/usePlanAutoRecover";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { hasChanges, hasNavigateAfterSave, navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
 import { revertAll } from "@/redux/revertAll";
@@ -73,7 +73,7 @@ export const UnsavedChangesModal = ({
   };
 
   const handleLeave = () => {
-    void clearLayoutAutoSave(transactionId);
+    void clearRecoveryFile(transactionId);
     if (blocker.state === "blocked") {
       blocker.proceed();
       dispatch(revertAll());

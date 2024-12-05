@@ -25,7 +25,7 @@ import {
   successfulRegeneratePlanTaskId,
   successfulUpdatePlanTaskId,
 } from "@/mocks/mockAsyncTaskHandler";
-import { writeCompileImage } from "@/test-utils/idb-utils";
+import { writeCompileImage } from "@/test-utils/compile-images-utils";
 import { generateUniqueValue } from "@/util/httpUtil";
 
 // Keeping track of the SFU uploads for compile plan feature
