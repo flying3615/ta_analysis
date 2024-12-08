@@ -80,7 +80,7 @@ export const diagramObsDistLabel: LabelDTO = {
 
 export const diagramLabelObsBearingHide: LabelDTO = {
   id: 20,
-  labelType: "obsBearing",
+  labelType: LabelDTOLabelTypeEnum.obsBearing,
   displayText: "1800°545'04\"",
   font: "Tahoma",
   fontSize: 14,

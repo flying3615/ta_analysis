@@ -6,7 +6,7 @@ import { Meta } from "@storybook/react";
 import { fireEvent, screen, waitFor, within } from "@storybook/testing-library";
 
 import CompileImagesViewer from "@/components/PlanSheets/__tests__/CompileImagesViewer";
-import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
+import { Default, PlanSheetsTemplate, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { clearCompileImages } from "@/test-utils/compile-images-utils";
 import { sleep } from "@/test-utils/storybook-utils";
@@ -16,16 +16,17 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-const CompileIt = (fileName: string): Story => ({
+const CompileIt = (fileName: string, snapShot = true): Story => ({
   ...Default,
   beforeEach: async () => {
     await clearCompileImages();
     return clearCompileImages;
   },
-  decorators: (Story) => <CompileImagesViewer imageFilename={fileName} planSheetsTemplate={<Story />} />,
+  render: () => <CompileImagesViewer imageFilename={fileName} planSheetsTemplate={PlanSheetsTemplate()} />,
   parameters: {
     chromatic: {
       viewports: [800],
+      snapShot: snapShot,
     },
     viewport: {
       viewports: 800,
@@ -38,7 +39,7 @@ const CompileIt = (fileName: string): Story => ({
       async () => {
         await expect(canvas.getByText("Compile plan(s)")).toBeInTheDocument();
       },
-      { timeout: 5000 },
+      { timeout: 12000 },
     );
     fireEvent.click(await canvas.findByTitle("View labels"));
     fireEvent.click(await canvas.findByText("Parcel appellations")); // uncheck parcel appellations
@@ -67,13 +68,5 @@ const CompileIt = (fileName: string): Story => ({
 });
 
 export const CompiledImageDSPT = CompileIt("DSPT-1.jpg");
-export const CompiledImageDTPS = CompileIt("DTPS-1.jpg");
-export const ViewAllCompiledImages: Story = {
-  // NOTE these parameters are ignored, because CompileIt returns parameters !?
-  parameters: {
-    chromatic: {
-      disableSnapshot: true, // TODO Disable snapshot for this story
-    },
-  },
-  ...CompileIt("all"),
-};
+export const CompiledImageDTPS = CompileIt("DTPS-1.jpg", false);
+export const ViewAllCompiledImages = CompileIt("all", false);

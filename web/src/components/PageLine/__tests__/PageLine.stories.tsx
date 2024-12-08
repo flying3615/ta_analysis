@@ -2,7 +2,8 @@ import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { userEvent } from "@storybook/test";
 
-import { Default, PlanSheetWithHiddenObject, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
+import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
+import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/ViewLabels.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
