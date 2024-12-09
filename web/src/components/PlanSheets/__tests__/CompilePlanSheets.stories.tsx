@@ -26,7 +26,7 @@ const CompileIt = (fileName: string, snapShot = true): Story => ({
   parameters: {
     chromatic: {
       viewports: [800],
-      snapShot: snapShot,
+      disableSnapshot: snapShot,
     },
     viewport: {
       viewports: 800,
@@ -68,5 +68,5 @@ const CompileIt = (fileName: string, snapShot = true): Story => ({
 });
 
 export const CompiledImageDSPT = CompileIt("DSPT-1.jpg");
-export const CompiledImageDTPS = CompileIt("DTPS-1.jpg", false);
-export const ViewAllCompiledImages = CompileIt("all", false);
+export const CompiledImageDTPS = CompileIt("DTPS-1.jpg");
+export const ViewAllCompiledImages = CompileIt("all");

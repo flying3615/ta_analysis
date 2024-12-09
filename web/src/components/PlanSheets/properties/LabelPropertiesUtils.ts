@@ -143,7 +143,11 @@ export const createLabelPropsToBeSaved = (
   const newObj: LabelPropsToUpdate = { id: cytoscapeLabelIdToPlanData(selectedLabel.id) };
 
   if ("labelText" in panelValuesToUpdate) {
-    newObj.editedText = panelValuesToUpdate.labelText;
+    if (selectedLabel.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
+      newObj.displayText = panelValuesToUpdate.labelText;
+    } else if (selectedLabel.labelType === LabelDTOLabelTypeEnum.parcelAppellation && selectedLabel.diagramId) {
+      newObj.editedText = panelValuesToUpdate.labelText;
+    }
   }
   if ("displayState" in panelValuesToUpdate) {
     newObj.displayState = panelValuesToUpdate.displayState as DisplayStateEnum;

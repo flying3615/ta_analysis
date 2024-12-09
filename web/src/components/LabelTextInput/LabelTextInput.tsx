@@ -80,14 +80,16 @@ export const LabelTextInput = ({
     if (planMode === PlanMode.SelectLabel && labelData) {
       if (labelText !== labelData.label) {
         if (labelData.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
+          // User-added labels (page labels) updated text gets stored in the display_text field
           dispatch(
             replacePage({
               updatedPage: updatePageLabels(activePage, [
-                { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText },
+                { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText },
               ]),
             }),
           );
         } else if (labelData.labelType === LabelDTOLabelTypeEnum.parcelAppellation && labelData.diagramId) {
+          // Diagram labels updated text gets stored in the edited_text field
           dispatch(
             replaceDiagrams(
               updateDiagramLabels(activeDiagrams, [

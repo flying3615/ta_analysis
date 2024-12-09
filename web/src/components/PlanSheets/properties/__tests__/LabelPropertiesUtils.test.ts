@@ -1,3 +1,5 @@
+import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+
 import { LabelPropertiesData, PanelValuesToUpdate } from "../LabelProperties";
 import {
   allHave00,
@@ -211,7 +213,7 @@ describe("cleanTextAlignment", () => {
 });
 
 describe("createLabelPropsToBeSaved", () => {
-  it("should create a new object with updated properties", () => {
+  it("should create a new object with correct updated properties, for diagram label", () => {
     const panelValuesToUpdate: PanelValuesToUpdate = {
       labelText: "New Label",
       displayState: "hide",
@@ -227,10 +229,11 @@ describe("createLabelPropsToBeSaved", () => {
 
     const selectedLabel = {
       id: "LAB_1",
+      labelType: LabelDTOLabelTypeEnum.parcelAppellation,
+      diagramId: "1",
       label: "Label1",
       textAlignment: "bottomCenter",
       displayState: "display",
-      labelType: "arcRadius",
       font: "Tahoma",
       fontSize: "14",
       fontStyle: "regular",
@@ -243,6 +246,49 @@ describe("createLabelPropsToBeSaved", () => {
     expect(result).toEqual({
       id: 1,
       editedText: "New Label",
+      displayState: "hide",
+      displayFormat: "suppressSeconds",
+      fontStyle: "bold",
+      font: "Arial",
+      fontSize: 12,
+      rotationAngle: 45,
+      textAlignment: "bottomCenter,textCenter",
+      borderWidth: 1,
+    });
+  });
+
+  it("should create a new object with correct updated properties, for page label", () => {
+    const panelValuesToUpdate: PanelValuesToUpdate = {
+      labelText: "New Label",
+      displayState: "hide",
+      hide00: true,
+      isBold: true,
+      hasBorder: true,
+      font: "Arial",
+      fontSize: "12",
+      textRotation: "45",
+      justify: "textCenter",
+      borderWidth: "1",
+    };
+
+    const selectedLabel = {
+      id: "LAB_1",
+      labelType: LabelDTOLabelTypeEnum.userAnnotation,
+      label: "Label1",
+      textAlignment: "bottomCenter",
+      displayState: "display",
+      font: "Tahoma",
+      fontSize: "14",
+      fontStyle: "regular",
+      textRotation: "0",
+      borderWidth: "1",
+      displayFormat: undefined,
+    } as LabelPropertiesData;
+
+    const result = createLabelPropsToBeSaved(panelValuesToUpdate, selectedLabel);
+    expect(result).toEqual({
+      id: 1,
+      displayText: "New Label",
       displayState: "hide",
       displayFormat: "suppressSeconds",
       fontStyle: "bold",
