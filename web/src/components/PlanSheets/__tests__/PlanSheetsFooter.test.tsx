@@ -339,6 +339,50 @@ describe("PlanSheetsFooter", () => {
     expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
   });
 
+  it("interrupted status in save request shows message", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    server.use(
+      http.put(/\/123\/plan$/, () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/123\/async-task/, () =>
+        HttpResponse.json(new AsyncTaskBuilder().withInterruptedStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
+
+    renderCompWithReduxAndRoute(
+      <Route
+        element={
+          <LuiModalAsyncContextProvider>
+            <PlanSheetsFooter
+              setDiagramsPanelOpen={jest.fn()}
+              diagramsPanelOpen={false}
+              surveyInfo={{} as ExternalSurveyInfoDto}
+            />
+          </LuiModalAsyncContextProvider>
+        }
+        path={Paths.layoutPlanSheets}
+      />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+    );
+
+    jest.spyOn(console, "error").mockImplementation(jest.fn());
+    await userEvent.click(await screen.findByText("Save layout"));
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/api/v1/generate-plans/123/plan",
+        }) as unknown,
+      }),
+    );
+
+    expect(await screen.findByText("Layout save interrupted")).toBeInTheDocument();
+  });
+
   it("can save by pressing the Ctrl+S keys", async () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);

@@ -49,6 +49,7 @@ export const useAsyncTaskHandler = <MutationRequestBody>(
   return {
     isSuccess: triggerTaskIsSuccess && (!taskId || taskStatus === AsyncTaskDTOStatusEnum.COMPLETE),
     isError: taskStatus === AsyncTaskDTOStatusEnum.FAILED,
+    isInterrupted: taskStatus === AsyncTaskDTOStatusEnum.INTERRUPTED,
     isPending: taskIsInProgress || (triggerTaskIsSuccess && taskRequestIsPending),
     error: triggerTaskMutation.error ?? taskError,
     reset: triggerTaskMutation.reset,

@@ -145,3 +145,28 @@ export const PlanSaveFailedModal: Story = {
     await sleep(1000);
   },
 };
+
+export const PlanSaveInterruptedModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.post(/\/123\/plan-regenerate$/, () => HttpResponse.json(undefined, { status: 200, statusText: "OK" })),
+        http.put(/\/123\/plan$/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+        ),
+        http.get(/\/123\/async-task/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().withInterruptedStatus().build(), {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByText("Save layout"));
+    await sleep(1000);
+  },
+};

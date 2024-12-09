@@ -85,6 +85,7 @@ const PlanSheetsFooter = ({
     isSuccess: updatePlanIsSuccess,
     isPending: updatePlanAsyncIsPending,
     isError: updatePlanHasFailed,
+    isInterrupted: updatePlanIsInterrupted,
     error: updatePlanError,
     reset: updatePlanReset,
   } = useAsyncTaskHandler(updatePlanMutation);
@@ -110,6 +111,13 @@ const PlanSheetsFooter = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updatePlanHasFailed]);
+
+  useEffect(() => {
+    if (updatePlanIsInterrupted) {
+      void showPrefabModal(asyncTaskFailedErrorModal("Layout save interrupted")).then((retry) => retry && updatePlan());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatePlanIsInterrupted]);
 
   useEffect(() => {
     if (!updatePlanError) {

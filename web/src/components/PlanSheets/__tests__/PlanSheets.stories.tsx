@@ -386,6 +386,28 @@ export const PlanRegenerationFailedModal: Story = {
   },
 };
 
+export const PlanRegenerationInterruptedModal: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.post(/\/123\/plan-regenerate$/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().build(), {
+            status: 202,
+            statusText: "ACCEPTED",
+          }),
+        ),
+        http.get(/\/123\/async-task/, () =>
+          HttpResponse.json(new AsyncTaskBuilder().withInterruptedStatus().build(), {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+      ],
+    },
+  },
+};
+
 export const ZoomIn: Story = {
   ...Default,
   play: async () => {

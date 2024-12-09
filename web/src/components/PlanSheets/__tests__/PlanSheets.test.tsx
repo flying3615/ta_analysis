@@ -448,6 +448,80 @@ describe("PlanSheets", () => {
     );
   }, 20000);
 
+  it("regenerates plan asynchronously and allows retrying when interrupted by deployment", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+
+    server.use(
+      http.post(/\/124\/plan-regenerate$/, () =>
+        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+      ),
+      http.get(/\/124\/async-task/, () =>
+        HttpResponse.json(new AsyncTaskBuilder().withInterruptedStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
+
+    renderCompWithReduxAndRoute(
+      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+      generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
+    );
+
+    expect(await screen.findByText(/Plan regeneration interrupted/)).not.toBeNull();
+    const retryButton = await screen.findByText("Retry");
+    expect(retryButton).not.toBeNull();
+
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "POST",
+          url: expect.stringMatching(/\/124\/plan-regenerate$/) as unknown,
+        }) as unknown,
+      }),
+    );
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: expect.stringMatching(/\/124\/async-task/) as unknown,
+        }) as unknown,
+      }),
+    );
+
+    requestSpy.mockReset();
+    server.use(
+      http.get(/\/124\/async-task/, () =>
+        HttpResponse.json(new AsyncTaskBuilder().withCompleteStatus().build(), { status: 200, statusText: "OK" }),
+      ),
+    );
+    await userEvent.click(retryButton);
+
+    expect(await screen.findByText("Title sheet diagrams")).toBeVisible();
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "POST",
+          url: expect.stringMatching(/\/124\/plan-regenerate$/) as unknown,
+        }) as unknown,
+      }),
+    );
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: expect.stringMatching(/\/124\/async-task/) as unknown,
+        }) as unknown,
+      }),
+    );
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "GET",
+          url: expect.stringMatching(/\/124\/plan$/) as unknown,
+        }) as unknown,
+      }),
+    );
+  }, 20000);
+
   it("shows message while regenerate plan task is already in progress", async () => {
     server.use(
       http.post(/\/124\/plan-regenerate$/, () =>

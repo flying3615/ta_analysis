@@ -37,6 +37,10 @@ export class AsyncTaskBuilder implements BaseBuilder<AsyncTaskDTO> {
     return this.withStatus(AsyncTaskDTOStatusEnum.IN_PROGRESS);
   }
 
+  withInterruptedStatus() {
+    return this.withStatus(AsyncTaskDTOStatusEnum.INTERRUPTED);
+  }
+
   withCompleteStatus() {
     return this.withStatus(AsyncTaskDTOStatusEnum.COMPLETE);
   }

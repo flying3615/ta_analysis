@@ -79,6 +79,7 @@ const PlanSheets = () => {
     isPending: isRegenerating,
     isSuccess: regenerateDoneOrNotNeeded,
     isError: regenerationHasFailed,
+    isInterrupted: regenerationInterrupted,
     error: regenerateApiError,
   } = useAsyncTaskHandler(regeneratePlanMutation);
 
@@ -99,6 +100,19 @@ const PlanSheets = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regenerationHasFailed, navigate, showPrefabModal]);
+
+  useEffect(() => {
+    if (regenerationInterrupted) {
+      void showPrefabModal(asyncTaskFailedErrorModal("Plan regeneration interrupted")).then((retry) => {
+        if (retry) {
+          regeneratePlanMutation.mutate();
+        } else {
+          navigate(`/plan-generation/${transactionId}`);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regenerationInterrupted, navigate, showPrefabModal]);
 
   useEffect(() => {
     void (async () => {
