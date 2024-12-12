@@ -82,20 +82,20 @@ function autoRecoveryModal({
     ],
     children: (
       <>
-        It looks like the last time you were using Plan Generation it closed unexpectedly.
+        Layout Plansheets previously closed with unsaved changes.
         <p>
-          A recovery file was created at <DateTime datetime={recoveryFile.lastModifiedAt} />.<br />
-          The plan was last saved at <DateTime datetime={planData.lastModifiedAt} />.
+          The last save was at <DateTime datetime={planData.lastModifiedAt} />.<br />
+          The last unsaved change was at <DateTime datetime={recoveryFile.lastModifiedAt} />.
         </p>
-        <p>Would you like to recover from this recovery file?</p>
+        <p>Would you like to recover these unsaved changes?</p>
       </>
     ),
     closeOnOverlayClick: false,
     level: "info",
     style: {
-      width: 480,
+      width: 500,
     },
-    title: "Recovery file detected",
+    title: "Unsaved changes detected",
   };
 }
 

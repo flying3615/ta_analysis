@@ -16,5 +16,5 @@ export function DateTime({ datetime }: DateTimeProps): ReactNode {
 }
 
 function formatDateTime(value: Date): string {
-  return LuxonDateTime.fromJSDate(value).toFormat("h:mma 'on' d MMM yyyy").replace("AM", "am").replace("PM", "pm");
+  return LuxonDateTime.fromJSDate(value).toFormat("h:mm:ssa 'on' d MMM yyyy").replace("AM", "am").replace("PM", "pm");
 }

@@ -2,7 +2,7 @@ import "./PlanSheets.scss";
 import "@/components/MainWindow.scss";
 
 import { ResponseError } from "@linz/survey-plan-generation-api-client";
-import { LuiLoadingSpinner, LuiStatusSpinner } from "@linzjs/lui";
+import { LuiLoadingSpinner, LuiModalV2, LuiStatusSpinner } from "@linzjs/lui";
 import { useLuiModalPrefab } from "@linzjs/windows";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -138,8 +138,7 @@ const PlanSheets = () => {
   const {
     data: planData,
     error: planDataError,
-    // could block UI while loading after save
-    // isFetching: isPlanDataFetching,
+    isFetching: isPlanDataFetching,
   } = useGetPlanQuery({
     transactionId,
     enabled: regenerateDoneOrNotNeeded, // Don't fetch features until the dataset is prepared
@@ -223,6 +222,16 @@ const PlanSheets = () => {
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />
           <PageNumberTooltips />
+          {isPlanDataFetching && (
+            <LuiModalV2
+              headingText="Layout saved"
+              isLoading={true}
+              shouldCloseOnOverlayClick={false}
+              shouldCloseOnEsc={false}
+            >
+              Please wait for this to finish loading.
+            </LuiModalV2>
+          )}
         </div>
 
         <PlanSheetsFooter

@@ -1022,7 +1022,7 @@ export const AutoRecoverPopUpModal: Story = {
     return clearAllRecoveryFiles;
   },
   play: async () => {
-    await expect(await screen.findByText("Recovery file detected")).toBeTruthy();
+    await expect(await screen.findByText("Unsaved changes detected")).toBeTruthy();
     await expect(await screen.findByRole("button", { name: "Yes" })).toBeTruthy();
   },
 };
