@@ -64,7 +64,6 @@ const PlanSheets = () => {
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
-  const [labelTextInputOpen, setLabelTextInputOpen] = useState<boolean>(false);
 
   const {
     data: activeDiagrams,
@@ -209,7 +208,7 @@ const PlanSheets = () => {
             <NoPageMessage />
           )}
           {planMode === PlanMode.AddLabel && <AddLabelHandler />}
-          {planMode === PlanMode.SelectLabel && <SelectLabelHandler setLabelTextInputOpen={setLabelTextInputOpen} />}
+          {planMode === PlanMode.SelectLabel && <SelectLabelHandler />}
           {planMode === PlanMode.AddLine && <AddPageLineHandler />}
           {planMode === PlanMode.SelectDiagram && <SelectDiagramHandler />}
           {(planMode === PlanMode.SelectCoordinates ||
@@ -217,7 +216,7 @@ const PlanSheets = () => {
             planMode === PlanMode.SelectLabel ||
             planMode === PlanMode.SelectTargetLine) && <SelectElementHandler mode={planMode} />}
           {(planMode === PlanMode.SelectLine || planMode === PlanMode.SelectLabel) && (
-            <DeleteKeyHandler mode={planMode} labelTextInputOpen={labelTextInputOpen} />
+            <DeleteKeyHandler mode={planMode} />
           )}
           {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
           <ElementHover />

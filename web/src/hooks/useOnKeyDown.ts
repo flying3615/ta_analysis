@@ -2,15 +2,11 @@ import { useEffect } from "react";
 
 export const useOnKeyDown = (
   key: string | ((event: KeyboardEvent) => boolean),
-  callback: () => void,
-  preventDefault: boolean = true,
+  callback: (event: KeyboardEvent) => void,
 ) => {
   const handler = (event: KeyboardEvent) => {
     if (typeof key === "string" ? event.key === key : key(event)) {
-      if (preventDefault) {
-        event.preventDefault();
-      }
-      callback();
+      callback(event);
     }
   };
 

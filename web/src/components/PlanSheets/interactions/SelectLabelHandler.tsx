@@ -9,11 +9,7 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 
-interface SelectLabelHandlerProps {
-  setLabelTextInputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export const SelectLabelHandler = ({ setLabelTextInputOpen }: SelectLabelHandlerProps) => {
+export const SelectLabelHandler = () => {
   const { cyto } = useCytoscapeContext();
   const container = cyto?.container();
   const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);
@@ -49,13 +45,11 @@ export const SelectLabelHandler = ({ setLabelTextInputOpen }: SelectLabelHandler
       ) {
         setLabelData({ id, label, labelType, elementType, diagramId });
         setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
-        setLabelTextInputOpen(true);
       } else {
         setInputPosition(undefined);
-        setLabelTextInputOpen(false);
       }
     },
-    [cyto, cytoCoordMapper, setLabelTextInputOpen],
+    [cyto, cytoCoordMapper],
   );
 
   useEffect(() => {
