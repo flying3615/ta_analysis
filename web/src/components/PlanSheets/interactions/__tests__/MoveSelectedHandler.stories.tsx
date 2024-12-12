@@ -1,9 +1,13 @@
+import { CoordinateDTOCoordTypeEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { screen, userEvent, within } from "@storybook/testing-library";
+import { http, HttpResponse } from "msw";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { handlers } from "@/mocks/mockHandlers";
 import {
   checkCytoElementProperties,
   clickAtCoordinates,
@@ -257,5 +261,103 @@ export const AlignLabelToLine: Story = {
     // - Label 14 is at an angle
     // - Angled line at lower left is blue
     // - Cursor has text "Select a line to align label to"
+  },
+};
+
+const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (customMockPlanData.diagrams[0]) {
+  customMockPlanData.diagrams[0] = {
+    ...customMockPlanData.diagrams[0],
+    coordinates: [
+      ...customMockPlanData.diagrams[0].coordinates,
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 99999,
+        position: { x: 5, y: -25 },
+      },
+    ],
+    lines: [
+      ...customMockPlanData.diagrams[0].lines,
+      {
+        id: 9999,
+        lineType: "observation",
+        style: "brokenPeck1",
+        coordRefs: [10001, 99999],
+        pointWidth: 0.75,
+      },
+    ],
+    coordinateLabels: [
+      ...customMockPlanData.diagrams[0].coordinateLabels,
+      {
+        id: 98,
+        labelType: "nodeSymbol1",
+        displayText: "97",
+        position: { x: 5, y: -25 },
+        featureId: 99999,
+        rotationAngle: 0,
+        pointOffset: 0,
+        anchorAngle: 0,
+        textAlignment: "",
+        displayState: "display",
+        effect: "",
+        font: "LOLsymbols",
+        fontSize: 10,
+      },
+    ],
+    lineLabels: [
+      ...customMockPlanData.diagrams[0].lineLabels,
+      {
+        id: 99,
+        labelType: "nodeSymbol1",
+        displayText: "Label 15",
+        position: { x: 11, y: -18 },
+        rotationAngle: 45,
+        pointOffset: 14,
+        anchorAngle: 0,
+        featureId: 9999,
+        featureType: "Line",
+        textAlignment: "",
+        displayState: "display",
+        effect: "",
+        fontSize: 14,
+        font: "Tahoma",
+      },
+    ],
+  };
+}
+const BrokenPeckLineLabels: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(customMockPlanData, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        ...handlers,
+      ],
+    },
+  },
+};
+
+export const CoordTypeCalculated: Story = {
+  ...BrokenPeckLineLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
+    await sleep(1500);
+
+    const position = { clientX: 330, clientY: 215 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 110,
+      clientY: position.clientY,
+    });
+    await sleep(1000);
+    await checkCytoElementProperties("#LAB_99", { position: { x: 139.55, y: 122.26 } });
+    await sleep(1000);
   },
 };

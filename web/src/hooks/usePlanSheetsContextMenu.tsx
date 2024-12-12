@@ -6,7 +6,6 @@ import { useContext, useRef } from "react";
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
-import { MoveOriginalLocation } from "@/components/PlanSheets/interactions/MoveOriginalLocation";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
@@ -16,6 +15,7 @@ import { LinePropertiesData } from "@/components/PlanSheets/properties/LinePrope
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
+import { useMoveOriginalLocation } from "@/hooks/useMoveOriginalLocation";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
 import { getPlanMode, getPreviousAttributesForDiagram, setDiagramIdToMove } from "@/redux/planSheets/planSheetsSlice";
@@ -44,6 +44,7 @@ export const usePlanSheetsContextMenu = () => {
     getStackedLabels,
   } = useLabelsFunctions();
   const highlightedLabel = useRef<NodeSingular>();
+  const { restoreOriginalPosition } = useMoveOriginalLocation();
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: moveDiagramToPage }];
@@ -143,7 +144,7 @@ export const usePlanSheetsContextMenu = () => {
           title: "Original location",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
             element.data("diagramId") === undefined,
-          callback: <MoveOriginalLocation target={targetLine} />,
+          callback: () => restoreOriginalPosition(targetLine),
         },
         {
           title: "Show",
@@ -333,7 +334,7 @@ export const usePlanSheetsContextMenu = () => {
 
     const buildNodeMenus = (targetNode: NodeSingular): MenuItem[] => {
       return [
-        { title: "Original location", callback: <MoveOriginalLocation target={targetNode} /> },
+        { title: "Original location", callback: () => restoreOriginalPosition(targetNode) },
         {
           title: "Show",
           hideWhen: (e) =>

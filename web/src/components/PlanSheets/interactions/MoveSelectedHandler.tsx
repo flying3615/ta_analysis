@@ -1,5 +1,6 @@
 import "./MoveSelectedHandler.scss";
 
+import { CoordinateDTOCoordTypeEnum } from "@linz/survey-plan-generation-api-client";
 import {
   BoundingBox12,
   CollectionReturnValue,
@@ -159,7 +160,11 @@ export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementP
 
         const movingData = cytoDataToNodeAndEdgeData(movingElements);
 
-        const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
+        const movedNodes = movingData.nodes.filter(
+          (node) =>
+            node.properties.coordType === CoordinateDTOCoordTypeEnum.node ||
+            node.properties.coordType === CoordinateDTOCoordTypeEnum.calculated,
+        );
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
 
         const adjustedLabels = adjustLabelsWithLine(movedNodesById);

@@ -1,7 +1,10 @@
+import { CoordinateDTOCoordTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { radiansToDegrees } from "@turf/helpers";
 import cytoscape, { BoundingBox12, EdgeSingular, NodeSingular, Position as CytoscapePosition } from "cytoscape";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
+  getCytoscapeDataToNodeAndEdgeData,
   IEdgeDataProperties,
   INodeAndEdgeData,
   INodeData,
@@ -12,26 +15,19 @@ import { getRelatedLabels } from "@/components/PlanSheets/interactions/selectUti
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
-import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { ElementLookupData, extractPositions, findElementsPosition } from "@/modules/plan/LookupOriginalCoord";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramsWithNode } from "@/modules/plan/updatePlanData";
 import { getOriginalPositions, replaceDiagramsAndPage } from "@/redux/planSheets/planSheetsSlice";
 import { clampAngleDegrees360, midPoint } from "@/util/positionUtil";
 
-interface MoveOriginalLocationProps {
-  target: NodeSingular | EdgeSingular | null;
-}
-
-export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
-  const { cyto, cytoCoordMapper, cytoDataToNodeAndEdgeData } = usePlanSheetsDispatch();
-  const dispatch = useAppDispatch();
-  const originalPositions = useAppSelector(getOriginalPositions);
+export const useMoveOriginalLocation = () => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
+  const originalPositions = useAppSelector(getOriginalPositions);
+  const dispatch = useAppDispatch();
   const adjustLabels = useLineLabelAdjust();
-  let moveStartPositions: Record<string, cytoscape.Position> | undefined;
 
-  if (!cyto || !target || !activeDiagrams || !originalPositions || !cytoCoordMapper) return;
+  let moveStartPositions: Record<string, cytoscape.Position> | undefined;
 
   const updateMove = (
     moveStartPositions: Record<string, CytoscapePosition> | undefined,
@@ -64,6 +60,17 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
     return { x: dx, y: dy };
   };
 
+  const updateActiveDiagrams = (elements: Partial<INodeAndEdgeData>) => {
+    let updatedDiagrams = activeDiagrams;
+    elements.nodes?.forEach((node) => {
+      if (node.properties.diagramId) {
+        updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
+      }
+    });
+
+    return updatedDiagrams;
+  };
+
   function findMoveEnd(
     target: NodeSingular | EdgeSingular,
     coordinates: ElementLookupData[],
@@ -91,6 +98,7 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
   }
 
   const getMovedDataLabels = (
+    target: NodeSingular | EdgeSingular,
     selectedNodes: cytoscape.CollectionReturnValue,
   ): [INodeAndEdgeData, INodeData[]] | null => {
     const connectedElements = selectedNodes.union(selectedNodes.connectedNodes());
@@ -100,6 +108,11 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
 
     moveStartPositions = extractPositions(allElements);
 
+    const cyto = target.cy();
+    const container = cyto?.container();
+    if (!container || !originalPositions) return null;
+
+    const cytoCoordMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
     const originalCoordinates: ElementLookupData[] = [];
     allElements.forEach((ele) => {
       const data = ele.data() as INodeDataProperties;
@@ -116,8 +129,12 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
 
     updateMove(moveStartPositions, connectedElements, selectedNodes.boundingBox(), moveStart, moveEnd);
 
-    const movingData = cytoDataToNodeAndEdgeData(connectedElements);
-    const movedNodes = movingData.nodes.filter((node) => node.properties.coordType === "node");
+    const movingData = getCytoscapeDataToNodeAndEdgeData(cytoCoordMapper, connectedElements);
+    const movedNodes = movingData.nodes.filter(
+      (node) =>
+        node.properties.coordType === CoordinateDTOCoordTypeEnum.node ||
+        node.properties.coordType === CoordinateDTOCoordTypeEnum.calculated,
+    );
     const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
     const adjustedLabels = adjustLabels(movedNodesById);
 
@@ -145,22 +162,13 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
     return [movingData, adjustedLabels];
   };
 
-  const updateActiveDiagrams = (elements: Partial<INodeAndEdgeData>) => {
-    let updatedDiagrams = activeDiagrams;
-    elements.nodes?.forEach((node) => {
-      if (node.properties.diagramId) {
-        updatedDiagrams = updateDiagramsWithNode(updatedDiagrams, node);
-      }
-    });
-
-    return updatedDiagrams;
-  };
-
-  const restoreOriginalPosition = () => {
+  const restoreOriginalPosition = (target: NodeSingular | EdgeSingular | null) => {
+    if (!target) return;
     const data = target.data() as INodeDataProperties;
+    const cyto = target.cy();
     if ("source" in data && "target" in data) {
-      const srcData = getMovedDataLabels(cyto.$id(data["source"] as string));
-      const targetData = getMovedDataLabels(cyto.$id(data["target"] as string));
+      const srcData = getMovedDataLabels(target, cyto.$id(data["source"] as string));
+      const targetData = getMovedDataLabels(target, cyto.$id(data["target"] as string));
 
       if (srcData && targetData) {
         const updatedDiagrams = updateActiveDiagrams({
@@ -169,7 +177,7 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
         dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
       }
     } else {
-      const srcData = getMovedDataLabels(cyto.elements(":selected"));
+      const srcData = getMovedDataLabels(target, cyto.elements(":selected"));
       if (srcData) {
         const updatedDiagrams = updateActiveDiagrams({
           nodes: [...srcData[0].nodes, ...srcData[1]],
@@ -180,6 +188,7 @@ export const MoveOriginalLocation = ({ target }: MoveOriginalLocationProps) => {
     }
   };
 
-  // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
-  return <div onClick={restoreOriginalPosition}>Original location</div>;
+  return {
+    restoreOriginalPosition,
+  };
 };
