@@ -2,6 +2,13 @@ import imageCompression from "browser-image-compression";
 
 import { ImageFile } from "@/hooks/usePlanGenPreview";
 
+// 9302, 6395 is the max size of the image between the borders of the page for compilation
+export const COMPILE_MAX_WIDTH = 9302;
+export const COMPILE_MAX_HEIGHT = 6395;
+
+// 9921, 7016 is the max size of the image between the borders of the page for preview
+export const PREVIEW_MAX_WIDTH = 9921;
+export const PREVIEW_MAX_HEIGHT = 7016;
 /**
  *  Convert the image data to 1 bit
  * @param imageFile
@@ -48,7 +55,9 @@ export const convertImageDataTo1Bit = async (imageFile: ImageFile) => {
 
  */
 export const compressImage = async (imageFile: ImageFile) => {
-  const file = new File([imageFile.blob], imageFile.name, { type: imageFile.blob.type });
+  const resizedBlob = await resizeImage(imageFile.blob, COMPILE_MAX_WIDTH, COMPILE_MAX_HEIGHT);
+  const file = new File([resizedBlob], imageFile.name, { type: imageFile.blob.type });
+
   // Compress the Blob using browser-image-compression
   const options = {
     maxSizeMB: 1, // Maximum file size in MB
@@ -109,4 +118,14 @@ export const generateBlankJpegBlob = async (width: number, height: number): Prom
       );
     });
   }
+};
+
+export const resizeImage = async (imageBlob: Blob, targetWidth: number, targetHeight: number) => {
+  const img = await createImageBitmap(imageBlob);
+  const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  return await canvas.convertToBlob({ type: "image/jpeg" });
 };

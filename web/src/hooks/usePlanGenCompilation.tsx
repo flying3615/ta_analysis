@@ -37,7 +37,7 @@ import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
-import { compressImage } from "@/util/imageUtil";
+import { COMPILE_MAX_HEIGHT, COMPILE_MAX_WIDTH, compressImage } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 
 export interface PlanGenCompilation {
@@ -236,6 +236,15 @@ export const usePlanGenCompilation = (props: {
           const borderNodes = props.pageConfigsNodeData?.filter((node) => !node.id.startsWith(pageCounterId));
           const borderEdges = props.pageConfigsEdgeData?.filter((edge) => !edge.sourceNodeId.startsWith(pageCounterId));
 
+          // We will add border at the backend instead of the frontend, so hide the border nodes and edges
+          borderNodes?.forEach((node) => {
+            node.properties.invisible = true;
+          });
+
+          borderEdges?.forEach((edge) => {
+            edge.properties.invisible = true;
+          });
+
           const nodeData = [...diagramNodeData, ...currentPageNodes, ...(borderNodes ?? [])];
           const edgeData = [...diagramEdgeData, ...currentPageEdges, ...(borderEdges ?? [])];
 
@@ -253,15 +262,14 @@ export const usePlanGenCompilation = (props: {
               positions: nodePositionsFromData(nodeData, cyMapperCurrent),
             })
             .run();
-
           await layoutPromise;
 
           await waitForNodeBackgrounds(nodeBgPromise, currentPageNumber);
 
           const jpg = cyRefCurrent?.jpg({
             ...cyImageExportConfig,
-            maxWidth: 9302, // 9302 is the max width of the image between the borders of the page
-            maxHeight: 6395, // 6395 is the max height of the image between the borders of the page
+            maxWidth: COMPILE_MAX_WIDTH,
+            maxHeight: COMPILE_MAX_HEIGHT,
             quality: 1,
           });
 
@@ -272,6 +280,7 @@ export const usePlanGenCompilation = (props: {
             firstTimeExport = false;
             continue;
           }
+
           imageFiles.push({ name: imageName, blob: jpg });
           firstTimeExport = true;
           cyRefCurrent.remove(cyRefCurrent.elements());
@@ -316,6 +325,8 @@ export const usePlanGenCompilation = (props: {
             return await secureFileUploadClient.uploadFile(new File([imageFile.blob], imageFile.name));
           } else {
             const image = await compressImage(imageFile);
+            // uncomment this line to download the compressed image for debugging
+            // downloadBlob(image.compressedImage, imageFile.name);
             return await secureFileUploadClient.uploadFile(image.compressedImage);
           }
         } catch (e) {

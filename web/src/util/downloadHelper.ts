@@ -1,6 +1,12 @@
-export function downloadBlob(file: File, filename: string) {
+export function downloadBlob(file: File | Blob, filename: string) {
+  let tempFile = file;
+
+  if (file instanceof Blob) {
+    tempFile = new File([file], filename, { type: file.type });
+  }
+
   // Create an object URL for the file
-  const url = window.URL.createObjectURL(file);
+  const url = window.URL.createObjectURL(tempFile);
   // Create a new anchor element
   const a = document.createElement("a");
   // Set the href and download attributes of the anchor

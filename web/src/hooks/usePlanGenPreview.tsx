@@ -27,6 +27,7 @@ import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { getActiveSheet, getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
+import { PREVIEW_MAX_HEIGHT, PREVIEW_MAX_WIDTH } from "@/util/imageUtil";
 import { createNewNode } from "@/util/mapUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 import { wrapText } from "@/util/stringUtil";
@@ -48,8 +49,8 @@ export const cyImageExportConfig = {
   full: true,
   output: "blob",
   bg: "#fff",
-  maxWidth: 9921,
-  maxHeight: 7016,
+  maxWidth: PREVIEW_MAX_WIDTH,
+  maxHeight: PREVIEW_MAX_HEIGHT,
 } as ExportBlobOptions;
 
 export enum PlanSheetTypeAbbreviation {
