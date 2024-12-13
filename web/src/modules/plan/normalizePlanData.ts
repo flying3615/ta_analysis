@@ -1,13 +1,20 @@
 import { LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { degreesToRadians } from "@turf/helpers";
-import { cloneDeep, round } from "lodash-es";
+import { cloneDeep, last, round } from "lodash-es";
 
 import { GroundMetresPosition } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
 import { LabelWithPositionMemo } from "@/modules/plan/updatePlanData";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 import { mapAllDiagramLabels, mapDiagramLabels } from "@/util/diagramUtil";
-import { addIntoPosition, atanDegrees360, deltaFromPolar, hypotenuse, subtractIntoDelta } from "@/util/positionUtil";
+import {
+  addIntoPosition,
+  atanDegrees360,
+  deltaFromPolar,
+  hypotenuse,
+  midPoint,
+  subtractIntoDelta,
+} from "@/util/positionUtil";
 
 export const labelOffsetAndAngleToBasePosition = (
   planCoordinateMapper: PlanCoordinateMapper,
@@ -39,6 +46,13 @@ export const normalizePlanData = (planData: PlanResponseDTO): PlanResponseDTO =>
         pointOffset: 0,
         anchorAngle: 0,
         position: coordinatePosition,
+      };
+    }
+
+    if (coordinatePosition.x === label.position.x && coordinatePosition.y === label.position.y) {
+      return {
+        ...label,
+        pointOffset: round(label.pointOffset, 2),
       };
     }
 
@@ -87,30 +101,31 @@ export const normalizePlanData = (planData: PlanResponseDTO): PlanResponseDTO =>
       if (!parentCoordinate) {
         throw new Error(`Coordinate with id ${coordinateLabel.featureId} not found`);
       }
-      if (coordinateLabel.symbolType === "lolSymbols") {
-        // The symbol stays concentric with the coordinate
-        return {
-          ...coordinateLabel,
-          position: parentCoordinate.position,
-          pointOffset: 0,
-          anchorAngle: 0,
-        };
-      }
-
-      if (
-        parentCoordinate.position.x === coordinateLabel.position.x &&
-        parentCoordinate.position.y === coordinateLabel.position.y
-      ) {
-        return {
-          ...coordinateLabel,
-          pointOffset: round(coordinateLabel.pointOffset, 2),
-        };
-      }
       return labelDTOPositionToOffsetAndAngle(diagram.id, parentCoordinate.position, coordinateLabel);
     });
 
-    const diagramWithNormalizedNonCoordLabels = mapDiagramLabels(
+    const diagramWithNormalizedLineLabels = mapDiagramLabels(
       diagramWithNormalizedCoordinateLabels,
+      "lineLabels",
+      (lineLabel) => {
+        const parentLine = diagram.lines.find((line) => line.id === lineLabel.featureId);
+        if (!parentLine) {
+          throw new Error(`Line with id ${lineLabel.featureId} not found`);
+        }
+
+        const lineStartId = parentLine.coordRefs?.[0] as number;
+        const lineEndId = last(parentLine.coordRefs) as number;
+        const lineStartCoord = diagram.coordinates.find((coord) => coord.id === lineStartId);
+        const lineEndCoord = diagram.coordinates.find((coord) => coord.id === lineEndId);
+        if (!lineStartCoord || !lineEndCoord) throw new Error("Line start or end coordinates not found");
+        const lineMidPoint = midPoint(lineStartCoord.position, lineEndCoord.position);
+
+        return labelDTOPositionToOffsetAndAngle(diagram.id, lineMidPoint, lineLabel);
+      },
+    );
+
+    const diagramWithNormalizedNonCoordLabels = mapDiagramLabels(
+      diagramWithNormalizedLineLabels,
       ["parcelLabels", "childDiagrams", "labels"],
       (label: LabelDTO) => {
         // console.log(`normlizeDiagrams ${JSON.stringify(label)}`);

@@ -7,13 +7,13 @@ import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 import { atanDegrees360, hypotenuse } from "@/util/positionUtil";
 
 describe("normalizePlanData", () => {
-  test("passes through plan data unchanged when coordinates and their labels have the same position", () => {
+  test("passes through plan data unchanged when coordinates and lines and their labels have the same position", () => {
     const normalizedPlanData = normalizePlanData(mockPlanData);
     expect(normalizedPlanData.diagrams).toStrictEqual(mockPlanData.diagrams);
     expect(normalizedPlanData.pages).toEqual(mockPlanData.pages);
   });
 
-  test("normalizes plan data when coordinates and their labels have different positions", () => {
+  test("normalizes plan data when coordinates and lines and their labels have different positions", () => {
     const normalizedPlanData = normalizePlanData(
       cloneDeep({
         ...mockPlanData,
@@ -25,6 +25,12 @@ describe("normalizePlanData", () => {
               {
                 ...mockPlanData.diagrams[0]!.coordinateLabels[0],
                 position: { x: 21, y: -11 },
+              } as LabelDTO,
+            ],
+            lineLabels: [
+              {
+                ...mockPlanData.diagrams[0]!.lineLabels[0],
+                position: { x: 50, y: -30 },
               } as LabelDTO,
             ],
           },
@@ -55,7 +61,11 @@ describe("normalizePlanData", () => {
     expect(normalizedPlanData.diagrams[0]!.parcelLabelGroups).toStrictEqual(
       mockPlanData.diagrams[0]!.parcelLabelGroups,
     );
-    expect(normalizedPlanData.diagrams[0]!.lineLabels).toStrictEqual(mockPlanData.diagrams[0]!.lineLabels);
+
+    expect(normalizedPlanData.diagrams[0]!.lineLabels[0]!.position).toStrictEqual({ x: 20, y: -40 });
+    expect(normalizedPlanData.diagrams[0]!.lineLabels[0]!.pointOffset).toBeCloseTo(212.53);
+    expect(normalizedPlanData.diagrams[0]!.lineLabels[0]!.anchorAngle).toBeCloseTo(17.2413);
+
     expect(normalizedPlanData.diagrams[0]!.childDiagrams).toStrictEqual(mockPlanData.diagrams[0]!.childDiagrams);
     expect(normalizedPlanData.diagrams[0]!.id).toStrictEqual(mockPlanData.diagrams[0]!.id);
     expect(normalizedPlanData.diagrams[0]!.id).toStrictEqual(mockPlanData.diagrams[0]!.id);

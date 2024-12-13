@@ -189,7 +189,9 @@ export const mockPlanDataBuilder = cloneDeep(mockPlanDataBuilderDiagram1)
   .addLabel("lineLabels", {
     id: 21,
     displayText: "Line",
-    position: { x: 85, y: -40 },
+    pointOffset: 2,
+    anchorAngle: 0,
+    position: { x: 50, y: -10 },
     featureId: 1001,
     featureType: "line",
     font: "Tahoma",

@@ -150,7 +150,7 @@ describe("extractGraphData", () => {
     const labelNode21 = extractedNodeMap["LAB_21"];
     expect(labelNode21?.id).toBe("LAB_21");
     expect(labelNode21?.label).toBe("Edited\nLine");
-    expect(labelNode21?.position).toStrictEqual({ x: 85, y: -40 });
+    expect(labelNode21?.position).toStrictEqual({ x: 50, y: -10 });
     expect(labelNode21?.properties?.["featureId"]).toBe(1001);
     expect(labelNode21?.properties?.["featureType"]).toBe("line");
     expect(labelNode21?.properties?.["font"]).toBe("Tahoma");
