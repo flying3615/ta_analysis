@@ -1,6 +1,5 @@
-import { DiagramDTO, PageConfigDTO, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, PageConfigDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { createSelector } from "@reduxjs/toolkit";
-import { max } from "lodash-es";
 
 import { INodeAndEdgeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import {
@@ -8,9 +7,11 @@ import {
   getConfigs,
   getDiagrams,
   getLastChangedAt,
+  getLastModifiedAt,
   getPageConfigs,
   getPages,
   getPlanData,
+  UserEdit,
 } from "@/redux/planSheets/planSheetsSlice";
 
 import {
@@ -70,6 +71,8 @@ export const selectActivePageEdgesAndNodes = createSelector(
 );
 
 export const selectLookupGraphData = createSelector(
+  // NOTE: selecting using getDiagrams and getPages _seems_ more correct
+  // however, this breaks the "getMenuItemsForPlanMode for Select coordinate returns coordinate menu";
   getPlanData,
   ({ diagrams, pages }) => new LookupGraphData({ diagrams, pages, configs: [] }),
 );
@@ -78,50 +81,21 @@ export const selectLastUserEdit = createSelector(
   getDiagrams,
   getConfigs,
   getLastChangedAt,
+  getLastModifiedAt,
   getPages,
-  (diagrams, configs, lastChangedAt, pages): PlanResponseDTO | undefined => {
+  (diagrams, configs, lastChangedAt, lastModifiedAt, pages): UserEdit | undefined => {
     if (!configs || !lastChangedAt) {
       return undefined;
     }
     return {
       configs,
       diagrams,
-      lastModifiedAt: lastChangedAt,
+      lastChangedAt,
+      lastModifiedAt,
       pages,
     };
   },
 );
-
-/**
- * Feature ids are unique plan-wide.
- *
- * @param planData current plan.
- * @returns maximum feature id plus one.
- */
-export const selectMaxPlanId = createSelector(getPlanData, ({ diagrams, pages }): number => {
-  const planIdFeatures = [
-    ...diagrams.flatMap((diagram) => [
-      diagram.childDiagrams?.flatMap((child) => child.labels),
-      diagram.coordinateLabels,
-      diagram.coordinates,
-      diagram.labels,
-      diagram.lineLabels,
-      diagram.lines,
-      diagram.parcelLabelGroups,
-    ]),
-    ...pages.flatMap((page) => [page.coordinates, page.labels, page.lines]),
-  ];
-
-  const maxPlanId = planIdFeatures.reduce((maxPlanId, features) => {
-    const maxId = max<number>(features?.map((data) => data.id));
-    if (!maxId) {
-      return maxPlanId;
-    }
-    return Math.max(maxPlanId, maxId);
-  }, 0);
-
-  return maxPlanId + 1;
-});
 
 export const selectPageConfigEdgesAndNodes = createSelector(
   getPageConfigs,

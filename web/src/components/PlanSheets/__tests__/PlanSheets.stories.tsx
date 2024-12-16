@@ -2,7 +2,7 @@
 import "@szhsin/react-menu/dist/index.css";
 
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
-import { PageDTOPageTypeEnum, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
@@ -23,7 +23,7 @@ import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
 import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { Paths } from "@/Paths";
-import { replaceDiagrams, updatePages } from "@/redux/planSheets/planSheetsSlice";
+import { replaceDiagrams, updatePages, UserEdit } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
 import {
@@ -1014,9 +1014,9 @@ export const AutoRecoverPopUpModal: Story = {
   beforeEach: async () => {
     await clearAllRecoveryFiles();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
-    const mockData: PlanResponseDTO = {
+    const mockData: UserEdit = {
       ...mockPlanData,
-      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+      lastChangedAt: new Date(new Date().getTime()).toISOString(),
     };
     await setRecoveryFile(123, mockData);
     return clearAllRecoveryFiles;
@@ -1032,9 +1032,9 @@ export const AutoRecoverPopUpModalLastUserEditedSave: Story = {
   beforeEach: async () => {
     await clearAllRecoveryFiles();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
-    const mockData: PlanResponseDTO = {
+    const mockData: UserEdit = {
       ...mockPlanData,
-      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+      lastChangedAt: new Date(new Date().getTime()).toISOString(),
     };
     await setRecoveryFile(123, mockData);
     return clearAllRecoveryFiles;
@@ -1051,9 +1051,9 @@ export const AutoRecoverPopUpModalAutoRecoveryVersion: Story = {
   beforeEach: async () => {
     await clearAllRecoveryFiles();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
-    const mockData: PlanResponseDTO = {
+    const mockData: UserEdit = {
       ...mockPlanData,
-      lastModifiedAt: new Date(new Date().getTime()).toISOString(),
+      lastChangedAt: new Date(new Date().getTime()).toISOString(),
     };
     await setRecoveryFile(123, mockData);
     return clearAllRecoveryFiles;
@@ -1065,6 +1065,27 @@ export const AutoRecoverPopUpModalAutoRecoveryVersion: Story = {
     await sleep(500);
     const dataAfterRecovery = await getRecoveryFile(123);
     await expect(dataAfterRecovery).toStrictEqual(dataBeforeRecovery);
+  },
+};
+
+export const AutoRecoverLastModifiedMismatchClearsData: Story = {
+  ...Default,
+  beforeEach: async () => {
+    await clearAllRecoveryFiles();
+    // setting mocks with recent lastModifiedAt date to trigger auto recover
+    const mockData: UserEdit = {
+      ...mockPlanData,
+      lastChangedAt: new Date(new Date().getTime()).toISOString(),
+      lastModifiedAt: new Date(new Date(mockPlanData.lastModifiedAt).getTime() - 1000).toISOString(),
+    };
+    await setRecoveryFile(123, mockData);
+    return clearAllRecoveryFiles;
+  },
+  play: async () => {
+    // wait for some time to make sure data is not cleared
+    await sleep(500);
+    const dataAfterRecoveryCheck = await getRecoveryFile(123);
+    await expect(dataAfterRecoveryCheck).toBeUndefined();
   },
 };
 

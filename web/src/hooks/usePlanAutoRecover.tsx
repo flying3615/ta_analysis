@@ -6,12 +6,12 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { DateTime } from "@/components/DateTime";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { selectLastUserEdit } from "@/modules/plan/selectGraphData";
-import { recoverAutoSave, setPlanData } from "@/redux/planSheets/planSheetsSlice";
+import { recoverAutoSave, setPlanData, UserEdit } from "@/redux/planSheets/planSheetsSlice";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
-interface RecoveryFile extends PlanResponseDTO {
+interface RecoveryFile extends UserEdit {
   transactionId: number;
 }
 
@@ -32,19 +32,21 @@ export async function clearRecoveryFile(transactionId: number) {
   await setRecoveryFile(transactionId, undefined);
 }
 
-export async function getRecoveryFile(transactionId: number): Promise<PlanResponseDTO | undefined> {
+export async function getRecoveryFile(transactionId: number): Promise<UserEdit | undefined> {
   return PLANGEN_LAYOUT_DB.autoSave.get(transactionId);
 }
 
 export async function getAndValidateRecoveryFile(
   transactionId: number,
   apiData: PlanResponseDTO,
-): Promise<PlanResponseDTO | undefined> {
+): Promise<UserEdit | undefined> {
   const autoSave = await getRecoveryFile(transactionId);
   if (
+    !autoSave?.lastChangedAt ||
     !autoSave?.lastModifiedAt ||
     !apiData.lastModifiedAt ||
-    new Date(autoSave.lastModifiedAt).getTime() <= new Date(apiData.lastModifiedAt).getTime()
+    apiData.lastModifiedAt !== autoSave.lastModifiedAt ||
+    new Date(autoSave.lastChangedAt).getTime() <= new Date(apiData.lastModifiedAt).getTime()
   ) {
     if (autoSave) {
       // clear invalid/outdated autosave
@@ -55,7 +57,7 @@ export async function getAndValidateRecoveryFile(
   return autoSave;
 }
 
-export async function setRecoveryFile(transactionId: number, data: PlanResponseDTO | undefined): Promise<unknown> {
+export async function setRecoveryFile(transactionId: number, data: UserEdit | undefined): Promise<unknown> {
   if (!data) {
     return PLANGEN_LAYOUT_DB.autoSave.delete(transactionId);
   } else {
@@ -65,7 +67,7 @@ export async function setRecoveryFile(transactionId: number, data: PlanResponseD
 
 interface AutoRecoveryModalProps {
   planData: PlanResponseDTO;
-  recoveryFile: PlanResponseDTO;
+  recoveryFile: UserEdit;
 }
 
 /**

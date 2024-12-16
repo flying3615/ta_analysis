@@ -232,12 +232,12 @@ describe("planSheetsSlice", () => {
         hasChanges: true,
       },
     });
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], pages: [] });
+    expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], lastModifiedAt: undefined, pages: [] });
     expect(hasChanges(store.getState())).toBe(true);
 
     store.dispatch(setPlanData({ configs, diagrams, pages }));
     expect(getPageConfigs(store.getState())).toStrictEqual(configs[0]?.pageConfigs);
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, pages });
+    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, lastModifiedAt: undefined, pages });
     expect(getDiagrams(store.getState())).toStrictEqual(diagrams);
     expect(getPages(store.getState())).toStrictEqual(pages);
     expect(hasChanges(store.getState())).toBe(false);
@@ -251,7 +251,7 @@ describe("planSheetsSlice", () => {
       },
     });
 
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, pages: [] });
+    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, lastModifiedAt: undefined, pages: [] });
     expect(getPlanData(store.getState()).diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
     expect(getPlanData(store.getState()).diagrams[1]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
     expect(hasChanges(store.getState())).toBe(false);

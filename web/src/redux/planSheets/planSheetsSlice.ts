@@ -20,6 +20,7 @@ export interface PlanSheetsState {
   // plan data
   configs?: ConfigDataDTO[];
   diagrams: DiagramDTO[];
+  lastModifiedAt?: string;
   pages: PageDTO[];
   // auto recovery
   lastChangedAt?: string;
@@ -47,6 +48,10 @@ export interface PlanSheetsState {
   canViewHiddenLabels: boolean;
   navigateAfterSave?: string;
   viewableLabelTypes: string[];
+}
+
+export interface UserEdit extends PlanResponseDTO {
+  lastChangedAt?: string;
 }
 
 const IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY = "plangen.isHiddenObjectsVisibleByDefault";
@@ -88,17 +93,18 @@ const onDataChanging = (state: PlanSheetsState) => {
   state.lastChangedAt = new Date().toISOString();
 };
 
+// type based on T with K keys made optional
+type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 const planSheetsSlice = createSlice({
   name: "planSheets",
   initialState,
   extraReducers: (builder) => builder.addCase(revertAll, () => initialState),
   reducers: {
-    setPlanData: (
-      state,
-      action: PayloadAction<{ configs?: ConfigDataDTO[]; diagrams: DiagramDTO[]; pages: PageDTO[] }>,
-    ) => {
+    setPlanData: (state, action: PayloadAction<Optional<PlanResponseDTO, "configs">>) => {
       state.configs = action.payload.configs;
       state.diagrams = action.payload.diagrams;
+      state.lastModifiedAt = action.payload.lastModifiedAt;
       state.pages = action.payload.pages;
       state.hasChanges = false;
       state.lastChangedAt = undefined;
@@ -113,12 +119,12 @@ const planSheetsSlice = createSlice({
       });
       state.originalPositions = LookupOriginalCoord(action.payload.diagrams);
     },
-    recoverAutoSave: (state, action: PayloadAction<PlanResponseDTO>) => {
+    recoverAutoSave: (state, action: PayloadAction<UserEdit>) => {
       // set data as usual
       planSheetsSlice.caseReducers.setPlanData(state, action);
       // but mark as changed
       state.hasChanges = true;
-      state.lastChangedAt = action.payload.lastModifiedAt;
+      state.lastChangedAt = action.payload.lastChangedAt;
     },
     replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
       onDataChanging(state);
@@ -408,10 +414,11 @@ const planSheetsSlice = createSlice({
     },
   },
   selectors: {
-    getPlanData: (state) => ({ diagrams: state.diagrams, pages: state.pages }),
+    getPlanData: (state) => ({ diagrams: state.diagrams, lastModifiedAt: state.lastModifiedAt, pages: state.pages }),
     getDiagrams: (state) => state.diagrams,
     getPages: (state) => state.pages,
     getConfigs: (state) => state.configs,
+    getLastModifiedAt: (state) => state.lastModifiedAt,
     getActiveSheet: (state) => state.activeSheet,
     getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
     getElementTypeConfigs: (state) => state.configs?.[0]?.elementTypeConfigs ?? [],
@@ -527,6 +534,7 @@ export const {
   getPlanData,
   getConfigs,
   getDiagrams,
+  getLastModifiedAt,
   getPages,
   getActivePages,
   getActivePage,
