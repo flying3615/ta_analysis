@@ -104,6 +104,8 @@ export const UpdatePageLabelProperties: Story = {
     const boldCheckbox = await canvas.findByLabelText("Bold");
     await userEvent.click(boldCheckbox);
     const textInput = await canvas.findByTestId("label-textarea");
+    await userEvent.click(textInput);
+    await userEvent.keyboard("{delete}"); // pressing delete should NOT delete the label (verified by chromatic)
     void fireEvent.input(textInput, { target: { value: "New Label\nNew Line" } });
     const fontInput = await canvas.findByDisplayValue("Roboto (was Tahoma)");
     await userEvent.selectOptions(fontInput, "Arimo (was Arial)");
