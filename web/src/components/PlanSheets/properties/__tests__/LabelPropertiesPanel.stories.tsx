@@ -1,7 +1,7 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
-import { fireEvent, userEvent, within } from "@storybook/test";
+import { fireEvent, screen, userEvent, within } from "@storybook/test";
 import { http, HttpResponse } from "msw";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
@@ -373,6 +373,30 @@ export const HidePageAndDiagramLabelsThenUndo: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.Undo));
     await sleep(500); // final screenshot verify changes undone
     await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
+  },
+};
+
+export const EditPageLabelAndThenShowUnsavedDataPopup: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    clickAtPosition(target, pageLabelWithLineBreakPosition, RIGHT_MOUSE_BUTTON);
+    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
+    const propertiesButton = await within(contextMenu).findByText("Properties");
+    await userEvent.click(propertiesButton);
+    await sleep(500);
+    const boldCheckbox = await canvas.findByLabelText("Bold");
+    await userEvent.click(boldCheckbox);
+    const okButton = canvas.getByRole("button", { name: "OK" });
+    await userEvent.click(okButton);
+    await sleep(500);
+    await userEvent.click(await canvas.findByText("Sheets"));
+    await userEvent.click(await canvas.findByText("Define Diagrams"));
+    await sleep(500);
+    await expect(await screen.findByText(/You have unsaved changes/)).toBeInTheDocument();
   },
 };
 

@@ -160,8 +160,9 @@ export const useLabelsFunctions = () => {
     diagramLabelsToUpdate.length > 0 &&
       dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdate)));
 
-    // Update page labels (do not apply onDataChanging as it is already done in replaceDiagrams, so the undo works correctly)
+    // Update page labels (do not applyOnDataChanging if it was already done in replaceDiagrams, so the undo works correctly)
     if (!activePage) return;
+    const applyOnDataChangingToPageLabels = diagramLabelsToUpdate.length === 0;
     const pageLabelsToUpdate = labelsPropsToUpdate.filter((label) =>
       selectedLabelsData.some(
         (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id) && isNil(selectedLabel.diagramId),
@@ -169,7 +170,10 @@ export const useLabelsFunctions = () => {
     );
     pageLabelsToUpdate.length > 0 &&
       dispatch(
-        replacePage({ updatedPage: updatePageLabels(activePage, pageLabelsToUpdate), applyOnDataChanging: false }),
+        replacePage({
+          updatedPage: updatePageLabels(activePage, pageLabelsToUpdate),
+          applyOnDataChanging: applyOnDataChangingToPageLabels,
+        }),
       );
   };
 
