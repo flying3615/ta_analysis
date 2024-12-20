@@ -59,5 +59,10 @@ export const SelectLabelHandler = () => {
     };
   }, [cyto, onClick]);
 
-  return inputPosition && labelData && <LabelTextInput inputPosition={inputPosition} labelData={labelData} />;
+  return (
+    inputPosition &&
+    labelData && (
+      <LabelTextInput inputPosition={inputPosition} setInputPosition={setInputPosition} labelData={labelData} />
+    )
+  );
 };

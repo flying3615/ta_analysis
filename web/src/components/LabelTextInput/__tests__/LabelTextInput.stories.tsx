@@ -105,7 +105,7 @@ export const AddLabel: Story = {
     // click on the Add Label button and show input
     await addLabel(canvasElement, labelPosition);
 
-    // press Escape to cancel the Add Label mode
+    // press Escape to cancel the Add Label mode and plan mode changes to cursor
     await userEvent.keyboard("{escape}");
     await sleep(500);
     // eslint-disable-next-line testing-library/no-node-access
@@ -117,9 +117,9 @@ export const AddLabel: Story = {
     // click outside the textarea to save the label
     await click(target, { clientX: 800, clientY: 500 });
     await sleep(500);
-    // plan mode changes to cursor after save
+    // Add label mode keeps selected after adding a label
     // eslint-disable-next-line testing-library/no-node-access
-    cursorButton = (await canvas.findByTitle("Cursor")).parentElement;
+    cursorButton = (await canvas.findByTitle("Add label")).parentElement;
     await expect(cursorButton).toHaveClass("selected");
 
     const label = window.cyRef.$('node[label = "My Page Label"]');
@@ -189,6 +189,10 @@ export const EditPageLabel: Story = {
     await click(target, pageLabelPosition); // click to edit
     await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Edited my page label");
+    // Select label mode keeps selected after editing a label
+    // eslint-disable-next-line testing-library/no-node-access
+    const cursorButton = (await within(canvasElement).findByTitle("Select Labels")).parentElement;
+    await expect(cursorButton).toHaveClass("selected");
   },
 };
 

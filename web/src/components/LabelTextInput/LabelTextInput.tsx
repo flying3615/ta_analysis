@@ -28,7 +28,6 @@ import {
   getPlanMode,
   replaceDiagrams,
   replacePage,
-  setPlanMode,
   updateMaxElemIds,
 } from "@/redux/planSheets/planSheetsSlice";
 
@@ -36,10 +35,12 @@ import { LabelTextInfoMessage } from "./LabelTextInfoMessage";
 
 export const LabelTextInput = ({
   inputPosition,
+  setInputPosition,
   labelPosition,
   labelData,
 }: {
   inputPosition: cytoscape.Position;
+  setInputPosition: React.Dispatch<React.SetStateAction<cytoscape.Position | undefined>>;
   labelPosition?: cytoscape.Position;
   labelData?: {
     id: string;
@@ -104,7 +105,6 @@ export const LabelTextInput = ({
             ),
           );
         }
-        dispatch(setPlanMode(PlanMode.Cursor));
       }
     } else if (planMode === PlanMode.AddLabel) {
       if (labelText && labelPosition) {
@@ -126,9 +126,10 @@ export const LabelTextInput = ({
           }),
         );
         dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
-        dispatch(setPlanMode(PlanMode.Cursor));
       }
     }
+    setLabelText("");
+    setInputPosition(undefined);
   }, [
     activePage,
     activeDiagrams,
@@ -141,6 +142,7 @@ export const LabelTextInput = ({
     planMode,
     lastUpdatedLabelStyle,
     maxElemIds,
+    setInputPosition,
   ]);
 
   return (

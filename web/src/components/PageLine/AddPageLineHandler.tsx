@@ -54,10 +54,16 @@ export const AddPageLineHandler = () => {
     lineSegmentStart.current = null;
     lineSegmentEnd.current = null;
     lineNodeList.current = [];
+    lineEdgeList.current = [];
     newMaxLineIdRef.current = undefined;
     newMaxCoordIdRef.current = undefined;
     maxLineSegmentIdRef.current = 0;
   };
+
+  useEffect(() => {
+    newMaxLineIdRef.current = maxLineId ? maxLineId + 1 : undefined;
+    newMaxCoordIdRef.current = maxCoordId ? maxCoordId + 1 : undefined;
+  }, [maxElemIds, maxLineId, maxCoordId]);
 
   const newLineNode = (nodeId: number, position: cytoscape.Position): cytoscape.NodeDefinition => {
     return {
@@ -114,7 +120,7 @@ export const AddPageLineHandler = () => {
 
   const onMouseClick = useCallback(
     (event: cytoscape.EventObject) => {
-      if (!newMaxLineIdRef.current || !newMaxCoordIdRef)
+      if (!newMaxLineIdRef.current || !newMaxCoordIdRef.current)
         throw new Error("newMaxLineIdRef or newMaxCoordIdRef is undefined");
 
       const addNode = (node: cytoscape.NodeDefinition) => {
@@ -254,7 +260,6 @@ export const AddPageLineHandler = () => {
         dispatch(updateMaxElemIds({ element: "Line", maxId: newMaxLineIdRef.current }));
 
         resetInput();
-        dispatch(setPlanMode(PlanMode.View));
       }
     }
   }, [activePage, cytoCoordMapper, dispatch, isPositionWithinAreaLimits, lastUpdatedLineStyle]);

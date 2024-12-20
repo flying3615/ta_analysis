@@ -67,5 +67,9 @@ export const AddLabelHandler = () => {
     };
   }, [cyto, onClick]);
 
-  return inputPosition && <LabelTextInput inputPosition={inputPosition} labelPosition={labelPosition} />;
+  return (
+    inputPosition && (
+      <LabelTextInput inputPosition={inputPosition} setInputPosition={setInputPosition} labelPosition={labelPosition} />
+    )
+  );
 };

@@ -1,6 +1,6 @@
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
-import { userEvent } from "@storybook/test";
+import { userEvent, within } from "@storybook/test";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/ViewLabels.stories";
@@ -37,6 +37,11 @@ export const AddLineEnter: Story = {
     await expect(line.length).toBe(3); // 3 segments
     const line_first_segment = line[0]!;
     await expect(line_first_segment.data("coordRefs")).toEqual("[160004,160005,160006,160007]"); // the coordinates created for the line
+
+    // Add line mode keeps selected after adding a line
+    // eslint-disable-next-line testing-library/no-node-access
+    const cursorButton = (await within(canvasElement).findByTitle("Add line")).parentElement;
+    await expect(cursorButton).toHaveClass("selected");
   },
 };
 
