@@ -23,6 +23,7 @@ describe("useAdjustLoadedPlanData", () => {
 
   it("leaves diagrams with an offset unchanged", async () => {
     const loadedData = {
+      pages: [],
       diagrams: [
         {
           originPageOffset: {
@@ -46,8 +47,63 @@ describe("useAdjustLoadedPlanData", () => {
     expect(await screen.findByText("Adjusted")).toBeInTheDocument();
   });
 
+  it("fixes page labels with editedText set by moving that field to displayText", async () => {
+    const loadedPageData = {
+      pages: [
+        {
+          labels: [
+            {
+              id: 1,
+              displayText: "Label 1",
+              editedText: "Edited Label 1",
+            },
+            {
+              id: 2,
+              displayText: "Label 2",
+            },
+            {
+              id: 3,
+              editedText: "Edited Label 3",
+            },
+          ],
+        },
+      ],
+    } as unknown as PlanResponseDTO;
+
+    const expectedPageData = {
+      diagrams: [],
+      pages: [
+        {
+          labels: [
+            {
+              id: 1,
+              displayText: "Edited Label 1",
+            },
+            {
+              id: 2,
+              displayText: "Label 2",
+            },
+            {
+              id: 3,
+              displayText: "Edited Label 3",
+            },
+          ],
+        },
+      ],
+    };
+
+    render(
+      <TestAdjustLoadedPlanData
+        loadedData={loadedPageData}
+        expect={(adjustedData) => expect(adjustedData).toStrictEqual(expectedPageData)}
+      />,
+    );
+    expect(await screen.findByText("Adjusted")).toBeInTheDocument();
+  });
+
   it("applies an offset where there was none", async () => {
     const loadedData = {
+      pages: [],
       diagrams: [
         {
           originPageOffset: {
@@ -61,6 +117,7 @@ describe("useAdjustLoadedPlanData", () => {
     } as unknown as PlanResponseDTO;
 
     const expectedOffsetData = {
+      pages: [],
       diagrams: [
         {
           originPageOffset: {

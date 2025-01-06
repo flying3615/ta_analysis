@@ -1,4 +1,4 @@
-import { DiagramDTO, LabelDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, LabelDTO, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { max, min } from "lodash-es";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
@@ -91,12 +91,27 @@ export const useAdjustLoadedPlanData = () => {
     };
   };
 
+  const adjustPage = (page: PageDTO): PageDTO => {
+    return {
+      ...page,
+      // if any page labels have `editedText` set, move this to `displayText`
+      labels: page.labels?.map((label) => {
+        if (label.editedText) {
+          label.displayText = label.editedText;
+          delete label.editedText;
+        }
+        return label;
+      }),
+    };
+  };
+
   const adjustPlanData = (response: PlanResponseDTO): PlanResponseDTO => {
     const diagrams = response.diagrams;
     return {
       ...response,
 
-      diagrams: diagrams.map((d) => adjustDiagram(d)),
+      diagrams: diagrams?.map((d) => adjustDiagram(d)) ?? [],
+      pages: response.pages?.map((page) => adjustPage(page)) ?? [],
     };
   };
 
