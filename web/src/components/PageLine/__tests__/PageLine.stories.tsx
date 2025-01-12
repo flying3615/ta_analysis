@@ -8,6 +8,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   checkCytoElementProperties,
+  countSelected,
   getCytoElement,
   sleep,
   tabletLandscapeParameters,
@@ -562,6 +563,7 @@ export const HidePageLine: Story = {
     await test.contextMenu({ at: [554, 230], select: "Hide" }); // select hide action for page line
     await test.waitForCytoscape();
     await checkCytoElementProperties("#10013_0", { displayState: "hide" });
+    await expect(countSelected()).toBe(1);
   },
 };
 

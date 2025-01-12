@@ -10,7 +10,10 @@ import { convertToDegrees } from "@/util/stringUtil";
 const ANTI_CLOCKWISE_MAX = 0;
 const CLOCKWISE_MAX = 180;
 
-export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
+export const LabelRotationMenuItem = (props: {
+  targetLabel: NodeSingular;
+  keepElementSelected: (callback: () => void) => void;
+}) => {
   const { updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
 
   const currentAngle = (props.targetLabel.style("text-rotation") as string) ?? "0";
@@ -35,12 +38,14 @@ export const LabelRotationMenuItem = (props: { targetLabel: NodeSingular }) => {
             props.targetLabel.style("text-rotation", `${angle}deg`);
           }}
           onBlur={() => {
-            if (props.targetLabel.data("textRotation") !== labelAngle) {
-              updateActiveDiagramsAndPageFromCytoData(
-                // update a clone to avoid render flicker and reverse the angle within 0-360 range
-                props.targetLabel.clone().data({ textRotation: (360 - labelAngle) % 360 }),
-              );
-            }
+            props.keepElementSelected(() => {
+              if (props.targetLabel.data("textRotation") !== labelAngle) {
+                updateActiveDiagramsAndPageFromCytoData(
+                  // update a clone to avoid render flicker and reverse the angle within 0-360 range
+                  props.targetLabel.clone().data({ textRotation: (360 - labelAngle) % 360 }),
+                );
+              }
+            });
           }}
         />
       </div>

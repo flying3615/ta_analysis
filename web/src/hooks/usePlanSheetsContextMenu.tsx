@@ -15,6 +15,7 @@ import { LinePropertiesData } from "@/components/PlanSheets/properties/LinePrope
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useChangeLine } from "@/hooks/useChangeLine";
 import { useChangeNode } from "@/hooks/useChangeNode";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useMoveOriginalLocation } from "@/hooks/useMoveOriginalLocation";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
@@ -28,6 +29,7 @@ import { usePageLineEdit } from "./usePageLineEdit";
 export const usePlanSheetsContextMenu = () => {
   const dispatch = useAppDispatch();
   const findPreviousAttributesForDiagram = useAppSelector(getPreviousAttributesForDiagram);
+  const { keepElementSelected, cleanupSelectedElements } = useCytoscapeContext();
   const lookupGraphData = useAppSelector(selectLookupGraphData);
   const planMode = useAppSelector(getPlanMode);
   const { openPanel } = useContext(PanelsContext);
@@ -112,7 +114,9 @@ export const usePlanSheetsContextMenu = () => {
       } else {
         throw new Error("Invalid plan mode");
       }
-      openPanel("Plan element property", () => <PlanElementProperty property={planProperty} />);
+      openPanel("Plan element property", () => (
+        <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} />
+      ));
     }
   };
 
@@ -144,15 +148,15 @@ export const usePlanSheetsContextMenu = () => {
           title: "Original location",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
             element.data("diagramId") === undefined,
-          callback: () => restoreOriginalPosition(targetLine),
+          callback: () => keepElementSelected(() => restoreOriginalPosition(targetLine)),
         },
         {
           title: "Show",
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
             element.data("displayState") === DisplayStateEnum.systemHide,
           hideWhen: lineShouldBeDisplayed,
-          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-            setLineHidden(event.target as EdgeSingular, false);
+          callback: () => {
+            keepElementSelected(() => selectedEdges.forEach((edge) => setLineHidden(edge, false)));
           },
         },
         {
@@ -160,8 +164,8 @@ export const usePlanSheetsContextMenu = () => {
           disableWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) =>
             element.data("displayState") === DisplayStateEnum.systemDisplay,
           hideWhen: (element: NodeSingular | EdgeSingular | cytoscape.Core) => !lineShouldBeDisplayed(element),
-          callback: (event: { target: NodeSingular | EdgeSingular | null }) => {
-            setLineHidden(event.target as EdgeSingular, true);
+          callback: () => {
+            keepElementSelected(() => selectedEdges.forEach((edge) => setLineHidden(edge, true)));
           },
         },
         {
@@ -183,13 +187,13 @@ export const usePlanSheetsContextMenu = () => {
           divider: true,
           disableWhen: () =>
             selectedEdges.some((ele) => ele.data("lineType") !== "userDefined") || selectedLineNumber !== 1,
-          callback: () => cutPageLines([...selectedEdges]),
+          callback: () => cleanupSelectedElements(() => cutPageLines([...selectedEdges])),
         },
         {
           title: "Copy",
           disableWhen: () =>
             selectedEdges.some((ele) => ele.data("lineType") !== "userDefined") || selectedLineNumber !== 1,
-          callback: () => copyPageLines([...selectedEdges]),
+          callback: () => cleanupSelectedElements(() => copyPageLines([...selectedEdges])),
         },
         { title: "Paste", disabled: true },
         {
@@ -244,14 +248,14 @@ export const usePlanSheetsContextMenu = () => {
       const stackedLabels = getStackedLabels(targetLabel, clickedPosition);
 
       return [
-        { title: "Original location", callback: () => setOriginalLocation(selectedLabels) },
+        { title: "Original location", callback: () => keepElementSelected(() => setOriginalLocation(selectedLabels)) },
         {
           title: "Show",
           hideWhen: () =>
             selectedNonSystemLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.display) &&
             selectedNonSystemLabels.length !== 0,
           disableWhen: () => selectedLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.systemDisplay),
-          callback: () => updateLabelsDisplayState(selectedLabels, "display"),
+          callback: () => keepElementSelected(() => updateLabelsDisplayState(selectedLabels, "display")),
         },
         {
           title: "Hide",
@@ -259,7 +263,7 @@ export const usePlanSheetsContextMenu = () => {
             selectedNonSystemLabels.some((ele) => ele.data("displayState") === DisplayStateEnum.hide) ||
             selectedNonSystemLabels.length === 0,
           disableWhen: () => selectedLabels.every((ele) => ele.data("displayState") === DisplayStateEnum.systemHide),
-          callback: () => updateLabelsDisplayState(selectedLabels, "hide"),
+          callback: () => keepElementSelected(() => updateLabelsDisplayState(selectedLabels, "hide")),
         },
         {
           title: "Properties",
@@ -299,22 +303,41 @@ export const usePlanSheetsContextMenu = () => {
           })),
         },
         // Add the "Rotate label" menu item only if singleSelected is true
-        ...(singleSelected ? [{ title: "Align label to line", callback: alignLabelToLine }] : []),
         ...(singleSelected
-          ? [{ title: "Rotate label", submenu: [{ title: <LabelRotationMenuItem targetLabel={targetLabel} /> }] }]
+          ? [
+              {
+                title: "Align label to line",
+                callback: (e: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) =>
+                  keepElementSelected(() => alignLabelToLine(e)),
+              },
+            ]
+          : []),
+        ...(singleSelected
+          ? [
+              {
+                title: "Rotate label",
+                submenu: [
+                  {
+                    title: (
+                      <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelected} />
+                    ),
+                  },
+                ],
+              },
+            ]
           : []),
         {
           title: "Cut",
           divider: true,
           disableWhen: () =>
             selectedLabels.some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
-          callback: () => cutPageLabels([...selectedLabels]),
+          callback: () => cleanupSelectedElements(() => cutPageLabels([...selectedLabels])),
         },
         {
           title: "Copy",
           disableWhen: () =>
             selectedLabels.some((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
-          callback: () => copyPageLabels([...selectedLabels]),
+          callback: () => cleanupSelectedElements(() => copyPageLabels([...selectedLabels])),
         },
         {
           title: "Paste",

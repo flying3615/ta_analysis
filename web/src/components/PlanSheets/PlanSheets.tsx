@@ -26,7 +26,6 @@ import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
 import { usePlanAutoRecover } from "@/hooks/usePlanAutoRecover";
-import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   selectActiveDiagramsEdgesAndNodes,
@@ -130,7 +129,6 @@ const PlanSheets = () => {
   }, [regenerateApiError, transactionId, navigate, showPrefabModal]);
 
   const { data: surveyInfo } = useSurveyInfoQuery({ transactionId });
-  const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
   const planMode = useAppSelector(getPlanMode);
   const diagramIdToMove = useAppSelector(getDiagramIdToMove);
 
@@ -199,9 +197,6 @@ const PlanSheets = () => {
               nodeData={nodeData}
               edgeData={edgeData}
               diagrams={activeDiagrams}
-              getContextMenuItems={(element, selectedCollection, clickedPosition) =>
-                getMenuItemsForPlanElement(element, clickedPosition, selectedCollection)
-              }
               data-testid="MainCytoscapeCanvas"
             />
           ) : (

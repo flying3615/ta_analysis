@@ -57,12 +57,7 @@ const CanvasWithMeasure = () => {
 
   return (
     <div style={{ height: "100vh" }}>
-      <CytoscapeCanvas
-        nodeData={nodeData}
-        edgeData={edgeData}
-        diagrams={data.diagrams}
-        getContextMenuItems={() => undefined}
-      />
+      <CytoscapeCanvas nodeData={nodeData} edgeData={edgeData} diagrams={data.diagrams} />
     </div>
   );
 };

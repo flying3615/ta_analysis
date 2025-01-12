@@ -1,6 +1,8 @@
 import cytoscape from "cytoscape";
-import React, { createContext, ReactElement, ReactNode, useState } from "react";
+import React, { createContext, ReactElement, ReactNode, useEffect, useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { setSelectedElementIds } from "@/redux/planSheets/planSheetsSlice";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 export interface CytoscapeContextType {
@@ -14,6 +16,9 @@ export interface CytoscapeContextType {
   scrollToZoom: (cy: cytoscape.Core) => void;
   keepPanWithinBoundaries: (cy: cytoscape.Core) => void;
   onViewportChange: (cy: cytoscape.Core) => void;
+  keepElementSelected: (callback: () => void) => void;
+  cleanupSelectedElements: (callback: () => void) => void;
+  setSelectedElementIds: (ids: string[]) => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -27,6 +32,7 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
   const [cyto, setCyto] = useState<cytoscape.Core>();
   const [isMaxZoom, setIsMaxZoom] = useState(false);
   const [isMinZoom, setIsMinZoom] = useState(false);
+  const dispatch = useAppDispatch();
   const zoomToFit = () => cytoscapeUtils.zoomToFit(cyto);
   const zoomByDelta = (delta: number) => {
     cytoscapeUtils.zoomByDelta(delta, cyto);
@@ -37,6 +43,7 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
   const scrollToZoom = (cy: cytoscape.Core) => cytoscapeUtils.scrollToZoom(cy);
   const keepPanWithinBoundaries = (cy: cytoscape.Core) => cytoscapeUtils.keepPanWithinBoundaries(cy);
   const onViewportChange = (cy: cytoscape.Core) => cytoscapeUtils.onViewportChange(cy);
+  const selectedElementIds = useAppSelector((state) => state.planSheets.selectedElementIds);
 
   const checkZoomLimits = () => {
     if (!cyto) return;
@@ -47,6 +54,25 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
     setIsMaxZoom(currentZoom >= maxZoom);
     setIsMinZoom(currentZoom <= minZoom);
   };
+
+  const keepElementSelected = (callback: () => void) => {
+    const selectedElements = cyto?.$(":selected");
+    const selectedIds = selectedElements?.map((ele) => ele.id());
+    dispatch(setSelectedElementIds(selectedIds ?? []));
+    callback();
+  };
+
+  const cleanupSelectedElements = (callback: () => void) => {
+    dispatch(setSelectedElementIds([]));
+    callback();
+  };
+
+  useEffect(() => {
+    if (!cyto || !selectedElementIds) return;
+    selectedElementIds.forEach((id) => {
+      cyto.$(`#${id}`).select();
+    });
+  }, [cyto, selectedElementIds, dispatch]);
 
   return (
     <CytoscapeContext.Provider
@@ -61,6 +87,9 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
         scrollToZoom,
         keepPanWithinBoundaries,
         onViewportChange,
+        keepElementSelected,
+        cleanupSelectedElements,
+        setSelectedElementIds,
       }}
     >
       {props.children}

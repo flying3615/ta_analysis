@@ -13,12 +13,7 @@ const mockedState = {
 describe("CytoscapeCanvas", () => {
   it("renders", async () => {
     renderWithReduxProvider(
-      <CytoscapeCanvas
-        nodeData={markNodes}
-        edgeData={lineEdges}
-        diagrams={diagrams}
-        getContextMenuItems={() => undefined}
-      />,
+      <CytoscapeCanvas nodeData={markNodes} edgeData={lineEdges} diagrams={diagrams} />,
       mockedState,
     );
     expect(await screen.findByTestId("CytoscapeCanvas")).toBeInTheDocument();

@@ -12,6 +12,7 @@ export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
 
 interface PlanElementPropertyProps {
   property: PlanPropertyPayload;
+  keepElementSelected: (callback: () => void) => void;
 }
 
 interface PlanLabelProperty {
@@ -26,7 +27,7 @@ interface PlanLineProperty {
   position: { x: number; y: number };
 }
 
-const PlanElementProperty = ({ property }: PlanElementPropertyProps) => {
+const PlanElementProperty = ({ property, keepElementSelected }: PlanElementPropertyProps) => {
   const [saveFunction, setSaveFunction] = useState<() => void>();
   const [isSaveEnabled, setSaveEnabled] = useState<boolean>(false);
 
@@ -93,12 +94,14 @@ const PlanElementProperty = ({ property }: PlanElementPropertyProps) => {
           disabled={!isSaveEnabled}
           size="lg"
           level="primary"
-          onClick={() => {
-            if (saveFunction) {
-              saveFunction();
-              panelClose();
-            }
-          }}
+          onClick={() =>
+            keepElementSelected(() => {
+              if (saveFunction) {
+                saveFunction();
+                panelClose();
+              }
+            })
+          }
         >
           OK
         </LuiButton>

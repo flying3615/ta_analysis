@@ -434,6 +434,21 @@ export class TestCanvas {
     throw Error(`Could not find div.property-wrap element with ${propertySelector} and text matching ${withLabel}`);
   }
 
+  fromRadioOptions(optionsName: string) {
+    class optionsSet {
+      constructor(
+        public user: UserEvent,
+        public options: Element,
+      ) {}
+
+      async select(name: string) {
+        // eslint-disable-next-line testing-library/no-node-access
+        await this.user.click(this.options.querySelector(`input[name="${name}"]`) as Element);
+      }
+    }
+    return new optionsSet(this.user, this.findProperty("RadioInput", optionsName));
+  }
+
   async clickCancelFooter() {
     const buttonGroup = await findQuick({ classes: ".footer" });
     const cancelButton = await findQuick({ tagName: "button", text: "Cancel" }, buttonGroup);
@@ -608,4 +623,8 @@ export async function waitForLoadingSpinnerToDisappear() {
     },
     { timeout: 10000 },
   );
+}
+
+export function countSelected(): number {
+  return window.cyRef.filter((ele) => ele.selected()).length;
 }

@@ -13,9 +13,11 @@ import {
   click,
   clickAtPosition,
   clickMultipleCoordinates,
+  countSelected,
   getCytoCanvas,
   RIGHT_MOUSE_BUTTON,
   sleep,
+  TestCanvas,
 } from "@/test-utils/storybook-utils";
 
 import {
@@ -69,19 +71,13 @@ export const ShowLabelPropertiesPanel: Story = {
 export const RotateLabelSliderAndPropertiesTextAngleAreConsistent: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.contextMenu({ at: [204, 213], select: "Rotate label" }, "hover");
+    await expect(within(test.canvasElement).getByRole("slider")).toHaveValue("90");
+    await test.contextMenu({ at: [204, 213], select: "Properties" });
     await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-    const rotateLabelMenuItem = await canvas.findByText("Rotate label");
-    await userEvent.hover(rotateLabelMenuItem);
-    await expect(canvas.getByRole("slider")).toHaveValue("90");
-    const propertiesMenuItem = await canvas.findByText("Properties");
-    await userEvent.click(propertiesMenuItem);
-    await sleep(500);
-    await expect(await canvas.findByDisplayValue("90.0000")).toBeInTheDocument();
+    await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("90.0000");
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -95,6 +91,9 @@ export const UpdatePageLabelProperties: Story = {
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    await expect(countSelected()).toBe(1);
+
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
     await userEvent.click(propertiesButton);
@@ -125,6 +124,8 @@ export const UpdatePageLabelProperties: Story = {
     await userEvent.click(borderCheckbox);
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
+    await sleep(500);
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -161,6 +162,8 @@ export const UpdateDiagramLabelProperties: Story = {
     await userEvent.click(borderCheckbox);
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
+    await sleep(500);
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -182,6 +185,7 @@ export const UpdateLabelPropertiesCancelFlow: Story = {
     await userEvent.click(cancelButton); // final screenshot verify changes not rendered
     await sleep(500);
     await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -213,6 +217,8 @@ export const UpdateMultiplePageAndDiagramLabelProperties: Story = {
     await userEvent.click(borderCheckbox);
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
+    await sleep(500);
+    await expect(countSelected()).toBe(2);
   },
 };
 
@@ -242,6 +248,7 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
     await userEvent.click(okButton); // changes rendered
     await userEvent.click(await canvas.findByTitle(PlanMode.Undo)); // changes undone - final screenshot verify changes not rendered
     await sleep(500);
+    await expect(countSelected()).toBe(2);
   },
 };
 
@@ -283,19 +290,13 @@ export const CustomLabels: Story = {
 export const HidePageAndDiagramLabelsBothInDisplayState: Story = {
   ...CustomLabels,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
-    await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickMultipleCoordinates(target, [
-      { x: pageLabelWithLineBreakPosition.clientX, y: pageLabelWithLineBreakPosition.clientY },
-      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
-    ]);
-    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
-    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
-    const hideButton = await within(contextMenu).findByText("Hide");
-    await userEvent.click(hideButton); // final screenshot verify labels hidden
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const pageLabelWithLineBreakPosition: [number, number] = [522, 422];
+    const diagramLabelPosition: [number, number] = [204, 213];
+    await test.multiSelect([pageLabelWithLineBreakPosition, diagramLabelPosition]);
+    await test.contextMenu({ at: diagramLabelPosition, select: "Hide" });
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(2);
   },
 };
 
@@ -315,6 +316,7 @@ export const ShowPageAndDiagramLabelsBothInHideState: Story = {
     const showButton = await within(contextMenu).findByText("Show");
     await userEvent.click(showButton); // final screenshot verify labels shown
     await sleep(500);
+    await expect(countSelected()).toBe(2);
   },
 };
 
@@ -358,23 +360,11 @@ export const ShowDiagramLabelInSystemDisplayStateAndPageLabelInHideState: Story 
 
 export const HidePageAndDiagramLabelsThenUndo: Story = {
   ...CustomLabels,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
-    await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickMultipleCoordinates(target, [
-      { x: pageLabelWithLineBreakPosition.clientX, y: pageLabelWithLineBreakPosition.clientY },
-      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
-    ]);
-    clickAtPosition(target, diagramLabelPosition, RIGHT_MOUSE_BUTTON);
-    const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
-    const hideButton = await within(contextMenu).findByText("Hide");
-    await userEvent.click(hideButton); // changes rendered
-    await sleep(500);
-    await userEvent.click(await canvas.findByTitle(PlanMode.Undo));
-    await sleep(500); // final screenshot verify changes undone
-    await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
+  play: async (context) => {
+    await HidePageAndDiagramLabelsBothInDisplayState.play?.(context);
+    const test = await TestCanvas.Create(context.canvasElement, "Undo");
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(2);
   },
 };
 

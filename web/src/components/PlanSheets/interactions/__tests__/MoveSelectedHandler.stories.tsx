@@ -11,6 +11,7 @@ import { handlers } from "@/mocks/mockHandlers";
 import {
   checkCytoElementProperties,
   clickAtCoordinates,
+  countSelected,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   multiSelectAndDrag,
@@ -156,26 +157,14 @@ export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(1500);
-
-    const position = { clientX: 498, clientY: 136 };
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-
-    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
-      clientX: position.clientX + 50,
-      clientY: position.clientY + 100,
-    });
-    await sleep(1500);
-    clickAtCoordinates(
-      getCytoscapeNodeLayer(cytoscapeElement),
-      [position.clientX + 50, position.clientY + 100],
-      RIGHT_MOUSE_BUTTON,
-    );
-    await sleep(500);
-    const menuOriginLoc = await canvas.findByText("Original location");
-    await userEvent.click(menuOriginLoc);
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    const position: [number, number] = [218, 80];
+    const newPosition: [number, number] = [268, 180];
+    await test.click(position);
+    await test.leftClickAndDrag(position, newPosition);
+    await test.contextMenu({ at: newPosition, select: "Original location" });
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -246,12 +235,18 @@ export const AlignLabelToLine: Story = {
     const test = await TestCanvas.Create(canvasElement, "Select Labels");
 
     await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Align label to line" });
-
     await test.leftClick([360, 250] /* whitespace */, "layer0-selectbox"); // Nothing should change
     await test.leftClick([98, 183] /* Angled line on left */, "layer0-selectbox");
+
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(1);
+
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18.2606");
     await test.clickCancelFooter();
+
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(1);
 
     await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
     await test.hoverOver([96, 284] /* Angled line at lower left */);

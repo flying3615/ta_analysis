@@ -59,7 +59,7 @@ export interface SelectElementHandlerProps {
  * @returns
  */
 export function SelectElementHandler({ mode }: SelectElementHandlerProps): ReactElement {
-  const { cyto } = useCytoscapeContext();
+  const { cyto, setSelectedElementIds } = useCytoscapeContext();
   const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
 
@@ -104,6 +104,11 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       });
 
       setSelected(selection);
+
+      // When in align to line mode, do not save the target line for reselect, but keep the selected label id
+      if (mode !== PlanMode.SelectTargetLine) {
+        setSelectedElementIds(selection.map((ele) => ele.id()));
+      }
     };
 
     const onClick = (event: EventObjectEdge | EventObjectNode) => {
@@ -149,7 +154,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, handleLabelAlignment, mode, onUnselect]);
+  }, [cyto, handleLabelAlignment, mode, onUnselect, setSelectedElementIds]);
 
   // highlight related labels
   useEffect(() => {

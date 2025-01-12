@@ -1,4 +1,5 @@
 import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { fireEvent, within } from "@storybook/testing-library";
 import { http, HttpResponse } from "msw";
@@ -7,7 +8,7 @@ import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.sto
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
-import { checkCytoElementProperties, TestCanvas } from "@/test-utils/storybook-utils";
+import { checkCytoElementProperties, countSelected, TestCanvas } from "@/test-utils/storybook-utils";
 
 import { diagramObsBearingLabel, diagramObsDistLabel, pageLabelWithLineBreak } from "./data/customLabels";
 
@@ -69,6 +70,7 @@ export const RestoreObservationBearingDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: moveToLocation[0] - 4, y: moveToLocation[1] + 2.3 },
     });
+    await expect(countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: moveToLocation, select: "Original location" });
@@ -79,6 +81,7 @@ export const RestoreObservationBearingDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: originalLocation[0], y: originalLocation[1] + 0.5 },
     });
+    await expect(countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -106,6 +109,7 @@ export const RestoreObservationDistanceDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: moveToLocation[0] + 4, y: moveToLocation[1] - 2 },
     });
+    await expect(countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: moveToLocation, select: "Original location" });
@@ -116,6 +120,7 @@ export const RestoreObservationDistanceDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: originalLocation[0], y: originalLocation[1] - 0.65 },
     });
+    await expect(countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -143,6 +148,7 @@ export const RestoreParcelAppellationDiagramLabelToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: 665.2, y: 375.87 },
     });
+    await expect(countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: newLocation, select: "Original location" });
@@ -153,6 +159,7 @@ export const RestoreParcelAppellationDiagramLabelToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: originalLocation[0], y: originalLocation[1] },
     });
+    await expect(countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -208,6 +215,9 @@ export const RestorePageAndDiagramLabelsToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: pageLabelNewLocation[0], y: pageLabelNewLocation[1] },
     });
+    await expect(countSelected()).toBe(1);
+
+    await test.click([700, 100]);
 
     // restore label to original position and rotation and verify
     await test.multiSelect([diagramLabelNewLocation, pageLabelNewLocation]);
@@ -225,6 +235,7 @@ export const RestorePageAndDiagramLabelsToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: pageLabelOriginalLocation[0], y: pageLabelOriginalLocation[1] },
     });
+    await expect(countSelected()).toBe(2);
     // Chromatic snapshot verifies the restored labels after moving them around
   },
 };

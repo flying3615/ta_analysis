@@ -48,6 +48,7 @@ export interface PlanSheetsState {
   canViewHiddenLabels: boolean;
   navigateAfterSave?: string;
   viewableLabelTypes: string[];
+  selectedElementIds?: string[];
 }
 
 export interface UserEdit extends PlanResponseDTO {
@@ -73,6 +74,7 @@ const initialState: PlanSheetsState = {
   originalPositions: {},
   canViewHiddenLabels: localStorage.getItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY) !== "false",
   viewableLabelTypes: defaultOptionalVisibileLabelTypes,
+  selectedElementIds: [],
 };
 
 /**
@@ -244,6 +246,9 @@ const planSheetsSlice = createSlice({
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
       state.planMode = action.payload;
+    },
+    setSelectedElementIds: (state, action: PayloadAction<string[]>) => {
+      state.selectedElementIds = action.payload;
     },
     setLastUpdatedLineStyle: (state, action: PayloadAction<string>) => {
       state.lastUpdatedLineStyle = action.payload;
@@ -482,6 +487,7 @@ const planSheetsSlice = createSlice({
     hasChanges: (state) => state.hasChanges,
     getLastChangedAt: (state) => state.lastChangedAt,
     getPlanMode: (state) => state.planMode,
+    getSelectedElementIds: (state) => state.selectedElementIds,
     getLastUpdatedLineStyle: (state) => state.lastUpdatedLineStyle,
     getLastUpdatedLabelStyle: (state) => state.lastUpdatedLabelStyle,
     getAlignedLabelNodeId: (state) => state.alignedLabelNodeId,
@@ -516,6 +522,7 @@ export const {
   setLastUpdatedLabelStyle,
   setAlignedLabelNodeId,
   setDiagramIdToMove,
+  setSelectedElementIds,
   setSymbolHide,
   setCopiedElements,
   setPreviousDiagramAttributes,
@@ -548,6 +555,7 @@ export const {
   getActivePageRefFromPageNumber,
   getActivePageNumber,
   getFilteredPages,
+  getSelectedElementIds,
   getOriginalPositions,
   hasChanges,
   getLastChangedAt,

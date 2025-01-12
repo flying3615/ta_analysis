@@ -16,11 +16,13 @@ import { handlers } from "@/mocks/mockHandlers";
 import {
   checkCytoElementProperties,
   clickAtCoordinates,
+  countSelected,
   getCytoCanvas,
   getCytoscapeNodeLayer,
   RIGHT_MOUSE_BUTTON,
   sleep,
   tabletLandscapeParameters,
+  TestCanvas,
 } from "@/test-utils/storybook-utils";
 
 export default {
@@ -107,30 +109,19 @@ export const ShowPageLineMenuProperties: Story = {
     await userEvent.click(propertiesMenuItem);
   },
 };
+
 export const UpdatePageLineProperties: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, [785, 289], RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-    const ctxMenuElement = await within(canvasElement).findByTestId("cytoscapeContextMenu");
-    const propertiesMenuItem = within(ctxMenuElement).getByText("Properties");
-    await userEvent.click(propertiesMenuItem);
-    await sleep(500);
-    const okButton = canvas.getByRole("button", { name: "OK" });
-    await expect(okButton).toBeDisabled();
-    const dashStyleRadioButton = canvas.getByRole("radio", { name: "peck1" });
-    await userEvent.click(dashStyleRadioButton);
-    const thickness2RadioButton = canvas.getByRole("radio", { name: "2.0" });
-    await userEvent.click(thickness2RadioButton);
-    await expect(okButton).toBeEnabled();
-    await userEvent.click(okButton); // final screenshot verify changes rendered
-    await expect(await canvas.findByRole("button", { name: "Undo" })).toBeEnabled();
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.contextMenu({ at: [505, 233], select: "Properties" });
+    await expect(test.getButton("OK")).toBeDisabled();
+    await test.fromRadioOptions("Line style").select("peck1");
+    await test.fromRadioOptions("Width (pts)").select("2.0");
+    await test.clickButton("OK"); // final screenshot verify changes rendered
+    await test.waitForCytoscape();
+    await expect(test.getButton("Undo")).toBeEnabled();
+    await expect(countSelected()).toBe(1);
   },
 };
 

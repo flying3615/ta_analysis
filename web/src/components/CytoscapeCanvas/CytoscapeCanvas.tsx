@@ -1,7 +1,7 @@
 import "./CytoscapeCanvas.scss";
 
 import { DiagramDTO } from "@linz/survey-plan-generation-api-client";
-import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import cytoscape from "cytoscape";
 import { debounce } from "lodash-es";
 import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
@@ -12,13 +12,13 @@ import {
   INodeData,
   nodeDefinitionsFromData,
 } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
-import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeStylesheet";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useCytoscapeContextMenu } from "@/hooks/useCytoscapeContextMenu";
 import { useOnKeyDownAndMouseDown } from "@/hooks/useOnKeyDown";
+import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { isStorybookTest, updateCytoscapeStateForTesting } from "@/test-utils/cytoscape-data-utils";
 import { keepNodeWithinAreaLimit, MAX_ZOOM, MIN_ZOOM } from "@/util/cytoscapeUtil";
 
@@ -35,11 +35,6 @@ export interface ICytoscapeCanvasProps extends PropsWithChildren {
   diagrams: DiagramDTO[];
   initZoom?: IInitZoom;
   onCyInit?: (cy: cytoscape.Core) => void;
-  getContextMenuItems: (
-    element: NodeSingular | EdgeSingular | cytoscape.Core,
-    selectedCollection: CollectionReturnValue,
-    clickedPosition: cytoscape.Position,
-  ) => MenuItem[] | undefined;
   "data-testid"?: string;
 }
 
@@ -50,7 +45,6 @@ const CytoscapeCanvas = ({
   diagrams,
   initZoom,
   onCyInit,
-  getContextMenuItems,
   "data-testid": dataTestId,
 }: ICytoscapeCanvasProps) => {
   const testId = dataTestId ?? "CytoscapeCanvas";
@@ -58,6 +52,7 @@ const CytoscapeCanvas = ({
   const [cy, setCy] = useState<cytoscape.Core>();
   const [zoom, setZoom] = useState<number>(initZoom?.zoom ?? 1);
   const [pan, setPan] = useState<cytoscape.Position>(initZoom?.pan ?? { x: 0, y: 0 });
+  const getMenuItemsForPlanElement = usePlanSheetsContextMenu();
 
   const { setCyto, zoomToSelectedRegion, scrollToZoom, keepPanWithinBoundaries, onViewportChange } =
     useCytoscapeContext();
@@ -216,7 +211,9 @@ const CytoscapeCanvas = ({
     enableZoomToArea,
   );
 
-  const { menuState, hideMenu } = useCytoscapeContextMenu(cy, getContextMenuItems);
+  const { menuState, hideMenu } = useCytoscapeContextMenu(cy, (element, selectedCollection, clickedPosition) =>
+    getMenuItemsForPlanElement(element, clickedPosition, selectedCollection),
+  );
 
   return (
     <>

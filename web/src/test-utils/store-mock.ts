@@ -16,5 +16,6 @@ export const mockStore = {
     previousPages: null,
     canViewHiddenLabels: true,
     viewableLabelTypes: [],
+    selectedElementIds: [],
   },
 };

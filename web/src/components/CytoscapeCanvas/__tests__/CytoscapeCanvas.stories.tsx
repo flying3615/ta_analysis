@@ -73,12 +73,7 @@ type Story = StoryObj<typeof CytoscapeCanvas>;
 const CytoscapeTemplate = () => {
   return (
     <div style={{ height: "100vh" }}>
-      <CytoscapeCanvas
-        nodeData={markNodes}
-        edgeData={lineEdges}
-        diagrams={diagrams}
-        getContextMenuItems={() => undefined}
-      />
+      <CytoscapeCanvas nodeData={markNodes} edgeData={lineEdges} diagrams={diagrams} />
     </div>
   );
 };
@@ -110,7 +105,6 @@ const CanvasFromMockData = (props: {
           cyRef = cy;
         }}
         initZoom={props.initZoom}
-        getContextMenuItems={() => undefined}
       />
     </div>
   );
@@ -129,7 +123,6 @@ export const PageConfigBorder: Story = () => {
         onCyInit={(cy) => {
           cyRef = cy;
         }}
-        getContextMenuItems={() => undefined}
       />
     </div>
   );

@@ -22,7 +22,7 @@ import {
 } from "@/components/PlanSheets/properties/__tests__/data/LineData";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
-import { getCytoElement, sleep, TestCanvas } from "@/test-utils/storybook-utils";
+import { countSelected, getCytoElement, sleep, TestCanvas } from "@/test-utils/storybook-utils";
 
 export default {
   title: "PlanSheets/ViewLabels",
@@ -87,19 +87,19 @@ export const HideHiddenObject: Story = {
 export const ShowHiddenObject: Story = {
   ...PlanSheetWithHiddenObject,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const visibilityIcon = await canvas.findByTitle("View hidden objects");
-    await userEvent.click(await canvas.findByTitle("View hidden objects")); // hide hidden object to turn on later
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const visibilityIcon = async () => await within(test.canvasElement).findByTitle("View hidden objects");
+    await test.clickTitle("View hidden objects"); // hide hidden object to turn on later
 
     // state of “View hidden objects” button is not affected by activating select labels mode (any other selection mode)
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
     await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Hide" });
-    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_visiblity_off"); // View Hidden Object icon remains off
+    await sleep(500);
+    await expect(await visibilityIcon()).toHaveAttribute("data-icon", "ic_visiblity_off"); // View Hidden Object icon remains off
 
-    await userEvent.click(await canvas.findByTitle("View hidden objects"));
+    await test.clickTitle("View hidden objects");
     await sleep(500); // final screenshot - chromatic will check that hidden line and labels are back on screen
-    await expect(visibilityIcon).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon changed to on
+    await expect(await visibilityIcon()).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon changed to on
+    await expect(countSelected()).toBe(1);
   },
 };
 

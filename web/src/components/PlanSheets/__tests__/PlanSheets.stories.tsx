@@ -13,6 +13,7 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { generatePath, Route } from "react-router-dom";
 
+import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
 import LandingPage from "@/components/LandingPage/LandingPage";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
@@ -30,6 +31,7 @@ import {
   checkCytoElementProperties,
   clickAtCoordinates,
   clickMultipleCoordinates,
+  countSelected,
   getCytoscapeNodeLayer,
   getCytoscapeOffsetInCanvas,
   ModalStoryWrapper,
@@ -66,11 +68,13 @@ export const PlanSheetsTemplate = () => {
           <QueryClientProvider client={queryClient}>
             <Provider store={cloneDeep(store)}>
               <ModalStoryWrapper>
-                <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
-                  <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
-                  <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
-                  <Route path={Paths.root} element={<LandingPage />} />
-                </StorybookRouter>
+                <CytoscapeContextProvider>
+                  <StorybookRouter url={generatePath(Paths.layoutPlanSheets, { transactionId: "123" })}>
+                    <Route path={Paths.layoutPlanSheets} element={<PlanSheets />} />
+                    <Route path={Paths.defineDiagrams} element={<span>Define Diagrams Dummy Page</span>} />
+                    <Route path={Paths.root} element={<LandingPage />} />
+                  </StorybookRouter>
+                </CytoscapeContextProvider>
               </ModalStoryWrapper>
             </Provider>
           </QueryClientProvider>
@@ -81,10 +85,7 @@ export const PlanSheetsTemplate = () => {
 };
 
 export const Default: Story = {
-  beforeEach: async () => {
-    await clearAllRecoveryFiles();
-    return clearAllRecoveryFiles;
-  },
+  beforeEach: clearAllRecoveryFiles,
   render: () => <PlanSheetsTemplate />,
 };
 
@@ -870,20 +871,10 @@ export const HideDiagramLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoscapeNodeLayer = getCytoscapeNodeLayer(cytoscapeElement);
-    clickAtCoordinates(cytoscapeNodeLayer, [520, 135], RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-
-    const menuHide = await canvas.findByText("Hide");
-    await userEvent.click(menuHide);
-    await sleep(500);
-    clickAtCoordinates(cytoscapeNodeLayer, [10 + 520, 10 + 135]);
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    await test.contextMenu({ at: [240, 79], select: "Hide" });
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -891,23 +882,12 @@ export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const position: [number, number] = [320, 159];
+    await test.contextMenu({ at: position, select: "Hide" });
+    await test.contextMenu({ at: position, select: "Show" });
     await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [600, 215], RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-
-    const menuHide = await canvas.findByText("Hide");
-    await userEvent.click(menuHide);
-    await sleep(1500);
-
-    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [600, 215], RIGHT_MOUSE_BUTTON);
-    await sleep(500);
-    const menuShow = await canvas.findByText("Show");
-    await userEvent.click(menuShow);
-    await sleep(500);
+    await expect(countSelected()).toBe(1);
   },
 };
 
@@ -998,6 +978,8 @@ export const RotateDiagramLabelProperties: Story = {
     const rangeInput = await within(canvasElement).findByRole("slider");
     fireEvent.change(rangeInput, { target: { value: 50 } });
     fireEvent.focusOut(rangeInput);
+    await expect(countSelected()).toBe(1);
+
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     const angleField = test.findProperty("TextInput", "Text angle (degrees)");
     await isnotIs(123.6, 123.4);
@@ -1005,6 +987,8 @@ export const RotateDiagramLabelProperties: Story = {
     await isnotIs("123.00000", "123.0000");
     await isnotIs(123.59596, 123.5959);
     screen.getByRole("button", { name: "OK" }).click();
+    await test.waitForCytoscape();
+    await expect(countSelected()).toBe(1);
     // Chromatic to check angle of text
   },
 };
