@@ -143,6 +143,20 @@ export const updatePageLabels = (page: PageDTO, labelPropsArray: LabelPropsToUpd
   };
 };
 
+const defaultUpdateDiagramLabel = (diagramLabel: LabelDTO, updatedLabel: LabelPropsToUpdate): LabelDTO => {
+  if (diagramLabel.id !== updatedLabel.id) return diagramLabel;
+
+  // Legacy uses ~r as line break on editedText of labels of type lineLongDescription.
+  if (diagramLabel.labelType === LabelDTOLabelTypeEnum.lineLongDescription)
+    return {
+      ...diagramLabel,
+      ...updatedLabel,
+      editedText: updatedLabel.editedText?.replaceAll("\n", "~r") ?? diagramLabel.editedText,
+    };
+
+  return { ...diagramLabel, ...updatedLabel };
+};
+
 export const updateDiagramLabels = (
   diagrams: DiagramDTO[],
   labelArray: LabelPropsToUpdateWithElemType[],
@@ -182,9 +196,7 @@ export const updateDiagramLabels = (
       } else {
         updatedDiagram = {
           ...updatedDiagram,
-          [elemType]: updatedDiagram[elemType].map((label) =>
-            label.id === updatedLabel.data.id ? { ...label, ...updatedLabel.data } : label,
-          ),
+          [elemType]: updatedDiagram[elemType].map((label) => defaultUpdateDiagramLabel(label, updatedLabel.data)),
         };
       }
     });

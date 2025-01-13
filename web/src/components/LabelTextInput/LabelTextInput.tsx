@@ -12,7 +12,8 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   cytoscapeLabelIdToPlanData,
   getTextLengthErrorMessage,
-  parcelAppellationInfoMessage,
+  isLineBreakRestrictedEditType,
+  lineBreakRestrictedInfoMessages,
   specialCharsRegex,
   textLengthLimit,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
@@ -72,7 +73,7 @@ export const LabelTextInput = ({
   const dispatch = useAppDispatch();
 
   const textLengthErrorMessage = getTextLengthErrorMessage(labelText.length - textLengthLimit);
-  const [hasInfo, setHasInfo] = useState(false);
+  const [infoMessage, setInfoMessage] = useState<string>();
   const hasError = labelText.length > textLengthLimit || specialCharsRegex.test(labelText);
 
   const saveLabel = useCallback(() => {
@@ -89,7 +90,7 @@ export const LabelTextInput = ({
               ]),
             }),
           );
-        } else if (labelData.labelType === LabelDTOLabelTypeEnum.parcelAppellation && labelData.diagramId) {
+        } else if (isLineBreakRestrictedEditType(labelData.labelType) && labelData.diagramId) {
           // Diagram labels updated text gets stored in the edited_text field
           dispatch(
             replaceDiagrams(
@@ -162,8 +163,9 @@ export const LabelTextInput = ({
           const newValue = fixLabelTextWhitespace(e.target.value);
           if (isLabelTextValid(newValue)) {
             setLabelText(newValue);
+            setInfoMessage(undefined);
           } else {
-            setHasInfo(true);
+            labelData?.labelType && setInfoMessage(lineBreakRestrictedInfoMessages[labelData.labelType]);
           }
         }}
         placeholder="Enter some text"
@@ -174,7 +176,7 @@ export const LabelTextInput = ({
         onBlur={saveLabel}
       />
       {hasError && <LabelTextErrorMessage labelText={labelText} textLengthErrorMessage={textLengthErrorMessage} />}
-      {hasInfo && <LabelTextInfoMessage infoMessage={parcelAppellationInfoMessage} />}
+      {infoMessage && <LabelTextInfoMessage infoMessage={infoMessage} />}
     </div>
   );
 };

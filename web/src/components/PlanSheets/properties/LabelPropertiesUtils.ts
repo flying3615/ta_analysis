@@ -53,6 +53,22 @@ export const alwaysVisibleLabelTypes: string[] = [
   LabelDTOLabelTypeEnum.diagramType,
 ];
 
+export const editableLabelTextTypes: string[] = [
+  LabelDTOLabelTypeEnum.userAnnotation,
+  LabelDTOLabelTypeEnum.parcelAppellation,
+  LabelDTOLabelTypeEnum.lineDescription,
+  LabelDTOLabelTypeEnum.lineLongDescription,
+];
+
+export const lineBreakRestrictedEditTypes: string[] = [
+  LabelDTOLabelTypeEnum.parcelAppellation,
+  LabelDTOLabelTypeEnum.lineDescription,
+  LabelDTOLabelTypeEnum.lineLongDescription,
+];
+
+// Create type using typeof and array index
+type LineBreakRestrictedEditType = (typeof lineBreakRestrictedEditTypes)[number];
+
 export const fontOptions: SelectOptions[] = [
   { value: "Arial", label: "Arimo (was Arial)" },
   { value: "Tahoma", label: "Roboto (was Tahoma)" },
@@ -111,6 +127,11 @@ export const areAllPageLabels = (arr: LabelPropertiesData[]) => {
   return arr.every((item) => item.diagramId === undefined);
 };
 
+/**
+ * This refers to label types whose Justify Property can be adjusted.
+ * Legacy only allows Page or ParcelAppellations.
+ * We can extend types (e.g. Line Description) once legacy is switched off.
+ */
 export const areAllPageOrParcelAppelationLabels = (arr: LabelPropertiesData[]) => {
   return arr.every(
     (item) => item.diagramId === undefined || item.labelType === LabelDTOLabelTypeEnum.parcelAppellation,
@@ -145,7 +166,7 @@ export const createLabelPropsToBeSaved = (
   if ("labelText" in panelValuesToUpdate) {
     if (selectedLabel.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
       newObj.displayText = panelValuesToUpdate.labelText;
-    } else if (selectedLabel.labelType === LabelDTOLabelTypeEnum.parcelAppellation && selectedLabel.diagramId) {
+    } else if (isLineBreakRestrictedEditType(selectedLabel.labelType) && selectedLabel.diagramId) {
       newObj.editedText = panelValuesToUpdate.labelText;
     }
   }
@@ -201,6 +222,13 @@ export const angleFormatErrorMessage = "Must be a number in D.MMSS format";
 
 export const getTextLengthErrorMessage = (numberOverLimit: number) => `${numberOverLimit} characters over the limit`;
 export const parcelAppellationInfoMessage = "Appellations cannot be altered";
+export const lineDescriptionInfoMessage = "Line Descriptions cannot be altered";
+
+export const lineBreakRestrictedInfoMessages: Record<LineBreakRestrictedEditType, string> = {
+  [LabelDTOLabelTypeEnum.parcelAppellation]: parcelAppellationInfoMessage,
+  [LabelDTOLabelTypeEnum.lineDescription]: lineDescriptionInfoMessage,
+  [LabelDTOLabelTypeEnum.lineLongDescription]: lineDescriptionInfoMessage,
+};
 
 export const cytoscapeLabelIdToPlanData = (cytoscapeLabelId: string | undefined): number => {
   if (!cytoscapeLabelId) {
@@ -251,10 +279,18 @@ export const fixParcelAppelationWhitespace = (editedText: string, labelRegex: st
   return fixedText;
 };
 
-export const createParcelAppelationLabelRegex = (labelText?: string): string => {
+export const createLineBreakRestrictedEditRegex = (labelText?: string): string => {
   if (!labelText) return "";
 
   const parts = labelText.split(/[\r\n ]/);
 
   return `^${parts.join("([\\r\\n ]*)")}$`;
+};
+
+export const isEditableLabelTextType = (labelType?: string) => {
+  return !!labelType && editableLabelTextTypes.includes(labelType);
+};
+
+export const isLineBreakRestrictedEditType = (labelType?: string) => {
+  return !!labelType && lineBreakRestrictedEditTypes.includes(labelType);
 };

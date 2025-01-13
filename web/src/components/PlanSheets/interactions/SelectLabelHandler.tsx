@@ -1,4 +1,3 @@
-import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { NodeSingular } from "cytoscape";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -6,6 +5,7 @@ import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/Cytoscap
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { LabelTextInput } from "@/components/LabelTextInput/LabelTextInput";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { isEditableLabelTextType } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 
@@ -37,12 +37,7 @@ export const SelectLabelHandler = () => {
 
       const target = event.target as NodeSingular;
       const { id, label, labelType, elementType, diagramId } = target.data() as IGraphDataProperties;
-      if (
-        id &&
-        label &&
-        (labelType === LabelDTOLabelTypeEnum.userAnnotation || labelType === LabelDTOLabelTypeEnum.parcelAppellation) &&
-        target.selected()
-      ) {
+      if (id && label && labelType && isEditableLabelTextType(labelType) && target.selected()) {
         setLabelData({ id, label, labelType, elementType, diagramId });
         setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
       } else {

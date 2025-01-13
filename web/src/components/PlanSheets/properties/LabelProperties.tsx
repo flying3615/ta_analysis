@@ -31,8 +31,9 @@ import {
   getCommonPropertyValue,
   getTextAlignmentValues,
   getTextLengthErrorMessage,
+  isEditableLabelTextType,
   labelTypeOptions,
-  parcelAppellationInfoMessage,
+  lineBreakRestrictedInfoMessages,
   someButNotAllHavePropertyValue,
   specialCharsRegex,
   textAlignmentEnum,
@@ -171,7 +172,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   );
   const [isBold, setIsBold] = useState<boolean>();
   const [hasLabelTextError, setHasLabelTextError] = useState<boolean>();
-  const [hasLabelTextInfo, setHasLabelTextInfo] = useState<boolean>();
+  const [labelTextInfo, setLabelTextInfo] = useState<string>();
   const [textRotationErrorMsg, setTextRotationErrorMsg] = useState<string | undefined>();
   const [labelText, setLabelText] = useState<string | undefined>(getCommonPropertyValue(selectedLabels, "label"));
   const { fixLabelTextWhitespace, isLabelTextValid } = useLabelTextValidation({
@@ -294,20 +295,16 @@ const LabelProperties = (props: LabelPropertiesProps) => {
             ) : (
               <div>
                 <textarea
-                  disabled={
-                    !labelText ||
-                    (labelType !== LabelDTOLabelTypeEnum.userAnnotation &&
-                      labelType !== LabelDTOLabelTypeEnum.parcelAppellation) ||
-                    props.data.length > 1
-                  }
+                  disabled={!labelText || props.data.length > 1 || !isEditableLabelTextType(labelType)}
                   value={props.data.length === 1 ? labelText : ""}
                   onChange={(e) => {
                     const newValue = fixLabelTextWhitespace(e.target.value);
                     if (isLabelTextValid(newValue)) {
                       setLabelText(newValue);
+                      setLabelTextInfo(undefined);
                       setPanelValuesToUpdate({ ...panelValuesToUpdate, labelText: newValue });
                     } else {
-                      setHasLabelTextInfo(true);
+                      labelType && setLabelTextInfo(lineBreakRestrictedInfoMessages[labelType]);
                     }
                   }}
                   className={clsx("LabelTextInput labelTextarea", { error: hasLabelTextError })}
@@ -320,9 +317,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
                     className="errorMessage"
                   />
                 )}
-                {hasLabelTextInfo && (
-                  <LabelTextInfoMessage infoMessage={parcelAppellationInfoMessage} className="infoMessage" />
-                )}
+                {labelTextInfo && <LabelTextInfoMessage infoMessage={labelTextInfo} className="infoMessage" />}
               </div>
             )}
           </span>

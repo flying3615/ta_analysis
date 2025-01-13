@@ -1,6 +1,10 @@
 import { LuiIcon } from "@linzjs/lui";
 import clsx from "clsx";
 
+/**
+ * @param props infomessage is provided by LabelPropertiesUtils.lineBreakRestrictedInfoMessages according to LineType
+ * @constructor
+ */
 export const LabelTextInfoMessage = (props: { infoMessage: string; className?: string }) => {
   return (
     <div className={clsx("LabelTextInput-info", props.className)}>

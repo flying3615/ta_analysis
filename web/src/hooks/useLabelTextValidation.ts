@@ -1,7 +1,9 @@
-import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { useCallback, useEffect, useState } from "react";
 
-import { createParcelAppelationLabelRegex } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
+import {
+  createLineBreakRestrictedEditRegex,
+  isLineBreakRestrictedEditType,
+} from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 
 export const useLabelTextValidation = ({
   originalLabelText,
@@ -13,13 +15,13 @@ export const useLabelTextValidation = ({
   const [labelRegex, setLabelRegex] = useState("");
 
   useEffect(() => {
-    setLabelRegex(createParcelAppelationLabelRegex(originalLabelText));
+    setLabelRegex(createLineBreakRestrictedEditRegex(originalLabelText));
   }, [originalLabelText]);
 
   type RegExpMatchArrayWithIndices = RegExpMatchArray & { indices: Array<[number, number]> };
   const fixLabelTextWhitespace = useCallback(
     (labelText: string): string => {
-      if (labelType !== LabelDTOLabelTypeEnum.parcelAppellation) return labelText;
+      if (!isLineBreakRestrictedEditType(labelType)) return labelText;
 
       //remove extra spaces and/or new lines
       let fixedText = labelText.replace(/[ ]+/g, " ");
@@ -49,7 +51,7 @@ export const useLabelTextValidation = ({
 
   const isLabelTextValid = useCallback(
     (labelText: string): boolean => {
-      if (labelType !== LabelDTOLabelTypeEnum.parcelAppellation) return true;
+      if (!isLineBreakRestrictedEditType(labelType)) return true;
 
       return labelText.match(labelRegex) !== null;
     },
