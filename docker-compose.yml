@@ -193,6 +193,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
+    environment:
+      PRIVATE_KEY: $SFU_STUB_PRIVATE_KEY
 
   locking:
     container_name: lock-service
