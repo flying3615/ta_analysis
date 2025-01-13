@@ -21,8 +21,6 @@ import { useResizeDiagram } from "@/hooks/useResizeDiagram";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 const enlargeReduceDiagramActions: DefineDiagramsActionType[] = [
   "enlarge_diagram_rectangle",
@@ -47,15 +45,6 @@ export const DefineDiagramMenuButtons = () => {
       dispatch(setActiveAction("idle"));
     };
   }, [dispatch]);
-
-  const { result: labelPreferencesAllowed, loading: splitLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,
-  );
-  const { result: maintainDiagramsAllowed, loading: maintainSplitLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS,
-  );
-
-  const labelPreferencesEnabled = labelPreferencesAllowed && !splitLoading;
 
   const { loading: insertDiagramLoading } = useInsertDiagram();
 
@@ -260,11 +249,6 @@ export const DefineDiagramMenuButtons = () => {
         title="Maintain diagram layers"
         icon="ic_layers"
         onClick={() => {
-          if (maintainSplitLoading) return;
-          if (!maintainDiagramsAllowed) {
-            alert("Coming soon!");
-            return;
-          }
           openPanel("Maintain diagram layers", () => (
             <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
           ));
@@ -274,10 +258,6 @@ export const DefineDiagramMenuButtons = () => {
         title="Label preferences"
         icon="ic_label_settings"
         onClick={() => {
-          if (!labelPreferencesEnabled) {
-            alert("Coming soon!");
-            return;
-          }
           openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
           return false;
         }}

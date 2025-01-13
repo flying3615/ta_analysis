@@ -13,8 +13,6 @@ import { luiColors } from "@/constants";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useSurveyInfoQuery } from "@/queries/survey";
-import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
-import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { getHelpUrl, hostProtoForApplication } from "@/util/httpUtil";
 
 interface BigButtonProps {
@@ -37,14 +35,6 @@ const LandingPage = () => {
   const { data: surveyInfo } = useSurveyInfoQuery({ transactionId });
 
   const { openPanel } = useContext(PanelsContext);
-
-  const { result: labelPreferencesAllowed, loading: labelPrefsSplitLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_PREFERENCES,
-  );
-
-  const { result: maintainDiagramsAllowed, loading: maintainSplitLoading } = useFeatureFlags(
-    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MAINTAIN_DIAGRAM_LAYERS,
-  );
 
   return (
     <div className="LandingPage">
@@ -80,11 +70,6 @@ const LandingPage = () => {
             <BigButton
               icon="ic_layers"
               onClick={() => {
-                if (maintainSplitLoading) return;
-                if (!maintainDiagramsAllowed) {
-                  alert("Coming soon!");
-                  return;
-                }
                 openPanel("Maintain diagram layers", () => <MaintainDiagramsPanel transactionId={transactionId} />);
               }}
             >
@@ -94,11 +79,6 @@ const LandingPage = () => {
             <BigButton
               icon="ic_label_settings"
               onClick={() => {
-                if (labelPrefsSplitLoading) return;
-                if (!labelPreferencesAllowed) {
-                  alert("Coming soon!");
-                  return;
-                }
                 openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
               }}
             >
