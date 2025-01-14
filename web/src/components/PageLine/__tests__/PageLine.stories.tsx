@@ -312,6 +312,12 @@ export const MoveLineEndBoundary: Story = {
     await test.clickTitle("Select Lines");
     await test.leftClick(pointC);
     await test.leftClickAndDrag(pointC, pointOutside);
+
+    await test.waitForCytoscape();
+    const nodes = window.cyRef.$("nodes");
+    const position = nodes[nodes.length - 1]?.position();
+    await expect(position?.x).toBeCloseTo(963.928);
+    await expect(position?.y).toBeCloseTo(277);
     // Chromatic to check line shape. Human being to check shape and that this line is inside the boundary
   },
 };
@@ -326,6 +332,12 @@ export const MoveLineVertexBoundary: Story = {
     await test.clickTitle("Select Lines");
     await test.leftClick(pointB);
     await test.leftClickAndDrag(pointB, pointOutside);
+
+    await test.waitForCytoscape();
+    const nodes = window.cyRef.$("nodes");
+    const position = nodes[nodes.length - 2]?.position();
+    await expect(position?.x).toBeCloseTo(963.928);
+    await expect(position?.y).toBeCloseTo(277);
   },
 };
 

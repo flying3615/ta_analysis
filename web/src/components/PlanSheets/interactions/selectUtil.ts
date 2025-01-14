@@ -1,4 +1,4 @@
-import { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import { BoundingBox12, CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 
 export function getRelatedLabels(elements: CollectionReturnValue): CollectionReturnValue {
   const related = elements.cy().collection();
@@ -70,4 +70,48 @@ export function findStartEndNodesForLine(edge: EdgeSingular): {
   });
 
   return { startNode, endNode };
+}
+
+export function getMoveElementsExtent(selectedElements: CollectionReturnValue): BoundingBox12 {
+  let x1 = 0;
+  let y1 = 0;
+  let x2 = 0;
+  let y2 = 0;
+  selectedElements.forEach((ele) => {
+    if (ele.isEdge()) {
+      const boundingBox = ele.boundingBox();
+      if (x1 === 0 || boundingBox.x1 < x1) {
+        x1 = boundingBox.x1;
+      }
+      if (y1 === 0 || boundingBox.y1 < y1) {
+        y1 = boundingBox.y1;
+      }
+      if (x2 === 0 || boundingBox.x2 > x2) {
+        x2 = boundingBox.x2;
+      }
+      if (y2 === 0 || boundingBox.y2 > y2) {
+        y2 = boundingBox.y2;
+      }
+    }
+
+    // Need to have a specialized method to calculate the bounding box of a page line because in our app we don't
+    // want the "selected node circle" to be included in the bounding box, but Cytoscape doesn't know that and
+    // thinks it should be included.
+    if (ele.isNode()) {
+      const position = ele.position();
+      if (x1 === 0 || position.x < x1) {
+        x1 = position.x;
+      }
+      if (y1 === 0 || position.y < y1) {
+        y1 = position.y;
+      }
+      if (x2 === 0 || position.x > x2) {
+        x2 = position.x;
+      }
+      if (y2 === 0 || position.y > y2) {
+        y2 = position.y;
+      }
+    }
+  });
+  return { x1, y1, x2, y2 };
 }

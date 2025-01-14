@@ -2,6 +2,7 @@ import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cy
 
 import {
   findStartEndNodesForLine,
+  getMoveElementsExtent,
   getRelatedElements,
   getRelatedLabels,
 } from "@/components/PlanSheets/interactions/selectUtil";
@@ -108,6 +109,27 @@ describe("selectUtil", () => {
 
       expect(result.startNode).toBeNull();
       expect(result.endNode).toBeNull();
+    });
+  });
+
+  describe("getMoveElementsExtent", () => {
+    it("get movement extents for a line", () => {
+      const cy = cytoscape();
+      const eles = cy.add([
+        { group: "nodes", data: { id: "n0" }, position: { x: 100, y: 100 } },
+        { group: "nodes", data: { id: "n1" }, position: { x: 200, y: 200 } },
+        { group: "edges", data: { id: "e0", source: "n0", target: "n1" } },
+      ]);
+
+      expect(getMoveElementsExtent(eles)).toEqual({ x1: 99, y1: 99, x2: 201, y2: 201 });
+    });
+
+    it("get movement extents for line node when selected", () => {
+      const cy = cytoscape();
+      const eles = cy.add([{ group: "nodes", data: { id: "n0" }, position: { x: 100, y: 100 } }]);
+      cy.$("#n0").select();
+      expect(eles.first().selected()).toBe(true);
+      expect(getMoveElementsExtent(eles)).toEqual({ x1: 100, y1: 100, x2: 100, y2: 100 });
     });
   });
 });

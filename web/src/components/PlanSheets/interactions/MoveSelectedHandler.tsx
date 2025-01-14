@@ -25,7 +25,7 @@ import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 
 import { moveExtent } from "./moveAndResizeUtil";
-import { getRelatedLabels } from "./selectUtil";
+import { getMoveElementsExtent, getRelatedLabels } from "./selectUtil";
 
 export interface SelectedElementProps {
   selectedElements: CollectionReturnValue;
@@ -92,15 +92,6 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
     }
-    const diagramAreaLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
-    const offset = mode === PlanMode.SelectLine ? 0 : 13.5;
-
-    const expandedDiagramAreaLimits = {
-      x1: diagramAreaLimits.x1 - offset,
-      y1: diagramAreaLimits.y1 - offset,
-      x2: diagramAreaLimits.x2 + offset,
-      y2: diagramAreaLimits.y2 + offset,
-    };
     // move selected, connected nodes, and related labels
     const movingElements = selectedElements.union(selectedElements.connectedNodes());
     movingElements.merge(getRelatedLabels(movingElements));
@@ -110,6 +101,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
     let moveElementsExtent: BoundingBox12 | undefined;
     let moveStart: CytoscapePosition | undefined;
     let moveStartPositions: Record<string, CytoscapePosition> | undefined;
+    let expandedDiagramAreaLimits: BoundingBox12 | undefined;
 
     const addContainerClass = () => {
       cytoCanvas.classList.add(CONTAINER_CLASS_MOVABLE);
@@ -120,11 +112,28 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
         // only start move if ctrl/shift not pressed
         return;
       }
-      moveControls = cyto.add(getMoveControlElements(movingElements, adjacentEdges));
-      // set extent based on selection, not related
-      moveElementsExtent = selectedElements.boundingBox();
-      moveStart = event.position;
 
+      let offset: number;
+      if (mode === PlanMode.SelectLine) {
+        // Moving page lines needs to be different to other things like labels because the "offset" technique won't
+        // work for page lines because the "selected node circle" needs to be excluded from the bounding box.
+        moveElementsExtent = getMoveElementsExtent(selectedElements);
+        offset = 0;
+      } else {
+        moveElementsExtent = selectedElements.boundingBox();
+        offset = 13.5;
+      }
+
+      const diagramAreaLimits = cytoCoordMapper.getDiagramOuterLimitsPx();
+      expandedDiagramAreaLimits = {
+        x1: diagramAreaLimits.x1 - offset,
+        y1: diagramAreaLimits.y1 - offset,
+        x2: diagramAreaLimits.x2 + offset,
+        y2: diagramAreaLimits.y2 + offset,
+      };
+
+      moveControls = cyto.add(getMoveControlElements(movingElements, adjacentEdges));
+      moveStart = event.position;
       moveStartPositions = getPositions(movingElements.union(adjacentEdges));
 
       adjacentEdges.addClass(ELEMENT_CLASS_MOVE_HIDE);
@@ -150,6 +159,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
       moveElementsExtent = undefined;
       moveStart = undefined;
       moveStartPositions = undefined;
+      expandedDiagramAreaLimits = undefined;
     };
 
     const endMove = (event: InputEventObject) => {
