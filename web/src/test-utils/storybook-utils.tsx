@@ -614,6 +614,15 @@ export const checkCytoElementProperties = async (
   );
 };
 
+export async function expectLastCytoscapeNodesToBe(points: [number, number][]) {
+  await sleep(500);
+  const nodes = window.cyRef.nodes();
+  const expected = points.map(toXY);
+  const last3 = nodes.slice(nodes.length - expected.length, nodes.length).map((node) => node.position());
+  if (!expected.every(({ x, y }, i) => Math.abs(x - last3[i]!.x) <= 2 && Math.abs(y - last3[i]!.y) <= 2))
+    throw new Error(`\n${JSON.stringify(last3)} is not the expected\n${JSON.stringify(expected)}`);
+}
+
 export async function waitForLoadingSpinnerToDisappear() {
   return await waitFor(
     async () => {

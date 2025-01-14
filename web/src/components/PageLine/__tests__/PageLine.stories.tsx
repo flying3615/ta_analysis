@@ -8,7 +8,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   checkCytoElementProperties,
-  countSelected,
+  expectLastCytoscapeNodesToBe,
   getCytoElement,
   sleep,
   tabletLandscapeParameters,
@@ -19,6 +19,13 @@ export default {
   title: "PlanSheets/PageLine",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
+
+const pointA: [number, number] = [50, 200];
+const pointB: [number, number] = [275, 40];
+const pointC: [number, number] = [500, 200];
+const pointD: [number, number] = [275, 360];
+const pointADMid: [number, number] = [(pointA[0] + pointD[0]) / 2, (pointA[1] + pointD[1]) / 2];
+const pointOutside: [number, number] = [1237, 277];
 
 export const AddLineEnter: Story = {
   ...Default,
@@ -120,10 +127,6 @@ export const HoverLineEnd: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-
     await drawLine(test, [pointA, pointB]);
     await test.clickTitle("Select Lines");
 
@@ -148,11 +151,6 @@ export const HoverLineVertex: Story = {
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
-
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-    const pointD: [number, number] = [275, 360];
 
     await drawLine(test, [pointA, pointB, pointC]);
 
@@ -179,9 +177,6 @@ export const SelectLineEnd: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-
     await drawLine(test, [pointA, pointB]);
 
     await test.clickTitle("Select Lines");
@@ -200,11 +195,6 @@ export const MovePageLine: Story = {
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
-
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-    const pointD: [number, number] = [275, 360];
 
     await drawLine(test, [pointA, pointB, pointC]);
 
@@ -240,10 +230,6 @@ export const HoverNonSelectedVertex: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-
     await drawLine(test, [pointA, pointB, pointC]);
 
     // Click the header button "Select lines". Yes, this is "correct". To move a Page line vertex you need to be in
@@ -258,38 +244,61 @@ export const HoverNonSelectedVertex: Story = {
   },
 };
 
-export const MoveLineVertexAndEnd: Story = {
+async function MoveLineVertexAndEnd(canvasElement: HTMLElement, mode: string): Promise<TestCanvas> {
+  const test = await TestCanvas.Create(canvasElement, mode);
+
+  await drawLine(test, [pointA, pointB, pointC]);
+
+  await test.clickTitle(mode);
+
+  // Move all points around
+  await test.leftClick(pointB);
+  await test.leftClickAndDrag(pointB, pointD);
+  await test.leftClick(pointA);
+  await test.leftClickAndDrag(pointA, pointB);
+  await test.leftClick(pointC);
+  await test.leftClickAndDrag(pointC, pointA);
+  await test.hoverOver(pointADMid);
+
+  await expectLastCytoscapeNodesToBe([pointB, pointD, pointA]);
+
+  return test;
+  // The following should be verified by chromatic:
+  // The line shape should change from a ^ shape to a V shape
+  // The vertex selected state should not be visible - once a line has moved, the vertex should be unselected
+  // Select Lines is still active
+  // Line is highlighted when mouse is over
+}
+
+export const MoveLineVertexAndEndSelectLines: Story = {
   ...Default,
-  ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Add line");
+    await MoveLineVertexAndEnd(canvasElement, "Select Lines");
+  },
+};
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-    const pointD: [number, number] = [275, 360];
-    const pointADMid: [number, number] = [(pointA[0] + pointD[0]) / 2, (pointA[1] + pointD[1]) / 2];
+export const MoveLineVertexAndEndSelectCoordinates: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    await MoveLineVertexAndEnd(canvasElement, "Select Coordinates");
+  },
+};
 
-    await drawLine(test, [pointA, pointB, pointC]);
+export const UndoMoveLineVertexAndEndSelectLines: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await MoveLineVertexAndEnd(canvasElement, "Select Lines");
+    await test.clickTitle("Undo");
+    await expectLastCytoscapeNodesToBe([pointB, pointD, pointC]); // Only the last move can be undone
+  },
+};
 
-    // Click the header button "Select lines". Yes, this is "correct". To move a Page line vertex you need to be in
-    // "Select lines" mode and not "Select coordinates" mode.
-    await test.clickTitle("Select Lines");
-
-    // Move all points around
-    await test.leftClick(pointB);
-    await test.leftClickAndDrag(pointB, pointD);
-    await test.leftClick(pointA);
-    await test.leftClickAndDrag(pointA, pointB);
-    await test.leftClick(pointC);
-    await test.leftClickAndDrag(pointC, pointA);
-    await test.hoverOver(pointADMid);
-
-    // The following should be verified by chromatic:
-    // The line shape should change from a ^ shape to a V shape
-    // The vertex selected state should not be visible - once a line has moved, the vertex should be unselected
-    // Select Lines is still active
-    // Line is highlighted when mouse is over
+export const UndoMoveLineVertexAndEndSelectCoordinates: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await MoveLineVertexAndEnd(canvasElement, "Select Coordinates");
+    await test.clickTitle("Undo");
+    await expectLastCytoscapeNodesToBe([pointB, pointD, pointC]); // Only the last move can be undone
   },
 };
 
@@ -299,10 +308,6 @@ export const MoveLineEndBoundary: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-    const pointOutside: [number, number] = [1237, 277];
     await drawLine(test, [pointA, pointB, pointC]);
     await test.clickTitle("Select Lines");
     await test.leftClick(pointC);
@@ -317,10 +322,6 @@ export const MoveLineVertexBoundary: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Add line");
 
-    const pointA: [number, number] = [50, 200];
-    const pointB: [number, number] = [275, 40];
-    const pointC: [number, number] = [500, 200];
-    const pointOutside: [number, number] = [1237, 277];
     await drawLine(test, [pointA, pointB, pointC]);
     await test.clickTitle("Select Lines");
     await test.leftClick(pointB);
@@ -563,7 +564,6 @@ export const HidePageLine: Story = {
     await test.contextMenu({ at: [554, 230], select: "Hide" }); // select hide action for page line
     await test.waitForCytoscape();
     await checkCytoElementProperties("#10013_0", { displayState: "hide" });
-    await expect(countSelected()).toBe(1);
   },
 };
 

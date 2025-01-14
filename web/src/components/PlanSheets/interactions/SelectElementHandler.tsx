@@ -27,9 +27,6 @@ const DIAGRAM_COORDINATES = `node[elementType='${PlanElementType.COORDINATES}'][
 // Symbol labels have a symbolId
 const SYMBOL_LABELS = `node[symbolId]`;
 
-// Selector for "coordinates" are both _coordinate elements_ and _symbol labels_ (BUT NOT "page coordinates")
-const SELECTOR_COORDINATES = `${DIAGRAM_COORDINATES}, ${SYMBOL_LABELS}`;
-
 // labels are _all labels_ except _symbol labels_
 const SELECTOR_LABELS = `node[label][labelType][^invisible][^symbolId]`;
 
@@ -41,6 +38,9 @@ const PAGE_LINES = `edge[lineId][^invisible][^pageConfig]`;
 
 // Page coordinates do not have a diagramId
 const PAGE_COORDS = `node[elementType='${PlanElementType.COORDINATES}'][^diagramId][^invisible]`;
+
+// Selector for "coordinates" are both _coordinate elements_ and _symbol labels_
+const SELECTOR_COORDINATES = `${DIAGRAM_COORDINATES}, ${PAGE_COORDS}, ${SYMBOL_LABELS}`;
 
 // Selector for the header button "Select lines" is both _page lines_ and _page coordinates_
 const SELECTOR_LINES = `${PAGE_LINES}, ${PAGE_COORDS}`;
