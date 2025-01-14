@@ -7,6 +7,8 @@ import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useSelectTargetLine } from "@/hooks/useSelectTargetLine";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { MoveSelectedHandler } from "./MoveSelectedHandler";
 import { getRelatedElements, getRelatedLabels } from "./selectUtil";
@@ -62,6 +64,15 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   const { cyto, setSelectedElementIds } = useCytoscapeContext();
   const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
+  const { result: isLinesMultiSelectEnabled } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LINES_MULTISELECT);
+  const { result: isCoordinatesMultiSelectEnabled } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT,
+  );
+
+  const multiSelectEnabled =
+    mode === PlanMode.SelectLabel ||
+    (mode === PlanMode.SelectCoordinates && isCoordinatesMultiSelectEnabled) ||
+    (mode === PlanMode.SelectLine && isLinesMultiSelectEnabled);
 
   const onUnselect = useCallback(
     (event?: EventObjectEdge | EventObjectNode) => {
@@ -112,7 +123,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     };
 
     const onClick = (event: EventObjectEdge | EventObjectNode) => {
-      if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
+      if (multiSelectEnabled && (event.originalEvent.ctrlKey || event.originalEvent.shiftKey)) {
         return;
       }
 
@@ -125,7 +136,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       const selected = cyto.elements(":selected");
 
-      if (!selected.contains(clickedElement)) {
+      if (multiSelectEnabled && !selected.contains(clickedElement)) {
         // allow normal selection to occur
         return;
       }
@@ -145,6 +156,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     cyto.on("click", selector, onClick);
     selectableClass && cyto.$(selector).addClass(selectableClass);
     cyto.$(selector).selectify().style("events", "yes");
+    cyto.boxSelectionEnabled(multiSelectEnabled);
 
     return () => {
       cyto?.off("select", onSelect);
@@ -154,7 +166,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, handleLabelAlignment, mode, onUnselect, setSelectedElementIds]);
+  }, [cyto, handleLabelAlignment, mode, onUnselect, multiSelectEnabled, setSelectedElementIds]);
 
   // highlight related labels
   useEffect(() => {
@@ -172,7 +184,9 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
   return (
     <>
-      {selected && <MoveSelectedHandler selectedElements={selected} mode={mode} />}
+      {selected && (
+        <MoveSelectedHandler selectedElements={selected} mode={mode} multiSelectEnabled={multiSelectEnabled} />
+      )}
       <Tooltips mode={mode} />
     </>
   );

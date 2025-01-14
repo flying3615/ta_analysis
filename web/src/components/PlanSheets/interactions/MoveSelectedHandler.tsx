@@ -30,6 +30,7 @@ import { getRelatedLabels } from "./selectUtil";
 export interface SelectedElementProps {
   selectedElements: CollectionReturnValue;
   mode?: SelectHandlerMode;
+  multiSelectEnabled?: boolean;
 }
 
 // for cursor
@@ -74,7 +75,7 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  *   selected elements that when clicked can start the move.
  *
  */
-export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementProps) {
+export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled }: SelectedElementProps) {
   const {
     cyto,
     cytoCanvas,
@@ -137,7 +138,7 @@ export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementP
     const cleanupMove = () => {
       adjacentEdges.removeClass(ELEMENT_CLASS_MOVE_HIDE);
       cytoCanvas.classList.remove(CONTAINER_CLASS_MOVING);
-      cyto.boxSelectionEnabled(true);
+      cyto.boxSelectionEnabled(multiSelectEnabled);
       cyto.userPanningEnabled(true);
       cyto.off("mousemove", updateMove);
       cyto.off("mouseup", endMove);
@@ -238,6 +239,7 @@ export function MoveSelectedHandler({ selectedElements, mode }: SelectedElementP
     updateActiveDiagramsAndPage,
     adjustLabelNodes,
     mode,
+    multiSelectEnabled,
   ]);
 
   return <></>;
