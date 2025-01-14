@@ -29,6 +29,7 @@ import planSheetsSlice, {
   getPages,
   getPlanData,
   getPlanMode,
+  getSelectedElementIds,
   hasChanges,
   PlanSheetsState,
   removePageLines,
@@ -39,6 +40,8 @@ import planSheetsSlice, {
   setCopiedElements,
   setLineHide,
   setPlanData,
+  setPlanMode,
+  setSelectedElementIds,
   setSymbolHide,
   undo,
   updateMaxElemIds,
@@ -62,6 +65,7 @@ describe("planSheetsSlice", () => {
     previousPages: null,
     canViewHiddenLabels: true,
     viewableLabelTypes: [],
+    selectedElementIds: [],
   };
 
   let store = setupStore();
@@ -841,5 +845,31 @@ describe("planSheetsSlice", () => {
     store.dispatch(updateMaxElemIds({ element: "Label", maxId: 4 }));
 
     expect(getMaxElemIds(store.getState()).find((elem) => elem.element === "Label")?.maxId).toBe(4);
+  });
+
+  test("setSelectedElementIds updates the selected element IDs", () => {
+    const selectedElementIds = ["id1", "id2"];
+    store.dispatch(setSelectedElementIds(selectedElementIds));
+    expect(store.getState().planSheets.selectedElementIds).toEqual(selectedElementIds);
+  });
+
+  test("getSelectedElementIds returns the selected element IDs", () => {
+    const selectedElementIds = ["id1", "id2"];
+    store.dispatch(setSelectedElementIds(selectedElementIds));
+    const state = store.getState();
+    expect(getSelectedElementIds(state)).toEqual(selectedElementIds);
+  });
+
+  test("setPlanMode updates the plan mode and clears selected element IDs if not toggling select_target_line/select_label mode", () => {
+    // simulate align label to line scenario
+    store.dispatch(setPlanMode(PlanMode.SelectLabel));
+    store.dispatch(setSelectedElementIds(["id1", "id2"]));
+    store.dispatch(setPlanMode(PlanMode.SelectTargetLine));
+    store.dispatch(setPlanMode(PlanMode.SelectLabel));
+    // assert the labels can be re-selected
+    expect(store.getState().planSheets.selectedElementIds).toEqual(["id1", "id2"]);
+
+    store.dispatch(setPlanMode(PlanMode.View));
+    expect(store.getState().planSheets.selectedElementIds).toEqual([]);
   });
 });

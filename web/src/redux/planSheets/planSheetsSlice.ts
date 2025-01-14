@@ -245,6 +245,15 @@ const planSheetsSlice = createSlice({
       state.pages = action.payload;
     },
     setPlanMode: (state, action: PayloadAction<PlanMode>) => {
+      // keep selected labels when toggling select_target_line/select_label mode
+      const isToggleSelectTargetLine =
+        (state.planMode === PlanMode.SelectTargetLine && action.payload === PlanMode.SelectLabel) ||
+        (state.planMode === PlanMode.SelectLabel && action.payload === PlanMode.SelectTargetLine);
+
+      if (!isToggleSelectTargetLine) {
+        state.selectedElementIds = [];
+      }
+
       state.planMode = action.payload;
     },
     setSelectedElementIds: (state, action: PayloadAction<string[]>) => {
