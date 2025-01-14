@@ -20,4 +20,3 @@ RUN echo $APP_VERSION > $APP_NAME/static/version.txt
 
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-

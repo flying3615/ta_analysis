@@ -50,3 +50,35 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          junitReport: true
+      - name: Upload JUnit test results
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          if-no-files-found: warn
+          name: chromatic-test-results
+          path: '**/*/chromatic-build-*.xml'
+      - name: Copy junit report to allure-results
+        run: |
+          mkdir -p ./output/allure-results
+          # Replace <variable> with your actual variable
+          FILE=$(find . -name "chromatic-build-*.xml")
+          if [ -n "$FILE" ]; then
+            cp "$FILE" ./output/allure-results
+          else
+            echo "File not found"
+          fi
+      - name: Publish allure results
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          if-no-files-found: warn
+          name: allure-storybook-tests
+          path: "**/output"
+
+  AllureReportPustToS3:
+    uses: linz/github-action-shared-library/.github/workflows/publish-allure-report-to-s3-workflow.yml@master
+    needs: [chromatic-deployment]
+    if: ${{ !cancelled() }}
+    with:
+      allureReportS3Subfolder: "chromatic"
