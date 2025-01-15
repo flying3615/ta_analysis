@@ -22,7 +22,12 @@ import {
   edgeSingularToEdgeData,
   nodeSingularToNodeData,
 } from "@/modules/plan/calculatePreviousDiagramAttributes";
-import { getActivePage, getDiagrams, setPreviousDiagramAttributes } from "@/redux/planSheets/planSheetsSlice";
+import {
+  getActivePage,
+  getDiagrams,
+  setPreviousDiagramAttributes,
+  setSelectedElementIds,
+} from "@/redux/planSheets/planSheetsSlice";
 
 import {
   calculateRelativeScale,
@@ -127,6 +132,9 @@ export function SelectedDiagram({ diagram }: SelectedDiagramProps) {
         updateActiveDiagramsAndPageFromCytoData(diagram);
         dispatch(setPreviousDiagramAttributes(diagramAttributes));
       }
+
+      diagram.select();
+      dispatch(setSelectedElementIds([diagram.id()]));
 
       cytoCanvas.classList.remove(DIAGRAM_CLASS_MOVING);
       cyto.off("mousemove", updateMoveOrResize);

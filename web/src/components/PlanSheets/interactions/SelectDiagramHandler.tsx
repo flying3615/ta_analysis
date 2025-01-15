@@ -5,7 +5,7 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
-import { getActivePageNumber } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePageNumber, getSelectedElementIds } from "@/redux/planSheets/planSheetsSlice";
 
 import { SelectedDiagram } from "./SelectedDiagram";
 
@@ -16,6 +16,7 @@ export function SelectDiagramHandler() {
   // TODO: store selected diagram id in redux, so selection preserved after re-render
   const activePageNumber = useAppSelector(getActivePageNumber);
   const [selectedDiagram, setSelectedDiagram] = useState<NodeSingular | undefined>();
+  const selectedElementIds: string[] = useAppSelector(getSelectedElementIds) as string[];
 
   const onUnselect = useCallback(() => {
     if (!cyto) {
@@ -41,13 +42,17 @@ export function SelectDiagramHandler() {
     cyto?.on("unselect", SELECTOR_DIAGRAM, onUnselect);
     cyto?.elements(SELECTOR_DIAGRAM).selectify().style("events", "yes");
 
+    selectedElementIds?.forEach((id) => {
+      cyto?.getElementById(id).select();
+    });
+
     return () => {
       onUnselect();
       cyto?.off("select", SELECTOR_DIAGRAM, onSelect);
       cyto?.off("unselect", SELECTOR_DIAGRAM, onUnselect);
       cyto?.elements(SELECTOR_DIAGRAM).unselectify().style("events", "no");
     };
-  }, [cyto, onUnselect]);
+  }, [cyto, onUnselect, selectedElementIds]);
 
   // add controls for move/resize when selected
   return <>{selectedDiagram && <SelectedDiagram diagram={selectedDiagram} />}</>;

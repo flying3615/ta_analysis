@@ -121,7 +121,7 @@ export const UpdatePageLineProperties: Story = {
     await test.clickButton("OK"); // final screenshot verify changes rendered
     await test.waitForCytoscape();
     await expect(test.getButton("Undo")).toBeEnabled();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 

@@ -17,12 +17,13 @@ import { useEffect } from "react";
 import { IEdgeDataProperties, IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { SelectHandlerMode } from "@/components/PlanSheets/interactions/SelectElementHandler";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
+import { setSelectedElementIds } from "@/redux/planSheets/planSheetsSlice";
 
 import { moveExtent } from "./moveAndResizeUtil";
 import { getMoveElementsExtent, getRelatedLabels } from "./selectUtil";
@@ -87,7 +88,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
   const diagrams = useAppSelector(selectActiveDiagrams);
   const adjustLabelsWithLine = useLineLabelAdjust();
   const { adjustLabelNodes } = useAdjustLoadedPlanData();
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
@@ -186,6 +187,11 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
         updateActiveDiagramsAndPage({ nodes: changedNodesInsideBounds, edges: movingData.edges });
       }
       cleanupMove();
+
+      selectedElements.forEach((element) => {
+        element.select();
+      });
+      dispatch(setSelectedElementIds(selectedElements.map((element) => element.id())));
     };
 
     const removeContainerClass = () => {
@@ -249,6 +255,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
     updateActiveDiagramsAndPage,
     adjustLabelNodes,
     mode,
+    dispatch,
     multiSelectEnabled,
   ]);
 

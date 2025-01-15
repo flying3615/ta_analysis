@@ -13,8 +13,6 @@ import {
   clickAtCoordinates,
   countSelected,
   getCytoscapeNodeLayer,
-  getCytoscapeOffsetInCanvas,
-  multiSelectAndDrag,
   RIGHT_MOUSE_BUTTON,
   selectAndDrag,
   sleep,
@@ -32,15 +30,12 @@ export const MoveDiagramLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const cytoCanvas = getCytoscapeNodeLayer(cytoscapeElement);
-
-    const position = { clientX: 520, clientY: 136 };
-    await selectAndDrag(cytoCanvas, position, { clientX: position.clientX + 100, clientY: position.clientY + 50 });
+    const test = await TestCanvas.Create(canvasElement, "Select Lines");
+    const line: [number, number] = [220, 80];
+    await test.click(line);
+    await expect(await countSelected()).toBe(1);
+    await test.leftClickAndDrag(line, [line[0] + 100, line[1] + 50]);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -49,28 +44,13 @@ export const MoveDiagramNode: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
-    await sleep(500);
-
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
-
-    // Location of a mark in cytoscape pixels
-    const position = { clientX: 411 - 280 + cyOffsetX, clientY: 136 - 56 + cyOffsetY };
-
-    // move broken node out of way (there are two coordinates at position!?!)
-    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
-      clientX: position.clientX + 50,
-      clientY: position.clientY + 100,
-    });
-
-    // wait for re-render, get new canvas element and move prm
-    await sleep(500);
-    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
-      clientX: position.clientX + 100,
-      clientY: position.clientY + 100,
-    });
+    const test = await TestCanvas.Create(canvasElement, "Select Coordinates");
+    const mark: [number, number] = [411 - 280, 136 - 56];
+    await test.click(mark);
+    await expect(await countSelected()).toBe(2); // both the label and the node is selected
+    await test.leftClickAndDrag(mark, [mark[0] + 50, mark[1] + 100]);
+    await test.leftClickAndDrag([mark[0] + 50, mark[1] + 100], [mark[0] + 100, mark[1] + 100]); // TODO: check if this is a false positive??
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -78,21 +58,17 @@ export const MoveDiagramLabel: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Labels"));
-    await sleep(500);
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
 
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-    const { cyOffsetX, cyOffsetY } = getCytoscapeOffsetInCanvas(canvasElement, cytoscapeElement);
+    const label14: [number, number] = [213, 213];
+    const label13: [number, number] = [150, 240];
 
-    // Location of a label (Label 14: {213,213}, Label13: {303, 240}) in cytoscape pixels
-    const position1 = { clientX: 213 + cyOffsetX, clientY: 213 + cyOffsetY };
-    const position2 = { clientX: 303 + cyOffsetX, clientY: 240 + cyOffsetY };
+    await test.click(label14);
+    await test.click(label13, true);
+    await expect(await countSelected()).toBe(2);
 
-    await multiSelectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), [position1, position2], {
-      clientX: position2.clientX + 50,
-      clientY: position2.clientY + 100,
-    });
+    await test.leftClickAndDrag(label14, [150 + 100, 240 + 100]);
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -164,7 +140,7 @@ export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
     await test.leftClickAndDrag(position, newPosition);
     await test.contextMenu({ at: newPosition, select: "Original location" });
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -239,14 +215,14 @@ export const AlignLabelToLine: Story = {
     await test.leftClick([98, 183] /* Angled line on left */, "layer0-selectbox");
 
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18.2606");
     await test.clickCancelFooter();
 
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
     await test.hoverOver([96, 284] /* Angled line at lower left */);

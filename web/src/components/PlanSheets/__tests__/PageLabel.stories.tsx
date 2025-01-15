@@ -10,6 +10,7 @@ import { CustomLabels } from "@/components/PlanSheets/properties/__tests__/Label
 import {
   checkCytoElementProperties,
   click,
+  countSelected,
   getCytoCanvas,
   getCytoElement,
   sleep,
@@ -359,8 +360,9 @@ export const MovePageAndDiagramLabels: Story & Required<Pick<Story, "play">> = {
     });
 
     await test.multiSelect([diagramLabelOriginalLocation, pageLabelOriginalLocation]);
+    await expect(await countSelected()).toBe(2);
     await test.leftClickAndDrag(diagramLabelOriginalLocation, diagramLabelNewLocation);
-    await test.waitForCytoscape();
+    await expect(await countSelected()).toBe(2);
 
     // verify the new positions of the labels
     await checkCytoElementProperties("#LAB_14" /* diagram label */, {

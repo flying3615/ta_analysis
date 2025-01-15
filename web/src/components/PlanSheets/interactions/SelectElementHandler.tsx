@@ -4,9 +4,11 @@ import { ReactElement, useCallback, useEffect, useState } from "react";
 import { Tooltips } from "@/components/PlanSheets/interactions/Tooltips";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useSelectTargetLine } from "@/hooks/useSelectTargetLine";
+import { getSelectedElementIds } from "@/redux/planSheets/planSheetsSlice";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
@@ -64,6 +66,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   const { cyto, setSelectedElementIds } = useCytoscapeContext();
   const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
+  const selectedElementIds: string[] = useAppSelector(getSelectedElementIds) as string[];
   const { result: isLinesMultiSelectEnabled } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LINES_MULTISELECT);
   const { result: isCoordinatesMultiSelectEnabled } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT,
@@ -156,6 +159,10 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     cyto.$(selector).selectify().style("events", "yes");
     cyto.boxSelectionEnabled(multiSelectEnabled);
 
+    selectedElementIds?.forEach((id) => {
+      cyto?.getElementById(id).select();
+    });
+
     return () => {
       cyto?.off("select", onSelect);
       cyto?.off("unselect", onUnselect);
@@ -164,7 +171,16 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, handleLabelAlignment, mode, onUnselect, multiSelectEnabled, setSelectedElementIds, onSelect]);
+  }, [
+    cyto,
+    handleLabelAlignment,
+    mode,
+    onUnselect,
+    multiSelectEnabled,
+    selectedElementIds,
+    setSelectedElementIds,
+    onSelect,
+  ]);
 
   // highlight related labels
   useEffect(() => {

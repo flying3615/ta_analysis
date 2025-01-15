@@ -184,13 +184,15 @@ describe("MoveSelectedHandler", () => {
       updateActiveDiagramsAndPage,
     }) as unknown as PlanSheetsDispatch;
   const useAppSelector = () => [planData.diagrams[0]];
+  const dispatch = jest.fn();
+  const useAppDispatch = jest.fn().mockReturnValue(dispatch);
 
   let callEffectFn: () => void;
   const useEffect = (effectFn: () => void) => {
     callEffectFn = effectFn;
   };
 
-  jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppSelector }));
+  jest.doMock("@/hooks/reduxHooks.ts", () => ({ useAppSelector, useAppDispatch }));
   jest.doMock("@/hooks/usePlanSheetsDispatch", () => ({ usePlanSheetsDispatch }));
   jest.doMock("react", () => ({ useEffect }));
 
@@ -205,6 +207,7 @@ describe("MoveSelectedHandler", () => {
         isNode: () => true,
         isEdge: () => false,
         id: () => n.id,
+        select: () => n,
         position: () => n.position,
         classes: () => [],
         data: (arg: undefined | string | Record<string, unknown>) => {

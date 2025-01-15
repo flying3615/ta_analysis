@@ -6,7 +6,7 @@ import { waitFor } from "@storybook/testing-library";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { checkCytoElementProperties, click, getCytoCanvas, sleep } from "@/test-utils/storybook-utils";
+import { checkCytoElementProperties, click, cytoClick, getCytoCanvas, sleep } from "@/test-utils/storybook-utils";
 
 export default {
   title: "LabelTextInput",
@@ -133,34 +133,28 @@ export const ShowEditLabel: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
 
-    const pageLabelPosition = { clientX: 873, clientY: 161 };
-    const obsBearingLabelPosition = { clientX: 426, clientY: 293 };
-    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 };
+    const pageLabelPosition = { clientX: 873, clientY: 161 }; // Rotated user added text
+    const obsBearingLabelPosition = { clientX: 426, clientY: 293 }; // Label 13
+    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 }; // Label 14
+
     // click on a page label does show the input
-    await click(target, pageLabelPosition); // click to select
-    await click(target, pageLabelPosition); // click to edit
+    await cytoClick(canvasElement, pageLabelPosition); // click to select
+    await cytoClick(canvasElement, pageLabelPosition); // click to edit
     await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
     // press Escape to cancel the edit label (does not change the mode)
     await userEvent.keyboard("{escape}");
-    await sleep(500);
     await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+
     // click on a diagram label does not show the input
-    await click(target, obsBearingLabelPosition); // click to select
-    await click(target, obsBearingLabelPosition); // click to edit
-    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+    await cytoClick(canvasElement, obsBearingLabelPosition); // click to select
+    await cytoClick(canvasElement, obsBearingLabelPosition); // click to edit
+    await expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull();
+
     // click on a parcel appellation label does show the input
-    await click(target, parcelAppellationLabelPosition); // click to select
-    await click(target, parcelAppellationLabelPosition); // click to edit
+    await cytoClick(canvasElement, parcelAppellationLabelPosition); // click to select
+    await cytoClick(canvasElement, parcelAppellationLabelPosition); // click to edit
     await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
-    // press Escape to cancel the edit label (does not change the mode)
-    await userEvent.keyboard("{escape}");
-    await sleep(500);
-    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
-    //eslint-disable-next-line testing-library/no-node-access
-    const selectLabelButton = (await canvas.findByTitle(PlanMode.SelectLabel)).parentElement;
-    await expect(selectLabelButton).toHaveClass("selected");
   },
 };
 

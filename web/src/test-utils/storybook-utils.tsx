@@ -109,6 +109,15 @@ export const click = async (
   });
 };
 
+export const cytoClick = async (
+  canvasElement: HTMLElement,
+  clientCoord: { clientX: number; clientY: number },
+  button: "MouseLeft" | "MouseRight" = "MouseLeft",
+) => {
+  await sleep(200);
+  await click(getCytoCanvas(await within(canvasElement).findByTestId("MainCytoscapeCanvas")), clientCoord, button);
+};
+
 export const tabletLandscapeParameters = {
   viewport: {
     defaultViewport: "tablet",
@@ -218,6 +227,10 @@ export function toClientXY(position: [number, number]): { clientX: number; clien
 export function toXY(position: [number, number]): { x: number; y: number } {
   const [x, y] = position;
   return { x: x, y: y };
+}
+
+export function toCoords(position: { clientX: number; clientY: number }): [number, number] {
+  return [position.clientX, position.clientY];
 }
 
 export class TestCanvas {
@@ -490,6 +503,8 @@ export async function selectAndDrag(element: HTMLElement, from: MousePosition, t
   fireEvent.mouseUp(element, positions[0]);
   await sleep(400);
 
+  const itemsSelected = await countSelected();
+
   // drag
   fireEvent.mouseDown(element, positions[0]);
   for (const position of positions) {
@@ -497,6 +512,7 @@ export async function selectAndDrag(element: HTMLElement, from: MousePosition, t
     await sleep(100);
   }
   fireEvent.mouseUp(element, positions[positions.length - 1]);
+  await expect(await countSelected()).toBe(itemsSelected);
 }
 
 export async function multiSelectAndDrag(
@@ -634,6 +650,7 @@ export async function waitForLoadingSpinnerToDisappear() {
   );
 }
 
-export function countSelected(): number {
+export async function countSelected(): Promise<number> {
+  await sleep(500);
   return window.cyRef.filter((ele) => ele.selected()).length;
 }

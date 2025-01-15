@@ -874,7 +874,7 @@ export const HideDiagramLine: Story & Required<Pick<Story, "play">> = {
     const test = await TestCanvas.Create(canvasElement, "Select Lines");
     await test.contextMenu({ at: [240, 79], select: "Hide" });
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -887,7 +887,7 @@ export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
     await test.contextMenu({ at: position, select: "Hide" });
     await test.contextMenu({ at: position, select: "Show" });
     await sleep(500);
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -978,7 +978,7 @@ export const RotateDiagramLabelProperties: Story = {
     const rangeInput = await within(canvasElement).findByRole("slider");
     fireEvent.change(rangeInput, { target: { value: 50 } });
     fireEvent.focusOut(rangeInput);
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     const angleField = test.findProperty("TextInput", "Text angle (degrees)");
@@ -988,7 +988,7 @@ export const RotateDiagramLabelProperties: Story = {
     await isnotIs(123.59596, 123.5959);
     screen.getByRole("button", { name: "OK" }).click();
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
     // Chromatic to check angle of text
   },
 };

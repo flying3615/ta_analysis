@@ -77,7 +77,7 @@ export const RotateLabelSliderAndPropertiesTextAngleAreConsistent: Story = {
     await test.contextMenu({ at: [204, 213], select: "Properties" });
     await sleep(500);
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("90.0000");
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -92,7 +92,7 @@ export const UpdatePageLabelProperties: Story = {
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
     clickAtPosition(target, pageLabelPosition, RIGHT_MOUSE_BUTTON);
     await sleep(500);
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const propertiesButton = await within(contextMenu).findByText("Properties");
@@ -125,7 +125,7 @@ export const UpdatePageLabelProperties: Story = {
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
     await sleep(500);
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -163,7 +163,7 @@ export const UpdateDiagramLabelProperties: Story = {
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
     await sleep(500);
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -185,7 +185,7 @@ export const UpdateLabelPropertiesCancelFlow: Story = {
     await userEvent.click(cancelButton); // final screenshot verify changes not rendered
     await sleep(500);
     await expect(await canvas.findByRole("button", { name: "Undo" })).toBeDisabled();
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -218,7 +218,7 @@ export const UpdateMultiplePageAndDiagramLabelProperties: Story = {
     await expect(okButton).toBeEnabled();
     await userEvent.click(okButton); // final screenshot verify changes rendered
     await sleep(500);
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -248,7 +248,7 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
     await userEvent.click(okButton); // changes rendered
     await userEvent.click(await canvas.findByTitle(PlanMode.Undo)); // changes undone - final screenshot verify changes not rendered
     await sleep(500);
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -296,7 +296,7 @@ export const HidePageAndDiagramLabelsBothInDisplayState: Story = {
     await test.multiSelect([pageLabelWithLineBreakPosition, diagramLabelPosition]);
     await test.contextMenu({ at: diagramLabelPosition, select: "Hide" });
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -316,7 +316,7 @@ export const ShowPageAndDiagramLabelsBothInHideState: Story = {
     const showButton = await within(contextMenu).findByText("Show");
     await userEvent.click(showButton); // final screenshot verify labels shown
     await sleep(500);
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
   },
 };
 
@@ -364,7 +364,7 @@ export const HidePageAndDiagramLabelsThenUndo: Story = {
     await HidePageAndDiagramLabelsBothInDisplayState.play?.(context);
     const test = await TestCanvas.Create(context.canvasElement, "Undo");
     await test.waitForCytoscape();
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
   },
 };
 

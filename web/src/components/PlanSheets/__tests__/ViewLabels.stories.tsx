@@ -99,7 +99,7 @@ export const ShowHiddenObject: Story = {
     await test.clickTitle("View hidden objects");
     await sleep(500); // final screenshot - chromatic will check that hidden line and labels are back on screen
     await expect(await visibilityIcon()).toHaveAttribute("data-icon", "ic_view"); // View Hidden Object icon changed to on
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
   },
 };
 

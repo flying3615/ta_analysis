@@ -70,7 +70,7 @@ export const RestoreObservationBearingDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: moveToLocation[0] - 4, y: moveToLocation[1] + 2.3 },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: moveToLocation, select: "Original location" });
@@ -81,7 +81,7 @@ export const RestoreObservationBearingDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: originalLocation[0], y: originalLocation[1] + 0.5 },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -109,7 +109,7 @@ export const RestoreObservationDistanceDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: moveToLocation[0] + 4, y: moveToLocation[1] - 2 },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: moveToLocation, select: "Original location" });
@@ -120,7 +120,7 @@ export const RestoreObservationDistanceDiagramLabelToOriginalLocation: Story = {
       pointOffset: 2,
       position: { x: originalLocation[0], y: originalLocation[1] - 0.65 },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -148,7 +148,7 @@ export const RestoreParcelAppellationDiagramLabelToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: 665.2, y: 375.87 },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     // restore diagram label to original position and rotation and verify
     await test.contextMenu({ at: newLocation, select: "Original location" });
@@ -159,7 +159,7 @@ export const RestoreParcelAppellationDiagramLabelToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: originalLocation[0], y: originalLocation[1] },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };
@@ -215,7 +215,7 @@ export const RestorePageAndDiagramLabelsToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: pageLabelNewLocation[0], y: pageLabelNewLocation[1] },
     });
-    await expect(countSelected()).toBe(1);
+    await expect(await countSelected()).toBe(1);
 
     await test.click([700, 100]);
 
@@ -235,7 +235,7 @@ export const RestorePageAndDiagramLabelsToOriginalLocation: Story = {
       pointOffset: 0,
       position: { x: pageLabelOriginalLocation[0], y: pageLabelOriginalLocation[1] },
     });
-    await expect(countSelected()).toBe(2);
+    await expect(await countSelected()).toBe(2);
     // Chromatic snapshot verifies the restored labels after moving them around
   },
 };
