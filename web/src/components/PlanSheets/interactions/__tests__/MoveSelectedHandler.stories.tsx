@@ -259,12 +259,13 @@ export const AlignLabelToLine: Story = {
   },
 };
 
-const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
-if (customMockPlanData.diagrams[0]) {
-  customMockPlanData.diagrams[0] = {
-    ...customMockPlanData.diagrams[0],
+// labels where the lines are `broken-peck` and anchored to `calculated` coordinate types
+const brokenPeckMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (brokenPeckMockPlanData.diagrams[0]) {
+  brokenPeckMockPlanData.diagrams[0] = {
+    ...brokenPeckMockPlanData.diagrams[0],
     coordinates: [
-      ...customMockPlanData.diagrams[0].coordinates,
+      ...brokenPeckMockPlanData.diagrams[0].coordinates,
       {
         coordType: CoordinateDTOCoordTypeEnum.calculated,
         id: 99999,
@@ -272,7 +273,7 @@ if (customMockPlanData.diagrams[0]) {
       },
     ],
     lines: [
-      ...customMockPlanData.diagrams[0].lines,
+      ...brokenPeckMockPlanData.diagrams[0].lines,
       {
         id: 9999,
         lineType: "observation",
@@ -282,7 +283,7 @@ if (customMockPlanData.diagrams[0]) {
       },
     ],
     coordinateLabels: [
-      ...customMockPlanData.diagrams[0].coordinateLabels,
+      ...brokenPeckMockPlanData.diagrams[0].coordinateLabels,
       {
         id: 98,
         labelType: "nodeSymbol1",
@@ -300,7 +301,7 @@ if (customMockPlanData.diagrams[0]) {
       },
     ],
     lineLabels: [
-      ...customMockPlanData.diagrams[0].lineLabels,
+      ...brokenPeckMockPlanData.diagrams[0].lineLabels,
       {
         id: 99,
         labelType: "nodeSymbol1",
@@ -326,7 +327,7 @@ const BrokenPeckLineLabels: Story = {
     msw: {
       handlers: [
         http.get(/\/123\/plan$/, () =>
-          HttpResponse.json(customMockPlanData, {
+          HttpResponse.json(brokenPeckMockPlanData, {
             status: 200,
             statusText: "OK",
           }),
@@ -336,7 +337,6 @@ const BrokenPeckLineLabels: Story = {
     },
   },
 };
-
 export const CoordTypeCalculated: Story = {
   ...BrokenPeckLineLabels,
   play: async ({ canvasElement }) => {
@@ -354,5 +354,97 @@ export const CoordTypeCalculated: Story = {
     await sleep(1000);
     await checkCytoElementProperties("#LAB_99", { position: { x: 139.55, y: 122.26 } });
     await sleep(1000);
+  },
+};
+
+// irregular line plan data
+const irregularLinePlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (irregularLinePlanData.diagrams[0]) {
+  irregularLinePlanData.diagrams[0] = {
+    ...irregularLinePlanData.diagrams[0],
+    coordinates: [
+      ...irregularLinePlanData.diagrams[0].coordinates,
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 10281,
+        position: { x: 15, y: -45 },
+        originalCoord: { x: 15, y: -45 },
+      },
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 10280,
+        position: { x: 5.5, y: -30 },
+        originalCoord: { x: 5.5, y: -30 },
+      },
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 10279,
+        position: { x: 6, y: -25 },
+        originalCoord: { x: 6, y: -25 },
+      },
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 10278,
+        position: { x: 6.5, y: -18 },
+        originalCoord: { x: 6.5, y: -18 },
+      },
+      {
+        coordType: CoordinateDTOCoordTypeEnum.calculated,
+        id: 10277,
+        position: { x: 16, y: -15 },
+        originalCoord: { x: 16, y: -15 },
+      },
+    ],
+    lines: [
+      ...irregularLinePlanData.diagrams[0].lines,
+      {
+        id: 9999,
+        lineType: "parcelBoundary",
+        style: "dot1",
+        coordRefs: [10281, 10280, 10279, 10278, 10277, 10001],
+        pointWidth: 1.4,
+      },
+    ],
+  };
+}
+const IrregularLines: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(irregularLinePlanData, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        ...handlers,
+      ],
+    },
+  },
+};
+export const MoveIrregularLinesToOrigin: Story = {
+  ...IrregularLines,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(1500);
+
+    const position = { clientX: 330, clientY: 215 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
+      clientX: position.clientX + 110,
+      clientY: position.clientY,
+    });
+    await sleep(1000);
+    clickAtCoordinates(
+      getCytoscapeNodeLayer(cytoscapeElement),
+      [position.clientX + 110, position.clientY],
+      RIGHT_MOUSE_BUTTON,
+    );
+    await sleep(500);
+    const menuOriginLoc = await canvas.findByText("Original location");
+    await userEvent.click(menuOriginLoc);
   },
 };

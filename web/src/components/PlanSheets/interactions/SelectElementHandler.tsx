@@ -97,6 +97,22 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     [cyto],
   );
 
+  const onSelect = useCallback(() => {
+    if (!cyto) {
+      return;
+    }
+
+    const selection = cyto.$(":selected");
+    selection.forEach((ele) => {
+      const related = getRelatedElements(ele);
+      if (related && !selection.contains(related)) {
+        selection.merge(related.select());
+      }
+    });
+
+    setSelected(selection);
+  }, [cyto, setSelected]);
+
   useEscapeKey({ callback: onUnselect, enabled: true });
 
   // track selection
@@ -104,24 +120,6 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     if (!cyto) {
       return;
     }
-
-    const onSelect = () => {
-      const selection = cyto.$(":selected");
-      selection.forEach((ele) => {
-        const related = getRelatedElements(ele);
-        if (related && !selection.contains(related)) {
-          selection.merge(related.select());
-        }
-      });
-
-      setSelected(selection);
-
-      // When in align to line mode, do not save the target line for reselect, but keep the selected label id
-      if (mode !== PlanMode.SelectTargetLine) {
-        setSelectedElementIds(selection.map((ele) => ele.id()));
-      }
-    };
-
     const onClick = (event: EventObjectEdge | EventObjectNode) => {
       if (multiSelectEnabled && (event.originalEvent.ctrlKey || event.originalEvent.shiftKey)) {
         return;
@@ -166,7 +164,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       onUnselect();
     };
-  }, [cyto, handleLabelAlignment, mode, onUnselect, multiSelectEnabled, setSelectedElementIds]);
+  }, [cyto, handleLabelAlignment, mode, onUnselect, multiSelectEnabled, setSelectedElementIds, onSelect]);
 
   // highlight related labels
   useEffect(() => {

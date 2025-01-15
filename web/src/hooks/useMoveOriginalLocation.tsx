@@ -1,10 +1,12 @@
-import { CoordinateDTOCoordTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { CartesianCoordsDTO, CoordinateDTOCoordTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { radiansToDegrees } from "@turf/helpers";
 import cytoscape, { BoundingBox12, EdgeSingular, NodeSingular, Position as CytoscapePosition } from "cytoscape";
+import { isNil, last, round } from "lodash-es";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
   getCytoscapeDataToNodeAndEdgeData,
+  GroundMetresPosition,
   IEdgeDataProperties,
   INodeAndEdgeData,
   INodeData,
@@ -13,21 +15,107 @@ import {
 import { moveExtent } from "@/components/PlanSheets/interactions/moveAndResizeUtil";
 import { getRelatedLabels } from "@/components/PlanSheets/interactions/selectUtil";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
+import { LabelPropsToUpdate } from "@/components/PlanSheets/properties/LabelProperties";
+import { cytoscapeLabelIdToPlanData } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { ElementLookupData, extractPositions, findElementsPosition } from "@/modules/plan/LookupOriginalCoord";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { updateDiagramsWithNode } from "@/modules/plan/updatePlanData";
-import { getOriginalPositions, replaceDiagramsAndPage } from "@/redux/planSheets/planSheetsSlice";
-import { clampAngleDegrees360, midPoint } from "@/util/positionUtil";
+import {
+  getElementTypeConfigs,
+  getOriginalPositions,
+  replaceDiagramsAndPage,
+} from "@/redux/planSheets/planSheetsSlice";
+import { atanDegrees360, clampAngleDegrees360, midPoint, subtractIntoDelta } from "@/util/positionUtil";
 
 export const useMoveOriginalLocation = () => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const originalPositions = useAppSelector(getOriginalPositions);
   const dispatch = useAppDispatch();
   const adjustLabels = useLineLabelAdjust();
+  const elemTypeConfigs = useAppSelector(getElementTypeConfigs);
+  const movingDatas: INodeAndEdgeData = { edges: [], nodes: [] };
+  const nodeIds = new Set();
+  const edgeIds = new Set();
+  const adjustedLabels: INodeData[] = [];
+  const labelIds = new Set();
 
   let moveStartPositions: Record<string, cytoscape.Position> | undefined;
+
+  const getLabelOriginalLocation = (
+    labelData: INodeDataProperties,
+    startPos: CartesianCoordsDTO,
+    endPos: CartesianCoordsDTO,
+  ) => {
+    const labelProps: LabelPropsToUpdate = { id: cytoscapeLabelIdToPlanData(labelData.id) };
+
+    if (!labelData.labelType || !labelData.elementType) {
+      throw new Error(`Element type or label type not found for label with id ${labelData.id}`);
+    }
+
+    const defaultConfig = elemTypeConfigs.find(
+      (config) => config.element === "Label" && config.elementType === labelData.labelType,
+    )?.attribDefaults;
+
+    if (!defaultConfig) return;
+
+    const pointOffset = defaultConfig.find((attr) => attr.attribute.includes("originalPointOffset"))?.defaultValue;
+    const anchorAngle = defaultConfig.find((attr) => attr.attribute.includes("originalAnchorAngle"))?.defaultValue;
+
+    if (labelData.elementType === PlanElementType.LINE_LABELS) {
+      const lineAngle = round(atanDegrees360(subtractIntoDelta(endPos, startPos)), 1);
+      labelProps.position = midPoint(startPos, endPos);
+      labelProps.rotationAngle = lineAngle;
+      labelProps.anchorAngle = clampAngleDegrees360(lineAngle + Number(anchorAngle));
+      labelProps.pointOffset = Number(pointOffset);
+    }
+    return labelProps;
+  };
+
+  const adjustLabelCoordinates = (
+    selectedElements: cytoscape.CollectionReturnValue,
+    cytoCoordMapper: CytoscapeCoordinateMapper,
+    cyto: cytoscape.Core,
+  ) => {
+    const relatedLabels = getRelatedLabels(selectedElements);
+    if (relatedLabels.length < 1) return;
+
+    const selectedLabelData = relatedLabels.data() as INodeDataProperties;
+    const activeLines = activeDiagrams.flatMap((diagram) => diagram?.lines);
+    const line = activeLines.find((line) => line?.id === selectedLabelData.featureId);
+    const diagram = activeDiagrams.find((diagram) => diagram.id === selectedLabelData.diagramId);
+    const lineStartCoord = diagram?.coordinates.find((coord) => coord.id === (line?.coordRefs?.[0] as number));
+    const lineEndCoord = diagram?.coordinates.find((coord) => coord.id === (last(line?.coordRefs) as number));
+
+    if (lineStartCoord && lineEndCoord && diagram) {
+      const selectedLabelsData = relatedLabels.map((label) => label.data() as INodeDataProperties);
+      const labelsOriginalLocation: LabelPropsToUpdate[] = selectedLabelsData
+        .map((label) =>
+          getLabelOriginalLocation(
+            label,
+            cytoCoordMapper.cytoscapeToGroundCoord(
+              cyto.getElementById(lineStartCoord.id.toString()).position(),
+              diagram.id,
+            ),
+            cytoCoordMapper.cytoscapeToGroundCoord(
+              cyto.getElementById(lineEndCoord.id.toString()).position(),
+              diagram.id,
+            ),
+          ),
+        )
+        .filter((elem) => !isNil(elem));
+      adjustedLabels.forEach((label) => {
+        const original = labelsOriginalLocation.find((loc) => `LAB_${loc.id}` === label.id);
+        if (original) {
+          label.position = original.position as GroundMetresPosition;
+          label.properties.textRotation = original.rotationAngle;
+          label.properties.anchorAngle = original.anchorAngle;
+          label.properties.pointOffset = original.pointOffset;
+        }
+      });
+    }
+  };
 
   const updateMove = (
     moveStartPositions: Record<string, CytoscapePosition> | undefined,
@@ -43,6 +131,7 @@ export const useMoveOriginalLocation = () => {
     const newExtent = moveExtent(moveElementsExtent, moveEnd.x - moveStart.x, moveEnd.y - moveStart.y);
     const dx = newExtent.x1 - moveElementsExtent.x1;
     const dy = newExtent.y1 - moveElementsExtent.y1;
+
     movingElements.positions((ele) => {
       const position = moveStartPositions[ele.id()];
       if (!position) {
@@ -101,19 +190,20 @@ export const useMoveOriginalLocation = () => {
     target: NodeSingular | EdgeSingular,
     selectedNodes: cytoscape.CollectionReturnValue,
   ): [INodeAndEdgeData, INodeData[]] | null => {
-    const connectedElements = selectedNodes.union(selectedNodes.connectedNodes());
-    connectedElements.merge(getRelatedLabels(connectedElements));
-    const adjacentEdges = connectedElements.connectedEdges().difference(connectedElements);
-    const allElements = connectedElements.union(adjacentEdges).union(getRelatedLabels(adjacentEdges));
-
-    moveStartPositions = extractPositions(allElements);
-
     const cyto = target.cy();
     const container = cyto?.container();
     if (!container || !originalPositions) return null;
 
     const cytoCoordMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
     const originalCoordinates: ElementLookupData[] = [];
+
+    const connectedElements = selectedNodes.union(selectedNodes.connectedNodes());
+    connectedElements.merge(getRelatedLabels(connectedElements));
+    const adjacentEdges = connectedElements.connectedEdges().difference(connectedElements);
+    const adjacentEdgeLabels = getRelatedLabels(adjacentEdges);
+    const allElements = connectedElements.union(adjacentEdges).union(adjacentEdgeLabels);
+    moveStartPositions = extractPositions(allElements);
+
     allElements.forEach((ele) => {
       const data = ele.data() as INodeDataProperties;
       const coordinates = findElementsPosition(data, allElements, originalPositions);
@@ -123,6 +213,7 @@ export const useMoveOriginalLocation = () => {
         originalCoordinates.push(coordinates);
       }
     });
+
     const moveStart = selectedNodes.position();
     const moveEnd = findMoveEnd(target, originalCoordinates);
     if (moveEnd.x === 0 && moveEnd.y === 0) return null;
@@ -136,8 +227,7 @@ export const useMoveOriginalLocation = () => {
         node.properties.coordType === CoordinateDTOCoordTypeEnum.calculated,
     );
     const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
-    const adjustedLabels = adjustLabels(movedNodesById);
-
+    const adjustedLabelData = adjustLabels(movedNodesById);
     if (cyto.elements(":selected").isEdge()) {
       const selectedLine = cyto.elements(":selected");
       const lineMidPoint = midPoint(selectedLine.target().position(), selectedLine.source().position());
@@ -159,32 +249,147 @@ export const useMoveOriginalLocation = () => {
       });
     }
 
-    return [movingData, adjustedLabels];
+    movingData.nodes.forEach((node) => {
+      if (!nodeIds.has(node.id)) {
+        nodeIds.add(node.id);
+        movingDatas.nodes.push(node);
+      }
+    });
+    movingData.edges.forEach((edge) => {
+      if (!edgeIds.has(edge.id)) {
+        edgeIds.add(edge.id);
+        movingDatas.edges.push(edge);
+      }
+    });
+    adjustedLabelData?.forEach((node) => {
+      if (!labelIds.has(node.id)) {
+        labelIds.add(node.id);
+        adjustedLabels.push(node);
+      }
+    });
+
+    return [movingDatas, adjustedLabels];
+  };
+
+  /**
+   * Resets the positions of edges and their related elements to their original locations.
+   */
+  const resetEdgePositions = (
+    target: NodeSingular | EdgeSingular,
+    selectedElements: cytoscape.CollectionReturnValue,
+  ) => {
+    const cyto = target.cy();
+    const container = cyto?.container();
+    if (!container || !originalPositions) return;
+
+    const cytoCoordMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
+    const originalCoordinates: ElementLookupData[] = [];
+
+    if (selectedElements.length > 1) {
+      const processElements = (selectedNodes: cytoscape.CollectionReturnValue, dataSource: string) => {
+        const connectElem = selectedNodes.union(selectedNodes.connectedNodes());
+        connectElem.merge(getRelatedLabels(connectElem));
+        const adjacentEdges = connectElem.connectedEdges().difference(connectElem);
+        const adjacentEdgeLabels = getRelatedLabels(adjacentEdges);
+        const allElements = connectElem.union(adjacentEdges).union(adjacentEdgeLabels);
+        moveStartPositions = extractPositions(allElements);
+
+        allElements.forEach((ele) => {
+          const data = ele.data() as INodeDataProperties;
+          const coordinates = findElementsPosition(data, allElements, originalPositions);
+
+          if (coordinates?.position) {
+            coordinates.position = cytoCoordMapper.groundCoordToCytoscape(coordinates.position, coordinates.diagramId);
+            originalCoordinates.push(coordinates);
+          }
+        });
+
+        const filteredElements = allElements.filter(
+          (ele) => (ele.data() as INodeDataProperties)["featureId"]?.toString() === dataSource,
+        );
+        const newTarget = filteredElements.length > 0 ? filteredElements : selectedNodes;
+        const moveStart = selectedNodes.position();
+        const moveEnd = findMoveEnd(newTarget, originalCoordinates);
+        if (moveEnd.x === 0 && moveEnd.y === 0) return;
+
+        updateMove(moveStartPositions, connectElem, selectedNodes.boundingBox(), moveStart, moveEnd);
+        const movingData = getCytoscapeDataToNodeAndEdgeData(cytoCoordMapper, connectElem);
+        const movedNodes = movingData.nodes.filter(
+          (node) =>
+            node.properties.coordType === CoordinateDTOCoordTypeEnum.node ||
+            node.properties.coordType === CoordinateDTOCoordTypeEnum.calculated,
+        );
+        const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
+        const adjustedLabelData = adjustLabels(movedNodesById);
+
+        movingData.nodes.forEach((node) => {
+          if (nodeIds.add(node.id)) movingDatas.nodes.push(node);
+        });
+        movingData.edges.forEach((edge) => {
+          if (edgeIds.add(edge.id)) movingDatas.edges.push(edge);
+        });
+        adjustedLabelData?.forEach((node) => {
+          if (labelIds.add(node.id)) adjustedLabels.push(node);
+        });
+      };
+      selectedElements.forEach((ele, i) => {
+        if (!ele) return;
+        const data = ele.data() as INodeDataProperties;
+        processElements(cyto.getElementById(data["source"] as string), data["source"] as string);
+
+        // Check if it's the last node
+        if (i === selectedElements.length - 1) {
+          processElements(cyto.getElementById(data["target"] as string), data["target"] as string);
+        }
+      });
+
+      adjustLabelCoordinates(selectedElements, cytoCoordMapper, cyto);
+
+      const updatedDiagrams = updateActiveDiagrams({
+        nodes: [...movingDatas.nodes, ...adjustedLabels],
+      });
+      dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
+    } else {
+      const data = target.data() as INodeDataProperties;
+      getMovedDataLabels(target, cyto.$id(data["source"] as string));
+      getMovedDataLabels(target, cyto.$id(data["target"] as string));
+      const updatedDiagrams = updateActiveDiagrams({
+        nodes: [...movingDatas.nodes, ...adjustedLabels],
+        edges: [...movingDatas.edges],
+      });
+      dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
+    }
+    // TODO: Handle multiple edges at once
+  };
+
+  /**
+   * Resets the positions of nodes and their related elements to their original locations.
+   */
+  const restoreNodePositions = (
+    target: NodeSingular | EdgeSingular,
+    selectedElements: cytoscape.CollectionReturnValue,
+  ) => {
+    getMovedDataLabels(target, selectedElements);
+    const updatedDiagrams = updateActiveDiagrams({
+      nodes: [...movingDatas.nodes, ...adjustedLabels],
+      edges: [...movingDatas.edges],
+    });
+    dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
+
+    // TODO: Handle multiple coordinates at once
   };
 
   const restoreOriginalPosition = (target: NodeSingular | EdgeSingular | null) => {
     if (!target) return;
-    const data = target.data() as INodeDataProperties;
-    const cyto = target.cy();
-    if ("source" in data && "target" in data) {
-      const srcData = getMovedDataLabels(target, cyto.$id(data["source"] as string));
-      const targetData = getMovedDataLabels(target, cyto.$id(data["target"] as string));
 
-      if (srcData && targetData) {
-        const updatedDiagrams = updateActiveDiagrams({
-          nodes: [...srcData[0].nodes, ...targetData[0].nodes, ...srcData[1], ...targetData[1]],
-        });
-        dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
-      }
+    const cyto = target.cy();
+    const selectedElements = cyto.elements(":selected");
+    const isEdgeSelected = selectedElements.isEdge();
+
+    if (isEdgeSelected) {
+      resetEdgePositions(target, selectedElements);
     } else {
-      const srcData = getMovedDataLabels(target, cyto.elements(":selected"));
-      if (srcData) {
-        const updatedDiagrams = updateActiveDiagrams({
-          nodes: [...srcData[0].nodes, ...srcData[1]],
-          edges: [...srcData[0].edges],
-        });
-        dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
-      }
+      restoreNodePositions(target, selectedElements);
     }
   };
 
