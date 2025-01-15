@@ -74,6 +74,11 @@ $warningColor: #ea6a2e;
     }
   }
 
+  &-close-button {
+    @extend .PlanSheetsFooter-right-button;
+    width: 162px;
+  }
+
   &-save-button {
     @extend .PlanSheetsFooter-right-button;
     width: 148px;

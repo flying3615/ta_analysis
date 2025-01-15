@@ -5,6 +5,7 @@ import { useLuiModalPrefab } from "@linzjs/windows";
 import { Menu, MenuHeader, MenuItem } from "@szhsin/react-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
+import { generatePath, useNavigate } from "react-router-dom";
 
 import { IEdgeData, INodeData } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import FooterPagination from "@/components/Footer/FooterPagination";
@@ -21,6 +22,7 @@ import { clearRecoveryFile } from "@/hooks/usePlanAutoRecover";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
 import { usePlanGenPreview } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
+import { Paths } from "@/Paths";
 import { getPlanQueryKey, useUpdatePlanMutation } from "@/queries/plan";
 import { ExternalSurveyInfoDto } from "@/queries/survey";
 import {
@@ -53,6 +55,7 @@ const PlanSheetsFooter = ({
   pageConfigsEdgeData,
 }: FooterProps) => {
   const transactionId = useTransactionId();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -91,6 +94,7 @@ const PlanSheetsFooter = ({
   } = useAsyncTaskHandler(updatePlanMutation);
   const updatePlanIsPending = updatePlanMutation.isPending || updatePlanAsyncIsPending;
   const updatePlan = () => !updatePlanIsPending && updatePlanMutation.mutate();
+  const closePlan = () => navigate(generatePath(Paths.root, { transactionId }));
 
   // Save upon pressing Ctrl+S
   useOnKeyDown(({ key, ctrlKey }) => ctrlKey && key === "s", updatePlan);
@@ -146,7 +150,7 @@ const PlanSheetsFooter = ({
           <LuiMiniSpinner size={20} divProps={{ "data-testid": "compilation-loading-spinner" }} />
         ) : (
           <>
-            <LuiIcon alt="Compile" color={luiColors.sea} name="ic_double_tick" size="md" />
+            <LuiIcon alt="" color={luiColors.sea} name="ic_double_tick" size="md" />
             Compile plan(s)
           </>
         )}
@@ -215,12 +219,18 @@ const PlanSheetsFooter = ({
       <PageManager />
 
       <div className="PlanSheetsFooter-right">
+        <LuiButton className="PlanSheetsFooter-close-button lui-button-tertiary" onClick={() => void closePlan()}>
+          <>
+            <LuiIcon alt="" color={luiColors.sea} name="ic_clear" size="md" />
+            Close layout
+          </>
+        </LuiButton>
         <LuiButton className="PlanSheetsFooter-save-button lui-button-tertiary" onClick={updatePlan}>
           {updatePlanIsPending ? (
             <LuiMiniSpinner size={20} divProps={{ "data-testid": "update-plan-loading-spinner" }} />
           ) : (
             <>
-              <LuiIcon alt="Save" color={luiColors.sea} name="ic_save" size="md" />
+              <LuiIcon alt="" color={luiColors.sea} name="ic_save" size="md" />
               Save layout
             </>
           )}
@@ -235,7 +245,7 @@ const PlanSheetsFooter = ({
               <LuiMiniSpinner size={20} divProps={{ "data-testid": "preview-loading-spinner" }} />
             ) : (
               <>
-                <LuiIcon alt="Preview" color={luiColors.sea} name="ic_layout_plan_sheets" size="md" />
+                <LuiIcon alt="" color={luiColors.sea} name="ic_layout_plan_sheets" size="md" />
                 Preview layout
               </>
             )}
