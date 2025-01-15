@@ -23,7 +23,9 @@ export interface useCreateAndMaintainLock {
   lockPreviouslyHeld: boolean;
 }
 
-export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
+const FIVE_MINUTES_MS = 300_000;
+
+export const useCreateAndMaintainLock = (maxLockAgeMs = FIVE_MINUTES_MS): useCreateAndMaintainLock => {
   const transactionId = useTransactionId();
   const userProfile = useUserProfile();
   const queryClient = useQueryClient();
@@ -65,17 +67,20 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
         }
 
         const transactionLock = locks.transactionLock;
-        const hasLockId = (transactionLock.lockedId ?? 0) > 0;
-        const lockedByUser = transactionLock.lockedBy?.id;
+        const { lockedAt, lockedBy, lockedId } = transactionLock;
+        const hasLockId = (lockedId ?? 0) > 0;
+        const lockedByUser = lockedBy?.id;
         const lockOwnedByUser = hasLockId && lockedByUser === userProfile?.id;
 
-        if (!lockOwnedByUser) {
+        if (!lockOwnedByUser || !lockedAt || !lockedId) {
           return showFailureModal(surveyLockedModal(lockedByUser));
         }
 
-        // locks.transactionLock.lockedId will always exist at this point ?? -1 is for the compiler warning
-        if (!(await updateLockLastUsed(transactionId, locks.transactionLock.lockedId ?? -1))) {
-          return showFailureModal(failedToLoadLocksModal);
+        const lockAgeMs = new Date().getTime() - new Date(lockedAt).getTime();
+        if (lockAgeMs > maxLockAgeMs) {
+          if (!(await updateLockLastUsed(transactionId, lockedId))) {
+            return showFailureModal(failedToLoadLocksModal);
+          }
         }
 
         closeLoadingLocksModal();
@@ -87,7 +92,7 @@ export const useCreateAndMaintainLock = (): useCreateAndMaintainLock => {
       staleTime: 30000,
       enabled: !stopLockChecks,
     };
-  }, [transactionId, userProfile?.id, stopLockChecks, queryClient, showPrefabModal]);
+  }, [transactionId, userProfile?.id, stopLockChecks, queryClient, showPrefabModal, maxLockAgeMs]);
 
   const { isLoading, data } = useQueryRefetchOnUserInteraction(queryOptions);
 

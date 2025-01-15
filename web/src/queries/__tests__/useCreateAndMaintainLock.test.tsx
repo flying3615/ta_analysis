@@ -54,16 +54,43 @@ describe("useCreateAndMaintainLock hook", () => {
       );
     });
 
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(requestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/v1/surveys/api/survey/123/locks/2100000/lastUsed",
+        }) as unknown,
+      }),
+    );
+  });
+
+  it("should skip lastUsed(extend) if lock recent", async () => {
+    renderCompWithReduxAndRoute(
+      <Route element={<TestWrapper />} path={Paths.root} />,
+      generatePath(Paths.root, { transactionId: "12345" }),
+    );
+
     await waitFor(() => {
       expect(requestSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           request: expect.objectContaining({
-            method: "PUT",
-            url: "http://localhost/v1/surveys/api/survey/123/locks/2100000/lastUsed",
+            method: "GET",
+            url: "http://localhost/v1/surveys/api/survey/12345/locks",
           }) as unknown,
         }),
       );
     });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(requestSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          method: "PUT",
+          url: "http://localhost/v1/surveys/api/survey/12345/locks/2100000/lastUsed",
+        }) as unknown,
+      }),
+    );
   });
 
   it("should show error if locked", async () => {

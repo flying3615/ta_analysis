@@ -102,6 +102,30 @@ export const handlers: HttpHandler[] = [
     ),
   ),
 
+  // fresh lock that does not require extend
+  http.get(/\/api\/survey\/12345\/locks$/, () =>
+    HttpResponse.json(
+      {
+        transactionLock: {
+          locked: true,
+          lockedId: 2100000,
+          lockedEntityId: 12345,
+          sessionUser: "extsurv1",
+          type: null,
+          lockedAt: new Date().toISOString(),
+          lockedBy: {
+            id: "extsurv1",
+            givenNames: "Survey B",
+            surname: "External",
+          },
+          isNewAppLock: true,
+        },
+        taCertificationRequestLocks: [],
+      },
+      { status: 200, statusText: "OK" },
+    ),
+  ),
+
   http.get(/\/api\/survey\/([0-9]+)\/locks$/, ({ params }) =>
     HttpResponse.json(
       {
@@ -116,7 +140,7 @@ export const handlers: HttpHandler[] = [
             givenNames: "Survey B",
             surname: "External",
           },
-          lockedAt: new Date().toISOString(),
+          lockedAt: new Date(new Date().getTime() - 300_001).toISOString(),
           isNewAppLock: true,
         },
         taCertificationRequestLocks: [],
