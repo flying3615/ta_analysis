@@ -86,6 +86,13 @@ describe("labelProperties-editing label text", () => {
       justifyEnabled: false,
       mockTextContentEditResult: mockValidRemoveLineBreakEdit,
     },
+    {
+      labelType: LabelDTOLabelTypeEnum.markDescription,
+      elementType: PlanElementType.COORDINATE_LABELS,
+      diagramId: "1",
+      justifyEnabled: false,
+      mockTextContentEditResult: mockValidRemoveLineBreakEdit,
+    },
   ];
 
   it.each(labelTypes)(

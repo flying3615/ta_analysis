@@ -58,12 +58,14 @@ export const editableLabelTextTypes: string[] = [
   LabelDTOLabelTypeEnum.parcelAppellation,
   LabelDTOLabelTypeEnum.lineDescription,
   LabelDTOLabelTypeEnum.lineLongDescription,
+  LabelDTOLabelTypeEnum.markDescription,
 ];
 
 export const lineBreakRestrictedEditTypes: string[] = [
   LabelDTOLabelTypeEnum.parcelAppellation,
   LabelDTOLabelTypeEnum.lineDescription,
   LabelDTOLabelTypeEnum.lineLongDescription,
+  LabelDTOLabelTypeEnum.markDescription,
 ];
 
 // Create type using typeof and array index
@@ -223,11 +225,13 @@ export const angleFormatErrorMessage = "Must be a number in D.MMSS format";
 export const getTextLengthErrorMessage = (numberOverLimit: number) => `${numberOverLimit} characters over the limit`;
 export const parcelAppellationInfoMessage = "Appellations cannot be altered";
 export const lineDescriptionInfoMessage = "Line Descriptions cannot be altered";
+export const markDescriptionInfoMessage = "Mark Descriptions cannot be altered";
 
 export const lineBreakRestrictedInfoMessages: Record<LineBreakRestrictedEditType, string> = {
   [LabelDTOLabelTypeEnum.parcelAppellation]: parcelAppellationInfoMessage,
   [LabelDTOLabelTypeEnum.lineDescription]: lineDescriptionInfoMessage,
   [LabelDTOLabelTypeEnum.lineLongDescription]: lineDescriptionInfoMessage,
+  [LabelDTOLabelTypeEnum.markDescription]: markDescriptionInfoMessage,
 };
 
 export const cytoscapeLabelIdToPlanData = (cytoscapeLabelId: string | undefined): number => {
@@ -252,38 +256,10 @@ export const increaseZIndex = (elem: NodeSingular) => {
   elem.style("zIndex", 300);
 };
 
-type RegExpMatchArrayWithIndices = RegExpMatchArray & { indices: Array<[number, number]> };
-export const fixParcelAppelationWhitespace = (editedText: string, labelRegex: string): string => {
-  //remove extra spaces and/or new lines
-  let fixedText = editedText.replace(/[ ]+/g, " ");
-  fixedText = fixedText.replace(/ *[\n]+ */g, "\n");
-
-  //put missing spaces in
-  const matches = RegExp(labelRegex, "d").exec(editedText) as RegExpMatchArrayWithIndices;
-  if (matches) {
-    //the groups in the regex are for the expected space/newlines in the label
-    //if they're empty then we need to put a space at that index
-    matches
-      .slice(1) //first match is the entire string
-      .reverse() //we want to be inserting any missing spaces in reverse order otherwise the indexes could be off
-      .forEach((value, index) => {
-        const insertionIndex = matches.indices.reverse()[index]?.[0];
-        if (value === "" && insertionIndex) {
-          const chars = [...fixedText];
-          chars.splice(insertionIndex, 0, " ");
-          fixedText = chars.join("");
-        }
-      });
-  }
-
-  return fixedText;
-};
-
 export const createLineBreakRestrictedEditRegex = (labelText?: string): string => {
   if (!labelText) return "";
 
-  const parts = labelText.split(/[\r\n ]/);
-
+  const parts = labelText.split(/[\r\n ]/).map(escapeRegexReservedCharacters);
   return `^${parts.join("([\\r\\n ]*)")}$`;
 };
 
@@ -294,3 +270,5 @@ export const isEditableLabelTextType = (labelType?: string) => {
 export const isLineBreakRestrictedEditType = (labelType?: string) => {
   return !!labelType && lineBreakRestrictedEditTypes.includes(labelType);
 };
+
+export const escapeRegexReservedCharacters = (part: string): string => part.replace(/[-[\]{}()*+?.,\\^$|]/g, "\\$&");
