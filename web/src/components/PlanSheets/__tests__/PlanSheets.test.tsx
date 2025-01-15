@@ -15,6 +15,8 @@ import { singleFirmUserExtsurv1 } from "@/mocks/data/mockUsers";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
+import { setMockedSplitFeatures } from "@/setupTests";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 
 import { nestedTitlePlan } from "./data/plansheetDiagramData";
@@ -73,6 +75,25 @@ const mockGetPlanResponse = {
     { id: 4, pageType: "title", pageNumber: 4 },
     { id: 5, pageType: "title", pageNumber: 5 },
   ],
+};
+
+const renderWithFailedPlanRegen = () => {
+  server.use(
+    http.post(/\/124\/plan-regenerate$/, () =>
+      HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+    ),
+    http.get(/\/124\/async-task/, () =>
+      HttpResponse.json(new AsyncTaskBuilder().withFailedStatus("SomeException", "Failed").build(), {
+        status: 200,
+        statusText: "OK",
+      }),
+    ),
+  );
+
+  renderCompWithReduxAndRoute(
+    <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
+    generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
+  );
 };
 
 describe("PlanSheets", () => {
@@ -376,19 +397,7 @@ describe("PlanSheets", () => {
     const requestSpy = jest.fn();
     server.events.on("request:start", requestSpy);
 
-    server.use(
-      http.post(/\/124\/plan-regenerate$/, () =>
-        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
-      ),
-      http.get(/\/124\/async-task/, () =>
-        HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
-      ),
-    );
-
-    renderCompWithReduxAndRoute(
-      <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
-      generatePath(Paths.layoutPlanSheets, { transactionId: "124" }),
-    );
+    renderWithFailedPlanRegen();
 
     expect(await screen.findByText(/Failed to regenerate plan/)).not.toBeNull();
     expect(await screen.findByText(/Retry, or call us on/)).not.toBeNull();
@@ -447,6 +456,28 @@ describe("PlanSheets", () => {
       }),
     );
   }, 20000);
+
+  it("regenerates plan asynchronously with no extended error info if toggled off", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS]: "off" });
+
+    renderWithFailedPlanRegen();
+
+    expect(await screen.findByText(/Failed to regenerate plan/)).not.toBeNull();
+    expect(screen.queryByText(/Detailed error information/)).toBeNull();
+  });
+
+  it("regenerates plan asynchronously with extended error info if toggled on", async () => {
+    const requestSpy = jest.fn();
+    server.events.on("request:start", requestSpy);
+    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS]: "on" });
+
+    renderWithFailedPlanRegen();
+
+    expect(await screen.findByText(/Failed to regenerate plan/)).not.toBeNull();
+    expect(screen.getByText(/Detailed error information/)).toBeInTheDocument();
+  });
 
   it("regenerates plan asynchronously and allows retrying when interrupted by deployment", async () => {
     const requestSpy = jest.fn();

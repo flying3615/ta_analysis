@@ -39,6 +39,13 @@ const TestModalTemplate = (_: { defaultToOpen?: boolean }) => {
 export default {
   title: "errorWithResponseModal",
   component: TestModalTemplate,
+  parameters: {
+    chromatic: { delay: 300 },
+  },
+  viewport: {
+    defaultViewport: "tablet",
+    defaultOrientation: "portrait",
+  },
 } as Meta<typeof TestModalTemplate>;
 
 type Story = StoryObj<typeof TestModalTemplate>;
@@ -56,4 +63,5 @@ Default.play = async ({ canvasElement }) => {
     // eslint-disable-next-line testing-library/no-node-access
     await expect(canvasElement.parentElement?.textContent?.includes("Test error")).toBeTruthy();
   });
+  await sleep(2000);
 };

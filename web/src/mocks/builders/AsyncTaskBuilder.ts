@@ -7,6 +7,8 @@ export class AsyncTaskBuilder implements BaseBuilder<AsyncTaskDTO> {
   private taskId: string;
   private type: AsyncTaskDTOTypeEnum;
   private status: AsyncTaskDTOStatusEnum;
+  private exception?: string;
+  private exceptionMessage?: string;
 
   constructor() {
     this.taskId = ulid();
@@ -24,8 +26,10 @@ export class AsyncTaskBuilder implements BaseBuilder<AsyncTaskDTO> {
     return this;
   }
 
-  withStatus(status: AsyncTaskDTOStatusEnum) {
+  withStatus(status: AsyncTaskDTOStatusEnum, exception?: string, exceptionMessage?: string) {
     this.status = status;
+    this.exception = exception;
+    this.exceptionMessage = exceptionMessage;
     return this;
   }
 
@@ -45,8 +49,8 @@ export class AsyncTaskBuilder implements BaseBuilder<AsyncTaskDTO> {
     return this.withStatus(AsyncTaskDTOStatusEnum.COMPLETE);
   }
 
-  withFailedStatus() {
-    return this.withStatus(AsyncTaskDTOStatusEnum.FAILED);
+  withFailedStatus(exception?: string, exceptionMessage?: string) {
+    return this.withStatus(AsyncTaskDTOStatusEnum.FAILED, exception, exceptionMessage);
   }
 
   build(): AsyncTaskDTO {
@@ -54,6 +58,8 @@ export class AsyncTaskBuilder implements BaseBuilder<AsyncTaskDTO> {
       taskId: this.taskId,
       type: this.type,
       status: this.status,
+      exception: this.exception,
+      exceptionMessage: this.exceptionMessage,
     };
   }
 }

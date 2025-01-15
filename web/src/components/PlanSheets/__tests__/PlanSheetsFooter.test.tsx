@@ -15,8 +15,46 @@ import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
+import { setMockedSplitFeatures } from "@/setupTests";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
 import { mockStore } from "@/test-utils/store-mock";
+
+function returnFailOnSave() {
+  const requestSpy = jest.fn();
+  server.events.on("request:start", requestSpy);
+
+  server.use(
+    http.put(/\/123\/plan$/, () =>
+      HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
+    ),
+    http.get(/\/123\/async-task/, () =>
+      HttpResponse.json(new AsyncTaskBuilder().withFailedStatus("SomeError", "Error has happened").build(), {
+        status: 200,
+        statusText: "OK",
+      }),
+    ),
+  );
+  return requestSpy;
+}
+
+function renderPlanSheetsFooter() {
+  renderCompWithReduxAndRoute(
+    <Route
+      element={
+        <LuiModalAsyncContextProvider>
+          <PlanSheetsFooter
+            setDiagramsPanelOpen={jest.fn()}
+            diagramsPanelOpen={false}
+            surveyInfo={{} as ExternalSurveyInfoDto}
+          />
+        </LuiModalAsyncContextProvider>
+      }
+      path={Paths.layoutPlanSheets}
+    />,
+    generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
+  );
+}
 
 describe("PlanSheetsFooter", () => {
   const planSheetsState = {
@@ -250,33 +288,10 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("error within update plan async task results in showing a specific error message", async () => {
-    const requestSpy = jest.fn();
-    server.events.on("request:start", requestSpy);
+    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS]: "off" });
+    const requestSpy = returnFailOnSave();
 
-    server.use(
-      http.put(/\/123\/plan$/, () =>
-        HttpResponse.json(new AsyncTaskBuilder().build(), { status: 202, statusText: "ACCEPTED" }),
-      ),
-      http.get(/\/123\/async-task/, () =>
-        HttpResponse.json(new AsyncTaskBuilder().withFailedStatus().build(), { status: 200, statusText: "OK" }),
-      ),
-    );
-
-    renderCompWithReduxAndRoute(
-      <Route
-        element={
-          <LuiModalAsyncContextProvider>
-            <PlanSheetsFooter
-              setDiagramsPanelOpen={jest.fn()}
-              diagramsPanelOpen={false}
-              surveyInfo={{} as ExternalSurveyInfoDto}
-            />
-          </LuiModalAsyncContextProvider>
-        }
-        path={Paths.layoutPlanSheets}
-      />,
-      generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
-    );
+    renderPlanSheetsFooter();
 
     await userEvent.click(await screen.findByText("Save layout"));
 
@@ -297,6 +312,19 @@ describe("PlanSheetsFooter", () => {
     expect(screen.getByText("Dismiss")).toBeInTheDocument();
     expect(screen.queryByText("Layout saved successfully")).not.toBeInTheDocument();
     expect(screen.queryByTestId("update-plan-loading-spinner")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Detailed error information/)).toBeNull();
+  });
+
+  it("shows error detail after a fail when toggled on", async () => {
+    setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS]: "on" });
+    returnFailOnSave();
+
+    renderPlanSheetsFooter();
+
+    await userEvent.click(await screen.findByText("Save layout"));
+
+    expect(await screen.findByText(/Failed to save plan/)).not.toBeNull();
+    expect(screen.getByText(/Detailed error information/)).toBeInTheDocument();
   });
 
   it("server error in save request shows unhandled exception message", async () => {

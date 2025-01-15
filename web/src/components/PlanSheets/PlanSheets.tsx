@@ -41,6 +41,8 @@ import {
   getPlanMode,
   getViewableLabelTypes,
 } from "@/redux/planSheets/planSheetsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
 
 import { AddLabelHandler } from "./interactions/AddLabelHandler";
@@ -58,6 +60,7 @@ const PlanSheets = () => {
   const transactionId = useTransactionId();
   const canViewHiddenLabels = useAppSelector(getCanViewHiddenLabels);
   const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
+  const { result: withBackgroundErrors } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS);
 
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
@@ -77,6 +80,8 @@ const PlanSheets = () => {
     isPending: isRegenerating,
     isSuccess: regenerateDoneOrNotNeeded,
     isError: regenerationHasFailed,
+    exception: exception,
+    exceptionMessage: exceptionMessage,
     isInterrupted: regenerationInterrupted,
     error: regenerateApiError,
   } = useAsyncTaskHandler(regeneratePlanMutation);
@@ -88,7 +93,13 @@ const PlanSheets = () => {
 
   useEffect(() => {
     if (regenerationHasFailed) {
-      void showPrefabModal(asyncTaskFailedErrorModal("Failed to regenerate plan")).then((retry) => {
+      void showPrefabModal(
+        asyncTaskFailedErrorModal(
+          "Failed to regenerate plan",
+          withBackgroundErrors && exception,
+          withBackgroundErrors && exceptionMessage,
+        ),
+      ).then((retry) => {
         if (retry) {
           regeneratePlanMutation.mutate();
         } else {
@@ -97,7 +108,7 @@ const PlanSheets = () => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regenerationHasFailed, navigate, showPrefabModal]);
+  }, [regenerationHasFailed, navigate, showPrefabModal, withBackgroundErrors, exception, exceptionMessage]);
 
   useEffect(() => {
     if (regenerationInterrupted) {

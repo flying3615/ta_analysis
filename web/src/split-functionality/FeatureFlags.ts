@@ -6,6 +6,7 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION_AUTO_RECOVERY = "survey-plan-generation-auto-recovery",
   SURVEY_PLAN_GENERATION_LINES_MULTISELECT = "survey-plan-generation-lines-multi-select",
   SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT = "survey-plan-generation-coordinates-multi-select",
+  SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS = "survey-plan-generation-background-errors",
 }
 
 export enum TREATMENTS {

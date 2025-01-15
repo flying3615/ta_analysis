@@ -39,6 +39,13 @@ const TestModalTemplate = (props: { defaultToOpen?: boolean }) => {
 export default {
   title: "unhandledErrorModal",
   component: TestModalTemplate,
+  parameters: {
+    chromatic: { delay: 300 },
+  },
+  viewport: {
+    defaultViewport: "tablet",
+    defaultOrientation: "portrait",
+  },
 } as Meta<typeof TestModalTemplate>;
 
 type Story = StoryObj<typeof TestModalTemplate>;
@@ -56,6 +63,7 @@ Default.play = async ({ canvasElement }) => {
     // eslint-disable-next-line testing-library/no-node-access
     await expect(canvasElement.parentElement?.textContent?.includes("Unexpected error")).toBeTruthy();
   });
+  await sleep(2000);
 };
 
 export const Expanded: Story = {
@@ -72,4 +80,5 @@ Expanded.play = async ({ canvasElement }) => {
     // eslint-disable-next-line testing-library/no-node-access
     await expect(canvasElement.parentElement?.textContent?.includes("Detailed error information")).toBeTruthy();
   });
+  await sleep(2000);
 };

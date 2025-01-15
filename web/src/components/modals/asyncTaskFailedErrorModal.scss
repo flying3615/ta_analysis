@@ -1,0 +1,51 @@
+@use "../../../node_modules/@linzjs/lui/dist/scss/Core" as lui;
+
+.AsyncTaskFailedErrorModal-errorContent {
+  margin-bottom: lui.$unit-xs;
+  overflow-y: hidden;
+}
+
+.AsyncTaskFailedErrorModal-errorContentHeading {
+  margin-top: 0;
+  color: lui.$error;
+}
+
+.AsyncTaskFailedErrorModal-errorContentText {
+  margin-top: lui.$unit-sm;
+  margin-bottom: lui.$unit-sm;
+}
+
+.AsyncTaskFailedErrorModal-errorText {
+  font-size: 12px;
+
+  word-wrap: break-word;
+  margin: lui.$unit-sm 0;
+
+  h6 {
+    margin-top: lui.$unit-sm;
+  }
+
+  pre {
+    margin-top: 0;
+  }
+}
+
+.AsyncTaskFailedErrorModal-copy-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.AsyncTaskFailedErrorModal-copy-icon {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+}
+
+.AsyncTaskFailedErrorModal .LuiModalAsync-content {
+  overflow-y: hidden !important;
+}
+.AsyncTaskFailedErrorModal .LuiAccordicard {
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}

@@ -61,6 +61,7 @@ const PlanSheetsFooter = ({
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
   const { success: successToast } = useToast();
   const hasUnsavedChanges = useAppSelector(hasChanges);
+  const { result: withBackgroundErrors } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS);
 
   const activeSheet = useAppSelector(getActiveSheet);
   const onChangeSheet = (sheet: PlanSheetType) => () => dispatch(setActiveSheet(sheet));
@@ -88,6 +89,8 @@ const PlanSheetsFooter = ({
     isSuccess: updatePlanIsSuccess,
     isPending: updatePlanAsyncIsPending,
     isError: updatePlanHasFailed,
+    exception,
+    exceptionMessage,
     isInterrupted: updatePlanIsInterrupted,
     error: updatePlanError,
     reset: updatePlanReset,
@@ -111,7 +114,13 @@ const PlanSheetsFooter = ({
 
   useEffect(() => {
     if (updatePlanHasFailed) {
-      void showPrefabModal(asyncTaskFailedErrorModal("Failed to save plan")).then((retry) => retry && updatePlan());
+      void showPrefabModal(
+        asyncTaskFailedErrorModal(
+          "Failed to save plan",
+          withBackgroundErrors && exception,
+          withBackgroundErrors && exceptionMessage,
+        ),
+      ).then((retry) => retry && updatePlan());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updatePlanHasFailed]);
