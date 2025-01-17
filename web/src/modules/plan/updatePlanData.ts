@@ -154,6 +154,14 @@ const defaultUpdateDiagramLabel = (diagramLabel: LabelDTO, updatedLabel: LabelPr
       editedText: updatedLabel.editedText?.replaceAll("\n", "~r") ?? diagramLabel.editedText,
     };
 
+  // Legacy sets editedText to null for labels of type lineDescription if it is the same as displayText.
+  if (diagramLabel.labelType === LabelDTOLabelTypeEnum.lineDescription)
+    return {
+      ...diagramLabel,
+      ...updatedLabel,
+      editedText: updatedLabel.editedText === diagramLabel.displayText ? undefined : updatedLabel.editedText,
+    };
+
   return { ...diagramLabel, ...updatedLabel };
 };
 

@@ -56,6 +56,10 @@ describe("updatePlanData", () => {
       12,
     )
     .addLine(3, [1, 2], 1.0, "observation")
+    .addLine(4, [2, 3], 1.0, "parcelBoundary")
+    .addLabel("lineLabels", 4, "Label 4", { x: 55, y: -10 }, 4, "Line", LabelDTOLabelTypeEnum.lineDescription)
+    .addLine(5, [3, 4], 1.0, "parcelBoundary")
+    .addLabel("lineLabels", 5, "Label 5", { x: 56, y: -11 }, 5, "Line", LabelDTOLabelTypeEnum.lineLongDescription)
     .addPage(1)
     .addUserCoordinate({
       coordType: CoordinateDTOCoordTypeEnum.userDefined,
@@ -493,6 +497,22 @@ describe("updatePlanData", () => {
         style: "peck1",
         displayState: undefined,
       },
+      {
+        id: 4,
+        coordRefs: [2, 3],
+        lineType: "parcelBoundary",
+        pointWidth: 1,
+        style: "solid",
+        displayState: undefined,
+      },
+      {
+        id: 5,
+        coordRefs: [3, 4],
+        lineType: "parcelBoundary",
+        pointWidth: 1,
+        style: "solid",
+        displayState: undefined,
+      },
     ]);
   });
 
@@ -523,6 +543,210 @@ describe("updatePlanData", () => {
         coordRefs: [1013, 1014],
         lineType: "userDefined",
         style: "solid",
+      },
+    ]);
+  });
+
+  test("updateDiagramLabels should update lineDescription editedText to undefined", () => {
+    const labelArray = [
+      {
+        type: {
+          diagramId: "2",
+          elementType: PlanElementType.LINE_LABELS,
+        },
+        data: {
+          id: 4,
+          editedText: "Label 4",
+        },
+      },
+    ];
+
+    const result = updateDiagramLabels(diagrams, labelArray);
+    expect(result).toStrictEqual([
+      diagrams[0],
+      {
+        ...diagrams[1],
+        lineLabels: [
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 4,
+            displayText: "Label 4",
+            editedText: undefined,
+            position: {
+              x: 55,
+              y: -10,
+            },
+            labelType: "lineDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 4,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 5,
+            displayText: "Label 5",
+            position: {
+              x: 56,
+              y: -11,
+            },
+            labelType: "lineLongDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 5,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("updateDiagramLabels should update lineDescription editedText to value", () => {
+    const labelArray = [
+      {
+        type: {
+          diagramId: "2",
+          elementType: PlanElementType.LINE_LABELS,
+        },
+        data: {
+          id: 4,
+          editedText: "Label\n4",
+        },
+      },
+    ];
+
+    const result = updateDiagramLabels(diagrams, labelArray);
+    expect(result).toStrictEqual([
+      diagrams[0],
+      {
+        ...diagrams[1],
+        lineLabels: [
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 4,
+            displayText: "Label 4",
+            editedText: "Label\n4",
+            position: {
+              x: 55,
+              y: -10,
+            },
+            labelType: "lineDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 4,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 5,
+            displayText: "Label 5",
+            position: {
+              x: 56,
+              y: -11,
+            },
+            labelType: "lineLongDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 5,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+        ],
+      },
+    ]);
+  });
+
+  test("updateDiagramLabels should update lineLongDescription editedText to value", () => {
+    const labelArray = [
+      {
+        type: {
+          diagramId: "2",
+          elementType: PlanElementType.LINE_LABELS,
+        },
+        data: {
+          id: 5,
+          editedText: "Label\n5",
+        },
+      },
+    ];
+
+    const result = updateDiagramLabels(diagrams, labelArray);
+    expect(result).toStrictEqual([
+      diagrams[0],
+      {
+        ...diagrams[1],
+        lineLabels: [
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 4,
+            displayText: "Label 4",
+            position: {
+              x: 55,
+              y: -10,
+            },
+            labelType: "lineDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 4,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+          {
+            anchorAngle: 0,
+            displayState: "display",
+            effect: "none",
+            symbolType: undefined,
+            pointOffset: 0,
+            rotationAngle: 0,
+            id: 5,
+            displayText: "Label 5",
+            editedText: "Label~r5",
+            position: {
+              x: 56,
+              y: -11,
+            },
+            labelType: "lineLongDescription",
+            font: "Tahoma",
+            fontSize: 10,
+            featureId: 5,
+            featureType: "Line",
+            textAlignment: "centerCenter",
+            borderWidth: undefined,
+          },
+        ],
       },
     ]);
   });
