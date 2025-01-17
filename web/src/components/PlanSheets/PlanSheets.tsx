@@ -151,7 +151,18 @@ const PlanSheets = () => {
     transactionId,
     enabled: regenerateDoneOrNotNeeded, // Don't fetch features until the dataset is prepared
   });
-  const isPlanDataReady = usePlanAutoRecover(transactionId, planData);
+  const isAutoRecoverReady = usePlanAutoRecover(transactionId, planData);
+  const [isPlanDataReady, setIsPlanDataReady] = useState(false);
+  useEffect(() => {
+    if (
+      isAutoRecoverReady &&
+      // these queries refetch when switching between modes...
+      regenerateDoneOrNotNeeded &&
+      !isPlanDataFetching
+    ) {
+      setIsPlanDataReady(true);
+    }
+  }, [isAutoRecoverReady, regenerateDoneOrNotNeeded, isPlanDataFetching]);
 
   useEffect(() => {
     if (planDataError) {
