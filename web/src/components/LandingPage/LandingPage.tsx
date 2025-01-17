@@ -70,7 +70,10 @@ const LandingPage = () => {
             <BigButton
               icon="ic_layers"
               onClick={() => {
-                openPanel("Maintain diagram layers", () => <MaintainDiagramsPanel transactionId={transactionId} />);
+                openPanel({
+                  uniqueId: "Maintain diagram layers",
+                  componentFn: () => <MaintainDiagramsPanel transactionId={transactionId} />,
+                });
               }}
             >
               Maintain diagram layers
@@ -79,7 +82,10 @@ const LandingPage = () => {
             <BigButton
               icon="ic_label_settings"
               onClick={() => {
-                openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
+                openPanel({
+                  uniqueId: "Label preferences",
+                  componentFn: () => <LabelPreferencesPanel transactionId={transactionId} />,
+                });
               }}
             >
               Label preferences

@@ -4,8 +4,8 @@ import type {
   LabelPreferenceDTO,
   LabelPreferencesResponseDTOFontsInner,
 } from "@linz/survey-plan-generation-api-client";
+import type { UpdateLabelPreferenceRequestDTO } from "@linz/survey-plan-generation-api-client";
 import { LabelPreferencesControllerApi } from "@linz/survey-plan-generation-api-client";
-import type { UpdateLabelPreferenceRequestDTO } from "@linz/survey-plan-generation-api-client/src/models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";

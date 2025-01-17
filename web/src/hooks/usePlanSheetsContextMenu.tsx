@@ -114,9 +114,10 @@ export const usePlanSheetsContextMenu = () => {
       } else {
         throw new Error("Invalid plan mode");
       }
-      openPanel("Plan element property", () => (
-        <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} />
-      ));
+      openPanel({
+        uniqueId: "Plan element property",
+        componentFn: () => <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} />,
+      });
     }
   };
 

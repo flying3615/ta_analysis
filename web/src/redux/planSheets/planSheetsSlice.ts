@@ -5,8 +5,8 @@ import {
   PageDTO,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import { LabelDTO } from "@linz/survey-plan-generation-api-client/src/models/LabelDTO";
-import { LineDTO } from "@linz/survey-plan-generation-api-client/src/models/LineDTO";
+import { LabelDTO } from "@linz/survey-plan-generation-api-client";
+import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 

@@ -4,6 +4,7 @@ export type DefineDiagramsActionType =
   | "enlarge_diagram_polygon"
   | "reduce_diagram_rectangle"
   | "reduce_diagram_polygon"
+  | "draw_abuttal"
   | "select_line"
   | "select_rt_line"
   | "select_diagram"

@@ -7,13 +7,14 @@ import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent, waitFor, within } from "@storybook/testing-library";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { isEqual } from "lodash-es";
 import { http, HttpResponse } from "msw";
 import { Coordinate } from "ol/coordinate";
 import { Provider } from "react-redux";
 import { Route } from "react-router";
 import { generatePath } from "react-router-dom";
 
-import { drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil";
+import { doubleClickOnMap, drawOnMap } from "@/components/DefineDiagrams/__tests__/util/StoryUtil";
 import { DefineDiagrams } from "@/components/DefineDiagrams/DefineDiagrams";
 import LandingPage from "@/components/LandingPage/LandingPage";
 import { unmarkedPointBuilder } from "@/mocks/data/mockMarks";
@@ -388,7 +389,7 @@ RTLineAlreadyPresentError.play = async () => {
   ).toBeInTheDocument();
 };
 
-export const DeleteRTLines: Story = {
+export const DeleteRTAndAbuttalLines: Story = {
   ...Default,
   parameters: {
     ...Default.parameters,
@@ -397,18 +398,25 @@ export const DeleteRTLines: Story = {
   args: {
     transactionId: "124",
   },
-};
-
-DeleteRTLines.play = async () => {
-  await waitForInitialMapLoadsToComplete();
-  const selectLineButton = await screen.findByLabelText("Select line");
-  await userEvent.click(selectLineButton);
-  await sleep(100); // This sleep is needed for line selection
-  const lineCoordinates: Coordinate[] = [[19461540.31034258, -5058018.909898458]];
-  await drawOnMap(lineCoordinates);
-  const deleteSelectedButton = await screen.findByLabelText("Delete selected feature(s)");
-  await userEvent.click(deleteSelectedButton);
-  await expect(await screen.findByText("RT line removed successfully")).toBeInTheDocument();
+  play: async ({ step }) => {
+    await step("GIVEN I'm defining a diagram that contains an RT line and an abuttal line", async () => {
+      await waitForInitialMapLoadsToComplete();
+    });
+    await step("WHEN I select and delete the RT line and an abbutal line", async () => {
+      const selectLineButton = await screen.findByLabelText("Select line");
+      await userEvent.click(selectLineButton);
+      await sleep(100); // This sleep is needed for line selection
+      const lineCoordinatesForRTLine: number[] = [19461540.31034258, -5058018.909898458];
+      const lineCoordinatesForAbuttalLine: number[] = [19461513.01764351, -5057986.070653658];
+      const lineCoordinates: Coordinate[] = [lineCoordinatesForRTLine, lineCoordinatesForAbuttalLine];
+      await drawOnMap(lineCoordinates, "Control");
+      const deleteSelectedButton = await screen.findByLabelText("Delete selected feature(s)");
+      await userEvent.click(deleteSelectedButton);
+    });
+    await step("THEN the lines are removed", async () => {
+      await expect(await screen.findByText("Lines removed successfully")).toBeInTheDocument();
+    });
+  },
 };
 
 export const DefineDiagramsHeaderButtonStateIsResetOnLeavingPage: Story = {
@@ -659,4 +667,99 @@ const reducePolygon = async (coordinatesToClick: Coordinate[]) => {
   const reduceDiagramPolygonButton = await screen.findByLabelText("Reduce diagram (Polygon)");
   await userEvent.click(reduceDiagramPolygonButton);
   await drawOnMap(coordinatesToClick);
+};
+
+export const DrawAbuttalLine: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+    msw: {
+      handlers: [
+        ...handlers,
+        http.post(/\/generate-plans\/124\/lines/, async (x) => {
+          const data = await x.request.json();
+          // This condition is to check payload sent by front end on saving the abuttal line
+          // In case of payload mismatch, mock will return 500 and screenshot comparison will fail due to error message pop up
+          if (
+            !isEqual(data, {
+              coordinates: [
+                { x: 14.825238431597192, y: -41.30820674368461 },
+                { x: 14.826404767234976, y: -41.30819208065594 },
+                { x: 14.826443807758425, y: -41.308511000785025 },
+                { x: 14.825453154476186, y: -41.30856598685653 },
+              ],
+            })
+          ) {
+            return HttpResponse.json(
+              { ok: true, statusCode: null, message: null },
+              { status: 500, statusText: "NOT OK" },
+            );
+          }
+          return HttpResponse.json({ ok: true, statusCode: null, message: null }, { status: 200, statusText: "OK" });
+        }),
+      ],
+    },
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+DrawAbuttalLine.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+  const drawAbuttalLinesButton = await screen.findByLabelText("Draw abuttal line");
+  await userEvent.click(drawAbuttalLinesButton);
+  const lineCoordinates: Coordinate[] = [
+    [19461456.520018045, -5057908.929665045],
+    [19461586.355907332, -5057906.75667945],
+    [19461590.70187852, -5057954.019116136],
+    [19461480.42285959, -5057962.167812116],
+  ];
+  await drawOnMap(lineCoordinates);
+  if (lineCoordinates[3]) {
+    await doubleClickOnMap(lineCoordinates[3]);
+  }
+};
+
+export const DrawAbuttalLineErrorMessagePopUp: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+    test: {
+      dangerouslyIgnoreUnhandledErrors: true,
+    },
+    msw: {
+      handlers: [
+        ...handlers,
+        http.post(/\/generate-plans\/124\/lines/, () =>
+          HttpResponse.html("<html lang='en'><body>Unexpected exception</body></html>", {
+            status: 500,
+            statusText: "Failed",
+          }),
+        ),
+      ],
+    },
+  },
+  args: {
+    transactionId: "124",
+  },
+};
+
+DrawAbuttalLineErrorMessagePopUp.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+  const drawAbuttalLinesButton = await screen.findByLabelText("Draw abuttal line");
+  await userEvent.click(drawAbuttalLinesButton);
+  const lineCoordinates: Coordinate[] = [
+    [19461456.520018045, -5057908.929665045],
+    [19461586.355907332, -5057906.75667945],
+    [19461590.70187852, -5057954.019116136],
+    [19461480.42285959, -5057962.167812116],
+  ];
+  await drawOnMap(lineCoordinates);
+  if (lineCoordinates[3]) {
+    await doubleClickOnMap(lineCoordinates[3]);
+  }
+  await expect(await screen.findByText("Create abuttal line failed due to unknown reason")).toBeInTheDocument();
 };

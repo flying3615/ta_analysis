@@ -10,7 +10,7 @@ export interface DiagramLabelsHook {
 export const useDiagramLabelsHook = (transactionId: number): DiagramLabelsHook => {
   const queryClient = useQueryClient();
   const updateLabels = async (): Promise<void> => {
-    await new DiagramLabelsControllerApi(apiConfig() as never).updateDiagramLabels({ transactionId });
+    await new DiagramLabelsControllerApi(apiConfig()).updateDiagramLabels({ transactionId });
     await queryClient.invalidateQueries({ queryKey: getDiagramLabelsQueryKey(transactionId) });
   };
   return { updateLabels };

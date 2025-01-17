@@ -1,5 +1,5 @@
 import { DiagramsControllerApi } from "@linz/survey-plan-generation-api-client";
-import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client/src/apis/DiagramsControllerApi";
+import { InsertUserDefinedDiagramRequest } from "@linz/survey-plan-generation-api-client";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 
@@ -9,7 +9,8 @@ import { getOpenlayersDiagramsQueryKey } from "@/queries/diagrams";
 import { useDiagramLabelsHook } from "@/queries/labels";
 import { cartesianToNumeric } from "@/util/mapUtil";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil";
-import { useShowToast } from "@/util/showToast";
+
+export class InsertDiagramError extends Error {}
 
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
@@ -20,7 +21,6 @@ export const useInsertDiagramMutation = (transactionId: number) => {
     queryKey: getOpenlayersDiagramsQueryKey(transactionId),
     sortBy: sortByDiagramsByType,
   });
-  const { showErrorToast } = useShowToast();
 
   const tempDiagramIdRef = useRef(-1);
 
@@ -41,25 +41,20 @@ export const useInsertDiagramMutation = (transactionId: number) => {
       appendQueryData({ newItem: tempDiagram });
       return byId(id);
     },
-    mutationFn: (props: InsertUserDefinedDiagramRequest) => {
-      return new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
+    mutationFn: async (props: InsertUserDefinedDiagramRequest) => {
+      const response = await new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
+      if (!response.ok) {
+        throw new InsertDiagramError(response.message ?? "Unknown error");
+      }
+      if (response.diagramId == null) {
+        throw new InsertDiagramError("Unexpected null response for diagramId");
+      }
+      return response;
     },
-    onError: (error, _variables, match) => {
-      console.error(error);
+    onError: (_error, _variables, match) => {
       match && removeQueryData({ match });
     },
     onSuccess: (response, _variables, match) => {
-      if (!response.ok) {
-        showErrorToast(response.message ?? "Unknown error");
-        removeQueryData({ match });
-        return;
-      }
-      if (response.diagramId == null) {
-        showErrorToast("Unexpected null response for diagramId");
-        removeQueryData({ match });
-        return;
-      }
-
       // Success
       updateQueryData({ match, withProps: { id: response.diagramId } });
       return diagramLabels.updateLabels();

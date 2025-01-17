@@ -1,3 +1,8 @@
+import type {
+  DiagramLayerDefinitionPreferencesDTO,
+  GetDiagramNamesResponseDTO,
+  GetDiagramTypesResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import {
   DiagramLayerPreferenceDTO,
   DiagramLayerPreferencesDTO,
@@ -8,12 +13,7 @@ import {
   GetDiagramLayerPreferencesByDiagramTypeRequest,
   GetDiagramNamesRequest,
   GetDiagramTypesRequest,
-} from "@linz/survey-plan-generation-api-client/src/apis/MaintainDiagramsControllerApi";
-import type {
-  DiagramLayerDefinitionPreferencesDTO,
-  GetDiagramNamesResponseDTO,
-  GetDiagramTypesResponseDTO,
-} from "@linz/survey-plan-generation-api-client/src/models";
+} from "@linz/survey-plan-generation-api-client";
 import { useMutation, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
 
 import { apiConfig } from "@/queries/apiConfig";

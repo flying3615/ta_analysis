@@ -1,8 +1,8 @@
 import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
 import { LabelDTOLabelTypeEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
-import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client/dist/models/PlanGraphicsCompileRequest";
-import { FileUploadDetails } from "@linz/survey-plan-generation-api-client/src/models/FileUploadDetails";
+import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client";
+import { FileUploadDetails } from "@linz/survey-plan-generation-api-client";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape, { EventHandler } from "cytoscape";

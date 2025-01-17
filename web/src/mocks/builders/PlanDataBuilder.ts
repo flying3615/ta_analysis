@@ -1,3 +1,4 @@
+import type { ConfigDataDTO } from "@linz/survey-plan-generation-api-client";
 import {
   CartesianCoordsDTO,
   CoordinateDTO,
@@ -13,7 +14,6 @@ import {
   PageDTOPageTypeEnum,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import type { ConfigDataDTO } from "@linz/survey-plan-generation-api-client/src/models/ConfigDataDTO";
 import { last } from "lodash-es";
 
 import { INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";

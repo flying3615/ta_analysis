@@ -128,7 +128,7 @@ export const PlanSheetsHeaderButtons = () => {
       <HeaderButton
         headerMenuLabel={PlanMode.ViewLabels}
         iconName="ic_manage_labels"
-        onClick={() => openPanel("View labels", () => <ViewLabelTypes />)}
+        onClick={() => openPanel({ uniqueId: "View labels", componentFn: () => <ViewLabelTypes /> })}
         selectedButtonLabel={selectedButtonLabel}
       />
 

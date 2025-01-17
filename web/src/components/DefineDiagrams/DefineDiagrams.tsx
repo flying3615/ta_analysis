@@ -64,7 +64,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
   const queryClient = useQueryClient();
   const transactionId = useTransactionId();
   const navigate = useNavigate();
-  const { map, loading: mapLoading } = useContext(LolOpenLayersMapContext);
+  const { map, getFeaturesAtPixel, loading: mapLoading } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
 
   const { isSuccess: prepareDatasetIsSuccess, error: prepareDatasetError } = usePrepareDatasetQuery({ transactionId });
@@ -138,6 +138,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
         pixel: e.pixel,
         meters: e.coordinate,
         coordinate: metersToLatLongCoordinate(e.coordinate),
+        features: getFeaturesAtPixel?.(e.pixel),
       });
     };
 
@@ -145,7 +146,7 @@ export const DefineDiagramsInner = ({ mock, children }: PropsWithChildren<Define
     return () => {
       map?.un("click", logClick);
     };
-  }, [map]);
+  }, [getFeaturesAtPixel, map]);
 
   return (
     <div className="MainWindow">

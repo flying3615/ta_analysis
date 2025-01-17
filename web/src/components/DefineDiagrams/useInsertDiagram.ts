@@ -1,7 +1,7 @@
 import { PostDiagramsRequestDTODiagramTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LolOpenLayersMapContext } from "@linzjs/landonline-openlayers-map";
 import { useLuiModalPrefab } from "@linzjs/windows";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors";
@@ -10,8 +10,9 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useGetDiagramsQuery } from "@/queries/diagrams";
-import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation";
+import { InsertDiagramError, useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { useShowToast } from "@/util/showToast";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -28,7 +29,6 @@ const maxSides = 47;
 
 export const useInsertDiagram = () => {
   const transactionId = useTransactionId();
-  const [loading, setLoading] = useState(false);
 
   const { map } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
@@ -43,7 +43,8 @@ export const useInsertDiagram = () => {
     transactionId,
   });
 
-  const { mutateAsync: insertDiagram } = useInsertDiagramMutation(transactionId);
+  const { mutateAsync: insertDiagram, isPending: loading } = useInsertDiagramMutation(transactionId);
+  const { showErrorToast } = useShowToast();
 
   const enabled = activeAction in actionToDiagramTypeAndShape;
   const [diagramType, type] = actionToDiagramTypeAndShape[activeAction] ?? [];
@@ -71,14 +72,13 @@ export const useInsertDiagram = () => {
       const zoomScale = scaleDiagram?.zoomScale(latLongCartesians) ?? 1;
 
       try {
-        setLoading(true);
-
         await insertDiagram({
           transactionId,
           postDiagramsRequestDTO: { diagramType, zoomScale, coordinates: latLongCartesians },
         });
+      } catch (ex) {
+        showErrorToast((ex instanceof InsertDiagramError && ex.message) || "Unexpected error");
       } finally {
-        setLoading(false);
         drawAbort();
       }
     },

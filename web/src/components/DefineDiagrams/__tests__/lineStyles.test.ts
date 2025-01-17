@@ -7,6 +7,7 @@ import {
   lineStyle_selectable,
   lineStyles,
   lineStyles_abb,
+  lineStyles_abb_selectable,
   lineStyles_ct,
 } from "@/components/DefineDiagrams/lineStyles";
 
@@ -18,7 +19,7 @@ const abbLineFeature = new Feature<Geometry>({
   symbolType: LinesSymbolType.ABB,
 });
 
-describe("lienStyles", () => {
+describe("lineStyles", () => {
   test("default lineStyles", () => {
     expect(lineStyles(ctLineFeature)).toBe(lineStyles_ct);
     expect(lineStyles(abbLineFeature)).toBe(lineStyles_abb);
@@ -26,6 +27,6 @@ describe("lienStyles", () => {
 
   test("selectable lineStyles", () => {
     expect(ctlineSelectableStyles(ctLineFeature)).toBe(lineStyle_selectable);
-    expect(ctlineSelectableStyles(abbLineFeature)).toBe(lineStyles_abb);
+    expect(ctlineSelectableStyles(abbLineFeature)).toBe(lineStyles_abb_selectable);
   });
 });

@@ -19,6 +19,10 @@ export const lineStyles_abb = new Style({
   stroke: new Stroke({ width: 3, lineDash: [2, 7], color: MapColors.black }),
 });
 
+export const lineStyles_abb_selectable = new Style({
+  stroke: new Stroke({ width: 3, lineDash: [2, 7], color: MapColors.blue }),
+});
+
 export const lineStyle_selected = new Style({
   stroke: new Stroke({ width: 3, color: MapColors.pink }),
 });
@@ -29,4 +33,4 @@ export const lineStyles = (feature: FeatureLike): Style =>
   feature.get("symbolType") === LinesSymbolType.CT ? lineStyles_ct : lineStyles_abb;
 
 export const ctlineSelectableStyles = (feature: FeatureLike): Style =>
-  feature.get("symbolType") === LinesSymbolType.CT ? lineStyle_selectable : lineStyles_abb;
+  feature.get("symbolType") === LinesSymbolType.CT ? lineStyle_selectable : lineStyles_abb_selectable;

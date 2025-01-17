@@ -9,7 +9,6 @@ import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook";
 import { apiConfig } from "@/queries/apiConfig";
 import { getLinesQueryKey } from "@/queries/lines";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { clickedFeatureFilter } from "@/util/mapUtil";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil";
 import { useShowToast } from "@/util/showToast";
 import { s } from "@/util/stringUtil";
@@ -30,7 +29,6 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
     enabled,
     locked: loading,
     layer: Layer.SELECT_LINES,
-    filterSelect: clickedFeatureFilter("symbolType", "CPG_LINE_CT"),
   });
 
   const removeRtLines = useCallback(async () => {
@@ -43,7 +41,7 @@ export const useRemoveRtLine = ({ transactionId, enabled }: useRemoveRtLineProps
         deleteLinesRequestDTO: { lineIds },
       });
       if (!ok) return showErrorToast(message ?? "Unexpected exception removing RT lines");
-      showSuccessToast(`RT line${s(lineIds)} removed successfully`);
+      showSuccessToast(`Line${s(lineIds)} removed successfully`);
       removeQueryData({ match: byId(lineIds) });
     } finally {
       setLoading(false);

@@ -6,10 +6,10 @@ import { useContext, useEffect } from "react";
 
 import { CommonButtons } from "@/components/CommonButtons";
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
+import { useDrawAbuttal } from "@/components/DefineDiagrams/useDrawAbuttal";
 import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram";
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { VerticalSpacer } from "@/components/Header/Header";
-import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
 import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
@@ -21,6 +21,8 @@ import { useResizeDiagram } from "@/hooks/useResizeDiagram";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 const enlargeReduceDiagramActions: DefineDiagramsActionType[] = [
   "enlarge_diagram_rectangle",
@@ -46,7 +48,10 @@ export const DefineDiagramMenuButtons = () => {
     };
   }, [dispatch]);
 
+  const { result: abuttalLinesFeatureEnabled } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_ABUTTAL_LINES);
+
   const { loading: insertDiagramLoading } = useInsertDiagram();
+  const { loading: insertAbuttalLoading } = useDrawAbuttal();
 
   const {
     loading: convertRtLinesLoading,
@@ -135,15 +140,34 @@ export const DefineDiagramMenuButtons = () => {
       <ActionHeaderButton title="Zoom out" icon="ic_zoom_out" onClick={() => zoomByDelta(-1)} />
       <ActionHeaderButton title="Zoom to fit" icon="ic_zoom_centre" onClick={zoomToFit} />
       <VerticalSpacer />
-      <ActionHeaderButton title="Select RT lines" action="select_rt_line" icon="ic_select_rt_lines" />
       <ActionHeaderButton
-        disabled={!canCovertRtLine}
-        loading={convertRtLinesLoading}
+        title="Select RT lines"
+        action="select_rt_line"
+        icon="ic_select_rt_lines"
+        disabled={insertAbuttalLoading || convertRtLinesLoading}
+      />
+      <ActionHeaderButton
         title="Add RT lines"
         icon="ic_add_rt_lines"
         onClick={() => void convertRtLines()}
+        loading={convertRtLinesLoading}
+        disabled={!canCovertRtLine}
       />
-      <ActionHeaderButton title="Select line" icon="ic_select_line" action="select_line" />
+      {abuttalLinesFeatureEnabled && (
+        <ActionHeaderButton
+          title="Draw abuttal line"
+          action="draw_abuttal"
+          icon="ic_draw_abuttal"
+          loading={insertAbuttalLoading}
+          disabled={insertAbuttalLoading || convertRtLinesLoading}
+        />
+      )}
+      <ActionHeaderButton
+        title="Select line"
+        icon="ic_select_line"
+        action="select_line"
+        disabled={insertAbuttalLoading || convertRtLinesLoading}
+      />
       <VerticalSpacer />
       <ActionHeaderButton
         title={primaryDiagramDisabled ? primaryDiagramTitle : `${primaryDiagramTitle} (Rectangle)`}
@@ -249,16 +273,24 @@ export const DefineDiagramMenuButtons = () => {
         title="Maintain diagram layers"
         icon="ic_layers"
         onClick={() => {
-          openPanel("Maintain diagram layers", () => (
-            <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
-          ));
+          openPanel({
+            uniqueId: "Maintain diagram layers",
+            componentFn: () => (
+              <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
+            ),
+          });
         }}
       />
       <ActionHeaderButton
         title="Label preferences"
         icon="ic_label_settings"
         onClick={() => {
-          openPanel("Label preferences", () => <LabelPreferencesPanel transactionId={transactionId} />);
+          openPanel({
+            uniqueId: "Maintain diagram layers",
+            componentFn: () => (
+              <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
+            ),
+          });
           return false;
         }}
       />

@@ -1,5 +1,5 @@
 import { DiagramsResponseDTO, PolygonGeoJSON, PolygonGeoJSONTypeEnum } from "@linz/survey-plan-generation-api-client";
-import { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner";
+import { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client";
 import { last } from "lodash-es";
 
 import { CommonBuilder, LatLong, TEST_LOCATION_LAT_LONG } from "@/mocks/builders/CommonBuilder";

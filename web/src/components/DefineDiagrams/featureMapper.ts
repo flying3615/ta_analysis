@@ -1,4 +1,5 @@
 import { CpgDiagramType } from "@linz/luck-syscodes/build/js/CpgDiagramType";
+import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client";
 import {
   DiagramsResponseDTO,
   ExtinguishedLinesResponseDTO,
@@ -6,7 +7,7 @@ import {
   LinesResponseDTO,
   SurveyFeaturesResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import type { DiagramsResponseDTODiagramsInner } from "@linz/survey-plan-generation-api-client/src/models/DiagramsResponseDTODiagramsInner";
+import { LinesResponseDTOLinesInnerSymbolTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { IFeatureSource } from "@linzjs/landonline-openlayers-map";
 import { sortBy } from "lodash-es";
 
@@ -84,7 +85,9 @@ export const MapDiagramToOpenLayers = (diagramId: DiagramsResponseDTODiagramsInn
   },
 });
 
-export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSource[] =>
+export type IFeatureSourceLine = IFeatureSource & { symbolType: LinesResponseDTOLinesInnerSymbolTypeEnum };
+
+export const getLinesForOpenLayers = ({ lines }: LinesResponseDTO): IFeatureSourceLine[] =>
   lines.map((d) => ({
     id: d.id,
     symbolType: d.symbolType,

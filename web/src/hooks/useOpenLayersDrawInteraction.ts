@@ -108,8 +108,7 @@ export const useOpenLayersDrawInteraction = ({
 
     const latLongCartesians = geometryToLatLongCartesian(feature);
     const latLongCoordinates = geometryToLatLongCoordinates(feature);
-    const featureArea =
-      currentType === "Polygon" || currentType === "Rectangle" ? area(tpolygon([latLongCoordinates])) : 0;
+    const featureArea = ["Polygon", "Rectangle"].includes(currentType!) ? area(tpolygon([latLongCoordinates])) : 0;
 
     // Prevent further drawing during save
     allowDrawAddPoint.current = false;
@@ -195,27 +194,43 @@ export const useOpenLayersDrawInteraction = ({
      * Checks if geometry is self intersecting
      */
     const finishCondition = () => {
-      if (currentType !== "Polygon") return true;
+      let coords;
+      switch (currentType) {
+        case "Polygon": {
+          const rings = (currentFeatureRef.current?.getCoordinates() as Coordinate[][]) ?? [];
 
-      const rings = (currentFeatureRef.current?.getCoordinates() as Coordinate[][]) ?? [];
+          // Multi-polygon or no polygon then it's invalid
+          if (rings.length !== 1) return false;
 
-      // Multi-polygon or no polygon then it's invalid
-      if (rings.length !== 1) return false;
-
-      const coords = rings[0];
-      if (!coords) return false;
-
-      // Displayed polygon has duplicate points that were for display only, these need removing to test for kinks
-      for (let i = 1; i < coords.length; i++) {
-        // If previous coordinate equals current coordinate then remove it
-        if (isEqual(coords[i - 1], coords[i])) {
-          coords.splice(i, 1);
+          coords = rings[0];
+          break;
         }
+        case "LineString": {
+          coords = currentFeatureRef.current?.getCoordinates() as Coordinate[];
+          break;
+        }
+        default:
+          return true;
       }
       if (!coords) return false;
 
-      const k = kinks(geometry("Polygon", [coords]) as Polygon);
-      return isEmpty(k.features);
+      switch (currentType) {
+        case "Polygon": {
+          // Displayed polygon has duplicate points that were for display only, these need removing to test for kinks
+          for (let i = 1; i < coords.length; i++) {
+            // If previous coordinate equals current coordinate then remove it
+            if (isEqual(coords[i - 1], coords[i])) {
+              coords.splice(i, 1);
+            }
+          }
+          const k = kinks(geometry("Polygon", [coords]) as Polygon);
+          return isEmpty(k.features);
+        }
+        case "LineString": {
+          const k = kinks(geometry("LineString", coords) as LineString);
+          return isEmpty(k.features);
+        }
+      }
     };
 
     allowDrawAddPoint.current = true;
@@ -293,9 +308,5 @@ export const useOpenLayersDrawInteraction = ({
   /**
    * When unmounting remove the map interactions
    */
-  useEffect(() => {
-    return () => {
-      removeInteractions();
-    };
-  }, [removeInteractions]);
+  useEffect(() => removeInteractions, [removeInteractions]);
 };

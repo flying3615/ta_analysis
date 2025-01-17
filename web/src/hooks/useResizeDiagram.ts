@@ -6,7 +6,7 @@ import intersect from "@turf/intersect";
 import union from "@turf/union";
 import { Feature, Polygon } from "geojson";
 import { isEmpty } from "lodash-es";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import {
@@ -16,9 +16,10 @@ import {
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { DrawEndProps, DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
 import { getOpenlayersQueryDiagram } from "@/queries/diagrams";
-import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation";
+import { UpdateDiagramError, useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 import { numericToCartesian } from "@/util/mapUtil";
+import { useShowToast } from "@/util/showToast";
 
 export interface useRemoveRtLineProps {
   transactionId: number;
@@ -38,9 +39,8 @@ const actionToTypeMap: Partial<
 export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }: useRemoveRtLineProps) => {
   const queryClient = useQueryClient();
   const { showPrefabModal } = useLuiModalPrefab();
-  const { mutateAsync: updateDiagram } = useUpdateDiagramMutation(transactionId);
-
-  const [loading, setLoading] = useState(false);
+  const { mutateAsync: updateDiagram, isPending: loading } = useUpdateDiagramMutation(transactionId);
+  const { showErrorToast } = useShowToast();
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
@@ -84,7 +84,6 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
        */
       const co = combined.geometry.coordinates[0] ?? [];
       try {
-        setLoading(true);
         await updateDiagram({
           diagramType: diagram.diagramType,
           geometry: combined.geometry,
@@ -96,12 +95,22 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
             },
           },
         });
+      } catch (ex) {
+        showErrorToast((ex instanceof UpdateDiagramError && ex.message) || "Unexpected error");
       } finally {
-        setLoading(false);
         dispatch(setActiveAction("idle"));
       }
     },
-    [selectedDiagramIds, combineFn, queryClient, transactionId, showPrefabModal, dispatch, updateDiagram],
+    [
+      selectedDiagramIds,
+      combineFn,
+      queryClient,
+      transactionId,
+      showPrefabModal,
+      dispatch,
+      updateDiagram,
+      showErrorToast,
+    ],
   );
 
   useOpenLayersDrawInteraction({
