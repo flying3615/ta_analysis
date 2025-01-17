@@ -1,21 +1,30 @@
 import { radiansToDegrees } from "@turf/helpers";
 import { EdgeSingular } from "cytoscape";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { findStartEndNodesForLine } from "@/components/PlanSheets/interactions/selectUtil";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
+import { getCorrectedLabelPosition } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
+import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { getAlignedLabelNodeId, getPlanMode, setPlanMode } from "@/redux/planSheets/planSheetsSlice";
 import { clampAngleDegrees360 } from "@/util/positionUtil";
 
 export const useSelectTargetLine = () => {
   const labelNodeId = useAppSelector(getAlignedLabelNodeId);
+  const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const dispatch = useAppDispatch();
 
   const { cyto } = useCytoscapeContext();
+  const container = cyto?.container();
+  const cytoCoordMapper = useMemo(
+    () => (container ? new CytoscapeCoordinateMapper(container, activeDiagrams) : null),
+    [container, activeDiagrams],
+  );
   const planMode = useAppSelector(getPlanMode);
 
   const { updateActiveDiagramsAndPageFromCytoData } = usePlanSheetsDispatch();
@@ -47,13 +56,26 @@ export const useSelectTargetLine = () => {
 
         if (labelNodeId && cyto) {
           const labelNode = cyto.$id(labelNodeId);
-          updateActiveDiagramsAndPageFromCytoData(labelNode.data({ textRotation: clampAngleDegrees360(lineAngle) }));
+
+          const positionCoord = getCorrectedLabelPosition(cyto, cytoCoordMapper, labelNodeId, "alignToLine", {
+            rotationAngle: lineAngle,
+            id: Number(labelNodeId.replace("LAB_", "")),
+          });
+
+          // update a clone to avoid render flicker and reverse the angle within 0-360 range
+          const modifiedLabel = labelNode.clone();
+          modifiedLabel.data({ textRotation: clampAngleDegrees360(lineAngle) });
+          if (positionCoord) {
+            modifiedLabel.position(positionCoord);
+          }
+
+          updateActiveDiagramsAndPageFromCytoData(modifiedLabel);
 
           dispatch(setPlanMode(PlanMode.SelectLabel));
         }
       }
     },
-    [cyto, dispatch, labelNodeId, planMode, updateActiveDiagramsAndPageFromCytoData],
+    [cyto, cytoCoordMapper, dispatch, labelNodeId, planMode, updateActiveDiagramsAndPageFromCytoData],
   );
 
   return {

@@ -6,7 +6,14 @@ import { waitFor } from "@storybook/testing-library";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { checkCytoElementProperties, click, cytoClick, getCytoCanvas, sleep } from "@/test-utils/storybook-utils";
+import {
+  checkCytoElementProperties,
+  click,
+  cytoClick,
+  getCytoCanvas,
+  sleep,
+  TestCanvas,
+} from "@/test-utils/storybook-utils";
 
 export default {
   title: "LabelTextInput",
@@ -58,24 +65,51 @@ export const InputLabelValidation: Story = {
 export const ParcelAppellationValidation: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
-    await sleep(500);
-    const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    async function enter(text: string) {
+      await test.click(parcelAppellationLabelPosition); // click to select
+      await test.click(parcelAppellationLabelPosition); // click to edit
+      const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+      await sleep(300); // wait for validation to load
+      void fireEvent.input(addLabelTextBox, { target: { value: text } });
+    }
 
-    const parcelAppellationLabelPosition = { clientX: 494, clientY: 265 };
-    await click(target, parcelAppellationLabelPosition); // click to select
-    await click(target, parcelAppellationLabelPosition); // click to edit
-    const addLabelTextBox = canvas.getByPlaceholderText("Enter some text");
-    //new lines can replace spaces and vice versa
-    void fireEvent.input(addLabelTextBox, { target: { value: "Label\n14" } });
-    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
-    void fireEvent.input(addLabelTextBox, { target: { value: "Label 14" } });
-    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
-    //any other changes to the appellation are blocked and an info message shows
-    void fireEvent.input(addLabelTextBox, { target: { value: "Label 14X" } });
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLabel);
+
+    const canvas = within(canvasElement);
+
+    let parcelAppellationLabelPosition: [number, number] = [211, 211];
+
+    //text changes to the appellation are blocked and an info message shows
+    await enter("Label 14X");
+
     await expect(await canvas.findByText("Appellations cannot be altered")).toBeInTheDocument();
     await expect(canvas.getByPlaceholderText("Enter some text")).toHaveValue("Label 14");
+
+    await test.click([300, 300]); // Save change
+
+    //new lines can replace spaces
+    await test.clickButton(PlanMode.SelectLabel);
+    await enter("Label\n14");
+    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
+    await test.click([300, 300]); // Save change
+
+    // spaces can replace new lines, and when this happens it is kept within the boundaries
+    await test.clickButton(PlanMode.SelectLabel);
+    await test.click(parcelAppellationLabelPosition); // click to select
+    await test.leftClickAndDrag(parcelAppellationLabelPosition, (parcelAppellationLabelPosition = [960, 184]));
+
+    await enter("Label 14");
+    await expect(canvas.queryByText("Appellations cannot be altered")).not.toBeInTheDocument();
+    await test.click([300, 300]); // Save change
+    await test.waitForCytoscape();
+    await checkCytoElementProperties(
+      '[label = "Label 14"]' /* page label */,
+      {
+        position: { x: 948, y: 186 }, // will need updating when pushed back from the boundary
+      },
+      "truncated",
+    );
+    // Chromatic image shows Label 14 within the boundaries
   },
 };
 
@@ -127,6 +161,38 @@ export const AddLabel: Story = {
   },
 };
 
+export const EditPageLabelByBorder: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await sleep(500);
+    let target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+
+    const labelPosition = { clientX: 1221, clientY: 220 };
+    // click on the Add Label button and show input
+    await addLabel(canvasElement, labelPosition);
+    await click(target, { clientX: 800, clientY: 500 });
+    await sleep(500);
+    await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
+    await sleep(500);
+    target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
+    // click on a page label does show the input (final screenshot)
+    await click(target, labelPosition); // click to select
+    await click(target, labelPosition); // click to edit
+    const editLabelTextBox = canvas.getByPlaceholderText("Enter some text");
+    void fireEvent.input(editLabelTextBox, { target: { value: "Edited my page label" } });
+    await click(target, { clientX: 800, clientY: 500 }); // to save changes
+    await sleep(500); // wait for update to complete
+    await checkCytoElementProperties(
+      '[label = "Edited my page label"]' /* page label */,
+      {
+        position: { x: 918, y: 164 }, // Label pushed back from the boundary
+      },
+      "truncated",
+    );
+  },
+};
+
 export const ShowEditLabel: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
@@ -155,6 +221,13 @@ export const ShowEditLabel: Story = {
     await cytoClick(canvasElement, parcelAppellationLabelPosition); // click to select
     await cytoClick(canvasElement, parcelAppellationLabelPosition); // click to edit
     await expect(await canvas.findByTestId("LabelTextInput-textarea")).toBeInTheDocument();
+    // press Escape to cancel the edit label (does not change the mode)
+    await userEvent.keyboard("{escape}");
+    await sleep(500);
+    await waitFor(() => expect(canvas.queryByTestId("LabelTextInput-textarea")).toBeNull());
+    //eslint-disable-next-line testing-library/no-node-access
+    const selectLabelButton = (await canvas.findByTitle(PlanMode.SelectLabel)).parentElement;
+    await expect(selectLabelButton).toHaveClass("selected");
   },
 };
 

@@ -945,54 +945,6 @@ export const SelectMarkAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
   },
 };
 
-export const RotateDiagramLabel: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: [213, 213], select: "Rotate label" }, "hover");
-
-    const rangeInput = await within(canvasElement).findByRole("slider");
-    fireEvent.change(rangeInput, { target: { value: 50 } });
-    fireEvent.focusOut(rangeInput);
-  },
-};
-
-export const RotateDiagramLabelProperties: Story = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    async function isnotIs(isnot: string | number, is: string | number) {
-      fireEvent.change(angleField, { target: { value: isnot } });
-      await expect(await screen.findByText("Must be a number in D.MMSS format")).toBeVisible();
-      await waitFor(() => expect(screen.getByRole("button", { name: "OK" })).toBeDisabled());
-
-      fireEvent.change(angleField, { target: { value: is } });
-      await waitFor(() => expect(screen.queryByText("Must be a number in D.MMSS format")).not.toBeInTheDocument());
-      await waitFor(() => expect(screen.getByRole("button", { name: "OK" })).toBeEnabled());
-    }
-
-    const test = await TestCanvas.Create(canvasElement, "Select Labels");
-    await test.contextMenu({ at: [213, 213], select: "Rotate label" });
-
-    const rangeInput = await within(canvasElement).findByRole("slider");
-    fireEvent.change(rangeInput, { target: { value: 50 } });
-    fireEvent.focusOut(rangeInput);
-    await expect(await countSelected()).toBe(1);
-
-    await test.contextMenu({ at: [213, 213], select: "Properties" });
-    const angleField = test.findProperty("TextInput", "Text angle (degrees)");
-    await isnotIs(123.6, 123.4);
-    await isnotIs(123.596, 123.59);
-    await isnotIs("123.00000", "123.0000");
-    await isnotIs(123.59596, 123.5959);
-    screen.getByRole("button", { name: "OK" }).click();
-    await test.waitForCytoscape();
-    await expect(await countSelected()).toBe(1);
-    // Chromatic to check angle of text
-  },
-};
-
 export const AutoRecoverPopUpModal: Story = {
   ...Default,
   beforeEach: async () => {

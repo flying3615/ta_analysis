@@ -116,7 +116,9 @@ export const usePlanSheetsContextMenu = () => {
       }
       openPanel({
         uniqueId: "Plan element property",
-        componentFn: () => <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} />,
+        componentFn: () => (
+          <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} cy={cy} />
+        ),
       });
     }
   };

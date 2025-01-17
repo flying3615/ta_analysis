@@ -6,11 +6,13 @@ import cytoscape from "cytoscape";
 import { useCallback, useMemo, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { toDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
 import { LabelTextErrorMessage } from "@/components/LabelTextInput/LabelTextErrorMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
   cytoscapeLabelIdToPlanData,
+  getCorrectedLabelPosition,
   getTextLengthErrorMessage,
   isLineBreakRestrictedEditType,
   lineBreakRestrictedInfoMessages,
@@ -51,15 +53,18 @@ export const LabelTextInput = ({
     diagramId?: number;
   };
 }) => {
-  const { cyto } = useCytoscapeContext();
-  const container = cyto?.container();
-  const cytoCoordMapper = useMemo(() => (container ? new CytoscapeCoordinateMapper(container, []) : null), [container]);
-
   const activePage = useAppSelector(getActivePage);
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const planMode = useAppSelector(getPlanMode);
   const lastUpdatedLabelStyle = useAppSelector(getLastUpdatedLabelStyle);
   const maxElemIds = useAppSelector(getMaxElemIds);
+
+  const { cyto } = useCytoscapeContext();
+  const container = cyto?.container();
+  const cytoCoordMapper = useMemo(
+    () => (container ? new CytoscapeCoordinateMapper(container, activeDiagrams) : null),
+    [container, activeDiagrams],
+  );
 
   const [labelText, setLabelText] = useState(labelData?.label ?? "");
 
@@ -80,23 +85,42 @@ export const LabelTextInput = ({
     if (hasError || !activePage || !cytoCoordMapper) return;
 
     if (planMode === PlanMode.SelectLabel && labelData) {
+      const label = cyto?.$id(labelData.id);
       if (labelText !== labelData.label) {
         if (labelData.labelType === LabelDTOLabelTypeEnum.userAnnotation) {
+          const positionCoord = getCorrectedLabelPosition(cyto, cytoCoordMapper, labelData.id, "textInput", {
+            displayText: labelText,
+            font: toDisplayFont((label?.data("font") as string) ?? lastUpdatedLabelStyle?.font),
+            fontSize: (label?.data("fontSize") as number) ?? lastUpdatedLabelStyle?.fontSize,
+            id: Number(labelData.id.replace("LAB_", "")),
+          });
+
           // User-added labels (page labels) updated text gets stored in the display_text field
           dispatch(
             replacePage({
               updatedPage: updatePageLabels(activePage, [
-                { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText },
+                positionCoord
+                  ? { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText, position: positionCoord }
+                  : { id: cytoscapeLabelIdToPlanData(labelData.id), displayText: labelText },
               ]),
             }),
           );
         } else if (isLineBreakRestrictedEditType(labelData.labelType) && labelData.diagramId) {
+          const positionCoord = getCorrectedLabelPosition(cyto, cytoCoordMapper, labelData.id, "textInput", {
+            editedText: labelText,
+            font: toDisplayFont((label?.data("font") as string) ?? lastUpdatedLabelStyle?.font),
+            fontSize: (label?.data("fontSize") as number) ?? lastUpdatedLabelStyle?.fontSize,
+            id: Number(labelData.id.replace("LAB_", "")),
+          });
+
           // Diagram labels updated text gets stored in the edited_text field
           dispatch(
             replaceDiagrams(
               updateDiagramLabels(activeDiagrams, [
                 {
-                  data: { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText },
+                  data: positionCoord
+                    ? { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText, position: positionCoord }
+                    : { id: cytoscapeLabelIdToPlanData(labelData.id), editedText: labelText },
                   type: {
                     diagramId: labelData.diagramId.toString(),
                     elementType: labelData.elementType,
@@ -109,17 +133,26 @@ export const LabelTextInput = ({
       }
     } else if (planMode === PlanMode.AddLabel) {
       if (labelText && labelPosition) {
-        const position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
         const maxId = maxElemIds.find((elem) => elem.element === "Label")?.maxId;
         if (!maxId) throw Error("No maxId found");
         const newMaxId = maxId + 1;
+
+        const positionCoord =
+          getCorrectedLabelPosition(cyto, cytoCoordMapper, newMaxId.toString(), "textInput", {
+            displayText: labelText,
+            font: toDisplayFont(lastUpdatedLabelStyle?.font),
+            fontSize: lastUpdatedLabelStyle?.fontSize,
+            id: newMaxId,
+            position: labelPosition,
+          }) ?? cytoCoordMapper.pageLabelCytoscapeToCoord(labelPosition);
+
         dispatch(
           replacePage({
             updatedPage: addPageLabels(activePage, [
               {
                 id: newMaxId,
                 displayText: labelText,
-                position,
+                position: positionCoord,
                 font: lastUpdatedLabelStyle?.font ?? "Tahoma",
                 fontSize: lastUpdatedLabelStyle?.fontSize ?? 14,
               },
@@ -134,6 +167,7 @@ export const LabelTextInput = ({
   }, [
     activePage,
     activeDiagrams,
+    cyto,
     cytoCoordMapper,
     dispatch,
     hasError,

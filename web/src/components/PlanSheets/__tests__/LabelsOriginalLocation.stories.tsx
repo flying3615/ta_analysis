@@ -10,7 +10,12 @@ import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
 import { checkCytoElementProperties, countSelected, TestCanvas } from "@/test-utils/storybook-utils";
 
-import { diagramObsBearingLabel, diagramObsDistLabel, pageLabelWithLineBreak } from "./data/customLabels";
+import {
+  diagramObsBearingLabel,
+  diagramObsDistLabel,
+  pageLabelAtEdge,
+  pageLabelWithLineBreak,
+} from "./data/customLabels";
 
 export default {
   title: "PlanSheets",
@@ -19,7 +24,11 @@ export default {
 
 const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
 if (customMockPlanData.pages[0]) {
-  customMockPlanData.pages[0].labels = [...(customMockPlanData.pages[0].labels ?? []), pageLabelWithLineBreak];
+  customMockPlanData.pages[0].labels = [
+    ...(customMockPlanData.pages[0].labels ?? []),
+    pageLabelWithLineBreak,
+    pageLabelAtEdge,
+  ];
 }
 if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
   customMockPlanData.diagrams[0].lineLabels = [
@@ -82,6 +91,31 @@ export const RestoreObservationBearingDiagramLabelToOriginalLocation: Story = {
       position: { x: originalLocation[0], y: originalLocation[1] + 0.5 },
     });
     await expect(await countSelected()).toBe(1);
+    // Chromatic snapshot verifies the restored label after moving it around
+  },
+};
+
+export const RestorePageLabelAtEdgeToOriginalLocation: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    const originalLocation: [number, number] = [951, 230];
+    const moveToLocation: [number, number] = [663, 374];
+
+    await moveLabelToNewPositionAndChangeRotation(test, originalLocation, moveToLocation, canvasElement, 50);
+    await test.waitForCytoscape();
+    await checkCytoElementProperties('[label = "My page label at edge"]', {
+      textRotation: 40,
+      position: { x: 663, y: 374 },
+    });
+
+    // restore diagram label to original position and rotation and verify
+    await test.contextMenu({ at: moveToLocation, select: "Original location" });
+    await test.waitForCytoscape();
+    await checkCytoElementProperties('[label = "My page label at edge"]', {
+      textRotation: 0,
+      position: { x: 913, y: 230 }, // Pushed back within boundaries
+    });
     // Chromatic snapshot verifies the restored label after moving it around
   },
 };

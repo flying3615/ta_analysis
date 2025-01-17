@@ -1,15 +1,13 @@
-import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { fireEvent, screen, userEvent, within } from "@storybook/test";
-import { http, HttpResponse } from "msw";
 
+import { CustomLabels } from "@/components/PlanSheets/__tests__/PageLabel.stories";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { mockPlanData } from "@/mocks/data/mockPlanData";
-import { handlers } from "@/mocks/mockHandlers";
 import {
+  checkCytoElementProperties,
   click,
   clickAtPosition,
   clickMultipleCoordinates,
@@ -18,16 +16,8 @@ import {
   RIGHT_MOUSE_BUTTON,
   sleep,
   TestCanvas,
+  toXY,
 } from "@/test-utils/storybook-utils";
-
-import {
-  diagramLabelObsBearingHide,
-  diagramLabelObsBearingSuppressSeconds,
-  diagramLabelParcelAppellation,
-  diagramLabelSystemDisplay,
-  pageLabelWithBorder,
-  pageLabelWithLineBreak,
-} from "./data/LabelsData";
 
 export default {
   title: "PlanSheets/Properties/LabelPropertiesPanel",
@@ -167,6 +157,32 @@ export const UpdateDiagramLabelProperties: Story = {
   },
 };
 
+export const UpdateLabelPropertiesAtEdge: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    let labelPosition: [number, number] = [588, 109];
+    await test.leftClick(labelPosition);
+    await test.contextMenu({ at: labelPosition, select: "Properties" });
+    await userEvent.selectOptions(test.findProperty("Select", "Size(pts)"), "8");
+    await test.clickButton("OK");
+    await test.leftClick(labelPosition);
+    await test.leftClickAndDrag(labelPosition, (labelPosition = [936, 109]));
+
+    await test.leftClick(labelPosition);
+    await test.contextMenu({ at: labelPosition, select: "Properties" });
+    await userEvent.selectOptions(test.findProperty("Select", "Size(pts)"), "14");
+    await test.clickButton("OK");
+    await checkCytoElementProperties(
+      "#LAB_23" /* page label */,
+      {
+        position: { x: 934, y: 110 }, // will need updating when pushed back from the boundary
+      },
+      "truncated",
+    );
+  },
+};
+
 export const UpdateLabelPropertiesCancelFlow: Story = {
   ...Default,
   play: async ({ canvasElement }) => {
@@ -252,41 +268,6 @@ export const UpdateMultiplePageAndDiagramLabelPropertiesAndUndo: Story = {
   },
 };
 
-const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
-if (customMockPlanData.pages[0]) {
-  customMockPlanData.pages[0].labels = [
-    ...(customMockPlanData.pages[0].labels ?? []),
-    pageLabelWithLineBreak,
-    pageLabelWithBorder,
-  ];
-}
-if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
-  customMockPlanData.diagrams[0].lineLabels = [
-    ...customMockPlanData.diagrams[0].lineLabels,
-    diagramLabelParcelAppellation,
-    diagramLabelObsBearingHide,
-    diagramLabelObsBearingSuppressSeconds,
-    diagramLabelSystemDisplay,
-  ];
-}
-
-export const CustomLabels: Story = {
-  ...Default,
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(/\/123\/plan$/, () =>
-          HttpResponse.json(customMockPlanData, {
-            status: 200,
-            statusText: "OK",
-          }),
-        ),
-        ...handlers,
-      ],
-    },
-  },
-};
-
 export const HidePageAndDiagramLabelsBothInDisplayState: Story = {
   ...CustomLabels,
   play: async ({ canvasElement }) => {
@@ -327,10 +308,7 @@ export const ShowPageLabelInHideStateAndDiagramLabelInDisplayState: Story = {
     await userEvent.click(await canvas.findByTitle(PlanMode.SelectLabel));
     await sleep(500);
     const target = getCytoCanvas(await canvas.findByTestId("MainCytoscapeCanvas"));
-    clickMultipleCoordinates(target, [
-      { x: diagramLabelPosition.clientX, y: diagramLabelPosition.clientY },
-      { x: hiddenPageLabelPosition.clientX, y: hiddenPageLabelPosition.clientY },
-    ]);
+    clickMultipleCoordinates(target, [toXY(diagramLabelPosition), toXY(hiddenPageLabelPosition)]);
     clickAtPosition(target, hiddenPageLabelPosition, RIGHT_MOUSE_BUTTON);
     const contextMenu = await canvas.findByTestId("cytoscapeContextMenu");
     const showButton = await within(contextMenu).findByText("Show");
@@ -389,6 +367,22 @@ export const EditPageLabelAndThenShowUnsavedDataPopup: Story = {
     await userEvent.click(await canvas.findByText("Define Diagrams"));
     await sleep(500);
     await expect(await screen.findByText(/You have unsaved changes/)).toBeInTheDocument();
+  },
+};
+
+export const RotateMultipleLabelsNearEdge: Story = {
+  ...CustomLabels,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await test.click([356, 73]); // 23°12'00, #LAB_21
+    await test.leftClickAndDrag([356, 73], [356, 30]); // drag to top
+    await test.multiSelect([[444, 686]]); // Page label outside layout, #LAB_512
+    await test.contextMenu({ at: [356, 30], select: "Properties" });
+    void fireEvent.change(test.findProperty("TextInput", "Text angle (degrees)"), { target: { value: 0 } });
+    await test.clickButton("OK");
+    // Confirm the labels are pushed back within the layout boundaries
+    await checkCytoElementProperties("#LAB_21", { position: { x: 356.4, y: 52.6 } });
+    await checkCytoElementProperties("#LAB_519", { position: { x: 469.7, y: 575.4 } });
   },
 };
 

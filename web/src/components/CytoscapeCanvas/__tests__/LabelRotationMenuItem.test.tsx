@@ -26,6 +26,7 @@ describe("LabelRotationMenuItem", () => {
     targetLabel = {
       data: jest.fn().mockReturnValue({ elementType: "mockElementType", id: "mockId" }),
       style: styleMock,
+      cy: jest.fn(),
     } as unknown as NodeSingular;
   });
 

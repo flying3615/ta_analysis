@@ -1,6 +1,10 @@
-import { LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import { CartesianCoordsDTO, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 
-import { LabelPropertiesData, PanelValuesToUpdate } from "../LabelProperties";
+import { diagrams } from "@/components/CytoscapeCanvas/__tests__/mockDiagramData";
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
+
+import { LabelPropertiesData, LabelPropsToUpdate, PanelValuesToUpdate } from "../LabelProperties";
 import {
   allHave00,
   anyHasDisplayState,
@@ -8,6 +12,7 @@ import {
   cleanTextAlignment,
   createLabelPropsToBeSaved,
   getCommonPropertyValue,
+  getCorrectedLabelPosition,
   getTextAlignmentValues,
   someButNotAllHavePropertyValue,
 } from "../LabelPropertiesUtils";
@@ -314,5 +319,173 @@ describe("createLabelPropsToBeSaved", () => {
     expect(result).toEqual({
       id: 1,
     });
+  });
+});
+
+describe("getCorrectedLabelPosition", () => {
+  let cytoCoordMapper: CytoscapeCoordinateMapper;
+
+  const labelData = {
+    id: "LAB_23",
+    label: "Another\npage\n label",
+    "font-family": "Roboto, sans-serif",
+    "font-size": 14,
+    font: "Tahoma",
+    elementType: "labels",
+    labelType: "userAnnotation",
+    fontSize: 14,
+    fontStyle: "italic",
+    fontColor: "#000",
+    zIndex: 200,
+    textBorderOpacity: 0,
+    textBorderWidth: 0,
+    textBackgroundPadding: 1,
+    textOutlineOpacity: 0,
+    textRotation: 0,
+    anchorAngle: 0,
+    pointOffset: 0,
+    textAlignment: "centerCenter",
+    displayState: "display",
+    offsetX: 0,
+    offsetY: 0,
+    displayText: "",
+    editedText: "",
+  };
+
+  let tempLabelData: typeof labelData;
+
+  beforeEach(() => {
+    cytoCoordMapper = new CytoscapeCoordinateMapper({ clientWidth: 1640, clientHeight: 863 } as HTMLElement, diagrams);
+
+    tempLabelData = {
+      ...labelData,
+      id: "temp_LAB_23",
+    };
+
+    cytoscapeUtils.getDiagramAreasLimits = jest.fn().mockReturnValue({
+      diagramOuterLimitsPx: {
+        x1: 34.09090909090909,
+        x2: 1180.4545454545455,
+        y1: 34.09090909090909,
+        y2: 760.1212121212121,
+      },
+    });
+  });
+
+  const mockCyto = (labelPosition: CartesianCoordsDTO, attributeChanges: Partial<typeof labelData>) => {
+    tempLabelData = {
+      ...tempLabelData,
+      ...attributeChanges,
+      label: attributeChanges.displayText ?? attributeChanges.editedText ?? labelData.label,
+    };
+    return {
+      $id(id: string) {
+        if (id === "LAB_23") {
+          return {
+            data: jest.fn((attr?: string) => {
+              if (attr) {
+                return labelData[attr as keyof typeof labelData];
+              }
+              return labelData;
+            }),
+            position: jest.fn().mockReturnValue(labelPosition),
+          };
+        } else if (id === "temp_LAB_23") {
+          return {
+            data: jest.fn((attr?: string) => {
+              if (attr) {
+                return tempLabelData[attr as keyof typeof labelData];
+              }
+              return tempLabelData;
+            }),
+            position: jest.fn().mockReturnValue(labelPosition),
+          };
+        } else {
+          return null;
+        }
+      },
+      add: jest.fn(),
+      remove: jest.fn(),
+    } as unknown as cytoscape.Core;
+  };
+
+  it("should return undefined if the label with new edited label text and font size does not fall outside the page area", () => {
+    const cyto = mockCyto({ x: 200, y: 365 }, { fontSize: 16, displayText: "Another page label" });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it("should return a corrected position when the label with new attributes falls outside of page area - right bound", () => {
+    const cyto = mockCyto({ x: 1157, y: 352 }, { fontSize: 16, displayText: "Another page label" });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeDefined();
+    expect(result?.x).toBeCloseTo(0.3651, 3);
+    expect(result?.y).toBeCloseTo(-0.1231, 3);
+  });
+
+  it("should return a corrected position when the label with new attributes falls outside of page area - left bound", () => {
+    const cyto = mockCyto({ x: 50, y: 352 }, { fontSize: 16, displayText: "Another page label" });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeDefined();
+    expect(result?.x).toBeCloseTo(0.0548, 3);
+    expect(result?.y).toBeCloseTo(-0.1231, 3);
+  });
+
+  it("should return undefined when the label with new rotation does not fall outside page area", () => {
+    const cyto = mockCyto({ x: 994, y: 60 }, { displayText: "Another page label", textRotation: 10 });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it("should return corrected position when the label with new rotation falls outside page area - top bound", () => {
+    const cyto = mockCyto({ x: 994, y: 60 }, { displayText: "Another page label", textRotation: 90 });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeDefined();
+    expect(result?.x).toBeCloseTo(0.3415, 3);
+    expect(result?.y).toBeCloseTo(-0.05, 3);
+  });
+
+  it("should return corrected position when the label with new rotation falls outside page area - bottom bound", () => {
+    const cyto = mockCyto({ x: 267, y: 750 }, { displayText: "Another page label", textRotation: 90 });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "propertiesEdit",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeDefined();
+    expect(result?.x).toBeCloseTo(0.0942, 3);
+    expect(result?.y).toBeCloseTo(-0.2269, 3);
   });
 });

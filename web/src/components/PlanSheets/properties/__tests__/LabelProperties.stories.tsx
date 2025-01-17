@@ -33,7 +33,7 @@ const PanelTemplate = ({ data }: { data: LabelPropertiesData[] }) => {
           >
             <PanelHeader icon="ic_format_lines_text" disablePopout={true} />
             <PanelContent>
-              <LabelProperties data={data} setSaveEnabled={() => {}} setSaveFunction={() => {}} />
+              <LabelProperties data={data} setSaveEnabled={() => {}} setSaveFunction={() => {}} cyto={window.cyRef} />
               <div className="footer">
                 <LuiButton onClick={() => {}} size="lg" level="tertiary">
                   Cancel

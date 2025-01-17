@@ -3,6 +3,7 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { degreesToRadians, point, polygon } from "@turf/helpers";
 import { EdgeSingular, NodeSingular } from "cytoscape";
 import { isNil, last, round } from "lodash-es";
+import { useCallback } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { IGraphDataProperties, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
@@ -16,6 +17,7 @@ import {
 } from "@/components/PlanSheets/properties/LabelProperties";
 import {
   cytoscapeLabelIdToPlanData,
+  getCorrectedLabelPosition,
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
@@ -133,55 +135,78 @@ export const useLabelsFunctions = () => {
     return newObj;
   };
 
-  const updateLabels = (
-    labelsPropsToUpdate: LabelPropsToUpdate[],
-    selectedLabelsData: INodeDataProperties[] | LabelPropertiesData[],
-  ) => {
-    // Update diagram labels
-    const diagramLabelsToUpdate = labelsPropsToUpdate
-      .filter((label) =>
+  const updateLabels = useCallback(
+    (labelsPropsToUpdate: LabelPropsToUpdate[], selectedLabelsData: INodeDataProperties[] | LabelPropertiesData[]) => {
+      // Update diagram labels
+      const diagramLabelsToUpdate = labelsPropsToUpdate
+        .filter((label) =>
+          selectedLabelsData.some(
+            (selectedLabel) =>
+              selectedLabel.id === planDataLabelIdToCytoscape(label.id) && !isNil(selectedLabel.diagramId),
+          ),
+        )
+        .map((label) => {
+          const selectedLabel = selectedLabelsData.find(
+            (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id),
+          );
+          return {
+            data: label,
+            type: {
+              elementType: selectedLabel?.elementType,
+              diagramId: selectedLabel?.diagramId?.toString(),
+            },
+          };
+        });
+      diagramLabelsToUpdate.length > 0 &&
+        dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdate)));
+
+      // Update page labels (do not applyOnDataChanging if it was already done in replaceDiagrams, so the undo works correctly)
+      if (!activePage) return;
+      const applyOnDataChangingToPageLabels = diagramLabelsToUpdate.length === 0;
+      const pageLabelsToUpdate = labelsPropsToUpdate.filter((label) =>
         selectedLabelsData.some(
           (selectedLabel) =>
-            selectedLabel.id === planDataLabelIdToCytoscape(label.id) && !isNil(selectedLabel.diagramId),
+            selectedLabel.id === planDataLabelIdToCytoscape(label.id) && isNil(selectedLabel.diagramId),
         ),
-      )
-      .map((label) => {
-        const selectedLabel = selectedLabelsData.find(
-          (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id),
-        );
-        return {
-          data: label,
-          type: {
-            elementType: selectedLabel?.elementType,
-            diagramId: selectedLabel?.diagramId?.toString(),
-          },
-        };
-      });
-    diagramLabelsToUpdate.length > 0 &&
-      dispatch(replaceDiagrams(updateDiagramLabels(activeDiagrams, diagramLabelsToUpdate)));
-
-    // Update page labels (do not applyOnDataChanging if it was already done in replaceDiagrams, so the undo works correctly)
-    if (!activePage) return;
-    const applyOnDataChangingToPageLabels = diagramLabelsToUpdate.length === 0;
-    const pageLabelsToUpdate = labelsPropsToUpdate.filter((label) =>
-      selectedLabelsData.some(
-        (selectedLabel) => selectedLabel.id === planDataLabelIdToCytoscape(label.id) && isNil(selectedLabel.diagramId),
-      ),
-    );
-    pageLabelsToUpdate.length > 0 &&
-      dispatch(
-        replacePage({
-          updatedPage: updatePageLabels(activePage, pageLabelsToUpdate),
-          applyOnDataChanging: applyOnDataChangingToPageLabels,
-        }),
       );
-  };
+      pageLabelsToUpdate.length > 0 &&
+        dispatch(
+          replacePage({
+            updatedPage: updatePageLabels(activePage, pageLabelsToUpdate),
+            applyOnDataChanging: applyOnDataChangingToPageLabels,
+          }),
+        );
+    },
+    [dispatch, activeDiagrams, activePage],
+  );
 
   const setOriginalLocation = (selectedLabels: cytoscape.NodeCollection) => {
     const selectedLabelsData = selectedLabels.map((label) => label.data() as INodeDataProperties);
     const labelsOriginalLocation: LabelPropsToUpdate[] = selectedLabelsData
       .map((label) => getLabelOriginalLocation(label))
       .filter((elem) => !isNil(elem));
+
+    const cyto = selectedLabels[0]?.cy();
+    const container = cyto?.container();
+    const cytoCoordMapper = container ? new CytoscapeCoordinateMapper(container, activeDiagrams) : null;
+    if (!cytoCoordMapper) return;
+
+    // for each selected label, evaluate if its position should be forced to fit within the page area
+    selectedLabelsData.forEach((label) => {
+      if (!label.id) return;
+
+      const positionCoord = getCorrectedLabelPosition(
+        cyto,
+        cytoCoordMapper,
+        label.id,
+        "originalLocation",
+        JSON.parse(
+          JSON.stringify(labelsOriginalLocation.find((l) => l.id === cytoscapeLabelIdToPlanData(label.id)) ?? {}),
+        ) as LabelPropsToUpdate,
+      );
+      if (!positionCoord) return;
+      labelsOriginalLocation.find((l) => l.id === cytoscapeLabelIdToPlanData(label.id))!.position = positionCoord;
+    });
 
     updateLabels(labelsOriginalLocation, selectedLabelsData);
   };

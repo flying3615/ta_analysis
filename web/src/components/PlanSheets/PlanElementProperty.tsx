@@ -12,6 +12,7 @@ export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
 
 interface PlanElementPropertyProps {
   property: PlanPropertyPayload;
+  cy: cytoscape.Core;
   keepElementSelected: (callback: () => void) => void;
 }
 
@@ -27,7 +28,7 @@ interface PlanLineProperty {
   position: { x: number; y: number };
 }
 
-const PlanElementProperty = ({ property, keepElementSelected }: PlanElementPropertyProps) => {
+const PlanElementProperty = ({ property, keepElementSelected, cy }: PlanElementPropertyProps) => {
   const [saveFunction, setSaveFunction] = useState<() => void>();
   const [isSaveEnabled, setSaveEnabled] = useState<boolean>(false);
 
@@ -35,7 +36,9 @@ const PlanElementProperty = ({ property, keepElementSelected }: PlanElementPrope
     switch (mode) {
       case PlanMode.SelectLabel:
         return {
-          component: <LabelProperties data={data} setSaveFunction={setSaveFunction} setSaveEnabled={setSaveEnabled} />,
+          component: (
+            <LabelProperties data={data} setSaveFunction={setSaveFunction} setSaveEnabled={setSaveEnabled} cyto={cy} />
+          ),
           headerContent: {
             icon: "ic_format_lines_text",
             title: "Label properties",

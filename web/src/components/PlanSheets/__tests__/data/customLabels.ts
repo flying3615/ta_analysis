@@ -19,6 +19,25 @@ export const pageLabelWithLineBreak: LabelDTO = {
   effect: "none",
 };
 
+export const pageLabelAtEdge: LabelDTO = {
+  id: 521,
+  labelType: LabelDTOLabelTypeEnum.userAnnotation,
+  displayText: "My page label at edge",
+  font: "Times New Roman",
+  fontSize: 16,
+  fontStyle: "boldItalic",
+  position: {
+    x: 0.4,
+    y: -0.1,
+  },
+  rotationAngle: 0,
+  pointOffset: 0,
+  anchorAngle: 0,
+  textAlignment: "centerCenter, textRight",
+  displayState: "display",
+  effect: "none",
+};
+
 export const diagramLabelParcelAppellation: LabelDTO = {
   anchorAngle: 23,
   displayState: "hide",
@@ -97,4 +116,24 @@ export const diagramLabelObsBearingHide: LabelDTO = {
   featureId: 1006,
   featureType: "Line",
   effect: "none",
+};
+
+export const pageLabelWithBorderOutsideLayout: LabelDTO = {
+  id: 519,
+  labelType: LabelDTOLabelTypeEnum.userAnnotation,
+  displayText: "Page label outside layout",
+  font: "Tahoma",
+  fontSize: 12,
+  fontStyle: "italic",
+  position: {
+    x: 0.2,
+    y: -0.3,
+  },
+  rotationAngle: 341.9,
+  pointOffset: 18.5,
+  anchorAngle: 95.4,
+  textAlignment: "centerCenter",
+  displayState: "hide",
+  effect: "none",
+  borderWidth: 1.4,
 };

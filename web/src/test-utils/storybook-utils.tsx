@@ -4,8 +4,7 @@ import { PanelInstanceContext, PanelsContextProvider } from "@linzjs/windows";
 import { PanelInstanceContextType } from "@linzjs/windows/dist/panel/PanelInstanceContext";
 import { expect } from "@storybook/jest";
 import { StoryFn } from "@storybook/react";
-import { screen } from "@storybook/testing-library";
-import { fireEvent, userEvent, waitFor, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitFor, within } from "@storybook/testing-library";
 import { GetByRole } from "@testing-library/react";
 import { UserEvent } from "@testing-library/user-event";
 import cytoscape from "cytoscape";
@@ -224,13 +223,23 @@ export function toClientXY(position: [number, number]): { clientX: number; clien
   return { clientX: x, clientY: y };
 }
 
-export function toXY(position: [number, number]): { x: number; y: number } {
-  const [x, y] = position;
-  return { x: x, y: y };
+export function toXY(position: [number, number] | { clientX: number; clientY: number }): { x: number; y: number } {
+  if ("clientX" in position && "clientY" in position) {
+    return { x: position.clientX, y: position.clientY };
+  } else {
+    const [x, y] = position;
+    return { x: x, y: y };
+  }
 }
 
-export function toCoords(position: { clientX: number; clientY: number }): [number, number] {
-  return [position.clientX, position.clientY];
+export function toCoords(position: { clientX: number; clientY: number } | { x: number; y: number }): [number, number] {
+  if ("clientX" in position && "clientY" in position) {
+    return [position.clientX, position.clientY];
+  } else if ("x" in position && "y" in position) {
+    return [position.x, position.y];
+  } else {
+    throw new Error("Invalid position object");
+  }
 }
 
 export class TestCanvas {
@@ -560,8 +569,12 @@ export const getCytoElement = (selector: string) => {
   const element = window.cyRef.$(selector);
   if (element.length === 1) {
     return element[0];
+  } else if (element.length === 0) {
+    console.log(`Element with ID ${selector} not found.`);
+    return undefined;
   } else {
-    console.log(`Element with ID ${selector} not found or too many elements found.`);
+    console.log(`Element with ID ${selector} found too many elements.`);
+    console.log(element);
     return undefined;
   }
 };
@@ -578,6 +591,7 @@ export const checkCytoElementProperties = async (
     className?: string;
     position?: cytoscape.Position;
   },
+  positionLogic: "close" | "truncated" = "close",
 ) => {
   return waitFor(
     async () => {
@@ -618,8 +632,25 @@ export const checkCytoElementProperties = async (
 
         if (expectedProperties.position !== undefined) {
           const position = element.position();
-          await expect(position.x).toBeCloseTo(expectedProperties.position.x, 0);
-          await expect(position.y).toBeCloseTo(expectedProperties.position.y, 0);
+
+          async function truncatedCompare(actual: number, expected: number) {
+            const digitsToCompare = expected % 1 === 0 ? 0 : ((expected + "").split(".")[1]?.length as number);
+            const truncActual = Math.trunc(actual * Math.pow(10, digitsToCompare)) / Math.pow(10, digitsToCompare);
+            await expect(truncActual).toBe(expected);
+          }
+
+          if (positionLogic === "truncated")
+            await Promise.all([
+              truncatedCompare(position.x, expectedProperties.position.x),
+              truncatedCompare(position.y, expectedProperties.position.y),
+            ]);
+          else
+            await Promise.all([
+              expect(position.x).toBeGreaterThanOrEqual(expectedProperties.position.x - 2),
+              expect(position.x).toBeLessThanOrEqual(expectedProperties.position.x + 2),
+              expect(position.y).toBeGreaterThanOrEqual(expectedProperties.position.y - 2),
+              expect(position.y).toBeLessThanOrEqual(expectedProperties.position.y + 2),
+            ]);
         }
         console.log("Element all good");
       } else {

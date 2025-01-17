@@ -6,6 +6,7 @@ import { isEmpty, isNil } from "lodash-es";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { LabelTextErrorMessage } from "@/components/LabelTextInput/LabelTextErrorMessage";
 import { LabelTextInfoMessage } from "@/components/LabelTextInput/LabelTextInfoMessage";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -29,6 +30,7 @@ import {
   fontOptions,
   fontSizeOptions,
   getCommonPropertyValue,
+  getCorrectedLabelPosition,
   getTextAlignmentValues,
   getTextLengthErrorMessage,
   isEditableLabelTextType,
@@ -44,6 +46,7 @@ interface LabelPropertiesProps {
   data: LabelPropertiesData[];
   setSaveFunction: React.Dispatch<React.SetStateAction<(() => void) | undefined>>;
   setSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  cyto: cytoscape.Core;
 }
 
 export interface LabelPropertiesData {
@@ -85,6 +88,12 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const { updateLabels } = useLabelsFunctions();
   const dispatch = useDispatch();
+
+  const container = props.cyto?.container();
+  const cytoCoordMapper = useMemo(
+    () => (container ? new CytoscapeCoordinateMapper(container, activeDiagrams) : null),
+    [container, activeDiagrams],
+  );
 
   const selectedLabels = useMemo(() => {
     // load the selected labels from redux store
@@ -131,7 +140,7 @@ const LabelProperties = (props: LabelPropertiesProps) => {
   const save = useCallback(() => {
     if (!activePage || !panelValuesToUpdate) return;
 
-    const labelsToUpdate: LabelPropsToUpdate[] = selectedLabels.map((label) =>
+    const labelsPropsToUpdate: LabelPropsToUpdate[] = selectedLabels.map((label) =>
       createLabelPropsToBeSaved(panelValuesToUpdate, label),
     );
 
@@ -144,8 +153,22 @@ const LabelProperties = (props: LabelPropertiesProps) => {
       );
     }
 
-    updateLabels(labelsToUpdate, selectedLabels);
-  }, [panelValuesToUpdate, activePage, selectedLabels, updateLabels, dispatch]);
+    // for each selected label, evaluate if its position should be forced to fit within the page area
+    selectedLabels.forEach((label) => {
+      const positionCoord = getCorrectedLabelPosition(
+        props.cyto,
+        cytoCoordMapper,
+        label.id,
+        "propertiesEdit",
+        labelsPropsToUpdate.find((l) => l.id === cytoscapeLabelIdToPlanData(label.id)),
+      );
+
+      if (!positionCoord) return;
+      labelsPropsToUpdate.find((l) => l.id === cytoscapeLabelIdToPlanData(label.id))!.position = positionCoord;
+    });
+
+    updateLabels(labelsPropsToUpdate, selectedLabels);
+  }, [panelValuesToUpdate, activePage, selectedLabels, updateLabels, dispatch, props.cyto, cytoCoordMapper]);
 
   /** Normalize the angle to be within 0-180 in DMS */
   const normalizeLabelAngle = (angle: string | undefined): string => {

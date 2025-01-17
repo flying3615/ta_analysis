@@ -42,9 +42,17 @@ const mockReduxStore = setupStore({
 });
 
 const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
-  renderWithReduxProvider(<LabelProperties data={props} setSaveEnabled={jest.fn()} setSaveFunction={jest.fn()} />, {
-    store: reduxStore,
-  });
+  renderWithReduxProvider(
+    <LabelProperties
+      data={props}
+      setSaveEnabled={jest.fn()}
+      setSaveFunction={jest.fn()}
+      cyto={{ container: jest.fn() } as unknown as cytoscape.Core}
+    />,
+    {
+      store: reduxStore,
+    },
+  );
 
 const expectElementToBeEnabled = (element: HTMLElement, enabled: boolean) => {
   void (enabled ? expect(element).toBeEnabled() : expect(element).not.toBeEnabled());

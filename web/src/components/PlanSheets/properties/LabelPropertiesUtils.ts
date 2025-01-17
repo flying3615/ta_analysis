@@ -1,7 +1,14 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { SelectOptions } from "@linzjs/lui/dist/components/LuiFormElements/LuiSelectInput/LuiSelectInput";
-import { NodeSingular } from "cytoscape";
-import { uniq } from "lodash-es";
+import { degreesToRadians } from "@turf/helpers";
+import { ElementGroup, NodeSingular } from "cytoscape";
+import { isNil, uniq } from "lodash-es";
+
+import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { GroundMetresPosition, INodeDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
+import { toDisplayFont } from "@/components/CytoscapeCanvas/fontDisplayFunctions";
+import { textDimensions } from "@/components/CytoscapeCanvas/styleNodeMethods";
+import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 import { LabelPropertiesData, LabelPropsToUpdate, PanelValuesToUpdate } from "./LabelProperties";
 
@@ -261,6 +268,173 @@ export const createLineBreakRestrictedEditRegex = (labelText?: string): string =
 
   const parts = labelText.split(/[\r\n ]/).map(escapeRegexReservedCharacters);
   return `^${parts.join("([\\r\\n ]*)")}$`;
+};
+
+/**
+ * Add a temporary label to the cytoscape canvas so it can be used
+ * to evaluate if it should be forced to fit within the page area
+ */
+const generateTempLabel = (
+  cyto: cytoscape.Core | undefined,
+  labelId: string,
+  labelPropsToUpdate: LabelPropsToUpdate | undefined,
+) => {
+  if (!cyto) throw new Error("Cytoscape is not initialized");
+  if (!labelPropsToUpdate) return;
+
+  let initialLabelPosition = labelPropsToUpdate.position;
+  const label = cyto?.$id(labelId); // the original label that is being edited
+  if (label && label.length > 0 && initialLabelPosition === undefined) {
+    initialLabelPosition = label.position();
+  }
+  if (!initialLabelPosition) return;
+
+  const node = {
+    group: "nodes" as ElementGroup,
+    data: {
+      ...(label.data() as INodeDataProperties),
+      ...labelPropsToUpdate,
+      id: `temp_${labelId}`,
+      label: labelPropsToUpdate.displayText ?? labelPropsToUpdate.editedText ?? (label.data("label") as string),
+      // if textRotation is being edited, need to make it anti-clockwise between 0-360
+      textRotation:
+        labelPropsToUpdate.rotationAngle !== undefined
+          ? (360 - labelPropsToUpdate.rotationAngle) % 360
+          : (label.data("textRotation") as string),
+      font: toDisplayFont(labelPropsToUpdate.font ?? (label?.data("font") as string) ?? "Tahoma"),
+      fontSize: labelPropsToUpdate.fontSize ?? (label?.data("fontSize") as string) ?? 14,
+    },
+    position: initialLabelPosition,
+  };
+  cyto?.add(node);
+};
+
+export type LabelOperation = "textInput" | "propertiesEdit" | "rotationSlide" | "originalLocation" | "alignToLine";
+/**
+ * Get the corrected position for a created/edited label if it falls outside the page area
+ */
+export const getCorrectedLabelPosition = (
+  cyto: cytoscape.Core | undefined,
+  cytoCoordMapper: CytoscapeCoordinateMapper | null,
+  labelId: string,
+  operation: LabelOperation,
+  labelPropsToUpdate: LabelPropsToUpdate | undefined,
+): GroundMetresPosition | cytoscape.Position | undefined => {
+  if (!cyto || !cytoCoordMapper) throw new Error("Cytoscape or CytoscapeCoordinateMapper is not initialized");
+
+  // if the label is being edited, there will be an original label in cytoscape canvas
+  const label = cyto?.$id(labelId);
+
+  // if the operation is originalLocation, the label position in labelPropsToUpdate is in ground coordinates
+  // and needs to be converted to cytoscape position
+  if (operation === "originalLocation" && labelPropsToUpdate) {
+    if (isNil(labelPropsToUpdate.position)) {
+      labelPropsToUpdate.position = {
+        x: label?.position().x - (label?.data("offsetX") ?? 0),
+        y: label?.position().y - (label?.data("offsetY") ?? 0),
+      };
+    } else {
+      // convert the position in labelPropsToUpdate from ground coordinates to cytoscape position
+      if (label) {
+        // if there is a label in the cytoscape canvas, it is an existing label which is being edited
+        const diagramId = label.data("diagramId") as number;
+        labelPropsToUpdate.position = diagramId
+          ? cytoCoordMapper.groundCoordToCytoscape(labelPropsToUpdate.position, diagramId)
+          : cytoCoordMapper.pageLabelCoordToCytoscape(labelPropsToUpdate.position);
+      } else {
+        // if there is no original label in the cytoscape canvas, it is a new user-added label
+        labelPropsToUpdate.position = cytoCoordMapper.pageLabelCytoscapeToCoord(labelPropsToUpdate.position);
+      }
+    }
+  }
+
+  // add a temporary label (based on the created/edited label) to the canvas
+  generateTempLabel(cyto, labelId, labelPropsToUpdate);
+  // get temp label (with edited values) that will be used to evaluate the label dimensions and position within the page area
+  const tempLabel = cyto?.$id(`temp_${labelId}`);
+
+  const pageOuterLimits = cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto)?.diagramOuterLimitsPx;
+  if (!pageOuterLimits) return;
+  if (tempLabel.length === 0) throw new Error("tempLabel was not added to the canvas");
+
+  // get the label dimensions and position
+  const textDim = textDimensions(tempLabel, cytoCoordMapper);
+  const halfTextDimWidth = textDim.width / 2;
+  const halfTextDimHeight = textDim.height / 2;
+  const labelCenter = tempLabel.position();
+  let labelStartCoord = labelCenter.x - halfTextDimWidth;
+  let labelEndCoord = labelCenter.x + halfTextDimWidth;
+  let labelTopCoord = labelCenter.y - halfTextDimHeight;
+  let labelBottomCoord = labelCenter.y + halfTextDimHeight;
+
+  // if the label has a rotation angle, apply the label rotation to the label dimensions
+  const rotationAngle = tempLabel?.data("textRotation") as number;
+  if (!isNil(rotationAngle)) {
+    const angle = degreesToRadians(rotationAngle);
+    const rotatedWidth = textDim.width * Math.abs(Math.cos(angle)) + textDim.height * Math.abs(Math.sin(angle));
+    const rotatedHeight = textDim.width * Math.abs(Math.sin(angle)) + textDim.height * Math.abs(Math.cos(angle));
+    const halfRotatedWidth = rotatedWidth / 2;
+    const halfRotatedHeight = rotatedHeight / 2;
+    labelStartCoord = labelCenter.x - halfRotatedWidth;
+    labelEndCoord = labelCenter.x + halfRotatedWidth;
+    labelTopCoord = labelCenter.y - halfRotatedHeight;
+    labelBottomCoord = labelCenter.y + halfRotatedHeight;
+  }
+
+  const tempLabelPosition = tempLabel.position();
+  const position = JSON.parse(JSON.stringify(tempLabelPosition)) as cytoscape.Position;
+
+  // if the temp label is outside the page area, move it back inside
+  const tolerance = 5;
+  if (labelStartCoord < pageOuterLimits.x1) {
+    position.x = labelCenter.x + (pageOuterLimits.x1 - labelStartCoord) + tolerance;
+  }
+  if (labelEndCoord > pageOuterLimits.x2) {
+    position.x = labelCenter.x - (labelEndCoord - pageOuterLimits.x2) - tolerance;
+  }
+  if (labelTopCoord < pageOuterLimits.y1) {
+    position.y = labelCenter.y + (pageOuterLimits.y1 - labelTopCoord) + tolerance;
+  }
+  if (labelBottomCoord > pageOuterLimits.y2) {
+    position.y = labelCenter.y - (labelBottomCoord - pageOuterLimits.y2) - tolerance;
+  }
+  cyto?.remove(tempLabel);
+
+  // if the label position did not need correction to fit the page area, return undefined
+  if (position.x === tempLabelPosition.x && position.y === tempLabelPosition.y) return;
+
+  // if the operation is rotationSlide or alignToLine, the update is done directly on the canvas so,
+  // no need to convert to ground coordinates or remove the pointOffset and anchorAngle effects,
+  // return the cytoscape position as is to be applied to the canvas directly
+  if (operation === "rotationSlide" || operation === "alignToLine") {
+    return position;
+  }
+
+  // if the label has pointOffset, remove it from the corrected position since it will be applied on canvas render
+  const pointOffset = tempLabel?.data("pointOffset") as number;
+  const anchorAngle = tempLabel?.data("anchorAngle") as number;
+  if (pointOffset && !isNil(anchorAngle)) {
+    const { x, y } = position;
+    const angle = degreesToRadians(anchorAngle);
+    const xOffset = pointOffset * Math.cos(angle);
+    const yOffset = pointOffset * Math.sin(angle);
+    position.x = x - xOffset;
+    position.y = y + yOffset;
+  }
+
+  // convert the corrected position from cytoscape position to ground coordinates
+  let positionCoord: cytoscape.Position | GroundMetresPosition = position;
+  if (label) {
+    // if there is a label in the cytoscape canvas, it is an existing label which is being edited
+    const diagramId = label.data("diagramId") as number;
+    positionCoord = diagramId
+      ? cytoCoordMapper.cytoscapeToGroundCoord(position, diagramId)
+      : cytoCoordMapper.pageLabelCytoscapeToCoord(position);
+  } else {
+    // if there is no original label in the cytoscape canvas, it is a new user-added label
+    positionCoord = cytoCoordMapper.pageLabelCytoscapeToCoord(position);
+  }
+  return positionCoord;
 };
 
 export const isEditableLabelTextType = (labelType?: string) => {

@@ -1,12 +1,24 @@
+import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { fireEvent, userEvent, within } from "@storybook/test";
 import { NodeSingular } from "cytoscape";
+import { http, HttpResponse } from "msw";
 
+import { pageLabelWithBorderOutsideLayout } from "@/components/PlanSheets/__tests__/data/customLabels";
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
-import { CustomLabels } from "@/components/PlanSheets/properties/__tests__/LabelPropertiesPanel.stories";
+import {
+  diagramLabelObsBearingHide,
+  diagramLabelObsBearingSuppressSeconds,
+  diagramLabelParcelAppellation,
+  diagramLabelSystemDisplay,
+  pageLabelWithBorder,
+  pageLabelWithLineBreak,
+} from "@/components/PlanSheets/properties/__tests__/data/LabelsData";
+import { mockPlanData } from "@/mocks/data/mockPlanData";
+import { handlers } from "@/mocks/mockHandlers";
 import {
   checkCytoElementProperties,
   click,
@@ -94,6 +106,43 @@ export const DeselectMultipleLabels: Story = {
   },
 };
 
+// TODO: need a helper function to allow custom mock data to be more easily specified per suite/story
+const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
+if (customMockPlanData.pages[0]) {
+  customMockPlanData.pages[0].labels = [
+    ...(customMockPlanData.pages[0].labels ?? []),
+    pageLabelWithLineBreak,
+    pageLabelWithBorder,
+    pageLabelWithBorderOutsideLayout,
+  ];
+}
+if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
+  customMockPlanData.diagrams[0].lineLabels = [
+    ...customMockPlanData.diagrams[0].lineLabels,
+    diagramLabelParcelAppellation,
+    diagramLabelObsBearingHide,
+    diagramLabelObsBearingSuppressSeconds,
+    diagramLabelSystemDisplay,
+  ];
+}
+
+export const CustomLabels: Story = {
+  ...Default,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(/\/123\/plan$/, () =>
+          HttpResponse.json(customMockPlanData, {
+            status: 200,
+            statusText: "OK",
+          }),
+        ),
+        ...handlers,
+      ],
+    },
+  },
+};
+
 export const DeletePageLabel: Story = {
   ...CustomLabels,
   play: async ({ canvasElement }) => {
@@ -140,9 +189,9 @@ export const DeletePageLabel: Story = {
 export const DeleteMultiplePageLabels: Story = {
   ...CustomLabels,
   play: async ({ canvasElement }) => {
-    const visiblePageLabelPosition: [number, number] = [510, 410];
-    const hiddenPageLabelPosition: [number, number] = [406, 535];
-    const diagramLabelPosition: [number, number] = [214, 206];
+    const visiblePageLabelPosition: [number, number] = [510, 410]; // My page label with a line break
+    const hiddenPageLabelPosition: [number, number] = [406, 535]; // Some other page label
+    const diagramLabelPosition: [number, number] = [214, 206]; // Label 14
 
     const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLabel);
     await test.waitForCytoscape();
