@@ -114,7 +114,7 @@ export const RestorePageLabelAtEdgeToOriginalLocation: Story = {
     await test.waitForCytoscape();
     await checkCytoElementProperties('[label = "My page label at edge"]', {
       textRotation: 0,
-      position: { x: 913, y: 230 }, // Pushed back within boundaries
+      position: { x: 911, y: 230 }, // Pushed back within boundaries
     });
     // Chromatic snapshot verifies the restored label after moving it around
   },

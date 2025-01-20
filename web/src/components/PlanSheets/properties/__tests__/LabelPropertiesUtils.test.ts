@@ -431,7 +431,7 @@ describe("getCorrectedLabelPosition", () => {
       {} as LabelPropsToUpdate,
     );
     expect(result).toBeDefined();
-    expect(result?.x).toBeCloseTo(0.3651, 3);
+    expect(result?.x).toBeCloseTo(0.3645, 3);
     expect(result?.y).toBeCloseTo(-0.1231, 3);
   });
 
@@ -445,7 +445,7 @@ describe("getCorrectedLabelPosition", () => {
       {} as LabelPropsToUpdate,
     );
     expect(result).toBeDefined();
-    expect(result?.x).toBeCloseTo(0.0548, 3);
+    expect(result?.x).toBeCloseTo(0.0554, 3);
     expect(result?.y).toBeCloseTo(-0.1231, 3);
   });
 
@@ -472,10 +472,10 @@ describe("getCorrectedLabelPosition", () => {
     );
     expect(result).toBeDefined();
     expect(result?.x).toBeCloseTo(0.3415, 3);
-    expect(result?.y).toBeCloseTo(-0.05, 3);
+    expect(result?.y).toBeCloseTo(-0.0507, 3);
   });
 
-  it("should return corrected position when the label with new rotation falls outside page area - bottom bound", () => {
+  it("should return corrected position when the label with new rotation (via properties panel) falls outside page area - bottom bound", () => {
     const cyto = mockCyto({ x: 267, y: 750 }, { displayText: "Another page label", textRotation: 90 });
     const result = getCorrectedLabelPosition(
       cyto,
@@ -486,6 +486,20 @@ describe("getCorrectedLabelPosition", () => {
     );
     expect(result).toBeDefined();
     expect(result?.x).toBeCloseTo(0.0942, 3);
-    expect(result?.y).toBeCloseTo(-0.2269, 3);
+    expect(result?.y).toBeCloseTo(-0.2262, 3);
+  });
+
+  it("should return corrected position when the label with new rotation (via rotation slider) falls outside page area - bottom bound", () => {
+    const cyto = mockCyto({ x: 267, y: 750 }, { displayText: "Another page label", textRotation: 90 });
+    const result = getCorrectedLabelPosition(
+      cyto,
+      cytoCoordMapper,
+      "LAB_23",
+      "rotationSlide",
+      {} as LabelPropsToUpdate,
+    );
+    expect(result).toBeDefined();
+    expect(result?.x).toBeCloseTo(267, 3);
+    expect(result?.y).toBeCloseTo(655.1154, 3);
   });
 });

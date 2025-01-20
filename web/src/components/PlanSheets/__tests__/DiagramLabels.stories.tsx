@@ -70,7 +70,7 @@ export const RotateDiagramLabelAtEdge: Story = {
     await checkCytoElementProperties(
       '[label = "Label 14"]' /* page label */,
       {
-        position: { x: 939, y: 213 }, // Label is pushed back from the boundary
+        position: { x: 937, y: 213 }, // Label is pushed back from the boundary
       },
       "truncated",
     );

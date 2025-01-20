@@ -385,7 +385,8 @@ export const getCorrectedLabelPosition = (
   const position = JSON.parse(JSON.stringify(tempLabelPosition)) as cytoscape.Position;
 
   // if the temp label is outside the page area, move it back inside
-  const tolerance = 5;
+  // (add a tolerance to the correction to prevent the label from being too close to the page edge)
+  const tolerance = 7;
   if (labelStartCoord < pageOuterLimits.x1) {
     position.x = labelCenter.x + (pageOuterLimits.x1 - labelStartCoord) + tolerance;
   }

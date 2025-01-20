@@ -186,7 +186,7 @@ export const EditPageLabelByBorder: Story = {
     await checkCytoElementProperties(
       '[label = "Edited my page label"]' /* page label */,
       {
-        position: { x: 918, y: 164 }, // Label pushed back from the boundary
+        position: { x: 916, y: 164 }, // Label pushed back from the boundary
       },
       "truncated",
     );
