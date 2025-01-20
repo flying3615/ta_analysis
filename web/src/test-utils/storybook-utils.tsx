@@ -530,6 +530,8 @@ export async function multiSelectAndDrag(
   dragTo: MousePosition,
   numSteps = 2,
 ) {
+  if (!positions.length) return;
+
   // Multi-select positions by holding Ctrl key
   for (const position of positions) {
     fireEvent.mouseDown(canvas, { ...position, ctrlKey: true });
@@ -537,16 +539,11 @@ export async function multiSelectAndDrag(
   }
   await sleep(400);
 
-  if (positions.length === 0) {
-    return;
-  }
-
   // Drag the first selected position
   const from = positions[0];
-  if (!from) {
-    return;
-  }
-  const steps: MousePosition[] = [from];
+  if (!from) return;
+
+  const steps: MousePosition[] = [];
   const stepDx = (dragTo.clientX - from.clientX) / numSteps;
   const stepDy = (dragTo.clientY - from.clientY) / numSteps;
   for (let step = 1; step <= numSteps; step++) {

@@ -1,7 +1,8 @@
 import { CartesianCoordsDTO, CoordinateDTOCoordTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { radiansToDegrees } from "@turf/helpers";
 import cytoscape, { BoundingBox12, EdgeSingular, NodeSingular, Position as CytoscapePosition } from "cytoscape";
-import { isNil, last, round } from "lodash-es";
+import _ from "lodash";
+import { round } from "lodash-es";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import {
@@ -73,38 +74,40 @@ export const useMoveOriginalLocation = () => {
     return labelProps;
   };
 
-  const adjustLabelCoordinates = (
-    selectedElements: cytoscape.CollectionReturnValue,
-    cytoCoordMapper: CytoscapeCoordinateMapper,
-    cyto: cytoscape.Core,
-  ) => {
+  const adjustLabelCoordinates = (selectedElements: cytoscape.CollectionReturnValue) => {
+    const cyto = selectedElements.cy();
+    const container = cyto?.container();
+    if (!container || !originalPositions) return;
+
     const relatedLabels = getRelatedLabels(selectedElements);
-    if (relatedLabels.length < 1) return;
+    if (!relatedLabels.length) return;
 
-    const selectedLabelData = relatedLabels.data() as INodeDataProperties;
-    const activeLines = activeDiagrams.flatMap((diagram) => diagram?.lines);
-    const line = activeLines.find((line) => line?.id === selectedLabelData.featureId);
-    const diagram = activeDiagrams.find((diagram) => diagram.id === selectedLabelData.diagramId);
-    const lineStartCoord = diagram?.coordinates.find((coord) => coord.id === (line?.coordRefs?.[0] as number));
-    const lineEndCoord = diagram?.coordinates.find((coord) => coord.id === (last(line?.coordRefs) as number));
+    const cytoCoordMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
+    const labelsOriginalLocation: LabelPropsToUpdate[] = [];
 
-    if (lineStartCoord && lineEndCoord && diagram) {
-      const selectedLabelsData = relatedLabels.map((label) => label.data() as INodeDataProperties);
-      const labelsOriginalLocation: LabelPropsToUpdate[] = selectedLabelsData
-        .map((label) =>
-          getLabelOriginalLocation(
-            label,
-            cytoCoordMapper.cytoscapeToGroundCoord(
-              cyto.getElementById(lineStartCoord.id.toString()).position(),
-              diagram.id,
-            ),
-            cytoCoordMapper.cytoscapeToGroundCoord(
-              cyto.getElementById(lineEndCoord.id.toString()).position(),
-              diagram.id,
-            ),
+    relatedLabels.forEach((relatedLabel) => {
+      const selectedLabelData = relatedLabel.data() as INodeDataProperties;
+      const activeLines = _.flatMap(activeDiagrams, (diagram) => diagram?.lines);
+      const line = activeLines.find((line) => line?.id === selectedLabelData.featureId);
+      const diagram = activeDiagrams.find((diagram) => diagram.id === selectedLabelData.diagramId);
+      const lineStartCoord = diagram?.coordinates.find((coord) => coord.id === (line?.coordRefs?.[0] as number));
+      const lineEndCoord = diagram?.coordinates.find((coord) => coord.id === (_.last(line?.coordRefs) as number));
+      if (lineStartCoord && lineEndCoord && diagram) {
+        const labelLocation = getLabelOriginalLocation(
+          selectedLabelData,
+          cytoCoordMapper.cytoscapeToGroundCoord(
+            cyto.getElementById(lineStartCoord.id.toString()).position(),
+            diagram.id,
           ),
-        )
-        .filter((elem) => !isNil(elem));
+          cytoCoordMapper.cytoscapeToGroundCoord(
+            cyto.getElementById(lineEndCoord.id.toString()).position(),
+            diagram.id,
+          ),
+        );
+        if (labelLocation) {
+          labelsOriginalLocation.push(labelLocation);
+        }
+      }
       adjustedLabels.forEach((label) => {
         const original = labelsOriginalLocation.find((loc) => `LAB_${loc.id}` === label.id);
         if (original) {
@@ -114,7 +117,7 @@ export const useMoveOriginalLocation = () => {
           label.properties.pointOffset = original.pointOffset;
         }
       });
-    }
+    });
   };
 
   const updateMove = (
@@ -228,6 +231,7 @@ export const useMoveOriginalLocation = () => {
     );
     const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
     const adjustedLabelData = adjustLabels(movedNodesById);
+
     if (cyto.elements(":selected").isEdge()) {
       const selectedLine = cyto.elements(":selected");
       const lineMidPoint = midPoint(selectedLine.target().position(), selectedLine.source().position());
@@ -343,7 +347,7 @@ export const useMoveOriginalLocation = () => {
         }
       });
 
-      adjustLabelCoordinates(selectedElements, cytoCoordMapper, cyto);
+      adjustLabelCoordinates(selectedElements);
 
       const updatedDiagrams = updateActiveDiagrams({
         nodes: [...movingDatas.nodes, ...adjustedLabels],
@@ -369,14 +373,26 @@ export const useMoveOriginalLocation = () => {
     target: NodeSingular | EdgeSingular,
     selectedElements: cytoscape.CollectionReturnValue,
   ) => {
-    getMovedDataLabels(target, selectedElements);
+    const nodes = selectedElements
+      .map((ele) => ele.data() as INodeDataProperties)
+      .filter((data) => data.elementType === PlanElementType.COORDINATES);
+    nodes.forEach((node) => {
+      if (node && node.id != null) {
+        const selectedNode = target.cy().getElementById(node.id);
+        const selectedElems = selectedNode.merge(getRelatedLabels(selectedNode));
+        getMovedDataLabels(selectedNode, selectedElems);
+      }
+    });
+    const movingElements = selectedElements.union(selectedElements.connectedNodes());
+    movingElements.merge(getRelatedLabels(movingElements));
+    const adjacentEdges = movingElements.connectedEdges().difference(movingElements);
+    adjustLabelCoordinates(adjacentEdges);
+
     const updatedDiagrams = updateActiveDiagrams({
       nodes: [...movingDatas.nodes, ...adjustedLabels],
       edges: [...movingDatas.edges],
     });
     dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
-
-    // TODO: Handle multiple coordinates at once
   };
 
   const restoreOriginalPosition = (target: NodeSingular | EdgeSingular | null) => {

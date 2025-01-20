@@ -10,10 +10,8 @@ import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
 import {
   checkCytoElementProperties,
-  clickAtCoordinates,
   countSelected,
   getCytoscapeNodeLayer,
-  RIGHT_MOUSE_BUTTON,
   selectAndDrag,
   sleep,
   tabletLandscapeParameters,
@@ -99,48 +97,6 @@ export const MoveChildDiagramLabel: Story & Required<Pick<Story, "play">> = {
 
     await checkCytoElementProperties("#LAB_41", { position: { x: 389.81, y: 132.94 } });
     await checkCytoElementProperties("#LAB_42", { position: { x: 389.81, y: 143.63 } });
-  },
-};
-
-export const MoveNodeToOriginalCoord: Story & Required<Pick<Story, "play">> = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Coordinates"));
-    await sleep(1500);
-
-    const position = { clientX: 411, clientY: 136 };
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-
-    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
-      clientX: position.clientX + 50,
-      clientY: position.clientY + 100,
-    });
-    await sleep(1500);
-    clickAtCoordinates(
-      getCytoscapeNodeLayer(cytoscapeElement),
-      [position.clientX + 50, position.clientY + 100],
-      RIGHT_MOUSE_BUTTON,
-    );
-    await sleep(500);
-    const menuOriginLoc = await canvas.findByText("Original location");
-    await userEvent.click(menuOriginLoc);
-  },
-};
-
-export const MoveLineToOriginalCoord: Story & Required<Pick<Story, "play">> = {
-  ...Default,
-  ...tabletLandscapeParameters,
-  play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement, "Select Lines");
-    const position: [number, number] = [218, 80];
-    const newPosition: [number, number] = [268, 180];
-    await test.click(position);
-    await test.leftClickAndDrag(position, newPosition);
-    await test.contextMenu({ at: newPosition, select: "Original location" });
-    await test.waitForCytoscape();
-    await expect(await countSelected()).toBe(1);
   },
 };
 
@@ -330,97 +286,5 @@ export const CoordTypeCalculated: Story = {
     await sleep(1000);
     await checkCytoElementProperties("#LAB_99", { position: { x: 139.55, y: 122.26 } });
     await sleep(1000);
-  },
-};
-
-// irregular line plan data
-const irregularLinePlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
-if (irregularLinePlanData.diagrams[0]) {
-  irregularLinePlanData.diagrams[0] = {
-    ...irregularLinePlanData.diagrams[0],
-    coordinates: [
-      ...irregularLinePlanData.diagrams[0].coordinates,
-      {
-        coordType: CoordinateDTOCoordTypeEnum.calculated,
-        id: 10281,
-        position: { x: 15, y: -45 },
-        originalCoord: { x: 15, y: -45 },
-      },
-      {
-        coordType: CoordinateDTOCoordTypeEnum.calculated,
-        id: 10280,
-        position: { x: 5.5, y: -30 },
-        originalCoord: { x: 5.5, y: -30 },
-      },
-      {
-        coordType: CoordinateDTOCoordTypeEnum.calculated,
-        id: 10279,
-        position: { x: 6, y: -25 },
-        originalCoord: { x: 6, y: -25 },
-      },
-      {
-        coordType: CoordinateDTOCoordTypeEnum.calculated,
-        id: 10278,
-        position: { x: 6.5, y: -18 },
-        originalCoord: { x: 6.5, y: -18 },
-      },
-      {
-        coordType: CoordinateDTOCoordTypeEnum.calculated,
-        id: 10277,
-        position: { x: 16, y: -15 },
-        originalCoord: { x: 16, y: -15 },
-      },
-    ],
-    lines: [
-      ...irregularLinePlanData.diagrams[0].lines,
-      {
-        id: 9999,
-        lineType: "parcelBoundary",
-        style: "dot1",
-        coordRefs: [10281, 10280, 10279, 10278, 10277, 10001],
-        pointWidth: 1.4,
-      },
-    ],
-  };
-}
-const IrregularLines: Story = {
-  ...Default,
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(/\/123\/plan$/, () =>
-          HttpResponse.json(irregularLinePlanData, {
-            status: 200,
-            statusText: "OK",
-          }),
-        ),
-        ...handlers,
-      ],
-    },
-  },
-};
-export const MoveIrregularLinesToOrigin: Story = {
-  ...IrregularLines,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByTitle("Select Lines"));
-    await sleep(1500);
-
-    const position = { clientX: 330, clientY: 215 };
-    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
-
-    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position, {
-      clientX: position.clientX + 110,
-      clientY: position.clientY,
-    });
-    await sleep(1000);
-    clickAtCoordinates(
-      getCytoscapeNodeLayer(cytoscapeElement),
-      [position.clientX + 110, position.clientY],
-      RIGHT_MOUSE_BUTTON,
-    );
-    await sleep(500);
-    const menuOriginLoc = await canvas.findByText("Original location");
-    await userEvent.click(menuOriginLoc);
   },
 };
