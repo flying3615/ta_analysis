@@ -87,7 +87,7 @@ function autoRecoveryModal({
         Layout Plansheets previously closed with unsaved changes.
         <p>
           The last save was at <DateTime datetime={planData.lastModifiedAt} />.<br />
-          The last unsaved change was at <DateTime datetime={recoveryFile.lastModifiedAt} />.
+          The last unsaved change was at <DateTime datetime={recoveryFile.lastChangedAt} />.
         </p>
         <p>Would you like to recover these unsaved changes?</p>
       </>
