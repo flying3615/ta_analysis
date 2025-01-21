@@ -9,7 +9,7 @@ import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import { setupStore } from "@/redux/store";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 import { PanelInstanceContextMock, sleep } from "@/test-utils/storybook-utils";
 
 export default {
@@ -19,7 +19,7 @@ export default {
 
 const PanelTemplate = ({ data }: { data: LabelPropertiesData[] }) => {
   return (
-    <Provider store={setupStore({ ...mockStore })}>
+    <Provider store={setupStore({ ...mockStoreV1 })}>
       <PanelsContextProvider>
         <PanelInstanceContextMock>
           <Panel

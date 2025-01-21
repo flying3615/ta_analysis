@@ -18,7 +18,7 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setMockedSplitFeatures } from "@/setupTests";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
 
 function returnFailOnSave() {
   const requestSpy = jest.fn();
@@ -57,17 +57,17 @@ function renderPlanSheetsFooter() {
 }
 
 describe("PlanSheetsFooter", () => {
-  const planSheetsState = {
-    ...mockStore.planSheets,
+  const planSheetsState: PlanSheetsState = modifiedStateV1({
+    ...mockStoreV1.planSheets.v1,
     pages: [],
     activePageNumbers: {
       [PlanSheetType.TITLE]: 0,
       [PlanSheetType.SURVEY]: 0,
     },
-  };
+  });
 
-  const initStateForTwoPages = {
-    ...planSheetsState,
+  const initStateForTwoPages = modifiedStateV1({
+    ...planSheetsState.v1,
     pages: [
       { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
       { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
@@ -76,7 +76,7 @@ describe("PlanSheetsFooter", () => {
       [PlanSheetType.TITLE]: 1,
       [PlanSheetType.SURVEY]: 0,
     },
-  };
+  });
   const renderWithState = (state: PlanSheetsState) => {
     renderCompWithReduxAndRoute(
       <Route
@@ -123,14 +123,15 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays menu with Title sheet selected", async () => {
-    renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 0,
-        [PlanSheetType.SURVEY]: 0,
-      },
-    });
+    renderWithState(
+      modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 0,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
+    );
 
     expect(screen.queryByRole("menuitem")).toBeNull();
     await userEvent.click(screen.getByRole("button", { description: /Change sheet view/ }));
@@ -141,14 +142,15 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays menu with Survey sheet selected", async () => {
-    renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.SURVEY,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 0,
-        [PlanSheetType.SURVEY]: 0,
-      },
-    });
+    renderWithState(
+      modifiedStateV1({
+        activeSheet: PlanSheetType.SURVEY,
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 0,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
+    );
 
     expect(screen.queryByRole("menuitem")).toBeNull();
     await userEvent.click(screen.getByRole("button", { description: /Change sheet view/ }));
@@ -187,14 +189,14 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
+            ...planSheetsState.v1,
             diagrams,
             activePageNumbers: {
               [PlanSheetType.TITLE]: 0,
               [PlanSheetType.SURVEY]: 0,
             },
-          },
+          }),
         },
       },
     );
@@ -441,14 +443,14 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
+            ...planSheetsState.v1,
             diagrams,
             activePageNumbers: {
               [PlanSheetType.TITLE]: 0,
               [PlanSheetType.SURVEY]: 0,
             },
-          },
+          }),
         },
       },
     );
@@ -526,8 +528,8 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
+            ...planSheetsState.v1,
             pages: [
               {
                 id: 1,
@@ -557,7 +559,7 @@ describe("PlanSheetsFooter", () => {
             },
             diagrams,
             hasChanges: true,
-          },
+          }),
         },
       },
     );
@@ -621,15 +623,15 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
+            ...planSheetsState.v1,
             diagrams,
             activePageNumbers: {
               [PlanSheetType.TITLE]: 0,
               [PlanSheetType.SURVEY]: 0,
             },
             hasChanges: true,
-          },
+          }),
         },
       },
     );
@@ -675,18 +677,19 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("displays the number of pages", () => {
-    renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 0,
-      },
-    });
+    renderWithState(
+      modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
+    );
     const paginationElement = screen.getByText((content, element) => {
       return element?.textContent === "Page 1 of 2";
     });
@@ -695,16 +698,17 @@ describe("PlanSheetsFooter", () => {
 
   it("shows current page number and it's non-editable", () => {
     renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 2,
-        [PlanSheetType.SURVEY]: 0,
-      },
+      ...modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 2,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
     });
 
     const paginationElement = screen.getByText((content, element) => {
@@ -716,16 +720,17 @@ describe("PlanSheetsFooter", () => {
 
   it("disable appropriate navigation buttons when on the first page", () => {
     renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 0,
-      },
+      ...modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
     });
 
     expect(screen.getByRole("button", { name: /First/i })).toBeDisabled();
@@ -736,16 +741,17 @@ describe("PlanSheetsFooter", () => {
 
   it("should display renumber and delete page buttons with correct titles", () => {
     renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 0,
-      },
+      ...modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
     });
     const verifyButton = (buttonName: RegExp, expectedTitle: unknown) => {
       const button = screen.getByRole("button", { description: buttonName });
@@ -759,16 +765,17 @@ describe("PlanSheetsFooter", () => {
 
   it("disable appropriate navigation buttons when on the last page", () => {
     renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 2,
-        [PlanSheetType.SURVEY]: 2,
-      },
+      ...modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 2,
+          [PlanSheetType.SURVEY]: 2,
+        },
+      }),
     });
 
     expect(screen.getByRole("button", { name: /First/i })).toBeEnabled();
@@ -779,18 +786,19 @@ describe("PlanSheetsFooter", () => {
 
   it("enable appropriate navigation buttons when on 3rd page out of 4 pages", async () => {
     renderWithState({
-      ...planSheetsState,
-      activeSheet: PlanSheetType.TITLE,
-      pages: [
-        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        { pageType: PlanSheetType.TITLE, id: 2, pageNumber: 3 },
-        { pageType: PlanSheetType.TITLE, id: 3, pageNumber: 4 },
-      ],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 4,
-        [PlanSheetType.SURVEY]: 0,
-      },
+      ...modifiedStateV1({
+        activeSheet: PlanSheetType.TITLE,
+        pages: [
+          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          { pageType: PlanSheetType.TITLE, id: 2, pageNumber: 3 },
+          { pageType: PlanSheetType.TITLE, id: 3, pageNumber: 4 },
+        ],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 4,
+          [PlanSheetType.SURVEY]: 0,
+        },
+      }),
     });
     await userEvent.click(await screen.findByRole("button", { name: /Previous/i }));
     const paginationElement = screen.getByText((content, element) => {
@@ -860,15 +868,16 @@ describe("PlanSheetsFooter", () => {
       {
         preloadedState: {
           planSheets: {
-            ...planSheetsState,
-            pages: [
-              { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-              { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-            ],
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 1,
-              [PlanSheetType.SURVEY]: 0,
-            },
+            ...modifiedStateV1({
+              pages: [
+                { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+                { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+              ],
+              activePageNumbers: {
+                [PlanSheetType.TITLE]: 1,
+                [PlanSheetType.SURVEY]: 0,
+              },
+            }),
           },
         },
       },
@@ -919,8 +928,9 @@ describe("PlanSheetsFooter", () => {
       {
         preloadedState: {
           planSheets: {
-            ...planSheetsState,
-            hasChanges: true,
+            ...modifiedStateV1({
+              hasChanges: true,
+            }),
           },
         },
       },

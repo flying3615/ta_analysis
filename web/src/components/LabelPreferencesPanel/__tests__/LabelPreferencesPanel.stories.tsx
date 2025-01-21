@@ -16,7 +16,7 @@ import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 import { findCell, findCellContains, openAndClickMenuOption, selectCell } from "@/test-utils/storybook-ag-grid-utils";
 import {
   PanelInstanceContextMock,
@@ -41,7 +41,7 @@ export default {
 } as Meta<typeof LabelPreferencesPanel>;
 
 const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) => (
-  <Provider store={setupStore({ ...mockStore })}>
+  <Provider store={setupStore({ ...mockStoreV1 })}>
     <QueryClientProvider client={queryClient}>
       <FeatureFlagProvider>
         <PanelsContextProvider>

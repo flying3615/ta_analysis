@@ -6,18 +6,17 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 describe("Diagram Tile component", () => {
   const mockStoreRedux = setupStore({
-    planSheets: {
-      ...mockStore.planSheets,
+    planSheets: modifiedStateV1({
       pages: mockPlanData.pages,
       activePageNumbers: {
         [PlanSheetType.TITLE]: 1,
         [PlanSheetType.SURVEY]: 1,
       },
-    },
+    }),
   });
 
   const mockDiagramDisplay = {

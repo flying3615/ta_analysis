@@ -5,12 +5,11 @@ import PageManager from "@/components/Footer/PageManager";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 describe("PageManager", () => {
   const mockReduxStore = setupStore({
-    planSheets: {
-      ...mockStore.planSheets,
+    planSheets: modifiedStateV1({
       pages: [],
       hasChanges: false,
       activeSheet: PlanSheetType.TITLE,
@@ -19,7 +18,7 @@ describe("PageManager", () => {
         [PlanSheetType.SURVEY]: 1,
       },
       planMode: PlanMode.View,
-    },
+    }),
   });
 
   test("renders the component", () => {
@@ -45,15 +44,14 @@ describe("PageManager", () => {
 
   test("disables buttons when there are no pages", () => {
     const mockNoPagesStore = setupStore({
-      planSheets: {
-        ...mockStore.planSheets,
+      planSheets: modifiedStateV1({
         pages: [],
         activePageNumbers: {
           [PlanSheetType.TITLE]: 0,
           [PlanSheetType.SURVEY]: 1,
         },
         planMode: PlanMode.View,
-      },
+      }),
     });
 
     renderWithReduxProvider(<PageManager />, { store: mockNoPagesStore });

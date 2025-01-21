@@ -26,14 +26,14 @@ import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";
 
-const mockedState = { ...mockStore };
+const mockedState = { ...mockStoreV1 };
 
 const selectAllLabels = async () => {
   await sleep(500);

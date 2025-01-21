@@ -12,7 +12,7 @@ import {
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 const mockText = "Test label text\nNew line";
 const mockValidLineBreakEdit = "Test label\ntext\nNew line";
@@ -35,10 +35,9 @@ const mockProps: LabelPropertiesData = {
   displayFormat: undefined,
 };
 const mockReduxStore = setupStore({
-  planSheets: {
-    ...mockStore.planSheets,
+  planSheets: modifiedStateV1({
     activeSheet: PlanSheetType.TITLE,
-  },
+  }),
 });
 
 const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>

@@ -3,10 +3,10 @@ import { NodeSingular } from "cytoscape";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 
 const mockedState = {
-  preloadedState: { ...mockStore },
+  preloadedState: { ...mockStoreV1 },
 };
 
 describe("LabelRotationMenuItem", () => {

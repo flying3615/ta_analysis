@@ -18,6 +18,7 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setMockedSplitFeatures } from "@/setupTests";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 import { nestedTitlePlan } from "./data/plansheetDiagramData";
 
@@ -39,7 +40,7 @@ const renderWithState = (state: PlanSheetsState) => {
   );
 };
 
-const planSheetsState: PlanSheetsState = {
+const planSheetsState: PlanSheetsState = modifiedStateV1({
   diagrams: [],
   activeSheet: PlanSheetType.TITLE,
   pages: [
@@ -57,7 +58,7 @@ const planSheetsState: PlanSheetsState = {
   previousPages: null,
   canViewHiddenLabels: true,
   viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-};
+});
 
 const mockGetPlanResponse = {
   ...nestedTitlePlan,
@@ -159,7 +160,7 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 1 to 5)", async () => {
-    const mockState: PlanSheetsState = {
+    const mockState: PlanSheetsState = modifiedStateV1({
       diagrams: [],
       activeSheet: PlanSheetType.TITLE,
       pages: [],
@@ -174,7 +175,7 @@ describe("PlanSheets", () => {
       previousPages: null,
       canViewHiddenLabels: true,
       viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-    };
+    });
 
     server.use(
       http.get(/\/123\/plan$/, () => {
@@ -228,7 +229,7 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 4 to 2)", async () => {
-    const mockState: PlanSheetsState = {
+    const mockState: PlanSheetsState = modifiedStateV1({
       diagrams: [],
       activeSheet: PlanSheetType.TITLE,
       pages: [],
@@ -243,7 +244,7 @@ describe("PlanSheets", () => {
       previousPages: null,
       canViewHiddenLabels: true,
       viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-    };
+    });
 
     server.use(
       http.get(/\/123\/plan$/, () => {
@@ -297,13 +298,13 @@ describe("PlanSheets", () => {
   });
 
   it("removes page correctly", async () => {
-    const mockState = {
-      ...planSheetsState,
+    const mockState = modifiedStateV1({
+      ...planSheetsState.v1,
       activePageNumbers: {
         [PlanSheetType.TITLE]: 3,
         [PlanSheetType.SURVEY]: 0,
       },
-    };
+    });
 
     server.use(
       http.get(/\/123\/plan$/, () => {

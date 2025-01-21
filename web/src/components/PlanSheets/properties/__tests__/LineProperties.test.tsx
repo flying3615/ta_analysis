@@ -5,7 +5,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import LineProperties, { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 const mockProps: LinePropertiesData = {
   lineId: 1001,
@@ -16,8 +16,9 @@ const mockProps: LinePropertiesData = {
 };
 const mockReduxStore = setupStore({
   planSheets: {
-    ...mockStore.planSheets,
-    activeSheet: PlanSheetType.TITLE,
+    ...modifiedStateV1({
+      activeSheet: PlanSheetType.TITLE,
+    }),
   },
 });
 
@@ -53,8 +54,9 @@ describe("LineProperties", () => {
     renderComponent({
       reduxStore: setupStore({
         planSheets: {
-          ...mockStore.planSheets,
-          activeSheet: PlanSheetType.SURVEY,
+          ...modifiedStateV1({
+            activeSheet: PlanSheetType.SURVEY,
+          }),
         },
       }),
     });

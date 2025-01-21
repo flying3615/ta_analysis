@@ -24,22 +24,33 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { appClientId } from "./constants";
+import { useAppDispatch } from "./hooks/reduxHooks";
 import { mockUser } from "./mocks/mockAuthUser";
 import { NoMatchingRouteFound } from "./NoMatchingRouteFound";
 import { RoutePaths } from "./Paths";
+import { convertToV2 } from "./redux/planSheets/planSheetsSlice";
 
 export const PlangenApp = (props: { mockMap?: boolean }) => {
   useEffect(() => {
     // we only patch fetch for secure-file-upload as other places to use addHeaders to add the token
     patchFetch((url) => url.includes("/v1/file-uploads"));
   });
+  const dispatch = useAppDispatch();
 
   const { result: isApplicationAvailable, loading: loadingApplicationAvailable } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION,
   );
 
-  if (loadingApplicationAvailable) {
+  const { result: isSheetSliceV2Available, loading: loadingSheetSliceV2Available } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_PLAN_SHEET_SLICE_V2,
+  );
+
+  if (loadingApplicationAvailable || loadingSheetSliceV2Available) {
     return <LuiLoadingSpinner />;
+  }
+
+  if (isSheetSliceV2Available) {
+    dispatch(convertToV2());
   }
 
   if (!isApplicationAvailable) {

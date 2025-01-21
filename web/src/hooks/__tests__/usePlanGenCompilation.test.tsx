@@ -10,7 +10,7 @@ import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiag
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 
 const mockUploadFile: jest.Mock = jest.fn().mockResolvedValue({} as IFileStatusResponse);
 
@@ -49,7 +49,7 @@ jest.mock("@/util/imageUtil", () => {
 
 describe("usePlanGenCompilation hook", () => {
   const planSheetsState = {
-    ...mockStore.planSheets,
+    ...mockStoreV1.planSheets,
     diagrams: diagrams,
     pages: pages,
   };

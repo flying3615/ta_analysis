@@ -4,10 +4,10 @@ import { fromBuilder } from "@/components/CytoscapeCanvas/__tests__/mockDiagramD
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { useMeasureText } from "@/hooks/useMeasureText";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 import { withProviderDecorator } from "@/test-utils/storybook-utils";
 
-const mockedState = { ...mockStore };
+const mockedState = { ...mockStoreV1 };
 
 export default {
   title: "CytoscapeCanvas/MeasureText",

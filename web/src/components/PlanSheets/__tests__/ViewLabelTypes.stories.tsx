@@ -6,7 +6,7 @@ import { userEvent } from "@storybook/testing-library";
 import { Provider } from "react-redux";
 
 import { setupStore } from "@/redux/store";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
 import { PanelInstanceContextMock } from "@/test-utils/storybook-utils";
 
 import { defaultOptionalVisibileLabelTypes } from "../properties/LabelPropertiesUtils";
@@ -21,8 +21,8 @@ const PanelTemplate = () => {
   return (
     <Provider
       store={setupStore({
-        ...mockStore,
-        planSheets: { ...mockStore.planSheets, viewableLabelTypes: defaultOptionalVisibileLabelTypes },
+        ...mockStoreV1,
+        planSheets: { ...modifiedStateV1({ viewableLabelTypes: defaultOptionalVisibileLabelTypes }) },
       })}
     >
       <PanelsContextProvider>

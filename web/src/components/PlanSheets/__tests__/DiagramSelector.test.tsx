@@ -5,22 +5,14 @@ import { generatePath, Route } from "react-router-dom";
 
 import { nestedMiniTitlePlan } from "@/components/PlanSheets/__tests__/data/plansheetDiagramData";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
-import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
-import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
+import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { server } from "@/mocks/mockServer";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 describe("Diagram Selector panel", () => {
-  const planSheetsState = {
-    diagrams: [],
-    pages: [],
-    hasChanges: false,
-    planMode: PlanMode.View,
-    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-  };
-
   beforeAll(() => {
     const plan = new PlanDataBuilder()
       .addDiagram(
@@ -56,8 +48,7 @@ describe("Diagram Selector panel", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
             activeSheet: PlanSheetType.SURVEY,
             activePageNumbers: {
               [PlanSheetType.TITLE]: 0,
@@ -67,7 +58,7 @@ describe("Diagram Selector panel", () => {
             previousDiagrams: [],
             previousPages: [],
             canViewHiddenLabels: true,
-          },
+          }),
         },
       },
     );
@@ -81,8 +72,7 @@ describe("Diagram Selector panel", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
             activeSheet: PlanSheetType.TITLE,
             activePageNumbers: {
               [PlanSheetType.TITLE]: 0,
@@ -92,7 +82,7 @@ describe("Diagram Selector panel", () => {
             previousDiagrams: [],
             previousPages: [],
             canViewHiddenLabels: true,
-          },
+          }),
         },
       },
     );
@@ -108,8 +98,7 @@ describe("Diagram Selector panel", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
             diagrams: titleDiagramList,
             pages: titlePageList,
             activeSheet: PlanSheetType.TITLE,
@@ -121,7 +110,7 @@ describe("Diagram Selector panel", () => {
             previousDiagrams: [],
             previousPages: [],
             canViewHiddenLabels: true,
-          },
+          }),
         },
       },
     );
@@ -153,8 +142,7 @@ describe("Diagram Selector panel", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...planSheetsState,
+          planSheets: modifiedStateV1({
             diagrams: titleDiagramList,
             pages: titlePageList,
             activeSheet: PlanSheetType.TITLE,
@@ -166,7 +154,7 @@ describe("Diagram Selector panel", () => {
             previousDiagrams: [],
             previousPages: [],
             canViewHiddenLabels: true,
-          },
+          }),
         },
       },
     );

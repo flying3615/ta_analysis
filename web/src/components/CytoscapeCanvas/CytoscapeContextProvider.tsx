@@ -43,7 +43,7 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
   const scrollToZoom = (cy: cytoscape.Core) => cytoscapeUtils.scrollToZoom(cy);
   const keepPanWithinBoundaries = (cy: cytoscape.Core) => cytoscapeUtils.keepPanWithinBoundaries(cy);
   const onViewportChange = (cy: cytoscape.Core) => cytoscapeUtils.onViewportChange(cy);
-  const selectedElementIds = useAppSelector((state) => state.planSheets.selectedElementIds);
+  const selectedElementIds = useAppSelector((state) => state.planSheets.v1.selectedElementIds);
 
   const checkZoomLimits = () => {
     if (!cyto) return;

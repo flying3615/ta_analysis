@@ -2,7 +2,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setupStore } from "@/redux/store";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1 } from "@/test-utils/store-mock";
 
 import { selectDiagramToPageLookupTable } from "../selectGraphData";
 
@@ -42,9 +42,12 @@ describe("selectDiagramToPageLookupTable", () => {
       .build();
 
     const mockState: PlanSheetsState = {
-      ...mockStore.planSheets,
-      diagrams: diagrams,
-      pages: pages,
+      ...mockStoreV1.planSheets,
+      v1: {
+        ...mockStoreV1.planSheets.v1,
+        diagrams: diagrams,
+        pages: pages,
+      },
     };
 
     const expectedResult = {

@@ -1,63 +1,28 @@
-import {
-  ConfigDataDTO,
-  DiagramDTO,
-  DisplayStateEnum,
-  PageDTO,
-  PlanResponseDTO,
-} from "@linz/survey-plan-generation-api-client";
-import { LabelDTO } from "@linz/survey-plan-generation-api-client";
-import { LineDTO } from "@linz/survey-plan-generation-api-client";
+import { DiagramDTO, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { cloneDeep } from "lodash-es";
 
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
-import { CoordLookup, LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { revertAll } from "@/redux/revertAll";
 
-export interface PlanSheetsState {
-  // plan data
-  configs?: ConfigDataDTO[];
-  diagrams: DiagramDTO[];
-  lastModifiedAt?: string;
-  pages: PageDTO[];
-  // auto recovery
-  lastChangedAt?: string;
-  // UI state
-  activeSheet: PlanSheetType;
-  activePageNumbers: { [key in PlanSheetType]: number };
-  hasChanges: boolean;
-  planMode: PlanMode;
-  lastUpdatedLineStyle?: string;
-  lastUpdatedLabelStyle?: { font?: string; fontSize?: number };
-  alignedLabelNodeId?: string;
-  diagramIdToMove?: number | undefined;
-  previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
-  copiedElements?: {
-    elements: LabelDTO[] | LineDTO[];
-    action: "COPY" | "CUT" | "PASTE";
-    type: "label" | "line";
-    pageId?: number;
-  };
-  // undo buffer
-  previousHasChanges?: boolean;
-  previousDiagrams: DiagramDTO[] | null;
-  previousPages: PageDTO[] | null;
-  originalPositions?: CoordLookup;
-  canViewHiddenLabels: boolean;
-  navigateAfterSave?: string;
-  viewableLabelTypes: string[];
-  selectedElementIds?: string[];
-}
-
-export interface UserEdit extends PlanResponseDTO {
-  lastChangedAt?: string;
-}
-
+import { Optional, PlanSheetsStateV1, PlanSheetsStateV2, State, UserEdit as UE } from "./planSheetsSliceUtils";
+import { reducersV1, selectorsV1 } from "./planSheetsSliceV1";
+import { reducersV2, selectorsV2 } from "./planSheetsSliceV2";
 const IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY = "plangen.isHiddenObjectsVisibleByDefault";
 
-const initialState: PlanSheetsState = {
+export type PlanSheetsState = {
+  stateVersion: string;
+  v2: PlanSheetsStateV2;
+
+  /**
+   * @deprecated
+   */
+  v1: PlanSheetsStateV1;
+};
+export type UserEdit = UE;
+
+const initialState: State = {
   configs: [],
   diagrams: [],
   pages: [],
@@ -69,447 +34,262 @@ const initialState: PlanSheetsState = {
   hasChanges: false,
   planMode: PlanMode.View,
   previousDiagramAttributesMap: {},
-  previousDiagrams: null,
-  previousPages: null,
+  viewableLabelTypes: defaultOptionalVisibileLabelTypes,
   originalPositions: {},
   canViewHiddenLabels: localStorage.getItem(IS_HIDDEN_OBJECTS_VISIBLE_STORAGE_KEY) !== "false",
-  viewableLabelTypes: defaultOptionalVisibileLabelTypes,
   selectedElementIds: [],
 };
-
-/**
- * Call this *before* any action changes diagrams or pages
- * Include here anything we want to update based on the old
- * state
- *
- * NOTE: in React dev mode, the Redux actions can be called twice.
- * You need to determine based on state if you are making
- * the substantive change - see `setLineHide` etc.
- */
-const onDataChanging = (state: PlanSheetsState) => {
-  state.previousHasChanges = state.hasChanges;
-  state.previousDiagrams = cloneDeep(state.diagrams);
-  state.previousPages = cloneDeep(state.pages);
-  state.hasChanges = true;
-  // for auto-recovery to detect when data changed
-  state.lastChangedAt = new Date().toISOString();
+const initialPlanSheetState: PlanSheetsState = {
+  v1: {
+    ...initialState,
+    previousDiagrams: null,
+    previousPages: null,
+  },
+  v2: {
+    current: initialState,
+    past: initialState,
+  },
+  stateVersion: "V1",
 };
-
-// type based on T with K keys made optional
-type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 const planSheetsSlice = createSlice({
   name: "planSheets",
-  initialState,
-  extraReducers: (builder) => builder.addCase(revertAll, () => initialState),
+  initialState: initialPlanSheetState,
+  extraReducers: (builder) => builder.addCase(revertAll, () => initialPlanSheetState),
   reducers: {
-    setPlanData: (state, action: PayloadAction<Optional<PlanResponseDTO, "configs">>) => {
-      state.configs = action.payload.configs;
-      state.diagrams = action.payload.diagrams;
-      state.lastModifiedAt = action.payload.lastModifiedAt;
-      state.pages = action.payload.pages;
-      state.hasChanges = false;
-      state.lastChangedAt = undefined;
-      state.previousDiagrams = null;
-      state.previousPages = null;
-
-      const sheetTypes = [PlanSheetType.TITLE, PlanSheetType.SURVEY];
-      sheetTypes.forEach((type) => {
-        if (state.pages.some((page) => page.pageType === type) && !state.activePageNumbers[type]) {
-          state.activePageNumbers[type] = 1;
-        }
-      });
-      state.originalPositions = LookupOriginalCoord(action.payload.diagrams);
-    },
-    recoverAutoSave: (state, action: PayloadAction<UserEdit>) => {
+    setPlanData: (state: PlanSheetsState, action: PayloadAction<Optional<PlanResponseDTO, "configs">>) =>
+      state.stateVersion === "V2" ? reducersV2.setPlanData(state.v2, action) : reducersV1.setPlanData(state.v1, action),
+    replaceDiagrams: (state: PlanSheetsState, action: PayloadAction<DiagramDTO[]>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.replaceDiagrams(state.v2, action)
+        : reducersV1.replaceDiagrams(state.v1, action),
+    replacePage: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ updatedPage: PageDTO; applyOnDataChanging?: boolean }>,
+    ) =>
+      state.stateVersion === "V2" ? reducersV2.replacePage(state.v2, action) : reducersV1.replacePage(state.v1, action),
+    doPastePageLabels: (state: PlanSheetsState, action: PayloadAction<{ updatedPage: PageDTO }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.doPastePageLabels(state.v2, action)
+        : reducersV1.doPastePageLabels(state.v1, action),
+    doPastePageLines: (state: PlanSheetsState, action: PayloadAction<{ updatedPage: PageDTO }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.doPastePageLines(state.v2, action)
+        : reducersV1.doPastePageLines(state.v1, action),
+    replaceDiagramsAndPage: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>,
+    ) =>
+      state.stateVersion === "V2"
+        ? reducersV2.replaceDiagramsAndPage(state.v2, action)
+        : reducersV1.replaceDiagramsAndPage(state.v1, action),
+    setActiveSheet: (state: PlanSheetsState, action: PayloadAction<PlanSheetType>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setActiveSheet(state.v2, action)
+        : reducersV1.setActiveSheet(state.v1, action),
+    setActivePageNumber: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>,
+    ) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setActivePageNumber(state.v2, action)
+        : reducersV1.setActivePageNumber(state.v1, action),
+    setDiagramPageRef: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ id: number; pageRef: number | undefined; adjustDiagram: (d: DiagramDTO) => DiagramDTO }>,
+    ) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setDiagramPageRef(state.v2, action)
+        : reducersV1.setDiagramPageRef(state.v1, action),
+    removeDiagramPageRef: (state: PlanSheetsState, action: PayloadAction<number>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.removeDiagramPageRef(state.v2, action)
+        : reducersV1.removeDiagramPageRef(state.v1, action),
+    updatePages: (state: PlanSheetsState, action: PayloadAction<PageDTO[]>) =>
+      state.stateVersion === "V2" ? reducersV2.updatePages(state.v2, action) : reducersV1.updatePages(state.v1, action),
+    setPlanMode: (state: PlanSheetsState, action: PayloadAction<PlanMode>) =>
+      state.stateVersion === "V2" ? reducersV2.setPlanMode(state.v2, action) : reducersV1.setPlanMode(state.v1, action),
+    setSelectedElementIds: (state: PlanSheetsState, action: PayloadAction<string[]>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setSelectedElementIds(state.v2, action)
+        : reducersV1.setSelectedElementIds(state.v1, action),
+    setLastUpdatedLineStyle: (state: PlanSheetsState, action: PayloadAction<string>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setLastUpdatedLineStyle(state.v2, action)
+        : reducersV1.setLastUpdatedLineStyle(state.v1, action),
+    setLastUpdatedLabelStyle: (state: PlanSheetsState, action: PayloadAction<{ font?: string; fontSize?: number }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setLastUpdatedLabelStyle(state.v2, action)
+        : reducersV1.setLastUpdatedLabelStyle(state.v1, action),
+    setAlignedLabelNodeId: (state: PlanSheetsState, action: PayloadAction<{ nodeId: string }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setAlignedLabelNodeId(state.v2, action)
+        : reducersV1.setAlignedLabelNodeId(state.v1, action),
+    setDiagramIdToMove: (state: PlanSheetsState, action: PayloadAction<number | undefined>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setDiagramIdToMove(state.v2, action)
+        : reducersV1.setDiagramIdToMove(state.v1, action),
+    setSymbolHide: (state: PlanSheetsState, action: PayloadAction<{ id: string; hide: boolean }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setSymbolHide(state.v2, action)
+        : reducersV1.setSymbolHide(state.v1, action),
+    setPreviousDiagramAttributes: (state: PlanSheetsState, action: PayloadAction<PreviousDiagramAttributes>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setPreviousDiagramAttributes(state.v2, action)
+        : reducersV1.setPreviousDiagramAttributes(state.v1, action),
+    setLineHide: (state: PlanSheetsState, action: PayloadAction<{ id: string; hide: boolean }>) =>
+      state.stateVersion === "V2" ? reducersV2.setLineHide(state.v2, action) : reducersV1.setLineHide(state.v1, action),
+    setCopiedElements: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ ids: number[]; type: string; action: "COPY" | "CUT"; pageId: number }>,
+    ) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setCopiedElements(state.v2, action)
+        : reducersV1.setCopiedElements(state.v1, action),
+    removePageLines: (state: PlanSheetsState, action: PayloadAction<{ lineIds: string[] }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.removePageLines(state.v2, action)
+        : reducersV1.removePageLines(state.v1, action),
+    removePageLabels: (state: PlanSheetsState, action: PayloadAction<{ labelIds: number[] }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.removePageLabels(state.v2, action)
+        : reducersV1.removePageLabels(state.v1, action),
+    undo: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? reducersV2.undo(state.v2) : reducersV1.undo(state.v1),
+    clearUndo: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? reducersV2.clearUndo(state.v2) : reducersV1.clearUndo(state.v1),
+    setCanViewHiddenLabels: (state: PlanSheetsState, action: PayloadAction<boolean>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setCanViewHiddenLabels(state.v2, action)
+        : reducersV1.setCanViewHiddenLabels(state.v1, action),
+    navigateAfterSave: (state: PlanSheetsState, action: PayloadAction<string | undefined>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.navigateAfterSave(state.v2, action)
+        : reducersV1.navigateAfterSave(state.v1, action),
+    setViewableLabelTypes: (state: PlanSheetsState, action: PayloadAction<string[]>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.setViewableLabelTypes(state.v2, action)
+        : reducersV1.setViewableLabelTypes(state.v1, action),
+    updateMaxElemIds: (state: PlanSheetsState, action: PayloadAction<{ element: string; maxId: number }>) =>
+      state.stateVersion === "V2"
+        ? reducersV2.updateMaxElemIds(state.v2, action)
+        : reducersV1.updateMaxElemIds(state.v1, action),
+    recoverAutoSave: (state: PlanSheetsState, action: PayloadAction<UserEdit>) => {
       // set data as usual
       planSheetsSlice.caseReducers.setPlanData(state, action);
-      // but mark as changed
-      state.hasChanges = true;
-      state.lastChangedAt = action.payload.lastChangedAt;
-    },
-    replaceDiagrams: (state, action: PayloadAction<DiagramDTO[]>) => {
-      onDataChanging(state);
-      action.payload.forEach((diagram) => {
-        const index = state.diagrams.findIndex((d) => d.id === diagram.id);
-        state.diagrams[index] = diagram;
-      });
-    },
-    replacePage: (state, action: PayloadAction<{ updatedPage: PageDTO; applyOnDataChanging?: boolean }>) => {
-      const { updatedPage, applyOnDataChanging } = action.payload;
-      (applyOnDataChanging ?? true) && onDataChanging(state);
-      const index = state.pages.findIndex((page) => page.id === updatedPage.id);
-      state.pages[index] = updatedPage;
-    },
-    doPastePageLabels: (state, action: PayloadAction<{ updatedPage: PageDTO }>) => {
-      const { updatedPage } = action.payload;
-      onDataChanging(state);
-      const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
-
-      if (!state.copiedElements) return;
-
-      if (state.copiedElements.action === "CUT") {
-        // do copy action
-        state.pages[targetPageIndex] = updatedPage;
-
-        // then remove the original label from the source page
-        const originalPageId = state.copiedElements.pageId;
-        const originalPage = state.pages.find((page) => page.id === originalPageId)!;
-        const originalPageIndex = state.pages.findIndex((page) => page.id === originalPageId);
-        const originalLabels = originalPage?.labels?.filter(
-          (label) => !state.copiedElements?.elements.some((el) => el.id === label.id),
-        );
-        state.pages[originalPageIndex] = { ...originalPage, labels: originalLabels };
-      } else {
-        // If it's a copy action, just update the page with the new labels
-        state.pages[targetPageIndex] = updatedPage;
+      if (state.stateVersion === "V1") {
+        // but mark as changed
+        state.v1.hasChanges = true;
+        state.v1.lastChangedAt = action.payload.lastChangedAt;
+      } else if (state.stateVersion === "V2") {
+        state.v2.current.hasChanges = true;
+        state.v2.current.lastChangedAt = action.payload.lastChangedAt;
       }
-      state.copiedElements.action = "PASTE";
     },
-    doPastePageLines: (state, action: PayloadAction<{ updatedPage: PageDTO }>) => {
-      const { updatedPage } = action.payload;
-      onDataChanging(state);
-
-      if (!state.copiedElements) return;
-
-      const targetPageIndex = state.pages.findIndex((page) => page.id === updatedPage.id);
-      if (state.copiedElements.action === "CUT") {
-        // do copy action
-        state.pages[targetPageIndex] = updatedPage;
-
-        // then remove the original lines and coords from the source page
-        const copiedLineIds = state.copiedElements.elements.map((line) => line.id);
-        const originalPageId = state.copiedElements.pageId;
-        const originalPage = state.pages.find((page) => page.id === originalPageId)!;
-        const originalPageIndex = state.pages.findIndex((page) => page.id === originalPageId);
-
-        const filteredOriginalCoordinates = originalPage.coordinates?.filter(
-          (coord) =>
-            !originalPage.lines
-              ?.filter((line) => copiedLineIds.includes(line.id))
-              .some((line) => line.coordRefs.includes(coord.id)),
-        );
-
-        const filteredOriginalLines = originalPage.lines?.filter((line) => !copiedLineIds.includes(line.id));
-
-        state.pages[originalPageIndex] = {
-          ...originalPage,
-          coordinates: filteredOriginalCoordinates,
-          lines: filteredOriginalLines,
+    convertToV2: (state: PlanSheetsState) => {
+      console.log("CONVERTING TO V2");
+      if (state.stateVersion === "V1") {
+        state.v2 = {
+          current: state.v1,
+          past: state.v1,
         };
-      } else {
-        // If it's a copy action, just update the page with the new lines and coords
-        state.pages[targetPageIndex] = updatedPage;
-      }
-    },
-    replaceDiagramsAndPage: (state, action: PayloadAction<{ diagrams: DiagramDTO[]; page?: PageDTO }>) => {
-      onDataChanging(state);
-      action.payload.diagrams.forEach((diagram: DiagramDTO) => {
-        const index = state.diagrams.findIndex((d) => d.id === diagram.id);
-        state.diagrams[index] = diagram;
-      });
-
-      if (action.payload.page) {
-        const pageIndex = state.pages.findIndex((p) => p.id === action.payload.page?.id);
-        if (pageIndex !== -1) {
-          state.pages[pageIndex] = action.payload.page;
-        } else {
-          state.pages.push(action.payload.page);
-        }
-      }
-    },
-    setActiveSheet: (state, action: PayloadAction<PlanSheetType>) => {
-      state.activeSheet = action.payload;
-    },
-    setActivePageNumber: (state, action: PayloadAction<{ pageType: PlanSheetType; pageNumber: number }>) => {
-      state.activePageNumbers[action.payload.pageType] = action.payload.pageNumber;
-    },
-    setDiagramPageRef: (
-      state,
-      action: PayloadAction<{ id: number; pageRef: number | undefined; adjustDiagram: (d: DiagramDTO) => DiagramDTO }>,
-    ) => {
-      onDataChanging(state);
-      const { id, pageRef, adjustDiagram } = action.payload;
-      state.diagrams = state.diagrams.map((d) => (d.id === id ? { ...adjustDiagram(d), pageRef } : d));
-    },
-    removeDiagramPageRef: (state, action: PayloadAction<number>) => {
-      onDataChanging(state);
-      state.diagrams.forEach((diagram) => {
-        if (diagram.pageRef === action.payload) {
-          diagram.pageRef = undefined;
-        }
-      });
-    },
-    updatePages: (state, action: PayloadAction<PageDTO[]>) => {
-      onDataChanging(state);
-      state.pages = action.payload;
-    },
-    setPlanMode: (state, action: PayloadAction<PlanMode>) => {
-      // keep selected labels when toggling select_target_line/select_label mode
-      const isToggleSelectTargetLine =
-        (state.planMode === PlanMode.SelectTargetLine && action.payload === PlanMode.SelectLabel) ||
-        (state.planMode === PlanMode.SelectLabel && action.payload === PlanMode.SelectTargetLine);
-
-      if (!isToggleSelectTargetLine) {
-        state.selectedElementIds = [];
-      }
-
-      state.planMode = action.payload;
-    },
-    setSelectedElementIds: (state, action: PayloadAction<string[]>) => {
-      state.selectedElementIds = action.payload;
-    },
-    setLastUpdatedLineStyle: (state, action: PayloadAction<string>) => {
-      state.lastUpdatedLineStyle = action.payload;
-    },
-    setLastUpdatedLabelStyle: (state, action: PayloadAction<{ font?: string; fontSize?: number }>) => {
-      state.lastUpdatedLabelStyle = action.payload;
-    },
-    setAlignedLabelNodeId: (state, action: PayloadAction<{ nodeId: string }>) => {
-      state.alignedLabelNodeId = action.payload.nodeId;
-    },
-    setDiagramIdToMove: (state, action: PayloadAction<number | undefined>) => {
-      state.diagramIdToMove = action.payload;
-    },
-    setSymbolHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
-      const { id, hide } = action.payload;
-
-      const labelToChange = state.diagrams.flatMap((diagram) => {
-        return diagram.coordinateLabels.filter((label) => label.id.toString() === id);
-      })[0];
-      if (!labelToChange) return;
-      const labelIsHidden = ["hide", "systemHide"].includes(labelToChange.displayState ?? "");
-      if (labelIsHidden === hide) return;
-
-      onDataChanging(state);
-
-      labelToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
-    },
-    setPreviousDiagramAttributes: (state, action: PayloadAction<PreviousDiagramAttributes>) => {
-      state.previousDiagramAttributesMap[action.payload.id] = action.payload;
-    },
-    setLineHide: (state, action: PayloadAction<{ id: string; hide: boolean }>) => {
-      const { id, hide } = action.payload;
-
-      let lineToChange = undefined;
-      searchDiagramLines: for (const diagram of state.diagrams) {
-        for (const line of diagram.lines ?? []) {
-          if (line.id.toString() === id) {
-            lineToChange = line;
-            break searchDiagramLines;
-          }
-        }
-      }
-
-      searchPageLines: for (const page of state.pages) {
-        for (const line of page.lines ?? []) {
-          if (line.id.toString() === id) {
-            lineToChange = line;
-            break searchPageLines;
-          }
-        }
-      }
-
-      if (!lineToChange) return;
-      const lineIsHidden = ["hide", "systemHide"].includes(lineToChange.displayState ?? "");
-      if (lineIsHidden === hide) return;
-
-      onDataChanging(state);
-
-      lineToChange.displayState = hide ? DisplayStateEnum.hide : DisplayStateEnum.display;
-    },
-    setCopiedElements: (
-      state,
-      action: PayloadAction<{ ids: number[]; type: string; action: "COPY" | "CUT"; pageId: number }>,
-    ) => {
-      const { ids, type, pageId } = action.payload;
-      if (ids.length === 0) return;
-
-      if (action.payload.action === "CUT") {
-        onDataChanging(state);
-      }
-
-      if (type === "label") {
-        const targetLabels: LabelDTO[] = [];
-        state.pages.forEach((page) => {
-          const copiedLabels = page.labels?.filter((label) => ids.includes(label.id));
-          if (copiedLabels && copiedLabels.length > 0 && copiedLabels[0] !== undefined) {
-            targetLabels.push(...copiedLabels);
-          }
-        });
-        state.copiedElements = {
-          elements: targetLabels,
-          action: action.payload.action,
-          type: "label",
-          pageId,
-        };
-      } else {
-        const targetLines: LineDTO[] = [];
-        state.pages.forEach((page) => {
-          const copiedLines = page.lines?.filter((line) => ids.includes(line.id));
-          if (copiedLines && copiedLines.length > 0 && copiedLines[0] !== undefined) {
-            targetLines.push(copiedLines[0]);
-          }
-        });
-        state.copiedElements = {
-          elements: targetLines,
-          action: action.payload.action,
-          type: "line",
-          pageId,
-        };
-      }
-    },
-    removePageLines: (state, action: PayloadAction<{ lineIds: string[] }>) => {
-      const { lineIds } = action.payload;
-
-      onDataChanging(state);
-
-      state.pages.forEach((page) => {
-        const linesToRemove = page.lines?.filter((line) => lineIds.includes(line.id.toString())) ?? [];
-        page.lines = page.lines?.filter((line) => !linesToRemove.includes(line));
-
-        //also remove any page coordinates from the removed lines that are not referenced by any other lines
-        const coordinatesToRemove = linesToRemove
-          .flatMap((line) => line.coordRefs)
-          .filter((coordRef) => !page.lines?.some((line) => line.coordRefs.includes(coordRef)));
-        page.coordinates = page.coordinates?.filter((coord) => !coordinatesToRemove.includes(coord.id));
-      });
-    },
-    removePageLabels: (state, action: PayloadAction<{ labelIds: number[] }>) => {
-      const { labelIds } = action.payload;
-
-      onDataChanging(state);
-
-      state.pages.forEach((page) => {
-        page.labels = page.labels?.filter((label) => !labelIds.includes(label.id));
-      });
-    },
-    undo: (state) => {
-      if (!state.previousDiagrams || !state.previousPages) return;
-
-      if (state.copiedElements && (state.copiedElements.action === "CUT" || state.copiedElements.action === "PASTE")) {
-        state.copiedElements.action = "COPY";
-      }
-
-      state.hasChanges = state.previousHasChanges ?? false;
-      if (!state.hasChanges) {
-        state.lastChangedAt = undefined;
-      }
-
-      state.diagrams = cloneDeep(state.previousDiagrams);
-      state.pages = cloneDeep(state.previousPages);
-
-      state.previousDiagrams = null;
-      state.previousPages = null;
-    },
-    clearUndo: (state) => {
-      state.previousHasChanges = false;
-      state.previousDiagrams = null;
-      state.previousPages = null;
-    },
-    setCanViewHiddenLabels: (state, action: PayloadAction<boolean>) => {
-      state.canViewHiddenLabels = action.payload;
-    },
-    navigateAfterSave: (state, action: PayloadAction<string | undefined>) => {
-      state.navigateAfterSave = action.payload;
-    },
-    setViewableLabelTypes: (state, action: PayloadAction<string[]>) => {
-      state.viewableLabelTypes = action.payload;
-    },
-    updateMaxElemIds: (state, action: PayloadAction<{ element: string; maxId: number }>) => {
-      const { element, maxId } = action.payload;
-      if (state.configs && state.configs[0]) {
-        state.configs[0].maxElemIds.forEach((elem) => {
-          if (elem.element === element) {
-            elem.maxId = maxId;
-          }
-        });
+        state.stateVersion = "V2";
       }
     },
   },
   selectors: {
-    getPlanData: (state) => ({ diagrams: state.diagrams, lastModifiedAt: state.lastModifiedAt, pages: state.pages }),
-    getDiagrams: (state) => state.diagrams,
-    getPages: (state) => state.pages,
-    getConfigs: (state) => state.configs,
-    getLastModifiedAt: (state) => state.lastModifiedAt,
-    getActiveSheet: (state) => state.activeSheet,
-    getPageConfigs: (state) => state.configs?.[0]?.pageConfigs ?? [],
-    getElementTypeConfigs: (state) => state.configs?.[0]?.elementTypeConfigs ?? [],
-    getMaxElemIds: (state) => state.configs?.[0]?.maxElemIds ?? [],
-    getPageNumberFromPageRef: (state) => (pageID: number) => {
-      const page = state.pages.find((page) => page.pageType === state.activeSheet && page.id === pageID);
-      return page?.pageNumber ?? null;
-    },
-    getActivePageRefFromPageNumber: (state) => {
-      const page = state.pages.find(
-        (page) => page.pageType === state.activeSheet && page.pageNumber === state.activePageNumbers[state.activeSheet],
-      );
-      return page?.id ?? null;
-    },
-    getPageByRef: (state) => (pageID: number) => {
-      return state.pages.find((page) => page.id === pageID);
-    },
-    getPageRefFromPageNumber: (state) => (pageNumber: number) => {
-      const page = state.pages.find((page) => page.pageType === state.activeSheet && page.pageNumber === pageNumber);
-      return page?.id ?? null;
-    },
-    getActivePages: (state) => {
-      return state.pages.filter((page) => state.activeSheet === page.pageType);
-    },
-    getActivePage: (state) => {
-      const activePageNumber = state.activePageNumbers[state.activeSheet];
-
-      let activePage = state.pages.find(
-        (page) => state.activeSheet === page.pageType && page.pageNumber === activePageNumber,
-      );
-
-      // if the copied elements are cut, remove them from the active page
-      if (state.copiedElements && state.copiedElements.action === "CUT") {
-        if (activePage) {
-          const updatedLabels = activePage.labels?.filter(
-            (label) => !state.copiedElements?.elements.some((el) => el.id === label.id),
-          );
-          activePage = { ...activePage, labels: updatedLabels };
-
-          const updatedLines = activePage.lines?.filter(
-            (line) => !state.copiedElements?.elements.some((el) => el.id === line.id),
-          );
-          activePage = { ...activePage, lines: updatedLines };
-        }
-      }
-
-      return activePage;
-    },
-    getActivePageNumber: (state) => {
-      const pageType = state.activeSheet;
-      return state.activePageNumbers[pageType];
-    },
-    getCopiedElements: (state) => state.copiedElements,
-    getFilteredPages: (state) => {
-      const filteredPages = state.pages.filter((page) => page.pageType === state.activeSheet);
-      return {
-        totalPages: filteredPages.length,
-      };
-    },
-    getOriginalPositions: (state) => state.originalPositions,
-    hasChanges: (state) => state.hasChanges,
-    getLastChangedAt: (state) => state.lastChangedAt,
-    getPlanMode: (state) => state.planMode,
-    getSelectedElementIds: (state) => state.selectedElementIds,
-    getLastUpdatedLineStyle: (state) => state.lastUpdatedLineStyle,
-    getLastUpdatedLabelStyle: (state) => state.lastUpdatedLabelStyle,
-    getAlignedLabelNodeId: (state) => state.alignedLabelNodeId,
-    getDiagramIdToMove: (state) => state.diagramIdToMove,
-    getPreviousAttributesForDiagram:
-      (state) =>
-      (id: number): PreviousDiagramAttributes | undefined => {
-        return state.previousDiagramAttributesMap[id];
-      },
-    canUndo: (state) => state.previousDiagrams != null && state.previousPages != null,
-    getCanViewHiddenLabels: (state) => state.canViewHiddenLabels,
-    hasNavigateAfterSave: (state) => state.navigateAfterSave,
-    getViewableLabelTypes: (state) => state.viewableLabelTypes,
+    getPlanData: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getPlanData(state.v2) : selectorsV1.getPlanData(state.v1),
+    getDiagrams: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getDiagrams(state.v2) : selectorsV1.getDiagrams(state.v1),
+    getPages: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getPages(state.v2) : selectorsV1.getPages(state.v1),
+    getConfigs: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getConfigs(state.v2) : selectorsV1.getConfigs(state.v1),
+    getLastModifiedAt: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getLastModifiedAt(state.v2) : selectorsV1.getLastModifiedAt(state.v1),
+    getActiveSheet: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getActiveSheet(state.v2) : selectorsV1.getActiveSheet(state.v1),
+    getPageConfigs: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getPageConfigs(state.v2) : selectorsV1.getPageConfigs(state.v1),
+    getElementTypeConfigs: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getElementTypeConfigs(state.v2)
+        : selectorsV1.getElementTypeConfigs(state.v1),
+    getMaxElemIds: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getMaxElemIds(state.v2) : selectorsV1.getMaxElemIds(state.v1),
+    getPageNumberFromPageRef: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getPageNumberFromPageRef(state.v2)
+        : selectorsV1.getPageNumberFromPageRef(state.v1),
+    getActivePageRefFromPageNumber: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getActivePageRefFromPageNumber(state.v2)
+        : selectorsV1.getActivePageRefFromPageNumber(state.v1),
+    getPageByRef: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getPageByRef(state.v2) : selectorsV1.getPageByRef(state.v1),
+    getPageRefFromPageNumber: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getPageRefFromPageNumber(state.v2)
+        : selectorsV1.getPageRefFromPageNumber(state.v1),
+    getActivePages: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getActivePages(state.v2) : selectorsV1.getActivePages(state.v1),
+    getActivePage: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getActivePage(state.v2) : selectorsV1.getActivePage(state.v1),
+    getActivePageNumber: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getActivePageNumber(state.v2)
+        : selectorsV1.getActivePageNumber(state.v1),
+    getCopiedElements: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getCopiedElements(state.v2) : selectorsV1.getCopiedElements(state.v1),
+    getFilteredPages: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getFilteredPages(state.v2) : selectorsV1.getFilteredPages(state.v1),
+    getOriginalPositions: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getOriginalPositions(state.v2)
+        : selectorsV1.getOriginalPositions(state.v1),
+    hasChanges: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.hasChanges(state.v2) : selectorsV1.hasChanges(state.v1),
+    getLastChangedAt: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getLastChangedAt(state.v2) : selectorsV1.getLastChangedAt(state.v1),
+    getPlanMode: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getPlanMode(state.v2) : selectorsV1.getPlanMode(state.v1),
+    getSelectedElementIds: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getSelectedElementIds(state.v2)
+        : selectorsV1.getSelectedElementIds(state.v1),
+    getLastUpdatedLineStyle: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getLastUpdatedLineStyle(state.v2)
+        : selectorsV1.getLastUpdatedLineStyle(state.v1),
+    getLastUpdatedLabelStyle: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getLastUpdatedLabelStyle(state.v2)
+        : selectorsV1.getLastUpdatedLabelStyle(state.v1),
+    getAlignedLabelNodeId: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getAlignedLabelNodeId(state.v2)
+        : selectorsV1.getAlignedLabelNodeId(state.v1),
+    getDiagramIdToMove: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getDiagramIdToMove(state.v2) : selectorsV1.getDiagramIdToMove(state.v1),
+    getPreviousAttributesForDiagram: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getPreviousAttributesForDiagram(state.v2)
+        : selectorsV1.getPreviousAttributesForDiagram(state.v1),
+    canUndo: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.canUndo(state.v2) : selectorsV1.canUndo(state.v1),
+    getCanViewHiddenLabels: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getCanViewHiddenLabels(state.v2)
+        : selectorsV1.getCanViewHiddenLabels(state.v1),
+    hasNavigateAfterSave: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.hasNavigateAfterSave(state.v2)
+        : selectorsV1.hasNavigateAfterSave(state.v1),
+    getViewableLabelTypes: (state: PlanSheetsState) =>
+      state.stateVersion === "V2"
+        ? selectorsV2.getViewableLabelTypes(state.v2)
+        : selectorsV1.getViewableLabelTypes(state.v1),
   },
 });
 
@@ -544,6 +324,7 @@ export const {
   navigateAfterSave,
   setViewableLabelTypes,
   updateMaxElemIds,
+  convertToV2,
 } = planSheetsSlice.actions;
 
 export const {

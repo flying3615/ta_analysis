@@ -6,7 +6,7 @@ import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 jest.mock("@/hooks/useCytoscapeContext");
 
@@ -16,12 +16,13 @@ jest.mock("@/hooks/useTransactionId", () => ({
 
 const mockStoreRedux = setupStore({
   planSheets: {
-    ...mockStore.planSheets,
-    pages: [],
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 1,
-    },
+    ...modifiedStateV1({
+      pages: [],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 1,
+      },
+    }),
   },
 });
 
@@ -141,7 +142,7 @@ describe("PlanSheetsHeaderButtons", () => {
 
     await waitFor(() => expect(button).toHaveClass("selected"));
 
-    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectCoordinates);
+    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectCoordinates);
   });
 
   it("should handle select lines click", async () => {
@@ -161,7 +162,7 @@ describe("PlanSheetsHeaderButtons", () => {
 
     expect(button).toHaveClass("selected");
 
-    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLine);
+    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectLine);
   });
 
   it("should handle select labels click", async () => {
@@ -171,6 +172,6 @@ describe("PlanSheetsHeaderButtons", () => {
 
     expect(button).toHaveClass("selected");
 
-    expect(mockStoreRedux.getState().planSheets.planMode).toStrictEqual(PlanMode.SelectLabel);
+    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectLabel);
   });
 });

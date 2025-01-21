@@ -11,9 +11,9 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
-interface RecoveryFile extends UserEdit {
+type RecoveryFile = UserEdit & {
   transactionId: number;
-}
+};
 
 export const PLANGEN_LAYOUT_DB = new Dexie("PLANGEN_LAYOUT_DB") as Dexie & {
   autoSave: EntityTable<RecoveryFile, "transactionId">;

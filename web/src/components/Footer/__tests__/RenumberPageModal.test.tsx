@@ -6,7 +6,7 @@ import { RenumberPageModal } from "@/components/Footer/RenumberPageModal";
 import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { modifiedStateV1 } from "@/test-utils/store-mock";
 
 describe("RenumberPageModal", () => {
   const pageInfo = {
@@ -15,14 +15,13 @@ describe("RenumberPageModal", () => {
   };
 
   const mockStoreRedux = setupStore({
-    planSheets: {
-      ...mockStore.planSheets,
+    planSheets: modifiedStateV1({
       pages: [...pages, ...pages],
       activePageNumbers: {
         [PlanSheetType.TITLE]: 3,
         [PlanSheetType.SURVEY]: 1,
       },
-    },
+    }),
   });
 
   test("renders the component", () => {

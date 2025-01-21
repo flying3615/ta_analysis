@@ -8,7 +8,7 @@ import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStore } from "@/test-utils/store-mock";
+import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
 
 describe("PlanSheetsContextMenu", () => {
   const mockedStateForPlanMode = (
@@ -17,9 +17,9 @@ describe("PlanSheetsContextMenu", () => {
   ) => {
     return {
       preloadedState: {
-        ...mockStore,
-        planSheets: {
-          ...mockStore.planSheets,
+        ...mockStoreV1,
+        planSheets: modifiedStateV1({
+          ...mockStoreV1.planSheets.v1,
           diagrams: mockPlanData.diagrams,
           pages: mockPlanData.pages,
           configs: [],
@@ -27,7 +27,7 @@ describe("PlanSheetsContextMenu", () => {
           previousDiagramAttributesMap,
           previousDiagrams: null,
           previousPages: null,
-        },
+        }),
       },
     };
   };
@@ -88,7 +88,7 @@ describe("PlanSheetsContextMenu", () => {
       data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
     } as unknown as NodeSingular;
     const state = mockedStateForPlanMode(PlanMode.SelectCoordinates);
-    const coordinateLabel = state.preloadedState.planSheets.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
+    const coordinateLabel = state.preloadedState.planSheets.v1.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
     coordinateLabel!.displayState = DisplayStateEnum.hide;
 
     renderWithReduxProvider(
