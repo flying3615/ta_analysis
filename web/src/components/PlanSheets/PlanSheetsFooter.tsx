@@ -100,7 +100,13 @@ const PlanSheetsFooter = ({
   const closePlan = () => navigate(generatePath(Paths.root, { transactionId }));
 
   // Save upon pressing Ctrl+S
-  useOnKeyDown(({ key, ctrlKey }) => ctrlKey && key === "s", updatePlan);
+  useOnKeyDown(
+    ({ key, ctrlKey }) => ctrlKey && key === "s",
+    (event) => {
+      event.preventDefault();
+      updatePlan();
+    },
+  );
 
   useEffect(() => {
     if (updatePlanIsSuccess) {
