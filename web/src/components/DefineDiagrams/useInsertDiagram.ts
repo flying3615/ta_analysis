@@ -7,12 +7,12 @@ import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiag
 import { error32021_diagramNoArea, error32027_diagramTooManySides } from "@/components/DefineDiagrams/prefabErrors";
 import ScaleDiagram from "@/components/DefineDiagrams/ScaleDiagram";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useActionToast } from "@/hooks/useActionToast";
 import { DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { useGetDiagramsQuery } from "@/queries/diagrams";
-import { InsertDiagramError, useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation";
+import { useInsertDiagramMutation } from "@/queries/useInsertDiagramMutation";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { useShowToast } from "@/util/showToast";
 
 const actionToDiagramTypeAndShape: Partial<
   Record<DefineDiagramsActionType, [PostDiagramsRequestDTODiagramTypeEnum, DrawInteractionType]>
@@ -32,6 +32,7 @@ export const useInsertDiagram = () => {
 
   const { map } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
+  const actionToast = useActionToast();
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
@@ -44,7 +45,6 @@ export const useInsertDiagram = () => {
   });
 
   const { mutateAsync: insertDiagram, isPending: loading } = useInsertDiagramMutation(transactionId);
-  const { showErrorToast } = useShowToast();
 
   const enabled = activeAction in actionToDiagramTypeAndShape;
   const [diagramType, type] = actionToDiagramTypeAndShape[activeAction] ?? [];
@@ -71,16 +71,17 @@ export const useInsertDiagram = () => {
       const scaleDiagram = diagrams && new ScaleDiagram(diagrams);
       const zoomScale = scaleDiagram?.zoomScale(latLongCartesians) ?? 1;
 
-      try {
-        await insertDiagram({
-          transactionId,
-          postDiagramsRequestDTO: { diagramType, zoomScale, coordinates: latLongCartesians },
-        });
-      } catch (ex) {
-        showErrorToast((ex instanceof InsertDiagramError && ex.message) || "Unexpected error");
-      } finally {
-        drawAbort();
-      }
+      await actionToast(
+        () =>
+          insertDiagram({
+            transactionId,
+            postDiagramsRequestDTO: { diagramType, zoomScale, coordinates: latLongCartesians },
+          }),
+        {
+          errorMessage: `Insert diagram failed due to`,
+        },
+      );
+      drawAbort();
     },
     drawAbort,
   });

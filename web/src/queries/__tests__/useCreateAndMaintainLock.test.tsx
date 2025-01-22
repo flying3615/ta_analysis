@@ -111,7 +111,7 @@ describe("useCreateAndMaintainLock hook", () => {
     );
 
     await waitFor(async () => {
-      expect(await screen.findByText("An unknown error has prevented the locks from loading.")).toBeTruthy();
+      expect(await screen.findByText("An unexpected error has prevented the locks from loading.")).toBeTruthy();
     });
   });
 
@@ -122,7 +122,7 @@ describe("useCreateAndMaintainLock hook", () => {
     );
 
     await waitFor(async () => {
-      expect(await screen.findByText("An unknown error has prevented the locks from loading.")).toBeTruthy();
+      expect(await screen.findByText("An unexpected error has prevented the locks from loading.")).toBeTruthy();
     });
   });
 });

@@ -14,12 +14,12 @@ import {
   error32104_invalidDiagram,
 } from "@/components/DefineDiagrams/prefabErrors";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useActionToast } from "@/hooks/useActionToast";
 import { DrawEndProps, DrawInteractionType, useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
 import { getOpenlayersQueryDiagram } from "@/queries/diagrams";
-import { UpdateDiagramError, useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation";
+import { useUpdateDiagramMutation } from "@/queries/useUpdateDiagramMutation";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
 import { numericToCartesian } from "@/util/mapUtil";
-import { useShowToast } from "@/util/showToast";
 
 export interface useRemoveRtLineProps {
   transactionId: number;
@@ -40,7 +40,7 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
   const queryClient = useQueryClient();
   const { showPrefabModal } = useLuiModalPrefab();
   const { mutateAsync: updateDiagram, isPending: loading } = useUpdateDiagramMutation(transactionId);
-  const { showErrorToast } = useShowToast();
+  const actionToast = useActionToast();
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
@@ -83,34 +83,25 @@ export const useResizeDiagram = ({ transactionId, enabled, selectedDiagramIds }:
        * Update the polygon
        */
       const co = combined.geometry.coordinates[0] ?? [];
-      try {
-        await updateDiagram({
-          diagramType: diagram.diagramType,
-          geometry: combined.geometry,
-          request: {
-            transactionId,
-            diagramId,
-            updateDiagramRequestDTO: {
-              coordinates: co.map(numericToCartesian),
+
+      await actionToast(
+        () =>
+          updateDiagram({
+            diagramType: diagram.diagramType,
+            geometry: combined.geometry,
+            request: {
+              transactionId,
+              diagramId,
+              updateDiagramRequestDTO: {
+                coordinates: co.map(numericToCartesian),
+              },
             },
-          },
-        });
-      } catch (ex) {
-        showErrorToast((ex instanceof UpdateDiagramError && ex.message) || "Unexpected error");
-      } finally {
-        dispatch(setActiveAction("idle"));
-      }
+          }),
+        { errorMessage: "Resize diagram failed due to" },
+      );
+      dispatch(setActiveAction("idle"));
     },
-    [
-      selectedDiagramIds,
-      combineFn,
-      queryClient,
-      transactionId,
-      showPrefabModal,
-      dispatch,
-      updateDiagram,
-      showErrorToast,
-    ],
+    [selectedDiagramIds, combineFn, queryClient, transactionId, actionToast, dispatch, showPrefabModal, updateDiagram],
   );
 
   useOpenLayersDrawInteraction({

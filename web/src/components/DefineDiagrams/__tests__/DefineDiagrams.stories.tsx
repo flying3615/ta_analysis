@@ -761,5 +761,5 @@ DrawAbuttalLineErrorMessagePopUp.play = async () => {
   if (lineCoordinates[3]) {
     await doubleClickOnMap(lineCoordinates[3]);
   }
-  await expect(await screen.findByText("Create abuttal line failed due to unknown reason")).toBeInTheDocument();
+  await expect(await screen.findByText("Create abuttal line failed due to unexpected error")).toBeInTheDocument();
 };

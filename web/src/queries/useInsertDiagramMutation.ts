@@ -10,8 +10,6 @@ import { useDiagramLabelsHook } from "@/queries/labels";
 import { cartesianToNumeric } from "@/util/mapUtil";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil";
 
-export class InsertDiagramError extends Error {}
-
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
  */
@@ -44,10 +42,10 @@ export const useInsertDiagramMutation = (transactionId: number) => {
     mutationFn: async (props: InsertUserDefinedDiagramRequest) => {
       const response = await new DiagramsControllerApi(apiConfig() as never).insertUserDefinedDiagram(props);
       if (!response.ok) {
-        throw new InsertDiagramError(response.message ?? "Unknown error");
+        throw Error(response.message || "unexpected error");
       }
       if (response.diagramId == null) {
-        throw new InsertDiagramError("Unexpected null response for diagramId");
+        throw Error("unexpected null response for diagramId");
       }
       return response;
     },
@@ -55,7 +53,6 @@ export const useInsertDiagramMutation = (transactionId: number) => {
       match && removeQueryData({ match });
     },
     onSuccess: (response, _variables, match) => {
-      // Success
       updateQueryData({ match, withProps: { id: response.diagramId } });
       return diagramLabels.updateLabels();
     },

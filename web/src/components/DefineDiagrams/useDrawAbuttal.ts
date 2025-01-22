@@ -5,23 +5,23 @@ import { useContext } from "react";
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import { error32027_abuttalTooManyPoints } from "@/components/DefineDiagrams/prefabErrors";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useActionToast } from "@/hooks/useActionToast";
 import { useOpenLayersDrawInteraction } from "@/hooks/useOpenLayersDrawInteraction";
 import { useTransactionId } from "@/hooks/useTransactionId";
-import { InsertAbuttalLineError, useInsertAbuttalLineMutation } from "@/queries/useInsertAbuttalLineMutation";
+import { useInsertAbuttalLineMutation } from "@/queries/useInsertAbuttalLineMutation";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { useShowToast } from "@/util/showToast";
 
 const maxPoints = 47;
 
 export const useDrawAbuttal = () => {
   const transactionId = useTransactionId();
 
-  const { showErrorToast } = useShowToast();
   const { map } = useContext(LolOpenLayersMapContext);
   const { showPrefabModal } = useLuiModalPrefab();
 
   const dispatch = useAppDispatch();
   const activeAction = useAppSelector(getActiveAction);
+  const actionToast = useActionToast();
 
   const { mutateAsync: insertAbuttalLine, isPending: loading } = useInsertAbuttalLineMutation(transactionId);
 
@@ -41,17 +41,18 @@ export const useDrawAbuttal = () => {
     drawEnd: async ({ latLongCartesians }) => {
       if (!map) return;
 
-      try {
-        await insertAbuttalLine({
-          transactionId,
-          createLineRequestDTO: { coordinates: latLongCartesians },
-        });
-      } catch (ex) {
-        const reason = (ex instanceof InsertAbuttalLineError && ex.message) || "unknown reason";
-        showErrorToast(`Create abuttal line failed due to ${reason}`);
-      } finally {
-        drawAbort();
-      }
+      await actionToast(
+        () =>
+          insertAbuttalLine({
+            transactionId,
+            createLineRequestDTO: { coordinates: latLongCartesians },
+          }),
+        {
+          errorMessage: "Create abuttal line failed due to",
+        },
+      );
+
+      drawAbort();
     },
     drawAbort,
   });

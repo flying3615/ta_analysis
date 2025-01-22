@@ -16,7 +16,7 @@ import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
 import { useDefineDiagram } from "@/hooks/useDefineDiagram";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useRemoveDiagram } from "@/hooks/useRemoveDiagram";
-import { useRemoveRtLine } from "@/hooks/useRemoveRTLine";
+import { useRemoveLine } from "@/hooks/useRemoveLine";
 import { useResizeDiagram } from "@/hooks/useResizeDiagram";
 import { useSelectDiagram } from "@/hooks/useSelectDiagram";
 import { useTransactionId } from "@/hooks/useTransactionId";
@@ -63,7 +63,7 @@ export const DefineDiagramMenuButtons = () => {
     loading: loadingRemoveLines,
     canRemoveRtLine,
     removeRtLines,
-  } = useRemoveRtLine({ transactionId, enabled: activeAction === "select_line" });
+  } = useRemoveLine({ transactionId, enabled: activeAction === "select_line" });
 
   const { selectedDiagramIds } = useSelectDiagram({
     transactionId,

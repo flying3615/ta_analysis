@@ -1,4 +1,4 @@
-import { CreateLineResponseDTO, LinesControllerApi } from "@linz/survey-plan-generation-api-client";
+import { LinesControllerApi } from "@linz/survey-plan-generation-api-client";
 import {
   CreateAbuttalLineRequest,
   LinesResponseDTOLinesInnerSymbolTypeEnum,
@@ -11,8 +11,6 @@ import { apiConfig } from "@/queries/apiConfig";
 import { getLinesQueryKey } from "@/queries/lines";
 import { cartesianToNumeric } from "@/util/mapUtil";
 import { byId, useQueryDataUpdate } from "@/util/queryUtil";
-
-export class InsertAbuttalLineError extends Error {}
 
 /**
  * Insert diagram mutation.  Optimistic update with rollback on error.
@@ -42,17 +40,16 @@ export const useInsertAbuttalLineMutation = (transactionId: number) => {
       appendQueryData({ newItem: tempLine });
       return byId(id);
     },
-    mutationFn: async (props: CreateAbuttalLineRequest): Promise<CreateLineResponseDTO> => {
+    mutationFn: async (props: CreateAbuttalLineRequest): Promise<void> => {
       const response = await new LinesControllerApi(apiConfig()).createAbuttalLine(props);
       if (!response.ok) {
-        throw new InsertAbuttalLineError(response.message ?? "unknown reason");
+        throw Error(response.message || "unexpected error");
       }
-      return response;
     },
     onError: (_error, _variables, match) => {
       match && removeQueryData({ match });
     },
-    onSuccess: async (_response, _variables) => {
+    onSuccess: async (_, _variables) => {
       await queryClient.refetchQueries({ queryKey: getLinesQueryKey(transactionId) });
     },
   });

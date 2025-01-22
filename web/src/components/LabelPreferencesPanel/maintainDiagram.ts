@@ -97,11 +97,6 @@ export interface UpdateDiagramPreferencesMutationProps {
 export const useUpdateLayerPreferencesByDiagramTypeMutation = (transactionId: number, diagramTypeCode: string) => {
   const queryClient = useQueryClient();
   const { showErrorToast } = useShowToast();
-  const onError = () => showErrorToast("Error updating diagram layer preferences.");
-  const onSuccess = () =>
-    queryClient.invalidateQueries({
-      queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
-    });
 
   return useMutation({
     mutationFn: async (props: UpdateDiagramPreferencesMutationProps) => {
@@ -120,8 +115,11 @@ export const useUpdateLayerPreferencesByDiagramTypeMutation = (transactionId: nu
       if (!response.ok) throw new Error("Update failed");
       return response;
     },
-    onError,
-    onSuccess,
+    onError: () => showErrorToast("Error updating diagram layer preferences."),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: diagramLayerPreferencesByDiagramTypeQueryKey(transactionId, diagramTypeCode),
+      }),
   });
 };
 

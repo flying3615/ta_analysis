@@ -26,7 +26,7 @@ export const failedToLoadLocksModal: PropsWithChildren<useLuiModalPrefabProps<bo
   style: { width: "480px" },
   level: "blocked",
   title: "Failed to load locks",
-  children: `An unknown error has prevented the locks from loading.`,
+  children: `An unexpected error has prevented the locks from loading.`,
   buttons: [
     {
       title: "Return to Survey Capture",

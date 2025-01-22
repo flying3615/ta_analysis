@@ -35,20 +35,19 @@ export const useUpdateDiagramMutation = (transactionId: number) => {
       };
 
       const oldItem = getItem((item) => item.id === vars.request.diagramId);
-      if (!oldItem) throw Error("Unexpected item not found in query data");
+      if (!oldItem) throw Error("item not found in query data.  Please refresh window.");
       updateQueryData({ match: byId(vars.request.diagramId), withItem: tempDiagram });
       return { match: byId(vars.request.diagramId), withItem: oldItem };
     },
     mutationFn: async (props: useUpdateDiagramMutationProps) => {
       const response = await new DiagramDetailsControllerApi(apiConfig()).updateUserDefinedDiagram(props.request);
       if (!response.ok) {
-        throw new UpdateDiagramError(response.message ?? "Unexpected error");
+        throw Error(response.message ?? "Unexpected error");
       }
-      return response;
     },
     onError: (_error, _variables, revertUpdateQueryDataProps) => {
       revertUpdateQueryDataProps && updateQueryData(revertUpdateQueryDataProps);
     },
-    onSuccess: async () => await diagramLabels.updateLabels(),
+    onSuccess: () => diagramLabels.updateLabels(),
   });
 };

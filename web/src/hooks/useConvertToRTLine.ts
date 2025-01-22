@@ -1,15 +1,12 @@
-import { ExtinguishedLinesControllerApi } from "@linz/survey-plan-generation-api-client";
-import { useQueryClient } from "@tanstack/react-query";
 import { isEmpty } from "lodash-es";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import { Layer } from "@/components/DefineDiagrams/MapLayers";
 import { useAppDispatch } from "@/hooks/reduxHooks";
+import { useActionToast } from "@/hooks/useActionToast";
 import { useSelectFeatures } from "@/hooks/useSelectFeaturesHook";
-import { apiConfig } from "@/queries/apiConfig";
-import { getLinesQueryKey } from "@/queries/lines";
+import { useConvertToRTLineMutation } from "@/queries/useConvertToRTLineMutation";
 import { setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
-import { useShowToast } from "@/util/showToast";
 import { s } from "@/util/stringUtil";
 
 export interface useConvertToRTLineProps {
@@ -18,10 +15,10 @@ export interface useConvertToRTLineProps {
 }
 
 export const useConvertToRTLine = ({ transactionId, enabled }: useConvertToRTLineProps) => {
-  const [loading, setLoading] = useState(false);
-  const { showSuccessToast, showErrorToast } = useShowToast();
+  const actionToast = useActionToast();
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
+
+  const { mutateAsync: convertToRtLine, isPending: loading } = useConvertToRTLineMutation();
 
   const { selectedFeatureIds: lineIds } = useSelectFeatures({
     enabled,
@@ -30,23 +27,24 @@ export const useConvertToRTLine = ({ transactionId, enabled }: useConvertToRTLin
   });
 
   const convertRtLines = useCallback(async () => {
-    if (isEmpty(lineIds)) return;
-
-    try {
-      setLoading(true);
-      const { ok, message } = await new ExtinguishedLinesControllerApi(apiConfig()).convert({
-        transactionId: transactionId,
-        extinguishedLinesConvertRequestDTO: { lineIds },
-      });
-
-      if (!ok) return showErrorToast(message ?? "Unexpected exception adding RT lines");
-      showSuccessToast(`RT Line${s(lineIds)} added successfully`);
-      await queryClient.invalidateQueries({ queryKey: getLinesQueryKey(transactionId) });
-    } finally {
-      setLoading(false);
-      dispatch(setActiveAction("idle"));
+    if (isEmpty(lineIds)) {
+      return;
     }
-  }, [dispatch, queryClient, lineIds, showErrorToast, showSuccessToast, transactionId]);
+
+    const action = `RT Line${s(lineIds)}`;
+    await actionToast(
+      () =>
+        convertToRtLine({
+          transactionId: transactionId,
+          extinguishedLinesConvertRequestDTO: { lineIds },
+        }),
+      {
+        errorMessage: `Adding ${action} failed due to`,
+        successMessage: `${action} added successfully`,
+      },
+    );
+    dispatch(setActiveAction("idle"));
+  }, [lineIds, actionToast, dispatch, convertToRtLine, transactionId]);
 
   return {
     convertRtLines,
