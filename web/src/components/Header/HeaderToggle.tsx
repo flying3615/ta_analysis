@@ -9,6 +9,7 @@ import { useAppDispatch } from "@/hooks/reduxHooks";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 import { hostProtoForApplication } from "@/util/httpUtil";
 
 export type ViewMode = "Diagrams" | "LandingPage" | "Sheets" | "Survey";
@@ -55,18 +56,32 @@ const HeaderToggle = ({ onNavigate, view }: HeaderToggleProps) => {
       <MenuHeader>Switch mode</MenuHeader>
       <MenuItem
         disabled={view === "Diagrams"}
-        onClick={() => navigate(generatePath(Paths.defineDiagrams, { transactionId }))}
+        onClick={() => {
+          sendGAEvent(GACategory.LANDING_PAGE, GAAction.DEFINE_DIAGRAMS);
+          navigate(generatePath(Paths.defineDiagrams, { transactionId }));
+        }}
       >
         <LuiIcon name="ic_define_diagrams" alt="Define Diagrams Icon" size="md" />
         Define Diagrams
       </MenuItem>
-      <MenuItem disabled={view === "Sheets"} onClick={() => onNavigate("Sheets")}>
+      <MenuItem
+        disabled={view === "Sheets"}
+        onClick={() => {
+          sendGAEvent(GACategory.LANDING_PAGE, GAAction.LAYOUT_PLAN_SHEETS);
+          onNavigate("Sheets");
+        }}
+      >
         <LuiIcon name="ic_layout_plan_sheets" alt="Layout Plan Sheets Icon" size="md" />
         Layout Plan Sheets
       </MenuItem>
       <MenuDivider />
       <MenuHeader>Return to</MenuHeader>
-      <MenuItem onClick={() => onNavigate("LandingPage")}>
+      <MenuItem
+        onClick={() => {
+          sendGAEvent(GACategory.LANDING_PAGE, GAAction.BACK_LANDING_PAGE);
+          onNavigate("LandingPage");
+        }}
+      >
         <LuiIcon name="ic_parcels_new" alt="Landing Page Icon" size="md" />
         Landing Page
       </MenuItem>

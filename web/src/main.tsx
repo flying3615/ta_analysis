@@ -21,6 +21,7 @@ export async function renderInit() {
     splitKey,
     surveyBaseUrl,
     secureFileUploadBaseUrl,
+    gaKey,
   } = (await fetch("/plan-generation/config/env.json").then((r) => r.json())) as typeof window._env_;
 
   window._env_ = {
@@ -30,6 +31,7 @@ export async function renderInit() {
     oidcIssuerUri,
     splitKey,
     surveyBaseUrl,
+    gaKey,
     secureFileUploadBaseUrl: secureFileUploadBaseUrl ?? apiGatewayBaseUrl,
   };
 

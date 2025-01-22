@@ -13,6 +13,7 @@ import { luiColors } from "@/constants";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
 import { useSurveyInfoQuery } from "@/queries/survey";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 import { getHelpUrl, hostProtoForApplication } from "@/util/httpUtil";
 
 interface BigButtonProps {
@@ -59,10 +60,18 @@ const LandingPage = () => {
         </div>
         <div className="LandingPage-options">
           <div className="LandingPage-options-row">
-            <BigButton icon="ic_define_diagrams" path={generatePath(Paths.defineDiagrams, { transactionId })}>
+            <BigButton
+              icon="ic_define_diagrams"
+              path={generatePath(Paths.defineDiagrams, { transactionId })}
+              onClick={() => sendGAEvent(GACategory.LANDING_PAGE, GAAction.DEFINE_DIAGRAMS)}
+            >
               Define Diagrams
             </BigButton>
-            <BigButton icon="ic_layout_plan_sheets" path={generatePath(Paths.layoutPlanSheets, { transactionId })}>
+            <BigButton
+              icon="ic_layout_plan_sheets"
+              path={generatePath(Paths.layoutPlanSheets, { transactionId })}
+              onClick={() => sendGAEvent(GACategory.LANDING_PAGE, GAAction.DEFINE_DIAGRAMS)}
+            >
               Layout Plan Sheets
             </BigButton>
           </div>
@@ -70,6 +79,7 @@ const LandingPage = () => {
             <BigButton
               icon="ic_layers"
               onClick={() => {
+                sendGAEvent(GACategory.LANDING_PAGE, GAAction.MAINTAIN_DIAGRAM_LAYERS);
                 openPanel({
                   uniqueId: "Maintain diagram layers",
                   componentFn: () => <MaintainDiagramsPanel transactionId={transactionId} />,

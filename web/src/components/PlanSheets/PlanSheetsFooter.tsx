@@ -36,6 +36,7 @@ import {
 } from "@/redux/planSheets/planSheetsSlice";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 
 import { UnsavedChangesModal } from "./UnsavedChangesModal";
 
@@ -96,7 +97,12 @@ const PlanSheetsFooter = ({
     reset: updatePlanReset,
   } = useAsyncTaskHandler(updatePlanMutation);
   const updatePlanIsPending = updatePlanMutation.isPending || updatePlanAsyncIsPending;
-  const updatePlan = () => !updatePlanIsPending && updatePlanMutation.mutate();
+  const updatePlan = () => {
+    if (!updatePlanIsPending) {
+      sendGAEvent(GACategory.LAYOUT_PLAN_SHEETS, GAAction.SAVE_LAYOUT);
+      updatePlanMutation.mutate();
+    }
+  };
   const closePlan = () => navigate(generatePath(Paths.root, { transactionId }));
 
   // Save upon pressing Ctrl+S

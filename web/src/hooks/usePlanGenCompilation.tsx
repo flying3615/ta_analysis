@@ -37,6 +37,7 @@ import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 import { COMPILE_MAX_HEIGHT, COMPILE_MAX_WIDTH, compressImage } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 
@@ -156,6 +157,8 @@ export const usePlanGenCompilation = (props: {
   const delay = (ms: number | undefined) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const startCompile = async () => {
+    sendGAEvent(GACategory.LAYOUT_PLAN_SHEETS, GAAction.COMPILE_LAYOUT);
+
     setCompiling(true);
     const preCheckPassed = await preCheckResult();
     if (preCheckPassed) {

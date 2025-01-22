@@ -7,6 +7,7 @@ import { clearRecoveryFile } from "@/hooks/usePlanAutoRecover";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { hasChanges, hasNavigateAfterSave, navigateAfterSave } from "@/redux/planSheets/planSheetsSlice";
 import { revertAll } from "@/redux/revertAll";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 
 export const UnsavedChangesModal = ({
   updatePlan,
@@ -73,6 +74,7 @@ export const UnsavedChangesModal = ({
   };
 
   const handleLeave = () => {
+    sendGAEvent(GACategory.LAYOUT_PLAN_SHEETS, GAAction.UNSAVED_CHANGES_LEAVE);
     void clearRecoveryFile(transactionId);
     if (blocker.state === "blocked") {
       blocker.proceed();
@@ -83,6 +85,7 @@ export const UnsavedChangesModal = ({
   };
 
   const handleSave = () => {
+    sendGAEvent(GACategory.LAYOUT_PLAN_SHEETS, GAAction.UNSAVED_CHANGES_SAVE_LEAVE);
     updatePlan();
   };
 

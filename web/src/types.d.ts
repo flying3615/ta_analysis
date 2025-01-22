@@ -9,6 +9,7 @@ declare interface Window {
     splitKey: string;
     surveyBaseUrl: string;
     secureFileUploadBaseUrl: string;
+    gaKey: string;
   };
   cyRef: cytoscape.Core;
   isStorybook?: true | undefined;

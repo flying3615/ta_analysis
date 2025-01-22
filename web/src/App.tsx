@@ -17,6 +17,7 @@ import { Route } from "react-router";
 import { createBrowserRouter, createRoutesFromElements, RouterProvider } from "react-router-dom";
 
 import { AppSubRoutes } from "@/AppSubRoutes";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { store } from "@/redux/store";
 import { RouteErrorBoundary, ShowUnhandledModal } from "@/RouteErrorBoundary";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
@@ -145,6 +146,7 @@ const App = () => {
       <ErrorBoundary FallbackComponent={ShowUnhandledModal} onError={errorHandler}>
         <LuiMessagingContextProvider version="v2">
           <AuthContextProvider>
+            <GoogleAnalytics />
             <FeatureFlagProvider>
               <QueryClientProvider client={queryClient}>
                 <Provider store={store}>

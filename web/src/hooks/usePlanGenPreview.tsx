@@ -27,6 +27,7 @@ import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { getActiveSheet, getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
+import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 import { PREVIEW_MAX_HEIGHT, PREVIEW_MAX_WIDTH } from "@/util/imageUtil";
 import { createNewNode } from "@/util/mapUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
@@ -135,6 +136,7 @@ export const usePlanGenPreview = (props: {
       return;
     }
 
+    sendGAEvent(GACategory.LAYOUT_PLAN_SHEETS, GAAction.PREVIEW_LAYOUT);
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
 

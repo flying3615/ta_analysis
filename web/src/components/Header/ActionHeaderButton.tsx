@@ -1,11 +1,12 @@
 import { LuiButton, LuiIcon, LuiMiniSpinner, LuiTooltip } from "@linzjs/lui";
 import { IconName } from "@linzjs/lui/dist/components/LuiIcon/LuiIcon";
 import clsx from "clsx";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 
 import { DefineDiagramsActionType } from "@/components/DefineDiagrams/defineDiagramsType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { getActiveAction, setActiveAction } from "@/redux/defineDiagrams/defineDiagramsSlice";
+import { GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 
 interface ActionHeaderButtonProps {
   title: string;
@@ -18,6 +19,7 @@ interface ActionHeaderButtonProps {
   onClick?: (ev: React.MouseEvent) => void;
   className?: string;
   testid?: string;
+  GAEvent?: boolean;
 }
 
 export const ActionHeaderButton = ({
@@ -31,6 +33,7 @@ export const ActionHeaderButton = ({
   disabled,
   loading,
   testid,
+  GAEvent,
 }: ActionHeaderButtonProps) => {
   const activeAction = useAppSelector(getActiveAction);
   const dispatch = useAppDispatch();
@@ -43,9 +46,10 @@ export const ActionHeaderButton = ({
   const onClickHandler = useCallback(
     (ev: React.MouseEvent) => {
       action && changeActiveAction(action === activeAction ? "idle" : action);
+      GAEvent && sendGAEvent(GACategory.DEFINE_DIAGRAMS, title);
       onClick?.(ev);
     },
-    [action, activeAction, changeActiveAction, onClick],
+    [GAEvent, action, activeAction, changeActiveAction, onClick, title],
   );
 
   const innerButton = (

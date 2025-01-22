@@ -177,6 +177,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_primary_diagram_rectangle"
         loading={insertDiagramLoading && activeAction.includes("define_primary_diagram_rectangle")}
         disabled={insertDiagramLoading || primaryDiagramDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title={primaryDiagramDisabled ? primaryDiagramTitle : `${primaryDiagramTitle} (Polygon)`}
@@ -186,6 +187,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_primary_diagram_polygon"
         loading={insertDiagramLoading && activeAction.includes("define_primary_diagram_polygon")}
         disabled={insertDiagramLoading || primaryDiagramDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title={nonPrimaryDisabled ? nonPrimaryDiagramTitle : `${nonPrimaryDiagramTitle} (Rectangle)`}
@@ -195,6 +197,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_nonprimary_diagram_rectangle"
         loading={insertDiagramLoading && activeAction.includes("define_nonprimary_diagram_rectangle")}
         disabled={insertDiagramLoading || nonPrimaryDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title={nonPrimaryDisabled ? nonPrimaryDiagramTitle : `${nonPrimaryDiagramTitle} (Polygon)`}
@@ -204,6 +207,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_nonprimary_diagram_polygon"
         loading={insertDiagramLoading && activeAction.includes("define_nonprimary_diagram_polygon")}
         disabled={insertDiagramLoading || nonPrimaryDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title={surveyDiagramDisabled ? surveyDiagramTitle : `${surveyDiagramTitle} (Rectangle)`}
@@ -213,6 +217,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_survey_diagram_rectangle"
         loading={insertDiagramLoading && activeAction.includes("define_survey_diagram_rectangle")}
         disabled={insertDiagramLoading || surveyDiagramDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title={surveyDiagramDisabled ? surveyDiagramTitle : `${surveyDiagramTitle} (Polygon)`}
@@ -222,6 +227,7 @@ export const DefineDiagramMenuButtons = () => {
         testid="tid_define_survey_diagram_polygon"
         loading={insertDiagramLoading && activeAction.includes("define_survey_diagram_polygon")}
         disabled={insertDiagramLoading || surveyDiagramDisabled}
+        GAEvent={true}
       />
       <ActionHeaderButton
         title="Select Diagrams"

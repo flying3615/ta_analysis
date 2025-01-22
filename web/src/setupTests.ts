@@ -30,6 +30,7 @@ window._env_ = {
   splitKey: "localhost",
   surveyBaseUrl: "http://localhost/v1/surveys",
   secureFileUploadBaseUrl: "http://localhost/api",
+  gaKey: "dummy",
 };
 
 // @ts-expect-error Deliberatley stub the newrelic object
