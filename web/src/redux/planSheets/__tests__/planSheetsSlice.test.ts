@@ -12,7 +12,7 @@ import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { setupStore } from "@/redux/store";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { createState, extractPast, extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 import planSheetsSlice, {
   canUndo,
@@ -50,27 +50,35 @@ import planSheetsSlice, {
 } from "../planSheetsSlice";
 import { PlanSheetsStateV1 } from "../planSheetsSliceUtils";
 
-describe("planSheetsSlice", () => {
-  const state: PlanSheetsStateV1 = {
-    configs: [],
-    diagrams: [],
-    pages: [],
-    activeSheet: PlanSheetType.TITLE,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 1,
-    },
-    hasChanges: false,
-    planMode: PlanMode.View,
-    previousDiagramAttributesMap: {},
-    previousDiagrams: null,
-    previousPages: null,
-    canViewHiddenLabels: true,
-    viewableLabelTypes: [],
-    selectedElementIds: [],
-  };
-  const initialState: PlanSheetsState = modifiedStateV1(state);
+// Once V1 is removed we can convert the type to State
+const initialState: PlanSheetsStateV1 = {
+  configs: [],
+  diagrams: [],
+  pages: [],
+  activeSheet: PlanSheetType.TITLE,
+  activePageNumbers: {
+    [PlanSheetType.TITLE]: 1,
+    [PlanSheetType.SURVEY]: 1,
+  },
+  hasChanges: false,
+  planMode: PlanMode.View,
+  previousDiagramAttributesMap: {},
+  previousDiagrams: null,
+  previousPages: null,
+  canViewHiddenLabels: true,
+  viewableLabelTypes: [],
+  selectedElementIds: [],
+};
 
+function getInitialPlanSheetState(stateVersion: "V1" | "V2"): PlanSheetsState {
+  if (stateVersion === "V1") {
+    return createState({ state: initialState, stateVersion });
+  } else {
+    return createState({ state: { current: initialState, past: initialState }, stateVersion });
+  }
+}
+
+describe.each(stateVersions)("planSheetsSlice%s", (version) => {
   let store = setupStore();
 
   const emptyDiagramsBuilder = () =>
@@ -106,7 +114,7 @@ describe("planSheetsSlice", () => {
   const { configs, diagrams, pages } = emptyDiagramsBuilder().build();
 
   beforeEach(() => {
-    store = setupStore({ planSheets: initialState });
+    store = setupStore({ planSheets: getInitialPlanSheetState(version) });
   });
 
   test("getActiveSheet should return active sheet", () => {
@@ -170,37 +178,43 @@ describe("planSheetsSlice", () => {
 
   test("getFilteredPages should return filtered pages", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        pages: [
-          {
-            pageType: PlanSheetType.TITLE,
-            id: 1,
-            pageNumber: 1,
-          },
-          {
-            pageType: PlanSheetType.SURVEY,
-            id: 2,
-            pageNumber: 1,
-          },
-          {
-            pageType: PlanSheetType.SURVEY,
-            id: 3,
-            pageNumber: 2,
-          },
-        ],
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          pages: [
+            {
+              pageType: PlanSheetType.TITLE,
+              id: 1,
+              pageNumber: 1,
+            },
+            {
+              pageType: PlanSheetType.SURVEY,
+              id: 2,
+              pageNumber: 1,
+            },
+            {
+              pageType: PlanSheetType.SURVEY,
+              id: 3,
+              pageNumber: 2,
+            },
+          ],
+        },
+        version,
+      ),
     });
     expect(getFilteredPages(store.getState())).toEqual({ totalPages: 1 });
   });
 
   test("selectActiveDiagrams should return active diagrams on current page", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        diagrams,
-        pages,
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          diagrams,
+          pages,
+        },
+        version,
+      ),
     });
 
     let activeDiagrams = selectActiveDiagrams(store.getState());
@@ -217,11 +231,15 @@ describe("planSheetsSlice", () => {
 
   test("selectActiveDiagrams should return active diagrams when page changed", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        diagrams,
-        pages,
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+
+          diagrams,
+          pages,
+        },
+        version,
+      ),
     });
 
     store.dispatch(setActiveSheet(PlanSheetType.SURVEY));
@@ -234,10 +252,13 @@ describe("planSheetsSlice", () => {
 
   test("setPlanData should set diagram and page data", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        hasChanges: true,
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          hasChanges: true,
+        },
+        version,
+      ),
     });
     expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], lastModifiedAt: undefined, pages: [] });
     expect(hasChanges(store.getState())).toBe(true);
@@ -252,10 +273,13 @@ describe("planSheetsSlice", () => {
 
   test("replaceDiagrams should replace diagram data", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        diagrams,
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          diagrams,
+        },
+        version,
+      ),
     });
 
     expect(getPlanData(store.getState())).toStrictEqual({ diagrams, lastModifiedAt: undefined, pages: [] });
@@ -292,11 +316,14 @@ describe("planSheetsSlice", () => {
     ] as PageDTO[];
 
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        diagrams: initialDiagrams,
-        pages: initialPages,
-      }),
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          diagrams: initialDiagrams,
+          pages: initialPages,
+        },
+        version,
+      ),
     });
 
     const newDiagrams = [
@@ -308,17 +335,14 @@ describe("planSheetsSlice", () => {
     store.dispatch(replaceDiagramsAndPage({ diagrams: newDiagrams, page: newPage }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.diagrams).toEqual(newDiagrams);
-    expect(state.v1.pages.find((page) => page.id === newPage.id)).toEqual(newPage);
+    expect(extractState(state, version).diagrams).toEqual(newDiagrams);
+    expect(extractState(state, version).pages.find((page) => page.id === newPage.id)).toEqual(newPage);
     expect(hasChanges(store.getState())).toBe(true);
   });
 
   test("updatePages should alter pages state and set hasChanges", () => {
     store = setupStore({
-      planSheets: modifiedStateV1({
-        ...initialState.v1,
-        diagrams,
-      }),
+      planSheets: modifiedState({ ...initialState, diagrams }, version),
     });
 
     expect(hasChanges(store.getState())).toBe(false);
@@ -356,13 +380,13 @@ describe("planSheetsSlice", () => {
       } as PageDTO,
     ];
 
-    store = setupStore({ planSheets: modifiedStateV1({ ...initialState.v1, pages: initialPages }) });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, pages: initialPages }, version) });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
     store.dispatch(doPastePageLabels({ updatedPage: { ...initialPages[0], labels: labelsTobeAdded } as PageDTO }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.pages[0]).toMatchObject({ labels: labelsTobeAdded });
-    expect(state.v1.hasChanges).toBe(true);
+    expect(extractState(state, version).pages[0]).toMatchObject({ labels: labelsTobeAdded });
+    expect(extractState(state, version).hasChanges).toBe(true);
   });
 
   test("doPastePageLabels should remove labels from the source page if action is CUT", () => {
@@ -381,14 +405,14 @@ describe("planSheetsSlice", () => {
       { id: 2, pageType: "survey", pageNumber: 1, labels: [] } as PageDTO,
     ];
 
-    store = setupStore({ planSheets: modifiedStateV1({ ...initialState.v1, pages: initialPages }) });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, pages: initialPages }, version) });
     store.dispatch(setCopiedElements({ ids: [100, 101], type: "label", action: "CUT", pageId: 1 }));
     store.dispatch(doPastePageLabels({ updatedPage: { ...initialPages[1], labels: labelsTobeAdded } as PageDTO }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.pages[0]).toMatchObject({ labels: [] });
-    expect(state.v1.pages[1]).toMatchObject({ labels: labelsTobeAdded });
-    expect(state.v1.hasChanges).toBe(true);
+    expect(extractState(state, version).pages[0]).toMatchObject({ labels: [] });
+    expect(extractState(state, version).pages[1]).toMatchObject({ labels: labelsTobeAdded });
+    expect(extractState(state, version).hasChanges).toBe(true);
   });
 
   test("doPastePageLines should paste lines to the active page", () => {
@@ -397,7 +421,7 @@ describe("planSheetsSlice", () => {
       { id: 2, pageType: "survey", pageNumber: 1, lines: [] } as PageDTO,
     ];
 
-    store = setupStore({ planSheets: { ...modifiedStateV1({ pages: initialPages }) } });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, pages: initialPages }, version) });
 
     const linesToPaste: LineDTO[] = [
       { id: 201, lineType: "userDefined", coordRefs: [1, 2], style: "solid" },
@@ -408,8 +432,8 @@ describe("planSheetsSlice", () => {
     store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[0], lines: linesToPaste } as PageDTO }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.pages[0]!.lines).toMatchObject(linesToPaste);
-    expect(state.v1.hasChanges).toBe(true);
+    expect(extractState(state, version).pages[0]!.lines).toMatchObject(linesToPaste);
+    expect(extractState(state, version).hasChanges).toBe(true);
   });
 
   test("doPastePageLines should remove lines from the source page if action is CUT", () => {
@@ -429,14 +453,14 @@ describe("planSheetsSlice", () => {
       { id: 2, pageType: "survey", pageNumber: 1, lines: [] } as PageDTO,
     ];
 
-    store = setupStore({ planSheets: { ...modifiedStateV1({ pages: initialPages }) } });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, pages: initialPages }, version) });
     store.dispatch(setCopiedElements({ ids: [201], type: "line", action: "CUT", pageId: 1 }));
     store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[1], lines: linesToPaste } as PageDTO }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.pages[0]!.lines).toMatchObject([]);
-    expect(state.v1.pages[1]!.lines).toMatchObject(linesToPaste);
-    expect(state.v1.hasChanges).toBe(true);
+    expect(extractState(state, version).pages[0]!.lines).toMatchObject([]);
+    expect(extractState(state, version).pages[1]!.lines).toMatchObject(linesToPaste);
+    expect(extractState(state, version).hasChanges).toBe(true);
   });
 
   test("doPastePageLines should cut and paste lines within the same page", () => {
@@ -452,26 +476,26 @@ describe("planSheetsSlice", () => {
 
     const initialPages = [{ id: 1, pageType: "title", pageNumber: 1, lines: linesToPaste } as PageDTO];
 
-    store = setupStore({ planSheets: { ...modifiedStateV1({ pages: initialPages }) } });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, pages: initialPages }, version) });
     store.dispatch(setCopiedElements({ ids: [201, 202], type: "line", action: "CUT", pageId: 1 }));
     store.dispatch(doPastePageLines({ updatedPage: { ...initialPages[0], lines: linesTobeAdded } as PageDTO }));
 
     const state = store.getState().planSheets;
-    expect(state.v1.pages[0]!.lines).toMatchObject(linesTobeAdded);
-    expect(state.v1.hasChanges).toBe(true);
+    expect(extractState(state, version).pages[0]!.lines).toMatchObject(linesTobeAdded);
+    expect(extractState(state, version).hasChanges).toBe(true);
   });
 
   test("hasChanges should return if there are changes", () => {
     expect(hasChanges(store.getState())).toBe(false);
 
-    store = setupStore({ planSheets: { ...modifiedStateV1({ hasChanges: true }) } });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, hasChanges: true }, version) });
     expect(hasChanges(store.getState())).toBe(true);
   });
 
   test("planMode should contain current plan mode", () => {
     expect(getPlanMode(store.getState())).toBe(PlanMode.View);
 
-    store = setupStore({ planSheets: { ...modifiedStateV1({ planMode: PlanMode.SelectDiagram }) } });
+    store = setupStore({ planSheets: modifiedState({ ...initialState, planMode: PlanMode.SelectDiagram }, version) });
     expect(getPlanMode(store.getState())).toBe(PlanMode.SelectDiagram);
   });
 
@@ -481,17 +505,23 @@ describe("planSheetsSlice", () => {
       .addSymbolLabel(1011, "*", { x: 20, y: -10 }, 10, 101)
       .build().diagrams;
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams: diagramsWithMark,
-        }),
-      },
+        },
+        version,
+      ),
     });
-    expect(store.getState().planSheets.v1.diagrams[2]?.coordinateLabels[0]?.displayState).toBe("display");
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.coordinateLabels[0]?.displayState).toBe(
+      "display",
+    );
 
     store.dispatch(setSymbolHide({ id: "1011", hide: true }));
 
-    expect(store.getState().planSheets.v1.diagrams[2]?.coordinateLabels[0]?.displayState).toBe("hide");
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.coordinateLabels[0]?.displayState).toBe(
+      "hide",
+    );
   });
 
   test("setLineHide should set the displayState on the diagram line in store", () => {
@@ -502,17 +532,19 @@ describe("planSheetsSlice", () => {
       .addLine(1011, [101, 102, 103])
       .build().diagrams;
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams: diagramsWithLine,
-        }),
-      },
+        },
+        version,
+      ),
     });
-    expect(store.getState().planSheets.v1.diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
 
     store.dispatch(setLineHide({ id: "1011", hide: true }));
 
-    expect(store.getState().planSheets.v1.diagrams[2]?.lines[0]?.displayState).toBe("hide");
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.lines[0]?.displayState).toBe("hide");
   });
 
   test("setLineHide should set the displayState on the page line in store", () => {
@@ -545,11 +577,13 @@ describe("planSheetsSlice", () => {
       .build().pages;
 
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           pages: pagesWithLines,
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     store.dispatch(setLineHide({ id: "1011", hide: true }));
@@ -613,20 +647,22 @@ describe("planSheetsSlice", () => {
       .addUserLine({ id: 1013, coordRefs: [104, 105], lineType: "userDefined", style: "arrowhead" })
       .build().pages;
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           pages: pagesWithLines,
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     store.dispatch(removePageLines({ lineIds: ["1011", "1013"] }));
 
-    expect(store.getState().planSheets.v1.pages[2]?.lines?.length).toBe(1);
-    expect(store.getState().planSheets.v1.pages[2]?.lines?.[0]?.id).toBe(1012);
-    expect(store.getState().planSheets.v1.pages[2]?.coordinates?.length).toBe(2);
-    expect(store.getState().planSheets.v1.pages[2]?.coordinates?.[0]?.id).toBe(103);
-    expect(store.getState().planSheets.v1.pages[2]?.coordinates?.[1]?.id).toBe(106);
+    expect(extractState(store.getState().planSheets, version).pages[2]?.lines?.length).toBe(1);
+    expect(extractState(store.getState().planSheets, version).pages[2]?.lines?.[0]?.id).toBe(1012);
+    expect(extractState(store.getState().planSheets, version).pages[2]?.coordinates?.length).toBe(2);
+    expect(extractState(store.getState().planSheets, version).pages[2]?.coordinates?.[0]?.id).toBe(103);
+    expect(extractState(store.getState().planSheets, version).pages[2]?.coordinates?.[1]?.id).toBe(106);
   });
 
   test("previousDiagrams reflects last change in store", () => {
@@ -636,30 +672,36 @@ describe("planSheetsSlice", () => {
       .addLine(1011, [101, 102])
       .build().diagrams;
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
+
           diagrams: diagramsWithLine,
-        }),
-      },
+        },
+        version,
+      ),
     });
     expect(canUndo(store.getState())).toBeFalsy();
-    expect(store.getState().planSheets.v1.diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.lines[0]?.displayState).toBeUndefined(); // default to visible
 
     store.dispatch(setLineHide({ id: "1011", hide: true }));
 
     expect(canUndo(store.getState())).toBeTruthy();
-    expect(store.getState().planSheets.v1.diagrams[2]?.lines[0]?.displayState).toBe("hide");
-    expect(store.getState().planSheets.v1.previousDiagrams?.[2]?.lines[0]?.displayState).toBeUndefined();
+    expect(extractState(store.getState().planSheets, version).diagrams[2]?.lines[0]?.displayState).toBe("hide");
+    expect(extractPast(store.getState().planSheets, version).diagrams?.[2]?.lines[0]?.displayState).toBeUndefined();
   });
 
   test("previousPages reflects last change in store", () => {
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
+
           diagrams,
           pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     expect(hasChanges(store.getState())).toBe(false);
@@ -678,18 +720,20 @@ describe("planSheetsSlice", () => {
 
     expect(getPlanData(store.getState()).pages[0]?.pageNumber).toBe(2);
     expect(hasChanges(store.getState())).toBe(true);
-    expect(store.getState().planSheets.v1.previousPages?.[0]?.pageNumber).toBe(1);
+    expect(extractPast(store.getState().planSheets, version).pages?.[0]?.pageNumber).toBe(1);
     expect(canUndo(store.getState())).toBeTruthy();
   });
 
   test("undo reverts to before change", () => {
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams,
           pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     const replacementPages = [
@@ -711,9 +755,9 @@ describe("planSheetsSlice", () => {
 
     expect(canUndo(store.getState())).toBeFalsy();
     expect(hasChanges(store.getState())).toBeFalsy();
-    expect(store.getState().planSheets.v1.previousPages).toBeNull();
-    expect(store.getState().planSheets.v1.previousDiagrams).toBeNull();
-    expect(store.getState().planSheets.v1.pages?.[0]?.pageNumber).toBe(1);
+    expect(extractPast(store.getState().planSheets, version).pages).toBeNull();
+    expect(extractPast(store.getState().planSheets, version).diagrams).toBeNull();
+    expect(extractState(store.getState().planSheets, version).pages?.[0]?.pageNumber).toBe(1);
   });
 
   test("hasChanges remains true after undoing one of two changes", () => {
@@ -722,12 +766,14 @@ describe("planSheetsSlice", () => {
       { id: 2, pageType: PageDTOPageTypeEnum.survey, pageNumber: 1 },
     ];
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams,
           pages: initialPages,
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     const replacementPage1 = [
@@ -761,12 +807,14 @@ describe("planSheetsSlice", () => {
 
   test("undo can be cleared with clearUndo", () => {
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams,
           pages: [{ id: 1, pageType: PageDTOPageTypeEnum.title, pageNumber: 1 }],
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     const replacementPages = [
@@ -790,13 +838,15 @@ describe("planSheetsSlice", () => {
 
   test("replaceDiagramsAndPage only updates diagrams in payload", () => {
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           diagrams,
-        }),
-      },
+        },
+        version,
+      ),
     });
-    const diagramsFromStore = store.getState().planSheets?.v1.diagrams;
+    const diagramsFromStore = extractState(store.getState().planSheets, version).diagrams;
     expect(diagramsFromStore).toHaveLength(3);
     const diagramToUpdate: DiagramDTO = { ...diagramsFromStore[0] } as DiagramDTO;
     const newLabel: LabelDTO = {
@@ -816,7 +866,7 @@ describe("planSheetsSlice", () => {
     };
     diagramToUpdate.labels = [...(diagramToUpdate?.labels ?? []), newLabel];
     store.dispatch(replaceDiagramsAndPage({ diagrams: [diagramToUpdate] }));
-    const diagramsAfterUpdate = store.getState().planSheets.v1.diagrams;
+    const diagramsAfterUpdate = extractState(store.getState().planSheets, version).diagrams;
     expect(diagramsAfterUpdate).toHaveLength(3);
     const updatedDigram = diagramsAfterUpdate.find((d) => d.id === diagramToUpdate.id);
     const updatedLabel = updatedDigram?.labels.find((l) => l.id === newLabel.id);
@@ -843,15 +893,17 @@ describe("planSheetsSlice", () => {
       },
     ];
     store = setupStore({
-      planSheets: {
-        ...modifiedStateV1({
+      planSheets: modifiedState(
+        {
+          ...initialState,
           configs: [
             {
               maxElemIds: maxElemIdsConfig,
             } as ConfigDataDTO,
           ],
-        }),
-      },
+        },
+        version,
+      ),
     });
 
     expect(getMaxElemIds(store.getState())).toEqual(maxElemIdsConfig);
@@ -864,7 +916,7 @@ describe("planSheetsSlice", () => {
   test("setSelectedElementIds updates the selected element IDs", () => {
     const selectedElementIds = ["id1", "id2"];
     store.dispatch(setSelectedElementIds(selectedElementIds));
-    expect(store.getState().planSheets.v1.selectedElementIds).toEqual(selectedElementIds);
+    expect(extractState(store.getState().planSheets, version).selectedElementIds).toEqual(selectedElementIds);
   });
 
   test("getSelectedElementIds returns the selected element IDs", () => {
@@ -881,9 +933,9 @@ describe("planSheetsSlice", () => {
     store.dispatch(setPlanMode(PlanMode.SelectTargetLine));
     store.dispatch(setPlanMode(PlanMode.SelectLabel));
     // assert the labels can be re-selected
-    expect(store.getState().planSheets.v1.selectedElementIds).toEqual(["id1", "id2"]);
+    expect(extractState(store.getState().planSheets, version).selectedElementIds).toEqual(["id1", "id2"]);
 
     store.dispatch(setPlanMode(PlanMode.View));
-    expect(store.getState().planSheets.v1.selectedElementIds).toEqual([]);
+    expect(extractState(store.getState().planSheets, version).selectedElementIds).toEqual([]);
   });
 });

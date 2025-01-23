@@ -21,8 +21,12 @@ const recordState = (state: PlanSheetsStateV2, fn: (sheetState: State) => void) 
   if (state.replayAction !== undefined) {
     state.replayAction(state.past);
   }
-  state.replayAction = fn;
-  fn(state.current);
+  const playAction = (sheetState: State) => {
+    sheetState.hasChanges = true;
+    fn(sheetState);
+  };
+  state.replayAction = playAction;
+  playAction(state.current);
 };
 
 /**
@@ -156,7 +160,6 @@ export const reducersV2 = {
         }
       }
 
-      sheetState.hasChanges = true;
       // for auto-recovery to detect when data changed
       sheetState.lastChangedAt = new Date().toISOString();
     });
