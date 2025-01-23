@@ -74,6 +74,18 @@ export const useMoveOriginalLocation = () => {
     return labelProps;
   };
 
+  const updateMovingDataAndElements = (movingData: INodeAndEdgeData, adjustedLabelData: INodeData[]) => {
+    movingData.nodes.forEach((node) => {
+      if (nodeIds.add(node.id)) movingDatas.nodes.push(node);
+    });
+    movingData.edges.forEach((edge) => {
+      if (edgeIds.add(edge.id)) movingDatas.edges.push(edge);
+    });
+    adjustedLabelData?.forEach((node) => {
+      if (labelIds.add(node.id)) adjustedLabels.push(node);
+    });
+  };
+
   const adjustLabelCoordinates = (selectedElements: cytoscape.CollectionReturnValue) => {
     const cyto = selectedElements.cy();
     const container = cyto?.container();
@@ -253,24 +265,7 @@ export const useMoveOriginalLocation = () => {
       });
     }
 
-    movingData.nodes.forEach((node) => {
-      if (!nodeIds.has(node.id)) {
-        nodeIds.add(node.id);
-        movingDatas.nodes.push(node);
-      }
-    });
-    movingData.edges.forEach((edge) => {
-      if (!edgeIds.has(edge.id)) {
-        edgeIds.add(edge.id);
-        movingDatas.edges.push(edge);
-      }
-    });
-    adjustedLabelData?.forEach((node) => {
-      if (!labelIds.has(node.id)) {
-        labelIds.add(node.id);
-        adjustedLabels.push(node);
-      }
-    });
+    updateMovingDataAndElements(movingData, adjustedLabelData);
 
     return [movingDatas, adjustedLabels];
   };
@@ -288,7 +283,6 @@ export const useMoveOriginalLocation = () => {
 
     const cytoCoordMapper = new CytoscapeCoordinateMapper(container, activeDiagrams);
     const originalCoordinates: ElementLookupData[] = [];
-
     if (selectedElements.length > 1) {
       const processElements = (selectedNodes: cytoscape.CollectionReturnValue, dataSource: string) => {
         const connectElem = selectedNodes.union(selectedNodes.connectedNodes());
@@ -325,26 +319,13 @@ export const useMoveOriginalLocation = () => {
         );
         const movedNodesById = Object.fromEntries(movedNodes.map((node) => [node.id, node]));
         const adjustedLabelData = adjustLabels(movedNodesById);
-
-        movingData.nodes.forEach((node) => {
-          if (nodeIds.add(node.id)) movingDatas.nodes.push(node);
-        });
-        movingData.edges.forEach((edge) => {
-          if (edgeIds.add(edge.id)) movingDatas.edges.push(edge);
-        });
-        adjustedLabelData?.forEach((node) => {
-          if (labelIds.add(node.id)) adjustedLabels.push(node);
-        });
+        updateMovingDataAndElements(movingData, adjustedLabelData);
       };
-      selectedElements.forEach((ele, i) => {
+      selectedElements.forEach((ele) => {
         if (!ele) return;
         const data = ele.data() as INodeDataProperties;
         processElements(cyto.getElementById(data["source"] as string), data["source"] as string);
-
-        // Check if it's the last node
-        if (i === selectedElements.length - 1) {
-          processElements(cyto.getElementById(data["target"] as string), data["target"] as string);
-        }
+        processElements(cyto.getElementById(data["target"] as string), data["target"] as string);
       });
 
       adjustLabelCoordinates(selectedElements);
@@ -363,7 +344,6 @@ export const useMoveOriginalLocation = () => {
       });
       dispatch(replaceDiagramsAndPage({ diagrams: updatedDiagrams }));
     }
-    // TODO: Handle multiple edges at once
   };
 
   /**

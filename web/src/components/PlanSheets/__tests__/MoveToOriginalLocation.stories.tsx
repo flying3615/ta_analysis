@@ -9,6 +9,7 @@ import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { handlers } from "@/mocks/mockHandlers";
 import {
+  checkCytoElementProperties,
   clickAtCoordinates,
   countSelected,
   getCytoscapeNodeLayer,
@@ -184,5 +185,38 @@ export const MoveMultipleCoordinatesToOrigin: Story = {
     await sleep(500);
     const menuOriginLoc = await canvas.findByText("Original location");
     await userEvent.click(menuOriginLoc);
+  },
+};
+
+export const MoveMultipleLinesToOrigin: Story = {
+  ...IrregularLines,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Lines"));
+    await sleep(1500);
+
+    const position1 = { clientX: 411, clientY: 136 };
+    const position2 = { clientX: 411 + 160, clientY: 136 };
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+    await multiSelectAndDrag(
+      getCytoscapeNodeLayer(cytoscapeElement),
+      [position1, position2],
+      {
+        clientX: 622,
+        clientY: 110,
+      },
+      2,
+    );
+    await sleep(1000);
+    await checkCytoElementProperties("#10001", { position: { x: 343.95, y: 53.51 } });
+    await checkCytoElementProperties("#10281", { position: { x: 317.23, y: 240.54 } });
+
+    clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [626, 110], RIGHT_MOUSE_BUTTON);
+    await sleep(500);
+    const menuOriginLoc = await canvas.findByText("Original location");
+    await userEvent.click(menuOriginLoc);
+    // Verify if they moved to the original location
+    await checkCytoElementProperties("#10001", { position: { x: 132.95, y: 79.51 } });
+    await checkCytoElementProperties("#10281", { position: { x: 106.23, y: 266.54 } });
   },
 };
