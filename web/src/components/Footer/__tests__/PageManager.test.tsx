@@ -5,20 +5,23 @@ import PageManager from "@/components/Footer/PageManager";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { modifiedState, stateVersions } from "@/test-utils/store-mock";
 
-describe("PageManager", () => {
+describe.each(stateVersions)("PageManager state%s", (version) => {
   const mockReduxStore = setupStore({
-    planSheets: modifiedStateV1({
-      pages: [],
-      hasChanges: false,
-      activeSheet: PlanSheetType.TITLE,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 1,
+    planSheets: modifiedState(
+      {
+        pages: [],
+        hasChanges: false,
+        activeSheet: PlanSheetType.TITLE,
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 1,
+        },
+        planMode: PlanMode.View,
       },
-      planMode: PlanMode.View,
-    }),
+      version,
+    ),
   });
 
   test("renders the component", () => {
@@ -44,14 +47,17 @@ describe("PageManager", () => {
 
   test("disables buttons when there are no pages", () => {
     const mockNoPagesStore = setupStore({
-      planSheets: modifiedStateV1({
-        pages: [],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 0,
-          [PlanSheetType.SURVEY]: 1,
+      planSheets: modifiedState(
+        {
+          pages: [],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 0,
+            [PlanSheetType.SURVEY]: 1,
+          },
+          planMode: PlanMode.View,
         },
-        planMode: PlanMode.View,
-      }),
+        version,
+      ),
     });
 
     renderWithReduxProvider(<PageManager />, { store: mockNoPagesStore });

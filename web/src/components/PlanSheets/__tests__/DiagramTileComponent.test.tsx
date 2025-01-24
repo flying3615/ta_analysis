@@ -6,17 +6,20 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { modifiedState, stateVersions } from "@/test-utils/store-mock";
 
-describe("Diagram Tile component", () => {
+describe.each(stateVersions)("Diagram Tile component state%s", (version) => {
   const mockStoreRedux = setupStore({
-    planSheets: modifiedStateV1({
-      pages: mockPlanData.pages,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 1,
+    planSheets: modifiedState(
+      {
+        pages: mockPlanData.pages,
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 1,
+        },
       },
-    }),
+      version,
+    ),
   });
 
   const mockDiagramDisplay = {

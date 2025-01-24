@@ -6,12 +6,12 @@ import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractPast, extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import { MoveDiagramToPageModal } from "../MoveDiagramToPageModal";
 
-describe("MoveDiagramToPageModal", () => {
+describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
   const page1 = { id: 4, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;
   const page2 = { id: 3, pageNumber: 2, pageType: PlanSheetType.TITLE } as PageDTO;
   const page3 = { id: 2, pageNumber: 3, pageType: PlanSheetType.TITLE } as PageDTO;
@@ -88,30 +88,34 @@ describe("MoveDiagramToPageModal", () => {
 
   const diagramIdToMove = diagram1.id;
 
-  const initialState: PlanSheetsState = modifiedStateV1({
-    diagrams: [diagram1, diagram2],
-    pages: [page1, page2, page3, page4],
-    hasChanges: false,
-    diagramIdToMove,
-
-    configs: [],
-    activeSheet: PlanSheetType.TITLE,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 0,
+  const initialState: PlanSheetsState = modifiedState(
+    {
+      diagrams: [diagram1, diagram2],
+      pages: [page1, page2, page3, page4],
+      hasChanges: false,
+      diagramIdToMove,
+      configs: [],
+      activeSheet: PlanSheetType.TITLE,
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+      planMode: PlanMode.View,
+      previousDiagramAttributesMap: {},
+      canViewHiddenLabels: true,
+      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
     },
-    planMode: PlanMode.View,
-    previousDiagramAttributesMap: {},
-    previousDiagrams: null,
-    previousPages: null,
-    canViewHiddenLabels: true,
-    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-  });
+    version,
+  );
 
   it("can move a diagram to an existing page", async () => {
     const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
       preloadedState: { planSheets: initialState },
     });
+    console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    console.log("HERE");
+
+    console.log(store.getState().planSheets.stateVersion);
 
     const existingPageRadio = await screen.findByLabelText("An existing page");
     expect(existingPageRadio).toBeChecked();
@@ -142,22 +146,27 @@ describe("MoveDiagramToPageModal", () => {
 
     fireEvent.click(continueButton);
 
-    const updatedState = store.getState().planSheets;
-    expect(updatedState.v1.diagrams[1]).toStrictEqual(diagram2);
-    expect(updatedState.v1.diagrams[0]?.pageRef).toBe(3);
-    expect(updatedState.v1.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
-    expect(updatedState.v1.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
-    expect(updatedState.v1.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
-    expect(updatedState.v1.pages).toStrictEqual(initialState.v1.pages);
-    expect(updatedState.v1.diagramIdToMove).toBeUndefined();
-    expect(updatedState.v1.activePageNumbers).toStrictEqual({
-      ...initialState.v1.activePageNumbers,
+    const updatedState = extractState(store.getState().planSheets, version);
+    const pastState = extractPast(store.getState().planSheets, version);
+
+    console.log("INITAL STATE", { diagrams: initialState.v2.current.diagrams, pages: initialState.v2.current.pages });
+    console.log("PAST STATE", pastState);
+    console.log("CURRENT STATE", { diagrams: updatedState.pages, pages: updatedState.pages });
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(3);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
+    expect(updatedState.pages).toStrictEqual(extractState(initialState, version).pages);
+    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.activePageNumbers).toStrictEqual({
+      ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 2,
     });
-    expect(updatedState.v1.hasChanges).toBe(true);
-    expect(updatedState.v1.previousHasChanges).toBe(false);
-    expect(updatedState.v1.previousDiagrams).toStrictEqual(initialState.v1.diagrams);
-    expect(updatedState.v1.previousPages).toStrictEqual(initialState.v1.pages);
+    expect(updatedState.hasChanges).toBe(true);
+    expect(pastState.hasChanges).toBe(false);
+    expect(pastState.diagrams).toStrictEqual(extractState(initialState, version).diagrams);
+    expect(pastState.pages).toStrictEqual(extractState(initialState, version).pages);
   });
 
   it("can move a diagram to a new last page", async () => {
@@ -167,64 +176,65 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(await screen.findByLabelText("A new last page"));
     fireEvent.click(screen.getByText("Continue"));
 
-    const updatedState = store.getState().planSheets;
+    const updatedState = extractState(store.getState().planSheets, version);
+
     // We expect offscreen labels to have moved on screen
     // by applying an offset to their position
-    expect(updatedState.v1.diagrams[1]).toStrictEqual(diagram2);
-    expect(updatedState.v1.diagrams[0]?.pageRef).toBe(5);
-    expect(updatedState.v1.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
-    expect(updatedState.v1.diagrams[0]?.zoomScale).toBe(100);
-    expect(updatedState.v1.diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 40, y: -10 });
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(5);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(100);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 40, y: -10 });
 
-    expect(updatedState.v1.diagrams[0]?.labels).toHaveLength(1);
-    expect(updatedState.v1.diagrams[0]?.labels?.[0]?.id).toBe(1000);
-    expect(updatedState.v1.diagrams[0]?.labels?.[0]?.displayText).toBe("Label 1");
-    expect(updatedState.v1.diagrams[0]?.labels?.[0]?.anchorAngle).toBe(270);
-    expect(updatedState.v1.diagrams[0]?.labels?.[0]?.pointOffset).toBeCloseTo(5.86);
-    expect(updatedState.v1.diagrams[0]?.labels?.[0]?.position).toStrictEqual({ x: 20, y: -0.005 });
+    expect(updatedState.diagrams[0]?.labels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.id).toBe(1000);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.displayText).toBe("Label 1");
+    expect(updatedState.diagrams[0]?.labels?.[0]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.pointOffset).toBeCloseTo(5.86);
+    expect(updatedState.diagrams[0]?.labels?.[0]?.position).toStrictEqual({ x: 20, y: -0.005 });
 
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels).toHaveLength(1);
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels?.[0]?.id).toBe(1001);
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels?.[0]?.displayText).toBe("Mark Label");
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels?.[0]?.anchorAngle).toBeCloseTo(0);
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels?.[0]?.pointOffset).toBeCloseTo(62.84);
-    expect(updatedState.v1.diagrams[0]?.coordinateLabels?.[0]?.position).toStrictEqual({ x: -0.1, y: -10 });
+    expect(updatedState.diagrams[0]?.coordinateLabels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.id).toBe(1001);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.displayText).toBe("Mark Label");
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.anchorAngle).toBeCloseTo(0);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.pointOffset).toBeCloseTo(62.84);
+    expect(updatedState.diagrams[0]?.coordinateLabels?.[0]?.position).toStrictEqual({ x: -0.1, y: -10 });
 
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups).toHaveLength(1);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.id).toBe(1002);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels).toHaveLength(2);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.id).toBe(1003); // Parcel App
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.displayText).toBe("Parcel App");
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.anchorAngle).toBe(270);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.pointOffset).toBeCloseTo(48.52);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.position).toStrictEqual({ x: 25, y: 1.5 });
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.id).toBe(1004); // Parcel Area
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.displayText).toBe("Parcel Area");
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.anchorAngle).toBe(270);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.pointOffset).toBeCloseTo(47.77);
-    expect(updatedState.v1.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.position).toStrictEqual({ x: 25, y: 1.5 });
+    expect(updatedState.diagrams[0]?.parcelLabelGroups).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.id).toBe(1002);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels).toHaveLength(2);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.id).toBe(1003); // Parcel App
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.displayText).toBe("Parcel App");
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.pointOffset).toBeCloseTo(48.52);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[0]?.position).toStrictEqual({ x: 25, y: 1.5 });
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.id).toBe(1004); // Parcel Area
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.displayText).toBe("Parcel Area");
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.pointOffset).toBeCloseTo(47.77);
+    expect(updatedState.diagrams[0]?.parcelLabelGroups?.[0]?.labels?.[1]?.position).toStrictEqual({ x: 25, y: 1.5 });
 
-    expect(updatedState.v1.diagrams[0]?.lineLabels).toHaveLength(1);
-    expect(updatedState.v1.diagrams[0]?.lineLabels[0]?.id).toBe(1002);
-    expect(updatedState.v1.diagrams[0]?.lineLabels[0]?.position).toStrictEqual({ x: 20, y: 0 });
-    expect(updatedState.v1.diagrams[0]?.lineLabels[0]?.pointOffset).toBeCloseTo(
+    expect(updatedState.diagrams[0]?.lineLabels).toHaveLength(1);
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.id).toBe(1002);
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.position).toStrictEqual({ x: 20, y: 0 });
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.pointOffset).toBeCloseTo(
       ((16 / 2) * POINTS_PER_CM) / CSS_PIXELS_PER_CM,
     );
-    expect(updatedState.v1.diagrams[0]?.lineLabels[0]?.anchorAngle).toBe(270);
+    expect(updatedState.diagrams[0]?.lineLabels[0]?.anchorAngle).toBe(270);
 
-    expect(updatedState.v1.pages).toStrictEqual([
+    expect(updatedState.pages).toStrictEqual([
       page1,
       page2,
       page3,
       page4,
       { id: 5, pageNumber: 4, pageType: PlanSheetType.TITLE },
     ]);
-    expect(updatedState.v1.activePageNumbers).toStrictEqual({
-      ...initialState.v1.activePageNumbers,
+    expect(updatedState.activePageNumbers).toStrictEqual({
+      ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 4,
     });
-    expect(updatedState.v1.diagramIdToMove).toBeUndefined();
-    expect(updatedState.v1.hasChanges).toBe(true);
+    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.hasChanges).toBe(true);
   });
 
   it("can move a diagram to a new page after this one", async () => {
@@ -234,26 +244,26 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(await screen.findByLabelText("A new page after this one"));
     fireEvent.click(screen.getByText("Continue"));
 
-    const updatedState = store.getState().planSheets;
-    expect(updatedState.v1.diagrams[1]).toStrictEqual(diagram2);
-    expect(updatedState.v1.diagrams[0]?.pageRef).toBe(6);
-    expect(updatedState.v1.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
-    expect(updatedState.v1.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
-    expect(updatedState.v1.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
+    const updatedState = extractState(store.getState().planSheets, version);
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(6);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
 
-    expect(updatedState.v1.pages).toStrictEqual([
+    expect(updatedState.pages).toStrictEqual([
       page1,
       { ...page2, pageNumber: 3 },
       { ...page3, pageNumber: 4 },
       { id: 6, pageNumber: 2, pageType: PlanSheetType.TITLE },
       page4,
     ]);
-    expect(updatedState.v1.activePageNumbers).toStrictEqual({
-      ...initialState.v1.activePageNumbers,
+    expect(updatedState.activePageNumbers).toStrictEqual({
+      ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 2,
     });
-    expect(updatedState.v1.diagramIdToMove).toBeUndefined();
-    expect(updatedState.v1.hasChanges).toBe(true);
+    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.hasChanges).toBe(true);
   });
 
   it("can move a diagram to a new first page", async () => {
@@ -263,26 +273,26 @@ describe("MoveDiagramToPageModal", () => {
     fireEvent.click(await screen.findByLabelText("A new first page"));
     fireEvent.click(screen.getByText("Continue"));
 
-    const updatedState = store.getState().planSheets;
-    expect(updatedState.v1.diagrams[1]).toStrictEqual(diagram2);
-    expect(updatedState.v1.diagrams[0]?.pageRef).toBe(5);
-    expect(updatedState.v1.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
-    expect(updatedState.v1.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
-    expect(updatedState.v1.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
+    const updatedState = extractState(store.getState().planSheets, version);
+    expect(updatedState.diagrams[1]).toStrictEqual(diagram2);
+    expect(updatedState.diagrams[0]?.pageRef).toBe(5);
+    expect(updatedState.diagrams[0]?.originPageOffset).toStrictEqual({ x: 0.015, y: -0.015 });
+    expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
+    expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
 
-    expect(updatedState.v1.pages).toStrictEqual([
+    expect(updatedState.pages).toStrictEqual([
       { id: 5, pageNumber: 1, pageType: PlanSheetType.TITLE },
       { ...page1, pageNumber: 2 },
       { ...page2, pageNumber: 3 },
       { ...page3, pageNumber: 4 },
       page4,
     ]);
-    expect(updatedState.v1.activePageNumbers).toStrictEqual({
-      ...initialState.v1.activePageNumbers,
+    expect(updatedState.activePageNumbers).toStrictEqual({
+      ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 1,
     });
-    expect(updatedState.v1.diagramIdToMove).toBeUndefined();
-    expect(updatedState.v1.hasChanges).toBe(true);
+    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.hasChanges).toBe(true);
   });
 
   it("only unsets the diagram to move when cancel is clicked", async () => {
@@ -291,8 +301,8 @@ describe("MoveDiagramToPageModal", () => {
     });
     fireEvent.click(await screen.findByLabelText("A new first page"));
     fireEvent.click(screen.getByText("Cancel"));
-    expect(store.getState().planSheets.v1).toStrictEqual({
-      ...initialState.v1,
+    expect(extractState(store.getState().planSheets, version)).toStrictEqual({
+      ...extractState(initialState, version),
       diagramIdToMove: undefined,
     });
   });

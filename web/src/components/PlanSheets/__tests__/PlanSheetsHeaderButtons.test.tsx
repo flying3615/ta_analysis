@@ -6,7 +6,7 @@ import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 jest.mock("@/hooks/useCytoscapeContext");
 
@@ -14,19 +14,22 @@ jest.mock("@/hooks/useTransactionId", () => ({
   useTransactionId: () => 123,
 }));
 
-const mockStoreRedux = setupStore({
-  planSheets: {
-    ...modifiedStateV1({
-      pages: [],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 1,
-      },
-    }),
-  },
-});
+describe.each(stateVersions)("PlanSheetsHeaderButtons state%s", (version) => {
+  const mockStoreRedux = setupStore({
+    planSheets: {
+      ...modifiedState(
+        {
+          pages: [],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 1,
+            [PlanSheetType.SURVEY]: 1,
+          },
+        },
+        version,
+      ),
+    },
+  });
 
-describe("PlanSheetsHeaderButtons", () => {
   const activeButtonLabels = [
     [PlanMode.Undo],
     [PlanMode.View],
@@ -142,7 +145,9 @@ describe("PlanSheetsHeaderButtons", () => {
 
     await waitFor(() => expect(button).toHaveClass("selected"));
 
-    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectCoordinates);
+    expect(extractState(mockStoreRedux.getState().planSheets, version).planMode).toStrictEqual(
+      PlanMode.SelectCoordinates,
+    );
   });
 
   it("should handle select lines click", async () => {
@@ -162,7 +167,7 @@ describe("PlanSheetsHeaderButtons", () => {
 
     expect(button).toHaveClass("selected");
 
-    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectLine);
+    expect(extractState(mockStoreRedux.getState().planSheets, version).planMode).toStrictEqual(PlanMode.SelectLine);
   });
 
   it("should handle select labels click", async () => {
@@ -172,6 +177,6 @@ describe("PlanSheetsHeaderButtons", () => {
 
     expect(button).toHaveClass("selected");
 
-    expect(mockStoreRedux.getState().planSheets.v1.planMode).toStrictEqual(PlanMode.SelectLabel);
+    expect(extractState(mockStoreRedux.getState().planSheets, version).planMode).toStrictEqual(PlanMode.SelectLabel);
   });
 });

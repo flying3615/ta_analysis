@@ -12,7 +12,7 @@ import {
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 const mockText = "Test label text\nNew line";
 const mockValidLineBreakEdit = "Test label\ntext\nNew line";
@@ -34,24 +34,6 @@ const mockProps: LabelPropertiesData = {
   borderWidth: undefined,
   displayFormat: undefined,
 };
-const mockReduxStore = setupStore({
-  planSheets: modifiedStateV1({
-    activeSheet: PlanSheetType.TITLE,
-  }),
-});
-
-const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
-  renderWithReduxProvider(
-    <LabelProperties
-      data={props}
-      setSaveEnabled={jest.fn()}
-      setSaveFunction={jest.fn()}
-      cyto={{ container: jest.fn() } as unknown as cytoscape.Core}
-    />,
-    {
-      store: reduxStore,
-    },
-  );
 
 const expectElementToBeEnabled = (element: HTMLElement, enabled: boolean) => {
   void (enabled ? expect(element).toBeEnabled() : expect(element).not.toBeEnabled());
@@ -63,7 +45,29 @@ const expectElementToBeInDocument = (message: string, isPresent: boolean) => {
     : expect(screen.queryByText(/cannot be altered/i)).not.toBeInTheDocument());
 };
 
-describe("labelProperties-editing label text", () => {
+describe.each(stateVersions)("labelProperties-editing label text state%s", (version) => {
+  const mockReduxStore = setupStore({
+    planSheets: modifiedState(
+      {
+        activeSheet: PlanSheetType.TITLE,
+      },
+      version,
+    ),
+  });
+
+  const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
+    renderWithReduxProvider(
+      <LabelProperties
+        data={props}
+        setSaveEnabled={jest.fn()}
+        setSaveFunction={jest.fn()}
+        cyto={{ container: jest.fn() } as unknown as cytoscape.Core}
+      />,
+      {
+        store: reduxStore,
+      },
+    );
+
   const labelTypes = [
     {
       labelType: LabelDTOLabelTypeEnum.userAnnotation,

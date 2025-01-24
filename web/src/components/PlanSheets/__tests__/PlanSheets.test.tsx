@@ -18,7 +18,7 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setMockedSplitFeatures } from "@/setupTests";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 import { nestedTitlePlan } from "./data/plansheetDiagramData";
 
@@ -39,26 +39,6 @@ const renderWithState = (state: PlanSheetsState) => {
     { preloadedState: { planSheets: cloneDeep(state) } },
   );
 };
-
-const planSheetsState: PlanSheetsState = modifiedStateV1({
-  diagrams: [],
-  activeSheet: PlanSheetType.TITLE,
-  pages: [
-    { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-    { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-  ],
-  activePageNumbers: {
-    [PlanSheetType.TITLE]: 1,
-    [PlanSheetType.SURVEY]: 0,
-  },
-  hasChanges: false,
-  planMode: PlanMode.View,
-  previousDiagramAttributesMap: {},
-  previousDiagrams: null,
-  previousPages: null,
-  canViewHiddenLabels: true,
-  viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-});
 
 const mockGetPlanResponse = {
   ...nestedTitlePlan,
@@ -97,7 +77,28 @@ const renderWithFailedPlanRegen = () => {
   );
 };
 
-describe("PlanSheets", () => {
+describe.each(stateVersions)("PlanSheets state%s", (version) => {
+  const planSheetsState: PlanSheetsState = modifiedState(
+    {
+      diagrams: [],
+      activeSheet: PlanSheetType.TITLE,
+      pages: [
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+      hasChanges: false,
+      planMode: PlanMode.View,
+      previousDiagramAttributesMap: {},
+      canViewHiddenLabels: true,
+      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
+    },
+    version,
+  );
+
   it("renders with the survey sheet diagrams side panel open by default", async () => {
     renderCompWithReduxAndRoute(
       <Route element={<PlanSheets />} path={Paths.layoutPlanSheets} />,
@@ -160,22 +161,23 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 1 to 5)", async () => {
-    const mockState: PlanSheetsState = modifiedStateV1({
-      diagrams: [],
-      activeSheet: PlanSheetType.TITLE,
-      pages: [],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 1,
-        [PlanSheetType.SURVEY]: 0,
+    const mockState: PlanSheetsState = modifiedState(
+      {
+        diagrams: [],
+        activeSheet: PlanSheetType.TITLE,
+        pages: [],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 1,
+          [PlanSheetType.SURVEY]: 0,
+        },
+        hasChanges: false,
+        planMode: PlanMode.View,
+        previousDiagramAttributesMap: {},
+        canViewHiddenLabels: true,
+        viewableLabelTypes: defaultOptionalVisibileLabelTypes,
       },
-      hasChanges: false,
-      planMode: PlanMode.View,
-      previousDiagramAttributesMap: {},
-      previousDiagrams: null,
-      previousPages: null,
-      canViewHiddenLabels: true,
-      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-    });
+      version,
+    );
 
     server.use(
       http.get(/\/123\/plan$/, () => {
@@ -229,22 +231,23 @@ describe("PlanSheets", () => {
   });
 
   it("reorders pages correctly (page 4 to 2)", async () => {
-    const mockState: PlanSheetsState = modifiedStateV1({
-      diagrams: [],
-      activeSheet: PlanSheetType.TITLE,
-      pages: [],
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 4,
-        [PlanSheetType.SURVEY]: 0,
+    const mockState: PlanSheetsState = modifiedState(
+      {
+        diagrams: [],
+        activeSheet: PlanSheetType.TITLE,
+        pages: [],
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 4,
+          [PlanSheetType.SURVEY]: 0,
+        },
+        hasChanges: false,
+        planMode: PlanMode.View,
+        previousDiagramAttributesMap: {},
+        canViewHiddenLabels: true,
+        viewableLabelTypes: defaultOptionalVisibileLabelTypes,
       },
-      hasChanges: false,
-      planMode: PlanMode.View,
-      previousDiagramAttributesMap: {},
-      previousDiagrams: null,
-      previousPages: null,
-      canViewHiddenLabels: true,
-      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-    });
+      version,
+    );
 
     server.use(
       http.get(/\/123\/plan$/, () => {
@@ -298,13 +301,16 @@ describe("PlanSheets", () => {
   });
 
   it("removes page correctly", async () => {
-    const mockState = modifiedStateV1({
-      ...planSheetsState.v1,
-      activePageNumbers: {
-        [PlanSheetType.TITLE]: 3,
-        [PlanSheetType.SURVEY]: 0,
+    const mockState = modifiedState(
+      {
+        ...extractState(planSheetsState, version),
+        activePageNumbers: {
+          [PlanSheetType.TITLE]: 3,
+          [PlanSheetType.SURVEY]: 0,
+        },
       },
-    });
+      version,
+    );
 
     server.use(
       http.get(/\/123\/plan$/, () => {

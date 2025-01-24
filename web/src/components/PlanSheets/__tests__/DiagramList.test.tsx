@@ -12,7 +12,7 @@ import { PlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { Paths } from "@/Paths";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 const mockCytoscapeCoordinateMapper = new CytoscapeCoordinateMapper(
   { clientWidth: 400, clientHeight: 300 } as unknown as HTMLElement,
@@ -94,7 +94,7 @@ describe("The Diagram list tree", () => {
   });
 });
 
-describe("Insert a diagram onto the plansheet", () => {
+describe.each(stateVersions)("Insert a diagram onto the plansheet state%s", (version) => {
   const page1 = { id: 1, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;
   const diagramSeven = {
     id: 7,
@@ -106,23 +106,24 @@ describe("Insert a diagram onto the plansheet", () => {
     coordinateLabels: [],
     parcelLabelGroups: [],
   } as unknown as DiagramDTO;
-  const initialState: PlanSheetsState = modifiedStateV1({
-    diagrams: [diagramSeven],
-    pages: [page1],
-    hasChanges: false,
-    configs: [],
-    activeSheet: PlanSheetType.TITLE,
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 0,
+  const initialState: PlanSheetsState = modifiedState(
+    {
+      diagrams: [diagramSeven],
+      pages: [page1],
+      hasChanges: false,
+      configs: [],
+      activeSheet: PlanSheetType.TITLE,
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
+      planMode: PlanMode.View,
+      previousDiagramAttributesMap: {},
+      canViewHiddenLabels: true,
+      viewableLabelTypes: defaultOptionalVisibileLabelTypes,
     },
-    planMode: PlanMode.View,
-    previousDiagramAttributesMap: {},
-    previousDiagrams: null,
-    previousPages: null,
-    canViewHiddenLabels: true,
-    viewableLabelTypes: defaultOptionalVisibileLabelTypes,
-  });
+    version,
+  );
 
   it("Inserting a diagram is resized to the minimum size", async () => {
     const surveyDiagramList = nestedSurveyPlan.diagrams;
@@ -135,9 +136,9 @@ describe("Insert a diagram onto the plansheet", () => {
         },
       },
     );
-    expect(store.getState().planSheets.v1.diagrams[0]?.zoomScale).toBe(500);
+    expect(extractState(store.getState().planSheets, version).diagrams[0]?.zoomScale).toBe(500);
     await userEvent.click(screen.getByText("Diag. AA"));
     await userEvent.click(screen.getByText("Insert diagram"));
-    expect(store.getState().planSheets.v1.diagrams[0]?.zoomScale).toBe(0.3);
+    expect(extractState(store.getState().planSheets, version).diagrams[0]?.zoomScale).toBe(0.3);
   });
 });

@@ -3,13 +3,9 @@ import { NodeSingular } from "cytoscape";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore, stateVersions } from "@/test-utils/store-mock";
 
-const mockedState = {
-  preloadedState: { ...mockStoreV1 },
-};
-
-describe("LabelRotationMenuItem", () => {
+describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
   let targetStyles: Record<string, unknown>;
   let targetLabel: NodeSingular;
   const keepElementSelectedMock = jest.fn();
@@ -33,7 +29,7 @@ describe("LabelRotationMenuItem", () => {
   it("renders with initial rotation value", () => {
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
     expect(screen.getByText("90°")).toBeInTheDocument();
   });
@@ -41,7 +37,7 @@ describe("LabelRotationMenuItem", () => {
   it("updates rotation value when slider is moved", () => {
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "45" } });
@@ -53,7 +49,7 @@ describe("LabelRotationMenuItem", () => {
   it("updates label style when slider is moved", () => {
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "45" } });
@@ -65,7 +61,7 @@ describe("LabelRotationMenuItem", () => {
   it("does not exceed maximum clockwise rotation", () => {
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "200" } });
@@ -77,7 +73,7 @@ describe("LabelRotationMenuItem", () => {
   it("does not exceed maximum anti-clockwise rotation", () => {
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "-10" } });
@@ -92,7 +88,7 @@ describe("LabelRotationMenuItem", () => {
 
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
 
     expect(screen.getByText(`${expectedDegreeValue}°`)).toBeInTheDocument();
@@ -104,7 +100,7 @@ describe("LabelRotationMenuItem", () => {
 
     renderWithReduxProvider(
       <LabelRotationMenuItem targetLabel={targetLabel} keepElementSelected={keepElementSelectedMock} />,
-      mockedState,
+      getMockedStore(version),
     );
 
     expect(screen.getByText(`${expectedDegreeValue}°`)).toBeInTheDocument();

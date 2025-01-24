@@ -32,6 +32,10 @@ export const mockStoreV1 = {
   planSheets: initialStateV1,
 };
 
+export const mockStoreV2 = {
+  planSheets: { ...initialStateV1, stateVersion: "V2" },
+};
+
 export const modifiedStateV1 = (state: Partial<PlanSheetsStateV1>): PlanSheetsState => ({
   ...initialStateV1,
   v1: { ...initialStateV1.v1, ...state },
@@ -62,7 +66,10 @@ export const modifiedState = (newState: Partial<State>, stateVersion: "V1" | "V2
   if (stateVersion === "V1") {
     return createState({ state: { ...state, ...newState }, stateVersion });
   } else {
-    return createState({ state: { current: { ...state, ...newState } }, stateVersion });
+    return createState({
+      state: { current: { ...state, ...newState }, past: { ...state, ...newState } },
+      stateVersion,
+    });
   }
 };
 
@@ -104,6 +111,19 @@ export const extractPast = (
         diagrams: state.v2.replayAction ? state.v2.past.diagrams : null, // Emulates how v1 previousDiagrams works when there is no undo
         pages: state.v2.replayAction ? state.v2.past.pages : null, // Emulates how v1 previousPages works when there is no undo
         hasChanges: state.v2.past.hasChanges,
+      };
+  }
+};
+
+export const getMockedStore = (stateVersion: "V1" | "V2") => {
+  switch (stateVersion) {
+    case "V1":
+      return {
+        preloadedState: { ...mockStoreV1 },
+      };
+    case "V2":
+      return {
+        preloadedState: { ...mockStoreV2 },
       };
   }
 };

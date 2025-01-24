@@ -18,7 +18,7 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setMockedSplitFeatures } from "@/setupTests";
 import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractState, getMockedStore, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 function returnFailOnSave() {
   const requestSpy = jest.fn();
@@ -56,27 +56,33 @@ function renderPlanSheetsFooter() {
   );
 }
 
-describe("PlanSheetsFooter", () => {
-  const planSheetsState: PlanSheetsState = modifiedStateV1({
-    ...mockStoreV1.planSheets.v1,
-    pages: [],
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 0,
-      [PlanSheetType.SURVEY]: 0,
+describe.each(stateVersions)("PlanSheetsFooter state%s", (version) => {
+  const planSheetsState: PlanSheetsState = modifiedState(
+    {
+      ...extractState(getMockedStore(version).preloadedState.planSheets, version),
+      pages: [],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 0,
+        [PlanSheetType.SURVEY]: 0,
+      },
     },
-  });
+    version,
+  );
 
-  const initStateForTwoPages = modifiedStateV1({
-    ...planSheetsState.v1,
-    pages: [
-      { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-      { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-    ],
-    activePageNumbers: {
-      [PlanSheetType.TITLE]: 1,
-      [PlanSheetType.SURVEY]: 0,
+  const initStateForTwoPages = modifiedState(
+    {
+      ...extractState(planSheetsState, version),
+      pages: [
+        { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+        { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+      ],
+      activePageNumbers: {
+        [PlanSheetType.TITLE]: 1,
+        [PlanSheetType.SURVEY]: 0,
+      },
     },
-  });
+    version,
+  );
   const renderWithState = (state: PlanSheetsState) => {
     renderCompWithReduxAndRoute(
       <Route
@@ -124,13 +130,16 @@ describe("PlanSheetsFooter", () => {
 
   it("displays menu with Title sheet selected", async () => {
     renderWithState(
-      modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 0,
-          [PlanSheetType.SURVEY]: 0,
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 0,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
+        version,
+      ),
     );
 
     expect(screen.queryByRole("menuitem")).toBeNull();
@@ -143,13 +152,16 @@ describe("PlanSheetsFooter", () => {
 
   it("displays menu with Survey sheet selected", async () => {
     renderWithState(
-      modifiedStateV1({
-        activeSheet: PlanSheetType.SURVEY,
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 0,
-          [PlanSheetType.SURVEY]: 0,
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.SURVEY,
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 0,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
+        version,
+      ),
     );
 
     expect(screen.queryByRole("menuitem")).toBeNull();
@@ -189,14 +201,17 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: modifiedStateV1({
-            ...planSheetsState.v1,
-            diagrams,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
+          planSheets: modifiedState(
+            {
+              ...extractState(planSheetsState, version),
+              diagrams,
+              activePageNumbers: {
+                [PlanSheetType.TITLE]: 0,
+                [PlanSheetType.SURVEY]: 0,
+              },
             },
-          }),
+            version,
+          ),
         },
       },
     );
@@ -443,14 +458,17 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: modifiedStateV1({
-            ...planSheetsState.v1,
-            diagrams,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
+          planSheets: modifiedState(
+            {
+              ...extractState(planSheetsState, version),
+              diagrams,
+              activePageNumbers: {
+                [PlanSheetType.TITLE]: 0,
+                [PlanSheetType.SURVEY]: 0,
+              },
             },
-          }),
+            version,
+          ),
         },
       },
     );
@@ -528,38 +546,41 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: modifiedStateV1({
-            ...planSheetsState.v1,
-            pages: [
-              {
-                id: 1,
-                pageType: "survey",
-                pageNumber: 1,
+          planSheets: modifiedState(
+            {
+              ...extractState(planSheetsState, version),
+              pages: [
+                {
+                  id: 1,
+                  pageType: "survey",
+                  pageNumber: 1,
+                },
+                {
+                  id: 2,
+                  pageType: "survey",
+                  pageNumber: 2,
+                },
+                {
+                  id: 3,
+                  pageType: "title",
+                  pageNumber: 1,
+                },
+                {
+                  id: 4,
+                  pageType: "title",
+                  pageNumber: 2,
+                },
+              ],
+              activeSheet: PlanSheetType.TITLE,
+              activePageNumbers: {
+                [PlanSheetType.TITLE]: 2,
+                [PlanSheetType.SURVEY]: 2,
               },
-              {
-                id: 2,
-                pageType: "survey",
-                pageNumber: 2,
-              },
-              {
-                id: 3,
-                pageType: "title",
-                pageNumber: 1,
-              },
-              {
-                id: 4,
-                pageType: "title",
-                pageNumber: 2,
-              },
-            ],
-            activeSheet: PlanSheetType.TITLE,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 2,
-              [PlanSheetType.SURVEY]: 2,
+              diagrams,
+              hasChanges: true,
             },
-            diagrams,
-            hasChanges: true,
-          }),
+            version,
+          ),
         },
       },
     );
@@ -623,15 +644,18 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: modifiedStateV1({
-            ...planSheetsState.v1,
-            diagrams,
-            activePageNumbers: {
-              [PlanSheetType.TITLE]: 0,
-              [PlanSheetType.SURVEY]: 0,
+          planSheets: modifiedState(
+            {
+              ...extractState(planSheetsState, version),
+              diagrams,
+              activePageNumbers: {
+                [PlanSheetType.TITLE]: 0,
+                [PlanSheetType.SURVEY]: 0,
+              },
+              hasChanges: true,
             },
-            hasChanges: true,
-          }),
+            version,
+          ),
         },
       },
     );
@@ -678,17 +702,20 @@ describe("PlanSheetsFooter", () => {
 
   it("displays the number of pages", () => {
     renderWithState(
-      modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 1,
-          [PlanSheetType.SURVEY]: 0,
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 1,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
+        version,
+      ),
     );
     const paginationElement = screen.getByText((content, element) => {
       return element?.textContent === "Page 1 of 2";
@@ -697,19 +724,22 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("shows current page number and it's non-editable", () => {
-    renderWithState({
-      ...modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 2,
-          [PlanSheetType.SURVEY]: 0,
+    renderWithState(
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 2,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
-    });
+        version,
+      ),
+    );
 
     const paginationElement = screen.getByText((content, element) => {
       return element?.textContent === "Page 2 of 2";
@@ -719,19 +749,22 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("disable appropriate navigation buttons when on the first page", () => {
-    renderWithState({
-      ...modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 1,
-          [PlanSheetType.SURVEY]: 0,
+    renderWithState(
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 1,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
-    });
+        version,
+      ),
+    );
 
     expect(screen.getByRole("button", { name: /First/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Previous/i })).toBeDisabled();
@@ -740,19 +773,22 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("should display renumber and delete page buttons with correct titles", () => {
-    renderWithState({
-      ...modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 1,
-          [PlanSheetType.SURVEY]: 0,
+    renderWithState(
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 1,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
-    });
+        version,
+      ),
+    );
     const verifyButton = (buttonName: RegExp, expectedTitle: unknown) => {
       const button = screen.getByRole("button", { description: buttonName });
       expect(button).toBeInTheDocument();
@@ -764,19 +800,22 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("disable appropriate navigation buttons when on the last page", () => {
-    renderWithState({
-      ...modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 2,
-          [PlanSheetType.SURVEY]: 2,
+    renderWithState(
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 2,
+            [PlanSheetType.SURVEY]: 2,
+          },
         },
-      }),
-    });
+        version,
+      ),
+    );
 
     expect(screen.getByRole("button", { name: /First/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /Previous/i })).toBeEnabled();
@@ -785,21 +824,24 @@ describe("PlanSheetsFooter", () => {
   });
 
   it("enable appropriate navigation buttons when on 3rd page out of 4 pages", async () => {
-    renderWithState({
-      ...modifiedStateV1({
-        activeSheet: PlanSheetType.TITLE,
-        pages: [
-          { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
-          { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
-          { pageType: PlanSheetType.TITLE, id: 2, pageNumber: 3 },
-          { pageType: PlanSheetType.TITLE, id: 3, pageNumber: 4 },
-        ],
-        activePageNumbers: {
-          [PlanSheetType.TITLE]: 4,
-          [PlanSheetType.SURVEY]: 0,
+    renderWithState(
+      modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+          pages: [
+            { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
+            { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
+            { pageType: PlanSheetType.TITLE, id: 2, pageNumber: 3 },
+            { pageType: PlanSheetType.TITLE, id: 3, pageNumber: 4 },
+          ],
+          activePageNumbers: {
+            [PlanSheetType.TITLE]: 4,
+            [PlanSheetType.SURVEY]: 0,
+          },
         },
-      }),
-    });
+        version,
+      ),
+    );
     await userEvent.click(await screen.findByRole("button", { name: /Previous/i }));
     const paginationElement = screen.getByText((content, element) => {
       return element?.textContent === "Page 3 of 4";
@@ -867,8 +909,8 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...modifiedStateV1({
+          planSheets: modifiedState(
+            {
               pages: [
                 { pageType: PlanSheetType.TITLE, id: 0, pageNumber: 1 },
                 { pageType: PlanSheetType.TITLE, id: 1, pageNumber: 2 },
@@ -877,8 +919,9 @@ describe("PlanSheetsFooter", () => {
                 [PlanSheetType.TITLE]: 1,
                 [PlanSheetType.SURVEY]: 0,
               },
-            }),
-          },
+            },
+            version,
+          ),
         },
       },
     );
@@ -927,11 +970,12 @@ describe("PlanSheetsFooter", () => {
       generatePath(Paths.layoutPlanSheets, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: {
-            ...modifiedStateV1({
+          planSheets: modifiedState(
+            {
               hasChanges: true,
-            }),
-          },
+            },
+            version,
+          ),
         },
       },
     );
