@@ -23,6 +23,7 @@ import {
   extractPageEdges,
   extractPageNodes,
 } from "@/modules/plan/extractGraphData";
+import { selectDiagramToPageLookupTable } from "@/modules/plan/selectGraphData";
 import { ExternalSurveyInfoDto } from "@/queries/survey";
 import { getActiveSheet, getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isPlaywrightTest } from "@/test-utils/cytoscape-data-utils";
@@ -76,6 +77,7 @@ export const usePlanGenPreview = (props: {
   const activeSheet = useAppSelector(getActiveSheet);
   const pages = useAppSelector(getPages);
   const diagrams = useAppSelector(getDiagrams);
+  const correspondingPageLookupTable = useAppSelector(selectDiagramToPageLookupTable);
   const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
   const sortedNodes = useRef(
     props.pageConfigsNodeData?.sort((a, b) => {
@@ -152,7 +154,6 @@ export const usePlanGenPreview = (props: {
     const sheetName = isSurveySheet
       ? PlanSheetTypeAbbreviation.SURVEY_PLAN_TITLE
       : PlanSheetTypeAbbreviation.TITLE_PLAN_TITLE;
-
     try {
       const imageFiles: ImageFile[] = [];
       let firstTimeExport = true;
@@ -189,7 +190,7 @@ export const usePlanGenPreview = (props: {
 
         const filteredDiagramNodes = filterNodeData(extractPageNodes([currentPage]), "hide", viewableLabelTypes);
         const filteredPageNodes = filterNodeData(
-          extractDiagramNodes(currentPageDiagrams, undefined, true),
+          extractDiagramNodes(currentPageDiagrams, correspondingPageLookupTable, true),
           "hide",
           viewableLabelTypes,
         );

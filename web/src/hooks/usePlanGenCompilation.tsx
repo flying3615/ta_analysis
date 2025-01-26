@@ -1,8 +1,11 @@
 import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient } from "@linz/secure-file-upload";
-import { LabelDTOLabelTypeEnum, PlanCompileRequest } from "@linz/survey-plan-generation-api-client";
-import { PlanGraphicsCompileRequest } from "@linz/survey-plan-generation-api-client";
-import { FileUploadDetails } from "@linz/survey-plan-generation-api-client";
+import {
+  FileUploadDetails,
+  LabelDTOLabelTypeEnum,
+  PlanCompileRequest,
+  PlanGraphicsCompileRequest,
+} from "@linz/survey-plan-generation-api-client";
 import { useToast } from "@linzjs/lui";
 import { PromiseWithResolve, useLuiModalPrefab } from "@linzjs/windows";
 import cytoscape, { EventHandler } from "cytoscape";
@@ -33,6 +36,7 @@ import {
   extractPageEdges,
   extractPageNodes,
 } from "@/modules/plan/extractGraphData";
+import { selectDiagramToPageLookupTable } from "@/modules/plan/selectGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
 import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
@@ -54,6 +58,7 @@ export const usePlanGenCompilation = (props: {
   const { error: errorToast } = useToast();
   const pages = useAppSelector(getPages);
   const diagrams = useAppSelector(getDiagrams);
+  const correspondingPageLookupTable = useAppSelector(selectDiagramToPageLookupTable);
   const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
 
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -219,7 +224,7 @@ export const usePlanGenCompilation = (props: {
 
           // filter out hidden nodes
           let diagramNodeData = filterNodeData(
-            extractDiagramNodes(currentPageDiagrams, undefined, true),
+            extractDiagramNodes(currentPageDiagrams, correspondingPageLookupTable, true),
             "hide",
             viewableLabelTypes,
           );

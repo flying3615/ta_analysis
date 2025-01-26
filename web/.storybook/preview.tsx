@@ -22,6 +22,7 @@ mswInitialize({
 const preview: Preview = {
   decorators: [mswDecorator],
   parameters: {
+    chromatic: { diffThreshold: 0.8 },
     layout: "fullscreen",
     viewport: {
       viewports: {
