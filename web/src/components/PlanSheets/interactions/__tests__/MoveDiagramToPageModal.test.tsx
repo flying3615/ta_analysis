@@ -2,6 +2,7 @@ import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { fireEvent, screen } from "@testing-library/react";
 
 import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
@@ -9,7 +10,7 @@ import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { extractPast, extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
-import { MoveDiagramToPageModal } from "../MoveDiagramToPageModal";
+import { ElementToMove, MoveElementToPageModal } from "../MoveElementToPageModal";
 
 describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
   const page1 = { id: 4, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;
@@ -86,14 +87,14 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
     parcelLabelGroups: undefined,
   } as unknown as DiagramDTO;
 
-  const diagramIdToMove = diagram1.id;
+  const elementsToMove = [{ id: diagram1.id, type: PlanElementType.DIAGRAM }] as ElementToMove[];
 
   const initialState: PlanSheetsState = modifiedState(
     {
       diagrams: [diagram1, diagram2],
       pages: [page1, page2, page3, page4],
       hasChanges: false,
-      diagramIdToMove,
+      elementsToMove,
       configs: [],
       activeSheet: PlanSheetType.TITLE,
       activePageNumbers: {
@@ -109,7 +110,7 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
   );
 
   it("can move a diagram to an existing page", async () => {
-    const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
+    const { store } = renderWithReduxProvider(<MoveElementToPageModal elementsToMove={elementsToMove} />, {
       preloadedState: { planSheets: initialState },
     });
     console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -158,7 +159,7 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
     expect(updatedState.diagrams[0]?.zoomScale).toBe(diagram1.zoomScale);
     expect(updatedState.diagrams[0]?.bottomRightPoint).toStrictEqual(diagram1.bottomRightPoint);
     expect(updatedState.pages).toStrictEqual(extractState(initialState, version).pages);
-    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.elementsToMove).toBeUndefined();
     expect(updatedState.activePageNumbers).toStrictEqual({
       ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 2,
@@ -170,7 +171,7 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
   });
 
   it("can move a diagram to a new last page", async () => {
-    const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
+    const { store } = renderWithReduxProvider(<MoveElementToPageModal elementsToMove={elementsToMove} />, {
       preloadedState: { planSheets: initialState },
     });
     fireEvent.click(await screen.findByLabelText("A new last page"));
@@ -233,12 +234,12 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
       ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 4,
     });
-    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.elementsToMove).toBeUndefined();
     expect(updatedState.hasChanges).toBe(true);
   });
 
   it("can move a diagram to a new page after this one", async () => {
-    const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
+    const { store } = renderWithReduxProvider(<MoveElementToPageModal elementsToMove={elementsToMove} />, {
       preloadedState: { planSheets: initialState },
     });
     fireEvent.click(await screen.findByLabelText("A new page after this one"));
@@ -262,12 +263,12 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
       ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 2,
     });
-    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.elementsToMove).toBeUndefined();
     expect(updatedState.hasChanges).toBe(true);
   });
 
   it("can move a diagram to a new first page", async () => {
-    const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
+    const { store } = renderWithReduxProvider(<MoveElementToPageModal elementsToMove={elementsToMove} />, {
       preloadedState: { planSheets: initialState },
     });
     fireEvent.click(await screen.findByLabelText("A new first page"));
@@ -291,19 +292,19 @@ describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
       ...extractState(initialState, version).activePageNumbers,
       [PlanSheetType.TITLE]: 1,
     });
-    expect(updatedState.diagramIdToMove).toBeUndefined();
+    expect(updatedState.elementsToMove).toBeUndefined();
     expect(updatedState.hasChanges).toBe(true);
   });
 
   it("only unsets the diagram to move when cancel is clicked", async () => {
-    const { store } = renderWithReduxProvider(<MoveDiagramToPageModal diagramId={diagramIdToMove} />, {
+    const { store } = renderWithReduxProvider(<MoveElementToPageModal elementsToMove={elementsToMove} />, {
       preloadedState: { planSheets: initialState },
     });
     fireEvent.click(await screen.findByLabelText("A new first page"));
     fireEvent.click(screen.getByText("Cancel"));
     expect(extractState(store.getState().planSheets, version)).toStrictEqual({
       ...extractState(initialState, version),
-      diagramIdToMove: undefined,
+      elementsToMove: undefined,
     });
   });
 });

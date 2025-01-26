@@ -1,6 +1,7 @@
 import { DiagramDTO, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
@@ -101,6 +102,14 @@ const planSheetsSlice = createSlice({
       state.stateVersion === "V2"
         ? reducersV2.setDiagramPageRef(state.v2, action)
         : reducersV1.setDiagramPageRef(state.v1, action),
+    setLabelsPageRef: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ ids: string[]; pageRef: number | undefined }>,
+    ) => {
+      state.stateVersion === "V2"
+        ? reducersV2.setLabelsPageRef(state.v2, action)
+        : reducersV1.setLabelsPageRef(state.v1, action);
+    },
     removeDiagramPageRef: (state: PlanSheetsState, action: PayloadAction<number>) =>
       state.stateVersion === "V2"
         ? reducersV2.removeDiagramPageRef(state.v2, action)
@@ -125,10 +134,10 @@ const planSheetsSlice = createSlice({
       state.stateVersion === "V2"
         ? reducersV2.setAlignedLabelNodeId(state.v2, action)
         : reducersV1.setAlignedLabelNodeId(state.v1, action),
-    setDiagramIdToMove: (state: PlanSheetsState, action: PayloadAction<number | undefined>) =>
+    setElementsToMove: (state: PlanSheetsState, action: PayloadAction<ElementToMove[] | undefined>) =>
       state.stateVersion === "V2"
-        ? reducersV2.setDiagramIdToMove(state.v2, action)
-        : reducersV1.setDiagramIdToMove(state.v1, action),
+        ? reducersV2.setElementsToMove(state.v2, action)
+        : reducersV1.setElementsToMove(state.v1, action),
     setSymbolHide: (state: PlanSheetsState, action: PayloadAction<{ id: string; hide: boolean }>) =>
       state.stateVersion === "V2"
         ? reducersV2.setSymbolHide(state.v2, action)
@@ -270,8 +279,8 @@ const planSheetsSlice = createSlice({
       state.stateVersion === "V2"
         ? selectorsV2.getAlignedLabelNodeId(state.v2)
         : selectorsV1.getAlignedLabelNodeId(state.v1),
-    getDiagramIdToMove: (state: PlanSheetsState) =>
-      state.stateVersion === "V2" ? selectorsV2.getDiagramIdToMove(state.v2) : selectorsV1.getDiagramIdToMove(state.v1),
+    getElementsToMove: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getElementsToMove(state.v2) : selectorsV1.getElementsToMove(state.v1),
     getPreviousAttributesForDiagram: (state: PlanSheetsState) =>
       state.stateVersion === "V2"
         ? selectorsV2.getPreviousAttributesForDiagram(state.v2)
@@ -310,12 +319,13 @@ export const {
   setLastUpdatedLineStyle,
   setLastUpdatedLabelStyle,
   setAlignedLabelNodeId,
-  setDiagramIdToMove,
+  setElementsToMove,
   setSelectedElementIds,
   setSymbolHide,
   setCopiedElements,
   setPreviousDiagramAttributes,
   setLineHide,
+  setLabelsPageRef,
   removePageLines,
   removePageLabels,
   undo,
@@ -354,7 +364,7 @@ export const {
   getLastUpdatedLabelStyle,
   getCopiedElements,
   getAlignedLabelNodeId,
-  getDiagramIdToMove,
+  getElementsToMove,
   getPreviousAttributesForDiagram,
   canUndo,
   getCanViewHiddenLabels,

@@ -4,6 +4,7 @@ import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
+import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
@@ -168,6 +169,35 @@ export const reducersV1 = {
       }
     });
   },
+  setLabelsPageRef: (
+    state: PlanSheetsStateV1,
+    action: PayloadAction<{ ids: string[]; pageRef: number | undefined }>,
+  ) => {
+    const { ids, pageRef } = action.payload;
+
+    const convertedIds = ids.map((id) => {
+      if (id.startsWith("LAB_")) {
+        return Number(id.replace("LAB_", ""));
+      }
+      return id;
+    });
+
+    // Collect labels to be moved
+    const movedLabels = state.pages
+      .flatMap((page) => page.labels)
+      .filter((label) => label && convertedIds.includes(label.id));
+
+    // Remove labels from their current pages
+    state.pages.forEach((page) => {
+      page.labels = page.labels?.filter((label) => !convertedIds.includes(label.id));
+    });
+
+    // Add labels to the target page
+    const targetPage = state.pages.find((page) => page.id === pageRef);
+    if (targetPage && movedLabels.length > 0) {
+      targetPage.labels = [...(targetPage.labels ?? []), ...movedLabels] as LabelDTO[];
+    }
+  },
   updatePages: (state: PlanSheetsStateV1, action: PayloadAction<PageDTO[]>) => {
     onDataChanging(state);
     state.pages = action.payload;
@@ -196,8 +226,8 @@ export const reducersV1 = {
   setAlignedLabelNodeId: (state: PlanSheetsStateV1, action: PayloadAction<{ nodeId: string }>) => {
     state.alignedLabelNodeId = action.payload.nodeId;
   },
-  setDiagramIdToMove: (state: PlanSheetsStateV1, action: PayloadAction<number | undefined>) => {
-    state.diagramIdToMove = action.payload;
+  setElementsToMove: (state: PlanSheetsStateV1, action: PayloadAction<ElementToMove[] | undefined>) => {
+    state.elementsToMove = action.payload;
   },
   setSymbolHide: (state: PlanSheetsStateV1, action: PayloadAction<{ id: string; hide: boolean }>) => {
     const { id, hide } = action.payload;
@@ -433,7 +463,7 @@ export const selectorsV1 = {
   getLastUpdatedLineStyle: (state: PlanSheetsStateV1) => state.lastUpdatedLineStyle,
   getLastUpdatedLabelStyle: (state: PlanSheetsStateV1) => state.lastUpdatedLabelStyle,
   getAlignedLabelNodeId: (state: PlanSheetsStateV1) => state.alignedLabelNodeId,
-  getDiagramIdToMove: (state: PlanSheetsStateV1) => state.diagramIdToMove,
+  getElementsToMove: (state: PlanSheetsStateV1) => state.elementsToMove,
   getPreviousAttributesForDiagram:
     (state: PlanSheetsStateV1) =>
     (id: number): PreviousDiagramAttributes | undefined => {

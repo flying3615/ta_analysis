@@ -7,6 +7,7 @@ import {
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
 
+import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { CoordLookup } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
@@ -30,7 +31,7 @@ export interface State {
   lastUpdatedLineStyle?: string;
   lastUpdatedLabelStyle?: { font?: string; fontSize?: number };
   alignedLabelNodeId?: string;
-  diagramIdToMove?: number | undefined;
+  elementsToMove?: ElementToMove[];
   previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes>;
   copiedElements?: {
     elements: LabelDTO[] | LineDTO[];

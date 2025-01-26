@@ -1,11 +1,13 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import { isEmpty } from "lodash-es";
 import { useContext, useRef } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
 import { IGraphDataProperties } from "@/components/CytoscapeCanvas/cytoscapeDefinitionsFromData";
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
+import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import PlanElementProperty, { PlanPropertyPayload } from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode, PlanStyleClassName } from "@/components/PlanSheets/PlanSheetType";
@@ -19,7 +21,9 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useMoveOriginalLocation } from "@/hooks/useMoveOriginalLocation";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { selectLookupGraphData } from "@/modules/plan/selectGraphData";
-import { getPlanMode, getPreviousAttributesForDiagram, setDiagramIdToMove } from "@/redux/planSheets/planSheetsSlice";
+import { getPlanMode, getPreviousAttributesForDiagram, setElementsToMove } from "@/redux/planSheets/planSheetsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { cytoscapeUtils } from "@/util/cytoscapeUtil";
 
 import { useLabelsFunctions } from "./useLabelsFunctions";
@@ -48,8 +52,12 @@ export const usePlanSheetsContextMenu = () => {
   const highlightedLabel = useRef<NodeSingular>();
   const { restoreOriginalPosition } = useMoveOriginalLocation();
 
+  const { result: canMoveLabelToPage } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_MOVE_TO_PAGE);
+
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
-    const baseDiagramMenu: MenuItem[] = [{ title: "Move to page", callback: moveDiagramToPage }];
+    const baseDiagramMenu: MenuItem[] = [
+      { title: "Move to page", callback: (e) => keepElementSelected(() => moveDiagramToPage(e)) },
+    ];
     if (!previousDiagramAttributes) {
       return baseDiagramMenu;
     }
@@ -315,6 +323,37 @@ export const usePlanSheetsContextMenu = () => {
               },
             ]
           : []),
+        {
+          title: "Move to page",
+          hideWhen: () =>
+            !canMoveLabelToPage ||
+            selectedLabels.every((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
+          callback: (event) => {
+            keepElementSelected(() => {
+              if (!event.target || isEmpty(selectedLabels)) return;
+              const elementsToMove = selectedLabels.map((ele) => {
+                return { id: ele.data("id") as string, type: PlanElementType.LABELS } as ElementToMove;
+              });
+              dispatch(setElementsToMove(elementsToMove));
+            });
+          },
+          onHover: (event) => {
+            if (event.cy && selectedLabels) {
+              //de-select all labels
+              selectedLabels.unselect();
+
+              // filter out those labels that are not user annotations and only make them selected
+              const userAnnotations = selectedLabels.filter(
+                (ele) => ele.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation,
+              );
+              userAnnotations.select();
+            }
+          },
+          restoreOnLeave: () => {
+            //re-select all labels
+            selectedLabels.select();
+          },
+        },
         ...(singleSelected
           ? [
               {
@@ -411,7 +450,7 @@ export const usePlanSheetsContextMenu = () => {
     if (!diagramId) {
       return;
     }
-    dispatch(setDiagramIdToMove(diagramId));
+    dispatch(setElementsToMove([{ id: diagramId, type: PlanElementType.DIAGRAM }]));
   };
 
   return (

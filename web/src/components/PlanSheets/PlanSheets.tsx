@@ -20,7 +20,7 @@ import {
 } from "@/components/modals/unhandledErrorModal";
 import { AddPageLineHandler } from "@/components/PageLine/AddPageLineHandler";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
-import { MoveDiagramToPageModal } from "@/components/PlanSheets/interactions/MoveDiagramToPageModal";
+import { MoveElementToPageModal } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -37,7 +37,7 @@ import { useRegeneratePlanMutation } from "@/queries/planRegenerate";
 import { useSurveyInfoQuery } from "@/queries/survey";
 import {
   getCanViewHiddenLabels,
-  getDiagramIdToMove,
+  getElementsToMove,
   getPlanMode,
   getViewableLabelTypes,
 } from "@/redux/planSheets/planSheetsSlice";
@@ -141,7 +141,7 @@ const PlanSheets = () => {
 
   const { data: surveyInfo } = useSurveyInfoQuery({ transactionId });
   const planMode = useAppSelector(getPlanMode);
-  const diagramIdToMove = useAppSelector(getDiagramIdToMove);
+  const elementsToMove = useAppSelector(getElementsToMove);
 
   const {
     data: planData,
@@ -156,7 +156,7 @@ const PlanSheets = () => {
   useEffect(() => {
     if (
       isAutoRecoverReady &&
-      // these queries refetch when switching between modes...
+      // these queries re-fetch when switching between modes...
       regenerateDoneOrNotNeeded &&
       !isPlanDataFetching
     ) {
@@ -235,7 +235,7 @@ const PlanSheets = () => {
           {(planMode === PlanMode.SelectLine || planMode === PlanMode.SelectLabel) && (
             <DeleteKeyHandler mode={planMode} />
           )}
-          {diagramIdToMove && <MoveDiagramToPageModal diagramId={diagramIdToMove} />}
+          {elementsToMove && <MoveElementToPageModal elementsToMove={elementsToMove} />}
           <ElementHover />
           <PageNumberTooltips />
           {isPlanDataFetching && (

@@ -19,6 +19,11 @@ export interface MenuItem {
   disableWhen?: (element: NodeSingular | EdgeSingular | cytoscape.Core) => boolean;
   hideWhen?: (element: NodeSingular | EdgeSingular | cytoscape.Core) => boolean;
   className?: string;
+  onHover?: (event: {
+    target: NodeSingular | EdgeSingular | null;
+    cy: cytoscape.Core | undefined;
+    position?: cytoscape.Position;
+  }) => void;
 }
 
 interface ICytoscapeMenu {
@@ -75,6 +80,7 @@ const CytoscapeMenu = ({ items, isSubmenu = false, leftMenu, onItemClick, target
                 }
               }
               item.callbackOnHover && onItemClick(item, false);
+              item.onHover && item.onHover({ target, cy: target?.cy() });
             }}
             onMouseLeave={(e) => {
               e.stopPropagation();

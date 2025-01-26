@@ -12,9 +12,11 @@ import {
 import clsx from "clsx";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
+import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
+import { useEscapeKey } from "@/hooks/useEscape";
 import {
   getActivePageNumber,
   getActivePages,
@@ -23,14 +25,20 @@ import {
   getPageRefFromPageNumber,
   getPages,
   setActivePageNumber,
-  setDiagramIdToMove,
   setDiagramPageRef,
+  setElementsToMove,
+  setLabelsPageRef,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
 import { helpNodeIds, helpUrl } from "@/util/httpUtil";
 import { newPageAfterCurrent, newPageAtTheEnd, newPageAtTheStart } from "@/util/pageUtil";
 
-export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => {
+export interface ElementToMove {
+  type: PlanElementType.LABELS | PlanElementType.LINES | PlanElementType.DIAGRAM;
+  id: number | string;
+}
+
+export const MoveElementToPageModal = (props: { elementsToMove: ElementToMove[] }) => {
   const [selectedValue, setSelectedValue] = useState("existingPage");
   const dispatch = useAppDispatch();
   const { totalPages } = useAppSelector(getFilteredPages);
@@ -46,6 +54,12 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   const [pageWarning, setPageWarning] = useState<string | undefined>();
   const [newPageNumber, setNewPageNumber] = useState<number | undefined>(undefined);
   const { adjustDiagram } = useAdjustLoadedPlanData();
+
+  // the esc callback should be the same as the cancel button,
+  useEscapeKey({ callback: () => dispatch(setElementsToMove(undefined)) });
+
+  const elementTypeName = props.elementsToMove[0]!.type;
+  const elementTypeNameCapitalized = elementTypeName.charAt(0).toUpperCase() + elementTypeName.slice(1);
 
   const pageInfo = { activeSheet, activePageNumber };
   const { zoomToFit } = useCytoscapeContext();
@@ -78,7 +92,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
 
       if (isCurrentPage(pageNumber)) {
         setPageError(undefined);
-        setPageWarning(`Diagram is already on page ${pageInfo.activePageNumber}`);
+        setPageWarning(`${elementTypeNameCapitalized} is already on page ${pageInfo.activePageNumber}`);
         return false;
       }
 
@@ -86,12 +100,27 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
       setPageWarning(undefined);
       return true;
     },
-    [pageInfo.activePageNumber, totalPages],
+    [elementTypeNameCapitalized, pageInfo.activePageNumber, totalPages],
   );
 
-  const moveDiagram = (pageRef: number) => {
-    if (diagramId) {
-      dispatch(setDiagramPageRef({ id: diagramId, pageRef: pageRef, adjustDiagram }));
+  const moveElement = (pageRef: number) => {
+    if (props.elementsToMove.length === 0) return;
+
+    const firstElementToMove = props.elementsToMove[0]!;
+    const firstElementId = firstElementToMove.id;
+    const elementToMoveType = firstElementToMove.type;
+
+    switch (elementToMoveType) {
+      case PlanElementType.LABELS:
+        const ids = props.elementsToMove.map((element) => element.id.toString());
+        dispatch(setLabelsPageRef({ ids: ids, pageRef: pageRef }));
+        break;
+      case PlanElementType.LINES:
+        // TODO in line move story https://toitutewhenua.atlassian.net/browse/SURVEY-26203
+        break;
+      case PlanElementType.DIAGRAM:
+        dispatch(setDiagramPageRef({ id: Number(firstElementId), pageRef: pageRef, adjustDiagram }));
+        break;
     }
   };
 
@@ -101,7 +130,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
       onActivePageNumberUpdated(1);
       onPageUpdated(pages.updatedPages);
       zoomToFit();
-      moveDiagram(pages.newPage.id);
+      moveElement(pages.newPage.id);
       closeModal();
     }
   };
@@ -113,7 +142,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
       onActivePageNumberUpdated(newPageNumber);
       onPageUpdated([...getAllPages, page.newPage]);
       zoomToFit();
-      moveDiagram(page.newPage.id);
+      moveElement(page.newPage.id);
       closeModal();
     }
   };
@@ -125,7 +154,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
       onActivePageNumberUpdated(newPageNumber);
       onPageUpdated(newPages.updatedPages);
       zoomToFit();
-      moveDiagram(newPages.newPage.id);
+      moveElement(newPages.newPage.id);
       closeModal();
     }
   };
@@ -136,7 +165,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
     if (!pageRef) return;
     onActivePageNumberUpdated(pageNumber);
     zoomToFit();
-    moveDiagram(pageRef);
+    moveElement(pageRef);
     closeModal();
   };
 
@@ -156,7 +185,7 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   };
 
   const closeModal = () => {
-    dispatch(setDiagramIdToMove(undefined));
+    dispatch(setElementsToMove(undefined));
   };
 
   useEffect(() => {
@@ -167,7 +196,10 @@ export const MoveDiagramToPageModal = ({ diagramId }: { diagramId: number }) => 
   return (
     <LuiModalAsync closeOnOverlayClick={false}>
       <LuiModalAsyncMain>
-        <LuiModalAsyncHeader title="Move diagram to page" helpLink={helpUrl(helpNodeIds.LAYOUT_PLAN_SHEETS)} />
+        <LuiModalAsyncHeader
+          title={`Move ${elementTypeName} to page`}
+          helpLink={helpUrl(helpNodeIds.LAYOUT_PLAN_SHEETS)}
+        />
         <LuiModalAsyncContent>
           <div className="MoveDiagramToPage">
             <fieldset>

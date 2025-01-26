@@ -9,6 +9,7 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION_LINES_MULTISELECT = "survey-plan-generation-lines-multi-select",
   SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT = "survey-plan-generation-coordinates-multi-select",
   SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS = "survey-plan-generation-background-errors",
+  SURVEY_PLAN_GENERATION_LABEL_MOVE_TO_PAGE = "survey-plan-generation-label-move-to-page",
 }
 
 export enum TREATMENTS {

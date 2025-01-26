@@ -39,6 +39,7 @@ import planSheetsSlice, {
   setActivePageNumber,
   setActiveSheet,
   setCopiedElements,
+  setLabelsPageRef,
   setLineHide,
   setPlanData,
   setPlanMode,
@@ -937,5 +938,50 @@ describe.each(stateVersions)("planSheetsSlice%s", (version) => {
 
     store.dispatch(setPlanMode(PlanMode.View));
     expect(extractState(store.getState().planSheets, version).selectedElementIds).toEqual([]);
+  });
+
+  test("setLabelsPageRef moves labels to the target page", () => {
+    const initialPages = [
+      {
+        id: 1,
+        pageType: PageDTOPageTypeEnum.title,
+        pageNumber: 1,
+        labels: [
+          { id: 1, labelType: "title", displayText: "Label 1" },
+          { id: 2, labelType: "title", displayText: "Label 2" },
+        ],
+      },
+      {
+        id: 2,
+        pageType: PageDTOPageTypeEnum.survey,
+        pageNumber: 2,
+        labels: [],
+      },
+    ] as PageDTO[];
+
+    store = setupStore({
+      planSheets: modifiedState(
+        {
+          ...initialState,
+          pages: initialPages,
+        },
+        version,
+      ),
+    });
+
+    const labelIds = ["LAB_1", "LAB_2"];
+    const targetPageId = 2;
+
+    store.dispatch(setLabelsPageRef({ ids: labelIds, pageRef: targetPageId }));
+
+    const planSheets = getPlanData(store.getState());
+
+    const targetPage = planSheets.pages.find((page) => page.id === targetPageId);
+    const sourcePage = planSheets.pages.find((page) => page.id === 1);
+
+    expect(targetPage).toBeDefined();
+    expect(targetPage?.labels).toHaveLength(2);
+    expect(targetPage?.labels?.map((label) => label.id)).toEqual([1, 2]);
+    expect(sourcePage?.labels).toHaveLength(0);
   });
 });

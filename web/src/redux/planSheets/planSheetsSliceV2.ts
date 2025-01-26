@@ -3,6 +3,7 @@ import { LabelDTO } from "@linz/survey-plan-generation-api-client";
 import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { PayloadAction } from "@reduxjs/toolkit";
 
+import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { LookupOriginalCoord } from "@/modules/plan/LookupOriginalCoord";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
@@ -194,6 +195,39 @@ export const reducersV2 = {
       });
     });
   },
+  setLabelsPageRef: (
+    state: PlanSheetsStateV2,
+    action: PayloadAction<{ ids: string[]; pageRef: number | undefined }>,
+  ) => {
+    recordState(state, (sheetState) => {
+      const { ids, pageRef } = action.payload;
+
+      const convertedIds = ids.map((id) => {
+        if (id.startsWith("LAB_")) {
+          return Number(id.replace("LAB_", ""));
+        }
+        return id;
+      });
+
+      // Collect labels to be moved
+      const movedLabels = sheetState.pages
+        .flatMap((page) => page.labels)
+        .filter((label) => label && convertedIds.includes(label.id));
+
+      if (!movedLabels || movedLabels.length === 0) return;
+
+      // Remove labels from their current pages
+      sheetState.pages.forEach((page) => {
+        page.labels = page.labels?.filter((label) => !convertedIds.includes(label.id));
+      });
+
+      // Add labels to the target page
+      const targetPage = sheetState.pages.find((page) => page.id === pageRef);
+      if (targetPage) {
+        targetPage.labels = [...(targetPage.labels ?? []), ...movedLabels] as LabelDTO[];
+      }
+    });
+  },
   updatePages: (state: PlanSheetsStateV2, action: PayloadAction<PageDTO[]>) => {
     recordState(state, (sheetState) => {
       sheetState.pages = action.payload;
@@ -225,8 +259,8 @@ export const reducersV2 = {
   setAlignedLabelNodeId: (state: PlanSheetsStateV2, action: PayloadAction<{ nodeId: string }>) => {
     syncStateChange(state, (sheetState) => (sheetState.alignedLabelNodeId = action.payload.nodeId));
   },
-  setDiagramIdToMove: (state: PlanSheetsStateV2, action: PayloadAction<number | undefined>) => {
-    syncStateChange(state, (sheetState) => (sheetState.diagramIdToMove = action.payload));
+  setElementsToMove: (state: PlanSheetsStateV2, action: PayloadAction<ElementToMove[] | undefined>) => {
+    syncStateChange(state, (sheetState) => (sheetState.elementsToMove = action.payload));
   },
   setSymbolHide: (state: PlanSheetsStateV2, action: PayloadAction<{ id: string; hide: boolean }>) => {
     const { id, hide } = action.payload;
@@ -458,7 +492,7 @@ export const selectorsV2 = {
   getLastUpdatedLineStyle: (state: PlanSheetsStateV2) => state.current.lastUpdatedLineStyle,
   getLastUpdatedLabelStyle: (state: PlanSheetsStateV2) => state.current.lastUpdatedLabelStyle,
   getAlignedLabelNodeId: (state: PlanSheetsStateV2) => state.current.alignedLabelNodeId,
-  getDiagramIdToMove: (state: PlanSheetsStateV2) => state.current.diagramIdToMove,
+  getElementsToMove: (state: PlanSheetsStateV2) => state.current.elementsToMove,
   getPreviousAttributesForDiagram:
     (state: PlanSheetsStateV2) =>
     (id: number): PreviousDiagramAttributes | undefined => {
