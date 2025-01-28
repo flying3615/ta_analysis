@@ -2,7 +2,7 @@
 import "ol/ol.css";
 
 import { LuiMessagingContextProvider } from "@linzjs/lui";
-import { LuiModalAsyncContextProvider } from "@linzjs/windows";
+import { LuiModalAsyncContextProvider, PanelsContextProvider } from "@linzjs/windows";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { screen, userEvent, waitFor, within } from "@storybook/testing-library";
@@ -48,10 +48,12 @@ const DefineDiagramsWrapper = ({ transactionId }: { transactionId: string }) => 
       <QueryClientProvider client={queryClient}>
         <Provider store={setupStore({ defineDiagrams: initialState })}>
           <FeatureFlagProvider>
-            <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
-              <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
-              <Route path={Paths.root} element={<LandingPage />} />
-            </StorybookRouter>
+            <PanelsContextProvider>
+              <StorybookRouter url={generatePath(Paths.defineDiagrams, { transactionId })}>
+                <Route path={Paths.defineDiagrams} element={<DefineDiagrams />} />
+                <Route path={Paths.root} element={<LandingPage />} />
+              </StorybookRouter>
+            </PanelsContextProvider>
           </FeatureFlagProvider>
         </Provider>
       </QueryClientProvider>
@@ -762,4 +764,38 @@ DrawAbuttalLineErrorMessagePopUp.play = async () => {
     await doubleClickOnMap(lineCoordinates[3]);
   }
   await expect(await screen.findByText("Create abuttal line failed due to unexpected error")).toBeInTheDocument();
+};
+
+export const NavigateToMaintainDiagramsLayers: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+
+NavigateToMaintainDiagramsLayers.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+  await userEvent.click(await screen.findByLabelText("Maintain diagram layers"));
+  await expect(await screen.findByText("Maintain diagram layers by")).toBeInTheDocument();
+};
+
+export const NavigateToLabelPreferences: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    backgrounds: {},
+  },
+  args: {
+    transactionId: "123",
+  },
+};
+
+NavigateToLabelPreferences.play = async () => {
+  await waitForInitialMapLoadsToComplete();
+  await userEvent.click(await screen.findByLabelText("Label preferences"));
+  await expect(await screen.findByText("Labels for this plan")).toBeInTheDocument();
 };

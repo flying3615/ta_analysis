@@ -10,6 +10,7 @@ import { useDrawAbuttal } from "@/components/DefineDiagrams/useDrawAbuttal";
 import { useInsertDiagram } from "@/components/DefineDiagrams/useInsertDiagram";
 import { ActionHeaderButton } from "@/components/Header/ActionHeaderButton";
 import { VerticalSpacer } from "@/components/Header/Header";
+import { LabelPreferencesPanel } from "@/components/LabelPreferencesPanel/LabelPreferencesPanel";
 import { MaintainDiagramsPanel } from "@/components/MaintainDiagramsPanel/MaintainDiagramsPanel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useConvertToRTLine } from "@/hooks/useConvertToRTLine";
@@ -292,10 +293,8 @@ export const DefineDiagramMenuButtons = () => {
         icon="ic_label_settings"
         onClick={() => {
           openPanel({
-            uniqueId: "Maintain diagram layers",
-            componentFn: () => (
-              <MaintainDiagramsPanel transactionId={transactionId} selectedDiagramIds={selectedDiagramIds} />
-            ),
+            uniqueId: "Label preferences",
+            componentFn: () => <LabelPreferencesPanel transactionId={transactionId} />,
           });
           return false;
         }}
