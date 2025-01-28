@@ -110,6 +110,14 @@ const planSheetsSlice = createSlice({
         ? reducersV2.setLabelsPageRef(state.v2, action)
         : reducersV1.setLabelsPageRef(state.v1, action);
     },
+    setLinesPageRef: (
+      state: PlanSheetsState,
+      action: PayloadAction<{ ids: string[]; pageRef: number | undefined }>,
+    ) => {
+      state.stateVersion === "V2"
+        ? reducersV2.setLinesPageRef(state.v2, action)
+        : reducersV1.setLinesPageRef(state.v1, action);
+    },
     removeDiagramPageRef: (state: PlanSheetsState, action: PayloadAction<number>) =>
       state.stateVersion === "V2"
         ? reducersV2.removeDiagramPageRef(state.v2, action)
@@ -326,6 +334,7 @@ export const {
   setPreviousDiagramAttributes,
   setLineHide,
   setLabelsPageRef,
+  setLinesPageRef,
   removePageLines,
   removePageLabels,
   undo,

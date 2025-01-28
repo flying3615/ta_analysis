@@ -1,6 +1,7 @@
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
-import { userEvent, within } from "@storybook/test";
+import { fireEvent, userEvent, within } from "@storybook/test";
+import { screen } from "@storybook/testing-library";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/ViewLabels.stories";
@@ -91,6 +92,7 @@ export const AddLineWithArrowsEnter: Story = {
     await test.clickTitle("Select Lines");
     await test.contextMenu({ at: [405, 280], select: "Properties" });
     const styleSelector = test.findProperty("RadioInput", "Line style");
+    // eslint-disable-next-line testing-library/no-node-access
     await test.user.click(styleSelector.querySelector(`input[name="doubleArrow1"]`) as Element);
     await test.clickButton("OK");
 
@@ -115,6 +117,7 @@ export const AddLineWithArrowsDoubleClick: Story = {
     await test.clickTitle("Select Lines");
     await test.contextMenu({ at: [180, 182], select: "Properties" });
     const styleSelector = test.findProperty("RadioInput", "Line style");
+    // eslint-disable-next-line testing-library/no-node-access
     await test.user.click(styleSelector.querySelector(`input[name="doubleArrow1"]`) as Element);
     await test.clickButton("OK");
 
@@ -682,5 +685,42 @@ export const DeleteMultiplePageLines: Story = {
     await expect(getCytoElement("#10013_0")).not.toBeDefined(); // the visible page line is removed
     await expect(getCytoElement("#10021_0")).not.toBeDefined(); // the hidden page line is remove
     await expect(test.getButton("Delete")).toBeDisabled(); // delete header button is disabled after delete action
+  },
+};
+
+export const MovePageLineToPage: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const test = await TestCanvas.Create(canvasElement);
+
+    await test.clickTitle("Select Lines");
+
+    // select page line
+    await test.leftClick([675, 228]);
+    // select diagram line
+    await test.leftClick([132, 283], "layer2-node", true);
+    // bring up the context menu
+    await test.rightClick([675, 228]);
+
+    await expect(await countSelected()).toBe(2);
+
+    // once the move to page is hovered over, only page line should be selected
+    const moveToPageMenuOption = await test.findMenuItem("Move to page");
+    await test.user.hover(moveToPageMenuOption);
+    await expect(await countSelected()).toBe(1);
+
+    await test.user.click(moveToPageMenuOption);
+    const input = await screen.findByPlaceholderText("Enter page number");
+    await test.user.click(input);
+    void fireEvent.change(input, { target: { value: "1" } });
+    await expect(input).toHaveValue(1);
+    await expect(await screen.findByText("Line is already on page 1")).toBeInTheDocument();
+    await test.user.clear(input);
+    void fireEvent.change(input, { target: { value: "2" } });
+    const continueButton = await screen.findByRole("button", { name: "Continue" });
+    await test.user.click(continueButton);
+
+    // Chromatic will ensure the page line is moved to page 2
   },
 };

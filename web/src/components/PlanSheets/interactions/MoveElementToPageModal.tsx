@@ -28,6 +28,7 @@ import {
   setDiagramPageRef,
   setElementsToMove,
   setLabelsPageRef,
+  setLinesPageRef,
   updatePages,
 } from "@/redux/planSheets/planSheetsSlice";
 import { helpNodeIds, helpUrl } from "@/util/httpUtil";
@@ -60,6 +61,7 @@ export const MoveElementToPageModal = (props: { elementsToMove: ElementToMove[] 
 
   const elementTypeName = props.elementsToMove[0]!.type;
   const elementTypeNameCapitalized = elementTypeName.charAt(0).toUpperCase() + elementTypeName.slice(1);
+  const elementTypeNameIsOrAre = `${props.elementsToMove.length > 1 ? `${elementTypeNameCapitalized} are` : elementTypeName === PlanElementType.DIAGRAM ? `${elementTypeNameCapitalized} is` : `${elementTypeNameCapitalized.slice(0, -1)} is`}`;
 
   const pageInfo = { activeSheet, activePageNumber };
   const { zoomToFit } = useCytoscapeContext();
@@ -92,7 +94,7 @@ export const MoveElementToPageModal = (props: { elementsToMove: ElementToMove[] 
 
       if (isCurrentPage(pageNumber)) {
         setPageError(undefined);
-        setPageWarning(`${elementTypeNameCapitalized} is already on page ${pageInfo.activePageNumber}`);
+        setPageWarning(`${elementTypeNameIsOrAre} already on page ${pageInfo.activePageNumber}`);
         return false;
       }
 
@@ -100,7 +102,7 @@ export const MoveElementToPageModal = (props: { elementsToMove: ElementToMove[] 
       setPageWarning(undefined);
       return true;
     },
-    [elementTypeNameCapitalized, pageInfo.activePageNumber, totalPages],
+    [elementTypeNameIsOrAre, pageInfo.activePageNumber, totalPages],
   );
 
   const moveElement = (pageRef: number) => {
@@ -112,11 +114,12 @@ export const MoveElementToPageModal = (props: { elementsToMove: ElementToMove[] 
 
     switch (elementToMoveType) {
       case PlanElementType.LABELS:
-        const ids = props.elementsToMove.map((element) => element.id.toString());
-        dispatch(setLabelsPageRef({ ids: ids, pageRef: pageRef }));
+        const labelsIds = props.elementsToMove.map((element) => element.id.toString());
+        dispatch(setLabelsPageRef({ ids: labelsIds, pageRef: pageRef }));
         break;
       case PlanElementType.LINES:
-        // TODO in line move story https://toitutewhenua.atlassian.net/browse/SURVEY-26203
+        const linesIds = props.elementsToMove.map((element) => element.id.toString());
+        dispatch(setLinesPageRef({ ids: linesIds, pageRef: pageRef }));
         break;
       case PlanElementType.DIAGRAM:
         dispatch(setDiagramPageRef({ id: Number(firstElementId), pageRef: pageRef, adjustDiagram }));

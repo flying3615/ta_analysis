@@ -1,7 +1,7 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { PanelsContext } from "@linzjs/windows";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
-import { isEmpty } from "lodash-es";
+import { isEmpty, uniqBy } from "lodash-es";
 import { useContext, useRef } from "react";
 
 import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuItems/LabelRotationMenuItem";
@@ -53,6 +53,7 @@ export const usePlanSheetsContextMenu = () => {
   const { restoreOriginalPosition } = useMoveOriginalLocation();
 
   const { result: canMoveLabelToPage } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LABEL_MOVE_TO_PAGE);
+  const { result: canMoveLineToPage } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LINE_MOVE_TO_PAGE);
 
   const buildDiagramMenu = (previousDiagramAttributes?: PreviousDiagramAttributes): MenuItem[] => {
     const baseDiagramMenu: MenuItem[] = [
@@ -194,6 +195,37 @@ export const usePlanSheetsContextMenu = () => {
           },
         },
         {
+          title: "Move to page",
+          hideWhen: () => !canMoveLineToPage || selectedEdges.every((ele) => ele.data("diagramId") !== undefined),
+          onHover: (event) => {
+            if (event.cy && selectedEdges) {
+              selectedEdges.unselect();
+              // filter out diagram-lines and only select user defined lines (page-lines)
+              const pageLines = selectedEdges.filter((ele) => ele.data("diagramId") === undefined);
+              pageLines.select();
+            }
+          },
+          restoreOnLeave: () => {
+            //re-select all lines
+            selectedEdges.select();
+          },
+          callback: (event) => {
+            keepElementSelected(() => {
+              if (!event.target || isEmpty(selectedEdges)) return;
+              const elementsToMove = selectedEdges
+                .filter((ele) => ele.data("diagramId") === undefined)
+                .map((ele) => {
+                  return { id: ele.data("id") as string, type: PlanElementType.LINES } as ElementToMove;
+                });
+              // edges ids are in the format of "lineId_segmentNumber" so we need to remove the segment number
+              elementsToMove.forEach((element) => {
+                element.id = (element.id as string).split("_")[0] || element.id;
+              });
+              dispatch(setElementsToMove(uniqBy(elementsToMove, "id")));
+            });
+          },
+        },
+        {
           title: "Cut",
           divider: true,
           disableWhen: () =>
@@ -331,9 +363,11 @@ export const usePlanSheetsContextMenu = () => {
           callback: (event) => {
             keepElementSelected(() => {
               if (!event.target || isEmpty(selectedLabels)) return;
-              const elementsToMove = selectedLabels.map((ele) => {
-                return { id: ele.data("id") as string, type: PlanElementType.LABELS } as ElementToMove;
-              });
+              const elementsToMove = selectedLabels
+                .filter((ele) => ele.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation)
+                .map((ele) => {
+                  return { id: ele.data("id") as string, type: PlanElementType.LABELS } as ElementToMove;
+                });
               dispatch(setElementsToMove(elementsToMove));
             });
           },

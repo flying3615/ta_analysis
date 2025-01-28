@@ -1,4 +1,10 @@
-import { DiagramDTO, DisplayStateEnum, PageDTO, PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
+import {
+  CoordinateDTO,
+  DiagramDTO,
+  DisplayStateEnum,
+  PageDTO,
+  PlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import { LabelDTO } from "@linz/survey-plan-generation-api-client";
 import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { PayloadAction } from "@reduxjs/toolkit";
@@ -196,6 +202,44 @@ export const reducersV1 = {
     const targetPage = state.pages.find((page) => page.id === pageRef);
     if (targetPage && movedLabels.length > 0) {
       targetPage.labels = [...(targetPage.labels ?? []), ...movedLabels] as LabelDTO[];
+    }
+  },
+  setLinesPageRef: (
+    state: PlanSheetsStateV1,
+    action: PayloadAction<{ ids: string[]; pageRef: number | undefined }>,
+  ) => {
+    const { ids, pageRef } = action.payload;
+
+    // Collect lines to be moved
+    const movedLines = state.pages
+      .flatMap((page) => page.lines)
+      .filter((line) => line && ids.includes(line.id.toString()))
+      .filter((line) => line !== undefined);
+
+    if (!movedLines || movedLines.length === 0) return;
+
+    // Collect coordinates to be moved
+    const coordRefs = movedLines.flatMap((line) => line && line.coordRefs);
+    const movedCoordinates = state.pages
+      .flatMap((page) => page.coordinates)
+      .filter((coord) => coord && coordRefs.includes(coord.id))
+      .filter((coord) => coord !== undefined);
+
+    if (!movedCoordinates || movedCoordinates.length === 0) return;
+
+    // Remove lines and coordinates from their current pages
+    state.pages.forEach((page) => {
+      page.coordinates = page.coordinates?.filter((coord) => !coordRefs.includes(coord.id));
+    });
+    state.pages.forEach((page) => {
+      page.lines = page.lines?.filter((line) => !ids.includes(line.id.toString()));
+    });
+
+    // Add lines and coordinates to the target page
+    const targetPage = state.pages.find((page) => page.id === pageRef);
+    if (targetPage) {
+      targetPage.coordinates = [...(targetPage.coordinates ?? []), ...movedCoordinates] as CoordinateDTO[];
+      targetPage.lines = [...(targetPage.lines ?? []), ...movedLines] as LineDTO[];
     }
   },
   updatePages: (state: PlanSheetsStateV1, action: PayloadAction<PageDTO[]>) => {
