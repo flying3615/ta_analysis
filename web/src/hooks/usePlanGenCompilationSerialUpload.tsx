@@ -1,5 +1,5 @@
 import { accessToken } from "@linz/lol-auth-js";
-import { FileUploaderClient } from "@linz/secure-file-upload";
+import { FileUploaderClient, IFileStatusResponse } from "@linz/secure-file-upload";
 import {
   FileUploadDetails,
   LabelDTOLabelTypeEnum,
@@ -23,13 +23,7 @@ import makeCytoscapeStylesheet from "@/components/CytoscapeCanvas/makeCytoscapeS
 import { errorFromSerializedError, unhandledErrorModal } from "@/components/modals/unhandledErrorModal";
 import { warning126024_planGenHasRunBefore } from "@/components/PlanSheets/prefabWarnings";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { PlanGenCompilation } from "@/hooks/usePlanGenCompilationSerialUpload";
-import {
-  cyImageExportConfig,
-  ImageFile,
-  PlanSheetTypeAbbreviation,
-  PlanSheetTypeObject,
-} from "@/hooks/usePlanGenPreview";
+import { cyImageExportConfig, PlanSheetTypeAbbreviation, PlanSheetTypeObject } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   extractDiagramEdges,
@@ -40,13 +34,18 @@ import {
 import { selectDiagramToPageLookupTable } from "@/modules/plan/selectGraphData";
 import { useCompilePlanMutation, usePreCompilePlanCheck } from "@/queries/plan";
 import { getDiagrams, getPages, getViewableLabelTypes } from "@/redux/planSheets/planSheetsSlice";
-import { isStorybookTest } from "@/test-utils/cytoscape-data-utils";
 import { filterEdgeData, filterNodeData } from "@/util/cytoscapeUtil";
 import { GAAction, GACategory, sendGAEvent } from "@/util/googleAnalyticsUtils";
 import { COMPILE_MAX_HEIGHT, COMPILE_MAX_WIDTH, compressImage } from "@/util/imageUtil";
 import { promiseWithTimeout } from "@/util/promiseUtil";
 
-export const usePlanGenCompilation = (props: {
+export interface PlanGenCompilation {
+  startCompile: () => Promise<void>;
+  CompilationExportCanvas: React.FC;
+  compiling: boolean;
+}
+
+export const usePlanGenCompilationSerialUpload = (props: {
   pageConfigsEdgeData?: IEdgeData[];
   pageConfigsNodeData?: INodeData[];
 }): PlanGenCompilation => {
@@ -178,22 +177,29 @@ export const usePlanGenCompilation = (props: {
   };
 
   const continueCompile = async () => {
-    console.log("Compile plan process has started.");
+    console.log("Compile plan process with serial upload has started.");
+    const uploadFileResponses = await compressAndUploadFiles();
+    await generateCompilation(uploadFileResponses);
+  };
+
+  const compressAndUploadFiles = async () => {
+    const imageFileResponse: IFileStatusResponse[] = [];
     if (!cyRef.current || !cyMapper.current) {
-      console.error("cytoscape instance is not available");
-      return;
+      console.error("cytoscape instance is not available.");
+      return [] satisfies Promise<IFileStatusResponse>[];
     }
     const cyRefCurrent = cyRef.current;
     const cyMapperCurrent = cyMapper.current;
+    let errorOccurred = false;
+
     try {
-      const processFilesGroup = Object.values(PlanSheetTypeObject).map(async (obj): Promise<ImageFile[]> => {
-        const imageFiles: ImageFile[] = [];
+      const uploadPromises = PlanSheetTypeObject.map(async (obj) => {
         const activePlanSheetPages = pages.filter((p) => p.pageType === obj.type);
         const maxPageNumber = Math.max(...activePlanSheetPages.map((p) => p.pageNumber));
         await delay(500);
 
         let firstTimeExport = true;
-        for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber; currentPageNumber++) {
+        for (let currentPageNumber = 1; currentPageNumber <= maxPageNumber && !errorOccurred; currentPageNumber++) {
           const imageName = `${obj.typeAbbr}-${currentPageNumber}.jpg`;
           const currentPage = activePlanSheetPages.find((p) => p.pageNumber === currentPageNumber);
           const currentPageId = currentPage?.id;
@@ -283,22 +289,26 @@ export const usePlanGenCompilation = (props: {
             firstTimeExport = false;
             continue;
           }
-
-          imageFiles.push({ name: imageName, blob: jpg });
+          try {
+            const image = await compressImage({ name: imageName, blob: jpg });
+            const uploadedImageFileResponse = await secureFileUploadClient.uploadFile(image.compressedImage);
+            imageFileResponse.push(uploadedImageFileResponse);
+          } catch (e) {
+            errorOccurred = true;
+            setCompiling(false);
+            errorToast("An error occurred while uploading a file.");
+            throw "An error occurred while uploading a file.";
+          }
           firstTimeExport = true;
           cyRefCurrent.remove(cyRefCurrent.elements());
           cyRefCurrent?.removeAllListeners();
         }
-        return imageFiles;
       });
-      const imageFiles = (await Promise.all(processFilesGroup)).flat();
-      await generateCompilation(imageFiles);
+      await Promise.all(uploadPromises);
+      return imageFileResponse;
     } catch (e) {
-      errorToast("An error occurred while compile the layout.");
       console.error(e);
-    } finally {
-      cyRef.current?.off("add");
-      setCompiling(false);
+      throw "An error occurred while uploading a file.";
     }
   };
 
@@ -320,25 +330,8 @@ export const usePlanGenCompilation = (props: {
     );
   };
 
-  const generateCompilation = async (imageFiles: ImageFile[]) => {
+  const generateCompilation = async (sfuCombinedResponse: Awaited<IFileStatusResponse>[]) => {
     try {
-      const processUploadJobs = imageFiles.map(async (imageFile) => {
-        try {
-          if (isStorybookTest()) {
-            return await secureFileUploadClient.uploadFile(new File([imageFile.blob], imageFile.name));
-          } else {
-            const image = await compressImage(imageFile);
-            // uncomment this line to download the compressed image for debugging
-            // downloadBlob(image.compressedImage, imageFile.name);
-            return await secureFileUploadClient.uploadFile(image.compressedImage);
-          }
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
-
-      const sfuCombinedResponse = await Promise.all(processUploadJobs);
-
       const sfuResponse = sfuCombinedResponse.map((response) => ({
         fileUlid: response.fileUlid,
       })) as unknown as FileUploadDetails[];
@@ -355,7 +348,11 @@ export const usePlanGenCompilation = (props: {
       };
       await compilePlan(planCompilationRequest);
     } catch (e) {
+      errorToast("An error occurred while compile the layout.");
       console.error(e);
+    } finally {
+      cyRef.current?.off("add");
+      setCompiling(false);
     }
   };
 

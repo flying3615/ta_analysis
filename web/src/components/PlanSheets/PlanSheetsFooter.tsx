@@ -20,6 +20,7 @@ import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useOnKeyDown } from "@/hooks/useOnKeyDown";
 import { clearRecoveryFile } from "@/hooks/usePlanAutoRecover";
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
+import { usePlanGenCompilationSerialUpload } from "@/hooks/usePlanGenCompilationSerialUpload";
 import { usePlanGenPreview } from "@/hooks/usePlanGenPreview";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import { Paths } from "@/Paths";
@@ -66,6 +67,7 @@ const PlanSheetsFooter = ({
 
   const activeSheet = useAppSelector(getActiveSheet);
   const onChangeSheet = (sheet: PlanSheetType) => () => dispatch(setActiveSheet(sheet));
+  const { result: isSerialCompileEnabled } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_COMPILE_SERIAL_UPLOAD);
 
   const currentPage = useAppSelector(getActivePageNumber);
   const { totalPages } = useAppSelector(getFilteredPages);
@@ -80,11 +82,21 @@ const PlanSheetsFooter = ({
     pageConfigsEdgeData,
   });
 
-  const { startCompile, CompilationExportCanvas, compiling } = usePlanGenCompilation({
+  const planGenCompilationSerial = usePlanGenCompilationSerialUpload({
     pageConfigsNodeData,
     pageConfigsEdgeData,
   });
 
+  const planGenCompilation = usePlanGenCompilation({
+    pageConfigsNodeData,
+    pageConfigsEdgeData,
+  });
+
+  const startCompile = isSerialCompileEnabled ? planGenCompilationSerial.startCompile : planGenCompilation.startCompile;
+  const CompilationExportCanvas = isSerialCompileEnabled
+    ? planGenCompilationSerial.CompilationExportCanvas
+    : planGenCompilation.CompilationExportCanvas;
+  const compiling = isSerialCompileEnabled ? planGenCompilationSerial.compiling : planGenCompilation.compiling;
   const updatePlanMutation = useUpdatePlanMutation(transactionId);
   const {
     isSuccess: updatePlanIsSuccess,
