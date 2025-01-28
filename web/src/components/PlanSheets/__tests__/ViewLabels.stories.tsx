@@ -1,8 +1,6 @@
-import { PlanResponseDTO } from "@linz/survey-plan-generation-api-client";
 import { expect } from "@storybook/jest";
 import { Meta } from "@storybook/react";
 import { userEvent, within } from "@storybook/test";
-import { http, HttpResponse } from "msw";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
@@ -20,8 +18,7 @@ import {
   userCoordinate1,
   userCoordinate2,
 } from "@/components/PlanSheets/properties/__tests__/data/LineData";
-import { mockPlanData } from "@/mocks/data/mockPlanData";
-import { handlers } from "@/mocks/mockHandlers";
+import { createCustomMockPlanData, customPlanMock } from "@/test-utils/CustomMock";
 import { countSelected, getCytoElement, sleep, TestCanvas } from "@/test-utils/storybook-utils";
 
 export default {
@@ -29,47 +26,24 @@ export default {
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-const customMockPlanData = JSON.parse(JSON.stringify(mockPlanData)) as PlanResponseDTO;
-if (customMockPlanData.pages[0]) {
-  customMockPlanData.pages[0].coordinates = [
-    ...(customMockPlanData.pages[0].coordinates ?? []),
-    userCoordinate1,
-    userCoordinate2,
-  ];
-}
-if (customMockPlanData.pages[0]) {
-  customMockPlanData.pages[0].lines = [...(customMockPlanData.pages[0].lines ?? []), hiddenPageLine];
-}
-if (customMockPlanData.pages[0]) {
-  customMockPlanData.pages[0].labels = [...(customMockPlanData.pages[0].labels ?? []), pageLabelWithBorder];
-}
-if (customMockPlanData.diagrams[0]?.lineLabels?.[0]) {
-  customMockPlanData.diagrams[0].lineLabels = [
-    ...customMockPlanData.diagrams[0].lineLabels,
-    diagramLabelParcelAppellation,
-    diagramLabelObsBearingHide,
-    diagramLabelObsCode,
-    diagramLabelSystemHide,
-    diagramLabelLineDescription,
-    diagramLabelLineLongDescriptionLinebreak,
-  ];
-}
 // show object with disyplayState of hide as greyed out and don't show oject with displayState of systemHide
 export const PlanSheetWithHiddenObject: Story = {
   ...Default,
-  parameters: {
-    msw: {
-      handlers: [
-        http.get(/\/123\/plan$/, () =>
-          HttpResponse.json(customMockPlanData, {
-            status: 200,
-            statusText: "OK",
-          }),
-        ),
-        ...handlers,
-      ],
-    },
-  },
+  parameters: customPlanMock(() =>
+    createCustomMockPlanData((data) => {
+      data.pages[0]!.coordinates!.push(userCoordinate1, userCoordinate2);
+      data.pages[0]!.lines!.push(hiddenPageLine);
+      data.pages[0]!.labels!.push(pageLabelWithBorder);
+      data.diagrams[0]!.lineLabels.push(
+        diagramLabelParcelAppellation,
+        diagramLabelObsBearingHide,
+        diagramLabelObsCode,
+        diagramLabelSystemHide,
+        diagramLabelLineDescription,
+        diagramLabelLineLongDescriptionLinebreak,
+      );
+    }),
+  ),
 };
 
 export const HideHiddenObject: Story = {
