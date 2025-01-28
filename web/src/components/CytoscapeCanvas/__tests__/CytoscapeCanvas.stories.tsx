@@ -26,7 +26,7 @@ import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore, mockStoreV1 } from "@/test-utils/store-mock";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
@@ -82,6 +82,12 @@ export const Default: Story = {
   render: () => <CytoscapeTemplate />,
 };
 
+export const DefaultSliceV2: Story = {
+  ...Default,
+  name: "Default SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 const allSymbolCodes = [63, 117, 96, 97, 111, 112, 179, 181, 182];
 
 let cyRef: Core;
@@ -110,35 +116,42 @@ const CanvasFromMockData = (props: {
   );
 };
 
-export const PageConfigBorder: Story = () => {
-  const nodeData = [...pageBorderNodes, ...markNodes];
-  const edgeData = [...pageBorderEdges, ...lineEdges];
+export const PageConfigBorder: Story = {
+  render: () => {
+    const nodeData = [...pageBorderNodes, ...markNodes];
+    const edgeData = [...pageBorderEdges, ...lineEdges];
 
-  return (
-    <div className="CytoscapeCanvasWrapper" style={{ height: "100vh" }}>
-      <CytoscapeCanvas
-        nodeData={nodeData}
-        edgeData={edgeData}
-        diagrams={diagrams}
-        onCyInit={(cy) => {
-          cyRef = cy;
-        }}
-      />
-    </div>
-  );
+    return (
+      <div className="CytoscapeCanvasWrapper" style={{ height: "100vh" }}>
+        <CytoscapeCanvas
+          nodeData={nodeData}
+          edgeData={edgeData}
+          diagrams={diagrams}
+          onCyInit={(cy) => {
+            cyRef = cy;
+          }}
+        />
+      </div>
+    );
+  },
+  play: async () => {
+    await sleep(500);
+    const cy = cyRef;
+    if (!cy) {
+      throw new Error("Cytoscape instance is not available");
+    }
+    // eslint-disable-next-line testing-library/no-node-access
+    const node = cy.getElementById("border_page_no");
+    if (!node) {
+      throw new Error("Node 'border_page_no' not found");
+    }
+  },
 };
 
-PageConfigBorder.play = async () => {
-  await sleep(500);
-  const cy = cyRef;
-  if (!cy) {
-    throw new Error("Cytoscape instance is not available");
-  }
-  // eslint-disable-next-line testing-library/no-node-access
-  const node = cy.getElementById("border_page_no");
-  if (!node) {
-    throw new Error("Node 'border_page_no' not found");
-  }
+export const PageConfigBorderSlice2: Story = {
+  ...PageConfigBorder,
+  name: "Page Config Border SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
@@ -195,6 +208,12 @@ export const RendersSpecifiedLineTypes: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const RendersSpecifiedLineTypesSlice2: Story = {
+  ...RendersSpecifiedLineTypes,
+  name: "Renders Specified Line Types SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersSpecifiedLineTypesSelected: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const lineStyles = [
@@ -241,6 +260,15 @@ export const RendersSpecifiedLineTypesSelected: StoryObj<typeof CytoscapeCanvas>
     const mockLineTypes = builder.build();
     return <CanvasFromMockData data={mockLineTypes} />;
   },
+  play: async () => {
+    await sleep(500);
+    const cy = cyRef;
+    if (!cy) {
+      throw new Error("Cytoscape instance is not available");
+    }
+    cy.$("edge").selectify();
+    cy.$("edge").select();
+  },
   parameters: {
     viewport: {
       defaultViewport: "tablet",
@@ -249,14 +277,10 @@ export const RendersSpecifiedLineTypesSelected: StoryObj<typeof CytoscapeCanvas>
   },
 };
 
-RendersSpecifiedLineTypesSelected.play = async () => {
-  await sleep(500);
-  const cy = cyRef;
-  if (!cy) {
-    throw new Error("Cytoscape instance is not available");
-  }
-  cy.$("edge").selectify();
-  cy.$("edge").select();
+export const RendersSpecifiedLineTypesSelectedSlice2: Story = {
+  ...RendersSpecifiedLineTypesSelected,
+  name: "Renders Specified Line Types Selected SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersSpecifiedLineTypesHide: StoryObj<typeof CytoscapeCanvas> = {
@@ -296,6 +320,12 @@ export const RendersSpecifiedLineTypesHide: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const RendersSpecifiedLineTypesHideSlice2: Story = {
+  ...RendersSpecifiedLineTypesHide,
+  name: "Renders Specified Line Types Hide SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersSpecifiedLineTypesSystemHide: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const lineStyles = [
@@ -333,6 +363,12 @@ export const RendersSpecifiedLineTypesSystemHide: StoryObj<typeof CytoscapeCanva
   },
 };
 
+export const RendersSpecifiedLineTypesSystemHideSlice2: Story = {
+  ...RendersSpecifiedLineTypesSystemHide,
+  name: "Renders Specified Line Types System Hide SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersSpecifiedLineTypesSystemDisplay: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const lineStyles = [
@@ -368,6 +404,12 @@ export const RendersSpecifiedLineTypesSystemDisplay: StoryObj<typeof CytoscapeCa
     const mockLineTypes = builder.build();
     return <CanvasFromMockData data={mockLineTypes} />;
   },
+};
+
+export const RendersSpecifiedLineTypesSystemDisplaySlice2: Story = {
+  ...RendersSpecifiedLineTypesSystemDisplay,
+  name: "Renders Specified Line Types System Display SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
@@ -409,6 +451,12 @@ export const RendersLabelsWithSizeAndFont: StoryObj<typeof CytoscapeCanvas> = {
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const RendersLabelsWithSizeAndFontSlice2: Story = {
+  ...RendersLabelsWithSizeAndFont,
+  name: "Renders Labels With Size And Font SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
@@ -467,6 +515,12 @@ export const RendersLabelsWithBorder: StoryObj<typeof CytoscapeCanvas> = {
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const RendersLabelsWithBorderSlice2: Story = {
+  ...RendersLabelsWithBorder,
+  name: "Renders Labels With Border SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof CytoscapeCanvas> = {
@@ -577,6 +631,12 @@ export const RendersLabelsWithEffectStateAndSymbolType: StoryObj<typeof Cytoscap
   },
 };
 
+export const RendersLabelsWithEffectStateAndSymbolTypeSlice2: Story = {
+  ...RendersLabelsWithEffectStateAndSymbolType,
+  name: "Renders Labels With Effect State And Symbol Type SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersLabelsOnBlack: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const effects = ["none", "halo"];
@@ -622,6 +682,12 @@ export const RendersLabelsOnBlack: StoryObj<typeof CytoscapeCanvas> = {
       default: "Dark",
     },
   },
+};
+
+export const RendersLabelsOnBlackSlice2: Story = {
+  ...RendersLabelsOnBlack,
+  name: "Renders Labels On Black SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas> = {
@@ -683,6 +749,12 @@ export const RendersLabelsWithOffsetAndRotation: StoryObj<typeof CytoscapeCanvas
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const RendersLabelsWithOffsetAndRotationSlice2: Story = {
+  ...RendersLabelsWithOffsetAndRotation,
+  name: "Renders Labels With Off set And Rotation SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 const addOffsetLabel = (
@@ -748,6 +820,12 @@ export const RendersOffsetCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const RendersOffsetCircledLabelsSlice2: Story = {
+  ...RendersOffsetCircledLabels,
+  name: "Renders Off set Circled Labels SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 const addRotatedLabel = (
   builder: PlanDataBuilder,
   idBase: number,
@@ -801,12 +879,24 @@ export const RendersRotatedCircledLabels: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const RendersRotatedCircledLabelsSlice2: Story = {
+  ...RendersRotatedCircledLabels,
+  name: "Renders Rotated Circled Labels SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersRotatedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
     addRotatedLabel(builder, 9, "II", 15, -10, 45, "centerCenter", true, false);
     return <CanvasFromMockData data={builder.build()} />;
   },
+};
+
+export const RendersRotatedCircledLabelSlice2: Story = {
+  ...RendersRotatedCircledLabel,
+  name: "Renders Rotated Circled Label SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersRotatedSelectedCircledLabel: StoryObj<typeof CytoscapeCanvas> = {
@@ -816,6 +906,12 @@ export const RendersRotatedSelectedCircledLabel: StoryObj<typeof CytoscapeCanvas
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: selectAllLabels,
+};
+
+export const RendersRotatedSelectedCircledLabelSlice2: Story = {
+  ...RendersRotatedSelectedCircledLabel,
+  name: "Renders Rotated Selected Circled Label SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
@@ -849,6 +945,12 @@ export const RendersCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> 
 
     return <CanvasFromMockData data={builder.build()} />;
   },
+};
+
+export const RendersCircledLabelsCenterCenterSlice2: Story = {
+  ...RendersCircledLabelsCenterCenter,
+  name: "Renders Circled Labels Center Center SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersSelectedCircledLabelsCenterCenter: StoryObj<typeof CytoscapeCanvas> = {
@@ -885,6 +987,12 @@ export const RendersSelectedCircledLabelsCenterCenter: StoryObj<typeof Cytoscape
   play: selectAllLabels,
 };
 
+export const RendersSelectedCircledLabelsCenterCenterSlice2: Story = {
+  ...RendersSelectedCircledLabelsCenterCenter,
+  name: "Renders Selected Circled Labels Center Center SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
@@ -919,6 +1027,12 @@ export const RendersSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanva
   play: selectAllLabels,
 };
 
+export const RendersSelectedCircledLabelsTopLeftSlice2: Story = {
+  ...RendersSelectedCircledLabelsTopLeft,
+  name: "Renders Selected Circled Labels Top Left SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersHoveredCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
@@ -935,6 +1049,12 @@ export const RendersHoveredCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas
     return <CanvasFromMockData data={builder.build()} />;
   },
   play: hoverAllLabels,
+};
+
+export const RendersHoveredCircledLabelsTopLeftSlice2: Story = {
+  ...RendersHoveredCircledLabelsTopLeft,
+  name: "Renders Hovered Circled Labels Top Left SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersHoveredSelectedCircledLabelsTopLeft: StoryObj<typeof CytoscapeCanvas> = {
@@ -957,6 +1077,13 @@ export const RendersHoveredSelectedCircledLabelsTopLeft: StoryObj<typeof Cytosca
     await hoverAllLabels();
   },
 };
+
+export const RendersHoveredSelectedCircledLabelsTopLeftSlice2: Story = {
+  ...RendersHoveredSelectedCircledLabelsTopLeft,
+  name: "Renders Hovered Selected Circled Labels Top Left SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const startX = 5;
@@ -1039,6 +1166,12 @@ export const RendersLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = 
   },
 };
 
+export const RendersLabelsWithTextAlignmentSlice2: Story = {
+  ...RendersLabelsWithTextAlignment,
+  name: "Renders Labels With Text Alignment SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const startX = 5;
@@ -1103,6 +1236,12 @@ export const RendersCircledLabelsWithTextAlignment: StoryObj<typeof CytoscapeCan
   },
 };
 
+export const RendersCircledLabelsWithTextAlignmentSlice2: Story = {
+  ...RendersCircledLabelsWithTextAlignment,
+  name: "Renders Circled Labels With Text Alignment SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 const renderBoxedUserText = () => {
   const builder = fromBuilder();
 
@@ -1136,6 +1275,12 @@ export const RendersLabelsAtCorrectSizeInLandscape: StoryObj<typeof CytoscapeCan
   },
 };
 
+export const RendersLabelsAtCorrectSizeInLandscapeSlice2: Story = {
+  ...RendersLabelsAtCorrectSizeInLandscape,
+  name: "Renders Labels At Correct Size In Landscape SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersLabelsAtCorrectSizeInPortrait: StoryObj<typeof CytoscapeCanvas> = {
   render: renderBoxedUserText,
   parameters: {
@@ -1144,6 +1289,12 @@ export const RendersLabelsAtCorrectSizeInPortrait: StoryObj<typeof CytoscapeCanv
       defaultOrientation: "portrait",
     },
   },
+};
+
+export const RendersLabelsAtCorrectSizeInPortraitSlice2: Story = {
+  ...RendersLabelsAtCorrectSizeInPortrait,
+  name: "Renders Labels At Correct Size In Portrait SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersSelectedLabels: StoryObj<typeof CytoscapeCanvas> = {
@@ -1204,7 +1355,16 @@ export const RendersSelectedLabels: StoryObj<typeof CytoscapeCanvas> = {
 
     return <CanvasFromMockData data={builder.build()} />;
   },
-
+  play: async () => {
+    await sleep(500);
+    const cy = cyRef;
+    if (!cy) {
+      throw new Error("Cytoscape instance is not available");
+    }
+    cy.$(PlanElementSelector.Labels).selectify();
+    cy.$(PlanElementSelector.Labels).addClass("selectable-label");
+    cy.$("node").select();
+  },
   parameters: {
     viewport: {
       defaultViewport: "tablet",
@@ -1213,15 +1373,10 @@ export const RendersSelectedLabels: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
-RendersSelectedLabels.play = async () => {
-  await sleep(500);
-  const cy = cyRef;
-  if (!cy) {
-    throw new Error("Cytoscape instance is not available");
-  }
-  cy.$(PlanElementSelector.Labels).selectify();
-  cy.$(PlanElementSelector.Labels).addClass("selectable-label");
-  cy.$("node").select();
+export const RendersSelectedLabelsSlice2: Story = {
+  ...RendersSelectedLabels,
+  name: "Renders Selected Labels SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const RendersSelectedLabelsWithRelatedElements: StoryObj<typeof CytoscapeCanvas> = {
@@ -1285,7 +1440,16 @@ export const RendersSelectedLabelsWithRelatedElements: StoryObj<typeof Cytoscape
 
     return <CanvasFromMockData data={builder.build()} />;
   },
-
+  play: async () => {
+    await sleep(500);
+    const cy = cyRef;
+    if (!cy) {
+      throw new Error("Cytoscape instance is not available");
+    }
+    cy.$("node[label]").selectify();
+    cy.$("node[label]").addClass("selectable-label");
+    cy.$("node[label]").select();
+  },
   parameters: {
     viewport: {
       defaultViewport: "tablet",
@@ -1294,15 +1458,10 @@ export const RendersSelectedLabelsWithRelatedElements: StoryObj<typeof Cytoscape
   },
 };
 
-RendersSelectedLabelsWithRelatedElements.play = async () => {
-  await sleep(500);
-  const cy = cyRef;
-  if (!cy) {
-    throw new Error("Cytoscape instance is not available");
-  }
-  cy.$("node[label]").selectify();
-  cy.$("node[label]").addClass("selectable-label");
-  cy.$("node[label]").select();
+export const RendersSelectedLabelsWithRelatedElementsSlice2: Story = {
+  ...RendersSelectedLabelsWithRelatedElements,
+  name: "Renders Selected Labels With Related Elements SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
@@ -1346,6 +1505,12 @@ export const SymbolNodesWithLabels: StoryObj<typeof CytoscapeCanvas> = {
       defaultOrientation: "landscape",
     },
   },
+};
+
+export const SymbolNodesWithLabelsSlice2: Story = {
+  ...SymbolNodesWithLabels,
+  name: "Symbol Nodes With Labels SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
@@ -1409,6 +1574,12 @@ export const SymbolNodesLocationAndSize: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
+export const SymbolNodesLocationAndSizeSlice2: Story = {
+  ...SymbolNodesLocationAndSize,
+  name: "Symbol Nodes Location And Size SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const SymbolNodesSelected: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     const builder = fromBuilder();
@@ -1429,6 +1600,16 @@ export const SymbolNodesSelected: StoryObj<typeof CytoscapeCanvas> = {
     });
     return <CanvasFromMockData data={builder.build()} initZoom={{ zoom: 1.5, pan: { x: 0, y: 0 } }} />;
   },
+  play: async () => {
+    await sleep(500);
+    const cy = cyRef;
+    if (!cy) {
+      throw new Error("Cytoscape instance is not available");
+    }
+    cy.$("node[symbolId]").selectify();
+    cy.$("node[symbolId]").addClass("node-selected");
+    cy.$("node[symbolId]").select();
+  },
   parameters: {
     viewport: {
       defaultViewport: "tablet",
@@ -1437,15 +1618,10 @@ export const SymbolNodesSelected: StoryObj<typeof CytoscapeCanvas> = {
   },
 };
 
-SymbolNodesSelected.play = async () => {
-  await sleep(500);
-  const cy = cyRef;
-  if (!cy) {
-    throw new Error("Cytoscape instance is not available");
-  }
-  cy.$("node[symbolId]").selectify();
-  cy.$("node[symbolId]").addClass("node-selected");
-  cy.$("node[symbolId]").select();
+export const SymbolNodesSelectedSlice2: Story = {
+  ...SymbolNodesSelected,
+  name: "Symbol Nodes Selected SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };
 
 const mockHideMenu = fn();
@@ -1478,6 +1654,7 @@ const CxtMenuComponent = () => {
 
   return <CytoscapeContextMenu menuState={mockMenuState} hideMenu={mockHideMenu} />;
 };
+
 export const RenderCytoscapeContextMenu: StoryObj<typeof CytoscapeCanvas> = {
   render: () => {
     return <CxtMenuComponent />;
@@ -1495,4 +1672,10 @@ export const RenderCytoscapeContextMenu: StoryObj<typeof CytoscapeCanvas> = {
     // eslint-disable-next-line testing-library/no-node-access
     await expect(item3.closest(".context-menu-item")).toHaveClass("hovered");
   },
+};
+
+export const RenderCytoscapeContextMenuSlice2: Story = {
+  ...RenderCytoscapeContextMenu,
+  name: "Render Cytoscape Context Menu SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };

@@ -16,7 +16,7 @@ import { handlers } from "@/mocks/mockHandlers";
 import { Paths } from "@/Paths";
 import { setupStore } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore } from "@/test-utils/store-mock";
 import { findCell, findCellContains, openAndClickMenuOption, selectCell } from "@/test-utils/storybook-ag-grid-utils";
 import {
   PanelInstanceContextMock,
@@ -40,8 +40,14 @@ export default {
   },
 } as Meta<typeof LabelPreferencesPanel>;
 
-const LabelPreferencesWrapper = ({ transactionId }: { transactionId: string }) => (
-  <Provider store={setupStore({ ...mockStoreV1 })}>
+const LabelPreferencesWrapper = ({
+  transactionId,
+  version = "V1",
+}: {
+  transactionId: string;
+  version: "V1" | "V2";
+}) => (
+  <Provider store={setupStore({ ...getMockedStore(version).preloadedState })}>
     <QueryClientProvider client={queryClient}>
       <FeatureFlagProvider>
         <PanelsContextProvider>
@@ -71,11 +77,29 @@ export const Default: Story = {
   },
   args: {
     transactionId: "123",
+    version: "V1",
+  },
+};
+
+export const DefaultSliceV2: Story = {
+  ...Default,
+  name: "Default SliceV2",
+  args: {
+    ...Default.args,
+    version: "V2",
   },
 };
 
 export const NewPlansLabels: Story = {
   ...Default,
+  play: async ({ step }) => {
+    await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+    await step("WHEN I navigate to new plan labels tab", async () => {
+      const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
+      await userEvent.click(labelsForNewPlansTab);
+    });
+    await step("THEN I see the labels for new plans", async () => {});
+  },
   parameters: {
     ...Default.parameters,
   },
@@ -83,13 +107,14 @@ export const NewPlansLabels: Story = {
     transactionId: "123",
   },
 };
-NewPlansLabels.play = async ({ step }) => {
-  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
-  await step("WHEN I navigate to new plan labels tab", async () => {
-    const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
-    await userEvent.click(labelsForNewPlansTab);
-  });
-  await step("THEN I see the labels for new plans", async () => {});
+
+export const NewPlansLabelsSliceV2: Story = {
+  ...NewPlansLabels,
+  name: "New Plans Labels SliceV2",
+  args: {
+    ...NewPlansLabels.args,
+    version: "V2",
+  },
 };
 
 export const ThisPlanRevertLabelPreferences: Story = {
@@ -100,28 +125,37 @@ export const ThisPlanRevertLabelPreferences: Story = {
   args: {
     transactionId: "123",
   },
+  play: async ({ step }) => {
+    const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+    await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+    await step("WHEN I change font family to Arimo for Arc Radius label type", async () => {
+      await openAndClickMenuOption("ARCR", "font", /Arimo/, table);
+    });
+
+    await step("AND I revert my changes", async () => {
+      const revert = await findCell("ARCR", "revert", table);
+      const revertButton = await findQuick(
+        {
+          classes: "[aria-label=revert]",
+        },
+        revert,
+      );
+      await userEvent.click(revertButton);
+    });
+
+    await step("THEN font family is reverted back to Roboto for Arc Radius label type", async () => {
+      await findCellContains("ARCR", "font", "Roboto", table);
+    });
+  },
 };
-ThisPlanRevertLabelPreferences.play = async ({ step }) => {
-  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
-  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
-  await step("WHEN I change font family to Arimo for Arc Radius label type", async () => {
-    await openAndClickMenuOption("ARCR", "font", /Arimo/, table);
-  });
 
-  await step("AND I revert my changes", async () => {
-    const revert = await findCell("ARCR", "revert", table);
-    const revertButton = await findQuick(
-      {
-        classes: "[aria-label=revert]",
-      },
-      revert,
-    );
-    await userEvent.click(revertButton);
-  });
-
-  await step("THEN font family is reverted back to Roboto for Arc Radius label type", async () => {
-    await findCellContains("ARCR", "font", "Roboto", table);
-  });
+export const ThisPlanRevertLabelPreferencesSliceV2: Story = {
+  ...ThisPlanRevertLabelPreferences,
+  name: "This Plan Revert Label Preferences SliceV2",
+  args: {
+    ...ThisPlanRevertLabelPreferences.args,
+    version: "V2",
+  },
 };
 
 export const ThisPlanSaveLabelPreferences: Story = {
@@ -140,23 +174,32 @@ export const ThisPlanSaveLabelPreferences: Story = {
   args: {
     transactionId: "123",
   },
+  play: async ({ step }) => {
+    const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+    await step("GIVEN I'm in the LabelPreferences tab", async () => {});
+    await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
+    await openAndClickMenuOption("ARCR", "font", /Arial/, table);
+    await openAndClickMenuOption("ARCR", "fontSize", "8", table);
+    await selectCell("ARCR", "bold", table);
+    await step("AND I save updated label preferences", async () => {
+      const saveButton = await screen.findByText("Save");
+      await userEvent.click(saveButton);
+    });
+    await step("THEN updated label preferences are saved", async () => {
+      await waitForLoadingSpinnerToDisappear();
+      const successMessage = await screen.findByText("All preferences up to date");
+      await expect(successMessage).toBeTruthy();
+    });
+  },
 };
-ThisPlanSaveLabelPreferences.play = async ({ step }) => {
-  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
-  await step("GIVEN I'm in the LabelPreferences tab", async () => {});
-  await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
-  await openAndClickMenuOption("ARCR", "font", /Arial/, table);
-  await openAndClickMenuOption("ARCR", "fontSize", "8", table);
-  await selectCell("ARCR", "bold", table);
-  await step("AND I save updated label preferences", async () => {
-    const saveButton = await screen.findByText("Save");
-    await userEvent.click(saveButton);
-  });
-  await step("THEN updated label preferences are saved", async () => {
-    await waitForLoadingSpinnerToDisappear();
-    const successMessage = await screen.findByText("All preferences up to date");
-    await expect(successMessage).toBeTruthy();
-  });
+
+export const ThisPlanSaveLabelPreferencesSliceV2: Story = {
+  ...ThisPlanSaveLabelPreferences,
+  name: "This Plan Save Label Preferences SliceV2",
+  args: {
+    ...ThisPlanSaveLabelPreferences.args,
+    version: "V2",
+  },
 };
 
 export const NewPlansSaveLabelPreferences: Story = {
@@ -175,26 +218,35 @@ export const NewPlansSaveLabelPreferences: Story = {
   args: {
     transactionId: "123",
   },
+  play: async ({ step }) => {
+    const table = await findQuick({ classes: ".LuiTabsPanel--active" });
+    await step("GIVEN I'm in the New plans LabelPreferences tab", async () => {
+      const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
+      await userEvent.click(labelsForNewPlansTab);
+    });
+    await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
+    await openAndClickMenuOption("ARCR", "font", /Arial/, table);
+    await openAndClickMenuOption("ARCR", "fontSize", "8", table);
+    await selectCell("ARCR", "bold", table);
+    await step("AND I save updated label preferences", async () => {
+      const saveButton = await screen.findByText("Save");
+      await userEvent.click(saveButton);
+    });
+    await step("THEN updated label preferences are saved", async () => {
+      await waitForLoadingSpinnerToDisappear();
+      const successMessage = await screen.findByText("All preferences up to date");
+      await expect(successMessage).toBeTruthy();
+    });
+  },
 };
-NewPlansSaveLabelPreferences.play = async ({ step }) => {
-  const table = await findQuick({ classes: ".LuiTabsPanel--active" });
-  await step("GIVEN I'm in the New plans LabelPreferences tab", async () => {
-    const labelsForNewPlansTab = await screen.findByText("Labels for new plans");
-    await userEvent.click(labelsForNewPlansTab);
-  });
-  await step("WHEN I update font family, size and weight for Arc Radius label type", async () => {});
-  await openAndClickMenuOption("ARCR", "font", /Arial/, table);
-  await openAndClickMenuOption("ARCR", "fontSize", "8", table);
-  await selectCell("ARCR", "bold", table);
-  await step("AND I save updated label preferences", async () => {
-    const saveButton = await screen.findByText("Save");
-    await userEvent.click(saveButton);
-  });
-  await step("THEN updated label preferences are saved", async () => {
-    await waitForLoadingSpinnerToDisappear();
-    const successMessage = await screen.findByText("All preferences up to date");
-    await expect(successMessage).toBeTruthy();
-  });
+
+export const NewPlansSaveLabelPreferencesSliceV2: Story = {
+  ...NewPlansSaveLabelPreferences,
+  name: "New Plans Save Label Preferences SliceV2",
+  args: {
+    ...NewPlansSaveLabelPreferences.args,
+    version: "V2",
+  },
 };
 
 export const HiddenObjectsInteraction: Story = {
@@ -222,6 +274,15 @@ export const HiddenObjectsInteraction: Story = {
   },
 };
 
+export const HiddenObjectsInteractionSliceV2: Story = {
+  ...HiddenObjectsInteraction,
+  name: "Hidden Objects Interaction SliceV2",
+  args: {
+    ...HiddenObjectsInteraction.args,
+    version: "V2",
+  },
+};
+
 export const HiddenObjectsStateHidden: Story = {
   ...Default,
   beforeEach: () => {
@@ -236,6 +297,15 @@ export const HiddenObjectsStateHidden: Story = {
   },
 };
 
+export const HiddenObjectsStateHiddenSliceV2: Story = {
+  ...HiddenObjectsStateHidden,
+  name: "Hidden Objects State Hidden SliceV2",
+  args: {
+    ...HiddenObjectsStateHidden.args,
+    version: "V2",
+  },
+};
+
 export const HiddenObjectsStateVisible: Story = {
   ...Default,
   beforeEach: () => {
@@ -247,5 +317,14 @@ export const HiddenObjectsStateVisible: Story = {
     await expect(isHiddenObjectsVisibleByDefault()).toBeTruthy();
     // reset
     setHiddenObjectsVisibleByDefault(undefined);
+  },
+};
+
+export const HiddenObjectsStateVisibleSliceV2: Story = {
+  ...HiddenObjectsStateVisible,
+  name: "Hidden Objects State Visible SliceV2",
+  args: {
+    ...HiddenObjectsStateVisible.args,
+    version: "V2",
   },
 };
