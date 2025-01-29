@@ -4,15 +4,13 @@ import { fromBuilder } from "@/components/CytoscapeCanvas/__tests__/mockDiagramD
 import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { useMeasureText } from "@/hooks/useMeasureText";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore } from "@/test-utils/store-mock";
 import { withProviderDecorator } from "@/test-utils/storybook-utils";
-
-const mockedState = { ...mockStoreV1 };
 
 export default {
   title: "CytoscapeCanvas/MeasureText",
   component: CytoscapeCanvas,
-  decorators: [withProviderDecorator(mockedState)],
+  decorators: [withProviderDecorator(getMockedStore("V1"))],
 } as Meta<typeof useMeasureText>;
 
 const CanvasWithMeasure = () => {
@@ -72,6 +70,12 @@ export const RendersLabelsAtMeasuredSizeInLandscape: StoryObj<typeof CytoscapeCa
   },
 };
 
+export const RendersLabelsAtMeasuredSizeInLandscapeSliceV2: StoryObj<typeof CytoscapeCanvas> = {
+  ...RendersLabelsAtMeasuredSizeInLandscape,
+  name: "Renders Labels At Measured Size In Landscape SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
+};
+
 export const RendersLabelsAtMeasuredSizeInPortrait: StoryObj<typeof CytoscapeCanvas> = {
   render: () => <CanvasWithMeasure />,
   parameters: {
@@ -80,4 +84,10 @@ export const RendersLabelsAtMeasuredSizeInPortrait: StoryObj<typeof CytoscapeCan
       defaultOrientation: "portrait",
     },
   },
+};
+
+export const RendersLabelsAtMeasuredSizeInPortraitSliceV2: StoryObj<typeof CytoscapeCanvas> = {
+  ...RendersLabelsAtMeasuredSizeInPortrait,
+  name: "Renders Labels At Measured Size In Portrait SliceV2",
+  decorators: [withProviderDecorator(getMockedStore("V2"))],
 };

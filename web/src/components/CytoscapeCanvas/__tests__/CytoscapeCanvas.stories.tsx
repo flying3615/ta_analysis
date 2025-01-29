@@ -26,14 +26,12 @@ import { PlanElementSelector } from "@/components/PlanSheets/PlanElementType";
 import { ContextMenuState } from "@/hooks/useCytoscapeContextMenu";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { extractDiagramEdges, extractDiagramNodes } from "@/modules/plan/extractGraphData";
-import { getMockedStore, mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore } from "@/test-utils/store-mock";
 import { sleep, withProviderDecorator } from "@/test-utils/storybook-utils";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
 
 import CytoscapeCanvas, { IInitZoom } from "../CytoscapeCanvas";
 import { IEdgeData, INodeData } from "../cytoscapeDefinitionsFromData";
-
-const mockedState = { ...mockStoreV1 };
 
 const selectAllLabels = async () => {
   await sleep(500);
@@ -62,7 +60,7 @@ const hoverAllLabels = async () => {
 export default {
   title: "CytoscapeCanvas",
   component: CytoscapeCanvas,
-  decorators: [withProviderDecorator(mockedState)],
+  decorators: [withProviderDecorator(getMockedStore("V1"))],
   parameters: {
     chromatic: { delay: 500, diffThreshold: 0.1 },
   },

@@ -28,37 +28,6 @@ const initialStateV1: PlanSheetsState = {
   stateVersion: "V1",
 };
 
-export const mockStoreV1 = {
-  planSheets: initialStateV1,
-};
-
-export const mockStoreV2 = {
-  planSheets: { ...initialStateV1, stateVersion: "V2" },
-};
-
-export const modifiedStateV1 = (state: Partial<PlanSheetsStateV1>): PlanSheetsState => ({
-  ...initialStateV1,
-  v1: { ...initialStateV1.v1, ...state },
-});
-
-export const modifiedStateV2 = (state: Partial<PlanSheetsStateV2>): PlanSheetsState => ({
-  ...initialStateV1,
-  v2: { ...initialStateV1.v2, ...state },
-  stateVersion: "V2",
-});
-
-export const modifiedCurrentStateV2 = (state: Partial<State>): PlanSheetsState => ({
-  ...initialStateV1,
-  v2: { ...initialStateV1.v2, current: { ...initialStateV1.v2.current, ...state } },
-  stateVersion: "V2",
-});
-
-export const modifiedPastStateV2 = (state: Partial<State>): PlanSheetsState => ({
-  ...initialStateV1,
-  v2: { ...initialStateV1.v2, past: { ...initialStateV1.v2.past, ...state } },
-  stateVersion: "V2",
-});
-
 type ModifiedStateV1 = { state: Partial<PlanSheetsStateV1>; stateVersion: "V1" };
 type ModifiedStateV2 = { state: Partial<PlanSheetsStateV2>; stateVersion: "V2" };
 
@@ -76,9 +45,16 @@ export const modifiedState = (newState: Partial<State>, stateVersion: "V1" | "V2
 export const createState = ({ state, stateVersion }: ModifiedStateV1 | ModifiedStateV2): PlanSheetsState => {
   switch (stateVersion) {
     case "V1":
-      return modifiedStateV1(state);
+      return {
+        ...initialStateV1,
+        v1: { ...initialStateV1.v1, ...state },
+      };
     case "V2":
-      return modifiedStateV2(state);
+      return {
+        ...initialStateV1,
+        v2: { ...initialStateV1.v2, ...state },
+        stateVersion: "V2",
+      };
   }
 };
 
@@ -119,11 +95,15 @@ export const getMockedStore = (stateVersion: "V1" | "V2") => {
   switch (stateVersion) {
     case "V1":
       return {
-        preloadedState: { ...mockStoreV1 },
+        preloadedState: {
+          planSheets: initialStateV1,
+        },
       };
     case "V2":
       return {
-        preloadedState: { ...mockStoreV2 },
+        preloadedState: {
+          planSheets: { ...initialStateV1, stateVersion: "V2" },
+        },
       };
   }
 };
