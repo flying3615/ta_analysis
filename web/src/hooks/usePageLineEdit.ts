@@ -3,6 +3,7 @@ import cytoscape, { Position } from "cytoscape";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import {
   doPastePageLines,
   getActivePage,
@@ -24,6 +25,7 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
   const diagramAreasLimits = cytoCoordMapper && cytoscapeUtils.getDiagramAreasLimits(cytoCoordMapper, cyto);
   const copiedElements = useAppSelector(getCopiedElements);
   const maxElemIds = useAppSelector(getMaxElemIds);
+  const { cleanupSelectedElements } = useCytoscapeContext();
 
   const deletePageLines = (targets: cytoscape.EdgeSingular[]) => {
     const lineIds = targets
@@ -152,11 +154,13 @@ export const usePageLineEdit = (cyto?: cytoscape.Core) => {
         updatedPage = addPageLineByCoordList(updatedPage, coordNodeList, cytoCoordMapper, maxLineId, copiedLine);
       });
 
-    if (maxCoordId && maxLineId) {
-      dispatch(updateMaxElemIds({ element: "Coordinate", maxId: maxCoordId }));
-      dispatch(updateMaxElemIds({ element: "Line", maxId: maxLineId }));
-      dispatch(doPastePageLines({ updatedPage }));
-    }
+    cleanupSelectedElements(() => {
+      if (maxCoordId && maxLineId) {
+        dispatch(updateMaxElemIds({ element: "Coordinate", maxId: maxCoordId }));
+        dispatch(updateMaxElemIds({ element: "Line", maxId: maxLineId }));
+        dispatch(doPastePageLines({ updatedPage }));
+      }
+    });
   };
 
   return {

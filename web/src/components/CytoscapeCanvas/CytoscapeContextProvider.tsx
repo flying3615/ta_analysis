@@ -16,7 +16,7 @@ export interface CytoscapeContextType {
   scrollToZoom: (cy: cytoscape.Core) => void;
   keepPanWithinBoundaries: (cy: cytoscape.Core) => void;
   onViewportChange: (cy: cytoscape.Core) => void;
-  keepElementSelected: (callback: () => void) => void;
+  keepElementSelected: (callback: () => void, additionalElementIds?: string[]) => void;
   cleanupSelectedElements: (callback: () => void) => void;
   setSelectedElementIds: (ids: string[]) => void;
 }
@@ -55,9 +55,12 @@ export const CytoscapeContextProvider = (props: ProviderProps): ReactElement | n
     setIsMinZoom(currentZoom <= minZoom);
   };
 
-  const keepElementSelected = (callback: () => void) => {
+  const keepElementSelected = (callback: () => void, additionalElementIds?: string[]) => {
     const selectedElements = cyto?.$(":selected");
     const selectedIds = selectedElements?.map((ele) => ele.id());
+    if (additionalElementIds && selectedIds) {
+      selectedIds.push(...additionalElementIds);
+    }
     dispatch(setSelectedElementIds(selectedIds ?? []));
     callback();
   };

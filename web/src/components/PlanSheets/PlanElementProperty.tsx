@@ -7,6 +7,7 @@ import React, { useContext, useState } from "react";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import LineProperties, { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
+import { useEscapeKey } from "@/hooks/useEscape";
 
 export type PlanPropertyPayload = PlanLabelProperty | PlanLineProperty;
 
@@ -31,6 +32,9 @@ interface PlanLineProperty {
 const PlanElementProperty = ({ property, keepElementSelected, cy }: PlanElementPropertyProps) => {
   const [saveFunction, setSaveFunction] = useState<() => void>();
   const [isSaveEnabled, setSaveEnabled] = useState<boolean>(false);
+  const { panelClose } = useContext(PanelInstanceContext);
+
+  useEscapeKey({ callback: () => keepElementSelected(() => panelClose()) });
 
   const planModeConfig = ({ mode, data }: PlanPropertyPayload) => {
     switch (mode) {
@@ -60,7 +64,6 @@ const PlanElementProperty = ({ property, keepElementSelected, cy }: PlanElementP
   const { component, headerContent, startHeight } = planModeConfig(property);
   const minPanelHeight: number = 400;
   const maxPanelWidth: number = 320;
-  const { panelClose } = useContext(PanelInstanceContext);
 
   // Adjusts the position to ensure it fits within the window's height.
   const adjustPosition = (pos: { x: number; y: number }) => {

@@ -2,17 +2,22 @@ import { renderHook } from "@testing-library/react";
 import cytoscape from "cytoscape";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { usePageLineEdit } from "@/hooks/usePageLineEdit";
 
 jest.mock("@/hooks/reduxHooks");
+jest.mock("@/hooks/useCytoscapeContext");
 
 describe("usePageLineEdit", () => {
   const mockUseAppSelector = useAppSelector as unknown as jest.Mock;
   const mockUseAppDispatch = useAppDispatch as unknown as jest.Mock;
+  const mockUseCytoscapeContext = useCytoscapeContext as jest.Mock;
+
   const dispatch = jest.fn();
 
   beforeEach(() => {
     mockUseAppDispatch.mockReturnValue(dispatch);
+    mockUseCytoscapeContext.mockReturnValue({ cyto: {} });
     mockUseAppSelector.mockReturnValue({
       copiedElements: { elements: [], action: "" },
       activePage: {},

@@ -9,6 +9,7 @@ import {
   planDataLabelIdToCytoscape,
 } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { addPageLabels } from "@/modules/plan/updatePlanData";
 import {
   doPastePageLabels,
@@ -29,6 +30,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
   const copiedElements = useAppSelector(getCopiedElements);
   const activePage = useAppSelector(getActivePage);
   const maxElemIds = useAppSelector(getMaxElemIds);
+  const { cleanupSelectedElements } = useCytoscapeContext();
 
   const deletePageLabels = (targets: cytoscape.NodeSingular[]) => {
     const labelIds = targets
@@ -209,7 +211,7 @@ export const usePageLabelEdit = (cyto?: cytoscape.Core) => {
     newMaxId && dispatch(updateMaxElemIds({ element: "Label", maxId: newMaxId }));
 
     const updatedPage = addPageLabels(activePage, labelsTobeAdded);
-    dispatch(doPastePageLabels({ updatedPage }));
+    cleanupSelectedElements(() => dispatch(doPastePageLabels({ updatedPage })));
   };
 
   return {

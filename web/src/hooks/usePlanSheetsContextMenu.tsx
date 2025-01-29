@@ -123,11 +123,13 @@ export const usePlanSheetsContextMenu = () => {
       } else {
         throw new Error("Invalid plan mode");
       }
-      openPanel({
-        uniqueId: "Plan element property",
-        componentFn: () => (
-          <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} cy={cy} />
-        ),
+      keepElementSelected(() => {
+        openPanel({
+          uniqueId: "Plan element property",
+          componentFn: () => (
+            <PlanElementProperty property={planProperty} keepElementSelected={keepElementSelected} cy={cy} />
+          ),
+        });
       });
     }
   };
@@ -360,19 +362,25 @@ export const usePlanSheetsContextMenu = () => {
           hideWhen: () =>
             !canMoveLabelToPage ||
             selectedLabels.every((ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation),
-          callback: (event) => {
-            keepElementSelected(() => {
-              if (!event.target || isEmpty(selectedLabels)) return;
-              const elementsToMove = selectedLabels
-                .filter((ele) => ele.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation)
-                .map((ele) => {
-                  return { id: ele.data("id") as string, type: PlanElementType.LABELS } as ElementToMove;
-                });
-              dispatch(setElementsToMove(elementsToMove));
-            });
+          callback: (_) => {
+            const diagramLabels = selectedLabels.filter(
+              (ele) => ele.data("labelType") !== LabelDTOLabelTypeEnum.userAnnotation,
+            );
+            keepElementSelected(
+              () => {
+                if (isEmpty(selectedLabels)) return;
+                const elementsToMove = selectedLabels
+                  .filter((ele) => ele.data("labelType") === LabelDTOLabelTypeEnum.userAnnotation)
+                  .map((ele) => {
+                    return { id: ele.data("id") as string, type: PlanElementType.LABELS } as ElementToMove;
+                  });
+                dispatch(setElementsToMove(elementsToMove));
+              },
+              diagramLabels.map((ele) => ele.data("id") as string),
+            );
           },
-          onHover: (event) => {
-            if (event.cy && selectedLabels) {
+          onHover: (_) => {
+            if (selectedLabels) {
               //de-select all labels
               selectedLabels.unselect();
 
