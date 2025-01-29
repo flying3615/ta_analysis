@@ -1,5 +1,6 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import cytoscape, { CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import { cloneDeep } from "lodash-es";
 
 import { MenuItem } from "@/components/CytoscapeCanvas/CytoscapeMenu";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -8,26 +9,28 @@ import { usePlanSheetsContextMenu } from "@/hooks/usePlanSheetsContextMenu";
 import { mockPlanData } from "@/mocks/data/mockPlanData";
 import { PreviousDiagramAttributes } from "@/modules/plan/PreviousDiagramAttributes";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
+import { extractState, getMockedStore, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
-describe("PlanSheetsContextMenu", () => {
+describe.each(stateVersions)("PlanSheetsContextMenu state%s", (version) => {
   const mockedStateForPlanMode = (
     planMode: PlanMode,
     previousDiagramAttributesMap: Record<number, PreviousDiagramAttributes> = {},
   ) => {
+    const mockedStore = getMockedStore(version);
     return {
       preloadedState: {
-        ...mockStoreV1,
-        planSheets: modifiedStateV1({
-          ...mockStoreV1.planSheets.v1,
-          diagrams: mockPlanData.diagrams,
-          pages: mockPlanData.pages,
-          configs: [],
-          planMode: planMode,
-          previousDiagramAttributesMap,
-          previousDiagrams: null,
-          previousPages: null,
-        }),
+        ...mockedStore,
+        planSheets: modifiedState(
+          {
+            ...mockedStore,
+            diagrams: cloneDeep(mockPlanData.diagrams), // Need to deep clone as some tests modify mockPlanData, this bleeds over between stateVersions
+            pages: cloneDeep(mockPlanData.pages),
+            configs: [],
+            planMode: planMode,
+            previousDiagramAttributesMap,
+          },
+          version,
+        ),
       },
     };
   };
@@ -88,7 +91,9 @@ describe("PlanSheetsContextMenu", () => {
       data: (key: string) => ({ id: "10001", elementType: PlanElementType.COORDINATES })[key],
     } as unknown as NodeSingular;
     const state = mockedStateForPlanMode(PlanMode.SelectCoordinates);
-    const coordinateLabel = state.preloadedState.planSheets.v1.diagrams[0]?.coordinateLabels.find((c) => c.id === 12);
+    const coordinateLabel = extractState(state.preloadedState.planSheets, version).diagrams[0]?.coordinateLabels.find(
+      (c) => c.id === 12,
+    );
     coordinateLabel!.displayState = DisplayStateEnum.hide;
 
     renderWithReduxProvider(

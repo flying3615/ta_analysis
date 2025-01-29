@@ -5,7 +5,7 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import LineProperties, { LinePropertiesData } from "@/components/PlanSheets/properties/LineProperties";
 import { setupStore } from "@/redux/store";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
-import { modifiedStateV1 } from "@/test-utils/store-mock";
+import { modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 const mockProps: LinePropertiesData = {
   lineId: 1001,
@@ -14,20 +14,23 @@ const mockProps: LinePropertiesData = {
   pointWidth: 0.7,
   originalStyle: "solid",
 };
-const mockReduxStore = setupStore({
-  planSheets: {
-    ...modifiedStateV1({
-      activeSheet: PlanSheetType.TITLE,
-    }),
-  },
-});
 
-const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
-  renderWithReduxProvider(<LineProperties data={props} setSaveEnabled={jest.fn()} setSaveFunction={jest.fn()} />, {
-    store: reduxStore,
+describe.each(stateVersions)("LineProperties state%s", (version) => {
+  const mockReduxStore = setupStore({
+    planSheets: {
+      ...modifiedState(
+        {
+          activeSheet: PlanSheetType.TITLE,
+        },
+        version,
+      ),
+    },
   });
 
-describe("LineProperties", () => {
+  const renderComponent = ({ props = [mockProps], reduxStore = mockReduxStore }) =>
+    renderWithReduxProvider(<LineProperties data={props} setSaveEnabled={jest.fn()} setSaveFunction={jest.fn()} />, {
+      store: reduxStore,
+    });
   it("renders correctly", () => {
     renderComponent({});
     expect(screen.getByText("Visibility")).toBeInTheDocument();
@@ -53,11 +56,12 @@ describe("LineProperties", () => {
   it("displays Visibility property as enabled for Survey sheet", () => {
     renderComponent({
       reduxStore: setupStore({
-        planSheets: {
-          ...modifiedStateV1({
+        planSheets: modifiedState(
+          {
             activeSheet: PlanSheetType.SURVEY,
-          }),
-        },
+          },
+          version,
+        ),
       }),
     });
     const checkbox = screen.getByRole("checkbox", { name: "Hide Check" });

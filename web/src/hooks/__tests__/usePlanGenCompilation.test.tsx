@@ -10,7 +10,7 @@ import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiag
 import { usePlanGenCompilation } from "@/hooks/usePlanGenCompilation";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore, modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 const mockUploadFile: jest.Mock = jest.fn().mockResolvedValue({} as IFileStatusResponse);
 
@@ -47,9 +47,9 @@ jest.mock("@/util/imageUtil", () => {
   };
 });
 
-describe("usePlanGenCompilation hook", () => {
+describe.each(stateVersions)("usePlanGenCompilation hook state%s", (version) => {
   const planSheetsState = {
-    ...mockStoreV1.planSheets,
+    ...getMockedStore(version),
     diagrams: diagrams,
     pages: pages,
   };
@@ -92,7 +92,7 @@ describe("usePlanGenCompilation hook", () => {
       generatePath(Paths.defineDiagrams, { transactionId: "123" }),
       {
         preloadedState: {
-          planSheets: planSheetsState,
+          planSheets: modifiedState(planSheetsState, version),
         },
       },
     );

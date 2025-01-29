@@ -2,11 +2,11 @@ import { PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { PlanDataBuilder } from "@/mocks/builders/PlanDataBuilder";
 import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { setupStore } from "@/redux/store";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { modifiedState, stateVersions } from "@/test-utils/store-mock";
 
 import { selectDiagramToPageLookupTable } from "../selectGraphData";
 
-describe("selectDiagramToPageLookupTable", () => {
+describe.each(stateVersions)("selectDiagramToPageLookupTable state%s", (version) => {
   it("should derive lookup table from diagrams and pages", () => {
     const { diagrams, pages } = new PlanDataBuilder()
       .addDiagram({
@@ -41,14 +41,13 @@ describe("selectDiagramToPageLookupTable", () => {
       .addPage({ id: 6, pageNumber: 2, pageType: PlanSheetType.SURVEY })
       .build();
 
-    const mockState: PlanSheetsState = {
-      ...mockStoreV1.planSheets,
-      v1: {
-        ...mockStoreV1.planSheets.v1,
+    const mockState: PlanSheetsState = modifiedState(
+      {
         diagrams: diagrams,
         pages: pages,
       },
-    };
+      version,
+    );
 
     const expectedResult = {
       "11": { pageRef: 4, page: { id: 4, pageNumber: 1, pageType: "title" } },

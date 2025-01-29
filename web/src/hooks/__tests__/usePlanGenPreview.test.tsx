@@ -6,19 +6,22 @@ import { diagrams, pages } from "@/components/CytoscapeCanvas/__tests__/mockDiag
 import { mockSurveyInfo } from "@/mocks/data/mockSurveyInfo";
 import { Paths } from "@/Paths";
 import { renderCompWithReduxAndRoute } from "@/test-utils/jest-utils";
-import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
+import { getMockedStore, modifiedState, stateVersions } from "@/test-utils/store-mock";
 import PreviewWorker from "@/workers/previewWorker?worker";
 
 import { usePlanGenPreview } from "../usePlanGenPreview";
 
 jest.mock("@/workers/previewWorker?worker");
 
-describe("usePlanGenPreview hook", () => {
-  const planSheetsState = modifiedStateV1({
-    ...mockStoreV1.planSheets.v1,
-    diagrams: diagrams,
-    pages: pages,
-  });
+describe.each(stateVersions)("usePlanGenPreview hook state%s", (version) => {
+  const planSheetsState = modifiedState(
+    {
+      ...getMockedStore(version),
+      diagrams: diagrams,
+      pages: pages,
+    },
+    version,
+  );
 
   let startPreview: () => Promise<void>;
   let PreviewExportCanvas: React.FC;
