@@ -2,6 +2,7 @@ import { DiagramDTO, PageDTO } from "@linz/survey-plan-generation-api-client";
 import { fireEvent, screen } from "@testing-library/react";
 
 import { CSS_PIXELS_PER_CM } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
+import { ElementToMove, MoveElementToPageModal } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode, PlanSheetType } from "@/components/PlanSheets/PlanSheetType";
 import { defaultOptionalVisibileLabelTypes } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
@@ -9,8 +10,6 @@ import { PlanSheetsState } from "@/redux/planSheets/planSheetsSlice";
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { extractPast, extractState, modifiedState, stateVersions } from "@/test-utils/store-mock";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
-
-import { ElementToMove, MoveElementToPageModal } from "../MoveElementToPageModal";
 
 describe.each(stateVersions)("MoveDiagramToPageModal state%s", (version) => {
   const page1 = { id: 4, pageNumber: 1, pageType: PlanSheetType.TITLE } as PageDTO;

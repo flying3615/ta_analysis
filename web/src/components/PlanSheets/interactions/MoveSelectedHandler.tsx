@@ -19,6 +19,7 @@ import { SelectHandlerMode } from "@/components/PlanSheets/interactions/SelectEl
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useAdjustLoadedPlanData } from "@/hooks/useAdjustLoadedPlanData";
+import useChildDiagLabelMoveSyncEnabled from "@/hooks/useChildDiagLabelMoveSyncEnabled";
 import { useLineLabelAdjust } from "@/hooks/useLineLabelAdjust";
 import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
@@ -89,13 +90,16 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
   const adjustLabelsWithLine = useLineLabelAdjust();
   const { adjustLabelNodes } = useAdjustLoadedPlanData();
   const dispatch = useAppDispatch();
+  const isChildDiagLabelMoveSyncEnabled = useChildDiagLabelMoveSyncEnabled();
+
   useEffect(() => {
     if (!cyto || !cytoCanvas || !cytoCoordMapper) {
       return;
     }
     // move selected, connected nodes, and related labels
     const movingElements = selectedElements.union(selectedElements.connectedNodes());
-    movingElements.merge(getRelatedLabels(movingElements));
+
+    movingElements.merge(getRelatedLabels(movingElements, isChildDiagLabelMoveSyncEnabled));
     const adjacentEdges = movingElements.connectedEdges().difference(movingElements);
 
     let moveControls: CollectionReturnValue | undefined;
@@ -257,6 +261,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
     mode,
     dispatch,
     multiSelectEnabled,
+    isChildDiagLabelMoveSyncEnabled,
   ]);
 
   return <></>;

@@ -1,13 +1,24 @@
 import { BoundingBox12, CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
 
-export function getRelatedLabels(elements: CollectionReturnValue): CollectionReturnValue {
+export function getRelatedLabels(
+  elements: CollectionReturnValue,
+  isChildDiagLabelMoveSyncEnabled?: boolean,
+): CollectionReturnValue {
   const related = elements.cy().collection();
   elements.forEach((ele) => {
     if (ele.isEdge() && ele.data("lineId")) {
       related.merge(`[featureId=${ele.data("lineId")}]`);
     }
+
     if (ele.isNode() && !isNaN(+ele.id())) {
       related.merge(`[featureId=${ele.id()}]`);
+    } else if (
+      isChildDiagLabelMoveSyncEnabled &&
+      ele.isNode() &&
+      (ele.data("labelType") === "childDiagram" || ele.data("labelType") === "childDiagramPage")
+    ) {
+      // include related childDiagram/childDiagramPage labels
+      related.merge(ele.cy().$id(`LAB_${ele.data("featureId")}`));
     }
   });
   return related;
@@ -18,7 +29,6 @@ export function getRelatedElements(ele: EdgeSingular | NodeSingular): Collection
     // include related broken/irregular segments
     return ele.cy().$(`edge[lineId='${ele.data("lineId")}']`);
   }
-
   const featureId = ele.data("featureId") as string;
   const symbolId = ele.data("symbolId") as string;
 

@@ -228,10 +228,20 @@ export const extractDiagramNodes = (
       : diagram.labels.filter((l) => l.labelType === "diagramType").map(diagramLabelToNode);
     const childDiagLabels: INodeData[] =
       diagram.childDiagrams?.flatMap((childDiagram) => {
+        const updatedChildLabels = childDiagram.labels.map((childLabel) => {
+          if (childLabel.labelType === "childDiagram") {
+            const matchingPage = childDiagram.labels.find((d) => d.labelType === "childDiagramPage");
+            return { ...childLabel, featureId: matchingPage ? matchingPage.id : undefined };
+          } else if (childLabel.labelType === "childDiagramPage") {
+            const matchingDiagram = childDiagram.labels.find((d) => d.labelType === "childDiagram");
+            return { ...childLabel, featureId: matchingDiagram ? matchingDiagram.id : undefined };
+          }
+          return childLabel;
+        });
         const pageDetails = lookupTbl ? lookupTbl[childDiagram.diagramRef] : null;
         const pageNumber = pageDetails ? pageDetails.page.pageNumber.toString() : "?";
         return (
-          childDiagram?.labels
+          updatedChildLabels
             ?.map((label) => childDiagramLabelToNode(label, pageNumber))
             ?.map(setElementType(PlanElementType.CHILD_DIAGRAM_LABELS)) ?? []
         );
@@ -316,7 +326,7 @@ export const lineToEdges = (line: LineDTO, diagramId: number): IEdgeData[] => {
 
 const baseLineToEdges = (line: LineDTO): IEdgeData[] => {
   const coords = line.coordRefs;
-  // zip the coordinate arrays together to create  duplicate pairs of coordinates
+  // zip the coordinate arrays together to create duplicate pairs of coordinates
   // remove the first and last elements that terminate edges
   // turn the array into chunks of two
   return chunk(flatten(zip(coords, coords)).slice(1, -1), 2).map(

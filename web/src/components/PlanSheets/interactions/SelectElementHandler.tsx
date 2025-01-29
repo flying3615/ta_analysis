@@ -5,6 +5,7 @@ import { Tooltips } from "@/components/PlanSheets/interactions/Tooltips";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import useChildDiagLabelMoveSyncEnabled from "@/hooks/useChildDiagLabelMoveSyncEnabled";
 import { useCytoscapeContext } from "@/hooks/useCytoscapeContext";
 import { useEscapeKey } from "@/hooks/useEscape";
 import { useSelectTargetLine } from "@/hooks/useSelectTargetLine";
@@ -71,6 +72,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   const { result: isCoordinatesMultiSelectEnabled } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT,
   );
+  const isChildDiagLabelMoveSyncEnabled = useChildDiagLabelMoveSyncEnabled();
 
   const multiSelectEnabled =
     mode === PlanMode.SelectLabel ||
@@ -188,13 +190,13 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       return;
     }
 
-    const relatedLabels = getRelatedLabels(selected);
+    const relatedLabels = getRelatedLabels(selected, isChildDiagLabelMoveSyncEnabled);
     relatedLabels.addClass(CLASS_RELATED_ELEMENT_SELECTED);
 
     return () => {
       relatedLabels.removeClass(CLASS_RELATED_ELEMENT_SELECTED);
     };
-  }, [cyto, selected]);
+  }, [cyto, isChildDiagLabelMoveSyncEnabled, selected]);
 
   return (
     <>
