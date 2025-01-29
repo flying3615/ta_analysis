@@ -6,7 +6,7 @@ import { userEvent } from "@storybook/testing-library";
 import { Provider } from "react-redux";
 
 import { setupStore } from "@/redux/store";
-import { mockStoreV1, modifiedStateV1 } from "@/test-utils/store-mock";
+import { getMockedStore, modifiedState } from "@/test-utils/store-mock";
 import { PanelInstanceContextMock } from "@/test-utils/storybook-utils";
 
 import { defaultOptionalVisibileLabelTypes } from "../properties/LabelPropertiesUtils";
@@ -17,12 +17,12 @@ export default {
   component: ViewLabelTypes,
 } as Meta<typeof ViewLabelTypes>;
 
-const PanelTemplate = () => {
+const PanelTemplate = ({ version = "V1" }: { version?: "V1" | "V2" }) => {
   return (
     <Provider
       store={setupStore({
-        ...mockStoreV1,
-        planSheets: { ...modifiedStateV1({ viewableLabelTypes: defaultOptionalVisibileLabelTypes }) },
+        ...getMockedStore(version).preloadedState,
+        planSheets: { ...modifiedState({ viewableLabelTypes: defaultOptionalVisibileLabelTypes }, version) },
       })}
     >
       <PanelsContextProvider>
@@ -36,15 +36,20 @@ const PanelTemplate = () => {
 
 type Story = StoryObj<typeof PanelTemplate>;
 
-const Default: Story = {
+export const Default: Story = {
   render: PanelTemplate,
-  args: { data: [] },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByText("View labels")).toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "Cancel" })).toBeEnabled();
     await expect(canvas.getByRole("button", { name: "OK" })).toBeDisabled();
   },
+};
+
+export const DefaultSliceV2: Story = {
+  ...Default,
+  name: "Default SliceV2",
+  args: { version: "V2" },
 };
 
 export const ViewLabelsAllCheckboxInteraction: Story = {
@@ -86,4 +91,10 @@ export const ViewLabelsAllCheckboxInteraction: Story = {
     await userEvent.click(canvas.getByRole("checkbox", { name: /observation codes/i })); // turn observation codes on
     await expect(canvas.getByRole("checkbox", { name: "All Check" })).toBeChecked(); // All checkbox is checked
   },
+};
+
+export const ViewLabelsAllCheckboxInteractionSliceV2: Story = {
+  ...ViewLabelsAllCheckboxInteraction,
+  name: "View Labels All Checkbox Interaction SliceV2",
+  args: { version: "V2" },
 };

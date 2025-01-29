@@ -9,7 +9,7 @@ import PlanElementProperty from "@/components/PlanSheets/PlanElementProperty";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import LabelProperties, { LabelPropertiesData } from "@/components/PlanSheets/properties/LabelProperties";
 import { setupStore } from "@/redux/store";
-import { mockStoreV1 } from "@/test-utils/store-mock";
+import { getMockedStore } from "@/test-utils/store-mock";
 import { PanelInstanceContextMock, sleep } from "@/test-utils/storybook-utils";
 
 export default {
@@ -17,9 +17,9 @@ export default {
   component: PlanElementProperty,
 } as Meta<typeof PlanElementProperty>;
 
-const PanelTemplate = ({ data }: { data: LabelPropertiesData[] }) => {
+const PanelTemplate = ({ data, version = "V1" }: { data: LabelPropertiesData[]; version?: "V1" | "V2" }) => {
   return (
-    <Provider store={setupStore({ ...mockStoreV1 })}>
+    <Provider store={setupStore({ ...getMockedStore(version).preloadedState })}>
       <PanelsContextProvider>
         <PanelInstanceContextMock>
           <Panel
@@ -63,6 +63,12 @@ export const Default: Story = {
   },
 };
 
+export const DefaultSliceV2: Story = {
+  ...Default,
+  name: "Default SliceV2",
+  args: { ...Default.args, version: "V2" },
+};
+
 const pageLabel: LabelPropertiesData[] = [
   {
     id: "1",
@@ -102,6 +108,12 @@ export const PageLabel: Story = {
       });
     await expect(await canvas.findByLabelText("Border")).not.toBeChecked();
   },
+};
+
+export const PageLabelSliceV2: Story = {
+  ...PageLabel,
+  name: "Page Label SliceV2",
+  args: { ...PageLabel.args, version: "V2" },
 };
 
 const diagramLabelWithBorder: LabelPropertiesData[] = [
@@ -144,6 +156,12 @@ export const DiagramLabelWithBorder: Story = {
     await expect(await canvas.findByLabelText("Border")).toBeChecked();
     await expect(await canvas.findByDisplayValue("1.4")).toBeEnabled();
   },
+};
+
+export const DiagramLabelWithBorderSliceV2: Story = {
+  ...DiagramLabelWithBorder,
+  name: "Diagram Label With Border SliceV2",
+  args: { ...DiagramLabelWithBorder.args, version: "V2" },
 };
 
 const parcelAppelationLabelWithBorder: LabelPropertiesData[] = [
@@ -193,6 +211,12 @@ export const ParcelAppelationLabelWithBorder: Story = {
   },
 };
 
+export const ParcelAppelationLabelWithBorderSliceV2: Story = {
+  ...ParcelAppelationLabelWithBorder,
+  name: "Parcel Appelation Label With Border SliceV2",
+  args: { ...ParcelAppelationLabelWithBorder.args, version: "V2" },
+};
+
 const observationBearingDiagramLabelWith00Precision: LabelPropertiesData[] = [
   {
     id: "1",
@@ -236,6 +260,12 @@ export const ObservationBearingDiagramLabelWith00Precision: Story = {
   },
 };
 
+export const ObservationBearingDiagramLabelWith00PrecisionSliceV2: Story = {
+  ...ObservationBearingDiagramLabelWith00Precision,
+  name: "Observation Bearing Diagram Label With 00 Precision SliceV2",
+  args: { ...ObservationBearingDiagramLabelWith00Precision.args, version: "V2" },
+};
+
 const observationBearingDiagramLabelWithout00Precision: LabelPropertiesData[] = [
   {
     id: "1",
@@ -276,6 +306,12 @@ export const ObservationBearingDiagramLabelWithout00Precision: Story = {
     await expect(await canvas.findByLabelText("Border")).toBeChecked();
     await expect(await canvas.findByDisplayValue("1.4")).toBeEnabled();
   },
+};
+
+export const ObservationBearingDiagramLabelWithout00PrecisionSliceV2: Story = {
+  ...ObservationBearingDiagramLabelWithout00Precision,
+  name: "Observation Bearing Diagram Label Without 00 Precision SliceV2",
+  args: { ...ObservationBearingDiagramLabelWithout00Precision.args, version: "V2" },
 };
 
 const pageAndParcelAppellationLabelWithPartialCheckbox: LabelPropertiesData[] = [
@@ -332,6 +368,12 @@ export const PageAndParcelAppellationLabelWithPartialCheckbox: Story = {
   },
 };
 
+export const PageAndParcelAppellationLabelWithPartialCheckboxSliceV2: Story = {
+  ...PageAndParcelAppellationLabelWithPartialCheckbox,
+  name: "Page And Parcel Appellation Label With Partial Checkbox SliceV2",
+  args: { ...PageAndParcelAppellationLabelWithPartialCheckbox.args, version: "V2" },
+};
+
 const pageAndDiagramLabelWithPartialCheckbox: LabelPropertiesData[] = [
   {
     id: "1",
@@ -386,6 +428,12 @@ export const PageAndDiagramLabelWithPartialCheckbox: Story = {
   },
 };
 
+export const PageAndDiagramLabelWithPartialCheckboxSliceV2: Story = {
+  ...PageAndDiagramLabelWithPartialCheckbox,
+  name: "Page And Diagram Label With Partial Checkbox SliceV2",
+  args: { ...PageAndDiagramLabelWithPartialCheckbox.args, version: "V2" },
+};
+
 const multiplePageLabelsWithDifferentFieldValues: LabelPropertiesData[] = [
   {
     id: "1",
@@ -437,6 +485,12 @@ export const MultiplePageLabelsWithDifferentFieldValues: Story = {
       });
     await expect(await canvas.findByLabelText("Border")).not.toBeChecked();
   },
+};
+
+export const MultiplePageLabelsWithDifferentFieldValuesSliceV2: Story = {
+  ...MultiplePageLabelsWithDifferentFieldValues,
+  name: "Multiple Page Labels With Different Field Values SliceV2",
+  args: { ...MultiplePageLabelsWithDifferentFieldValues.args, version: "V2" },
 };
 
 const multipleObservationBearingDiagramLabelWith00Precision: LabelPropertiesData[] = [
@@ -493,6 +547,12 @@ export const MultipleObservationBearingDiagramLabelWith00Precision: Story = {
   },
 };
 
+export const MultipleObservationBearingDiagramLabelWith00PrecisionSliceV2: Story = {
+  ...MultipleObservationBearingDiagramLabelWith00Precision,
+  name: "Multiple Observation Bearing Diagram Label With 00 Precision SliceV2",
+  args: { ...MultipleObservationBearingDiagramLabelWith00Precision.args, version: "V2" },
+};
+
 const multipleObservationBearingDiagramLabelWithAndWithout00Precision: LabelPropertiesData[] = [
   {
     id: "1",
@@ -542,4 +602,10 @@ export const MultipleObservationBearingDiagramLabelWithAndWithout00Precision: St
         void expect(button).toBeDisabled();
       });
   },
+};
+
+export const MultipleObservationBearingDiagramLabelWithAndWithout00PrecisionSliceV2: Story = {
+  ...MultipleObservationBearingDiagramLabelWithAndWithout00Precision,
+  name: "Multiple Observation Bearing Diagram Label With And Without 00 Precision SliceV2",
+  args: { ...MultipleObservationBearingDiagramLabelWithAndWithout00Precision.args, version: "V2" },
 };
