@@ -26,6 +26,7 @@ import SidePanel from "@/components/SidePanel/SidePanel";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useAsyncTaskHandler } from "@/hooks/useAsyncTaskHandler";
 import { usePlanAutoRecover } from "@/hooks/usePlanAutoRecover";
+import { useRegenerationRequiredCheck } from "@/hooks/useRegenerationRequiredCheck";
 import { useTransactionId } from "@/hooks/useTransactionId";
 import {
   selectActiveDiagramsEdgesAndNodes,
@@ -62,11 +63,14 @@ const PlanSheets = () => {
   const viewableLabelTypes = useAppSelector(getViewableLabelTypes);
   const { result: withBackgroundErrors } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS);
 
+  const { result: checkRegenerationStatusEnabled } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_CHECK_REGENERATION_STATUS,
+  );
   const navigate = useNavigate();
   const { showPrefabModal, modalOwnerRef } = useLuiModalPrefab();
 
   const [diagramsPanelOpen, setDiagramsPanelOpen] = useState<boolean>(true);
-
+  const [isPlanDataReady, setIsPlanDataReady] = useState(false);
   const {
     data: activeDiagrams,
     edges: diagramEdgeData,
@@ -76,6 +80,7 @@ const PlanSheets = () => {
   const { edges: pageConfigsEdgeData, nodes: pageConfigsNodeData } = useAppSelector(selectPageConfigEdgesAndNodes);
 
   const regeneratePlanMutation = useRegeneratePlanMutation(transactionId);
+  const { mutate: regenerateMutate, reset: resetRegeneration } = regeneratePlanMutation;
   const {
     isPending: isRegenerating,
     isSuccess: regenerateDoneOrNotNeeded,
@@ -85,7 +90,15 @@ const PlanSheets = () => {
     isInterrupted: regenerationInterrupted,
     error: regenerateApiError,
   } = useAsyncTaskHandler(regeneratePlanMutation);
-
+  useRegenerationRequiredCheck({
+    transactionId,
+    regenComplete: regenerateDoneOrNotNeeded,
+    regenerateMutate,
+    resetRegeneration,
+    setIsPlanDataReady,
+    showPrefabModal,
+    checkRegenerationStatusEnabled,
+  });
   useEffect(() => {
     regeneratePlanMutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +165,7 @@ const PlanSheets = () => {
     enabled: regenerateDoneOrNotNeeded, // Don't fetch features until the dataset is prepared
   });
   const isAutoRecoverReady = usePlanAutoRecover(transactionId, planData);
-  const [isPlanDataReady, setIsPlanDataReady] = useState(false);
+
   useEffect(() => {
     if (
       isAutoRecoverReady &&

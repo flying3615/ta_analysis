@@ -21,3 +21,10 @@
   border-top: 1px solid lui.$dew;
   margin: lui.$unit-xs 0;
 }
+
+.PlanSheets-regen-modal {
+  .LuiModalAsync-content {
+    max-width: 480px;
+    min-width: 288px;
+  }
+}
