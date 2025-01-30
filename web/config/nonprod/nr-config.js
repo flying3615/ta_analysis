@@ -1,5 +1,5 @@
 
-;window.NREUM||(NREUM={});NREUM.init={distributed_tracing:{enabled:true,cors_use_newrelic_header:true,cors_use_tracecontext_headers:true,allowed_origins:['https://api.dev.landonline.govt.nz']},privacy:{cookies_enabled:true},ajax:{deny_list:["bam.nr-data.net"]}};
+;window.NREUM||(NREUM={});NREUM.init={distributed_tracing:{enabled:true},privacy:{cookies_enabled:true},ajax:{deny_list:["bam.nr-data.net"]}};
 
 ;NREUM.loader_config={accountID:"2592049",trustKey:"2369770",agentID:"1835041279",licenseKey:"NRBR-0357aef4b6d34b34aff",applicationID:"1835041279"};
 ;NREUM.info={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",licenseKey:"NRBR-0357aef4b6d34b34aff",applicationID:"1835041279",sa:1};
