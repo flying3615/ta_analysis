@@ -11,6 +11,7 @@ import {
   InputEventObject,
   NodeDefinition,
   Position as CytoscapePosition,
+  Position,
 } from "cytoscape";
 import { useEffect } from "react";
 
@@ -25,12 +26,21 @@ import { usePlanSheetsDispatch } from "@/hooks/usePlanSheetsDispatch";
 import { BROKEN_LINE_COORD } from "@/modules/plan/extractGraphData";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
 import { setSelectedElementIds } from "@/redux/planSheets/planSheetsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { moveExtent } from "./moveAndResizeUtil";
-import { getMoveElementsExtent, getRelatedLabels } from "./selectUtil";
+import {
+  ELEMENT_CLASS_MOVE_CONTROL,
+  ELEMENT_SELECTOR_MOVE_CONTROL,
+  getMoveElementsExtent,
+  getRelatedLabels,
+  isMovementOverThreshold,
+} from "./selectUtil";
 
 export interface SelectedElementProps {
   selectedElements: CollectionReturnValue;
+  mouseDownSelectAndDragStart?: Position;
   mode?: SelectHandlerMode;
   multiSelectEnabled?: boolean;
 }
@@ -39,11 +49,8 @@ export interface SelectedElementProps {
 const CONTAINER_CLASS_MOVABLE = "element-movable";
 const CONTAINER_CLASS_MOVING = "element-moving";
 
-const ELEMENT_CLASS_MOVE_CONTROL = "element-move-control"; // allow move
 const ELEMENT_CLASS_MOVE_HIDE = "transparent"; // do not show
 const ELEMENT_CLASS_MOVE_VECTOR = "element-move-vector"; // vector showing movement
-
-const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
 
 /**
  * MoveSelectedHandler allows user to move selected elements.
@@ -77,7 +84,12 @@ const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
  *   selected elements that when clicked can start the move.
  *
  */
-export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled }: SelectedElementProps) {
+export function MoveSelectedHandler({
+  selectedElements,
+  mode,
+  multiSelectEnabled,
+  mouseDownSelectAndDragStart,
+}: SelectedElementProps) {
   const {
     cyto,
     cytoCanvas,
@@ -90,6 +102,9 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
   const adjustLabelsWithLine = useLineLabelAdjust();
   const { adjustLabelNodes } = useAdjustLoadedPlanData();
   const dispatch = useAppDispatch();
+  const { result: isMouseDownDragElementsEnabled } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MOUSE_DOWN_DRAG_ELEMENTS,
+  );
   const isChildDiagLabelMoveSyncEnabled = useChildDiagLabelMoveSyncEnabled();
 
   useEffect(() => {
@@ -112,12 +127,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
       cytoCanvas.classList.add(CONTAINER_CLASS_MOVABLE);
     };
 
-    const beginMove = (event: EventObjectNode | EventObjectEdge) => {
-      if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
-        // only start move if ctrl/shift not pressed
-        return;
-      }
-
+    const beginMoveFrom = (startPosition: Position) => {
       let offset: number;
       if (mode === PlanMode.SelectLine) {
         // Moving page lines needs to be different to other things like labels because the "offset" technique won't
@@ -138,7 +148,7 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
       };
 
       moveControls = cyto.add(getMoveControlElements(movingElements, adjacentEdges));
-      moveStart = event.position;
+      moveStart = startPosition;
       moveStartPositions = getPositions(movingElements.union(adjacentEdges));
 
       adjacentEdges.addClass(ELEMENT_CLASS_MOVE_HIDE);
@@ -147,6 +157,14 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
       cyto.userPanningEnabled(false);
       cyto.on("mousemove", updateMove);
       cyto.on("mouseup", endMove);
+    };
+
+    const beginMove = (event: EventObjectNode | EventObjectEdge) => {
+      if (event.originalEvent.ctrlKey || event.originalEvent.shiftKey) {
+        // only start move if ctrl/shift not pressed
+        return;
+      }
+      beginMoveFrom(event.position);
     };
 
     const cleanupMove = () => {
@@ -187,7 +205,6 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
         const changedNodes = [...movingData.nodes, ...adjustedLabels];
 
         const changedNodesInsideBounds = adjustLabelNodes(changedNodes, diagrams);
-
         updateActiveDiagramsAndPage({ nodes: changedNodesInsideBounds, edges: movingData.edges });
       }
       cleanupMove();
@@ -223,8 +240,8 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
       const dy = newExtent.y1 - moveElementsExtent.y1;
       setPositions(movingElements, moveStartPositions, dx, dy);
 
-      if (dx === 0 && dy === 0) {
-        // no move
+      if (!isMovementOverThreshold(dx, dy)) {
+        // no move: Prevent unintentional moves on mouse down
         return;
       }
       return { x: dx, y: dy };
@@ -232,6 +249,9 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
 
     addContainerClass();
     selectedElements.addClass(ELEMENT_CLASS_MOVE_CONTROL).grabify();
+    if (isMouseDownDragElementsEnabled && mouseDownSelectAndDragStart) {
+      beginMoveFrom(mouseDownSelectAndDragStart);
+    }
 
     cyto.on("mousedown", ELEMENT_SELECTOR_MOVE_CONTROL, beginMove);
     cyto.on("mouseout", ELEMENT_SELECTOR_MOVE_CONTROL, removeContainerClass);
@@ -259,8 +279,10 @@ export function MoveSelectedHandler({ selectedElements, mode, multiSelectEnabled
     updateActiveDiagramsAndPage,
     adjustLabelNodes,
     mode,
+    mouseDownSelectAndDragStart,
     dispatch,
     multiSelectEnabled,
+    isMouseDownDragElementsEnabled,
     isChildDiagLabelMoveSyncEnabled,
   ]);
 

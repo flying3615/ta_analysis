@@ -463,9 +463,7 @@ describe("MoveSelectedHandler", () => {
     callEffectFn();
 
     mouseDownAtPosition(node10006CytoscapePosition);
-
     const newCytoscapePosition = movePointInData(node10006CytoscapePosition, selectedNodesForLabelMove);
-
     mouseUpAtPosition(newCytoscapePosition);
 
     expect(updatedElements?.nodes).toHaveLength(1); // just the label

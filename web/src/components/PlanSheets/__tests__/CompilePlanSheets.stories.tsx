@@ -22,7 +22,7 @@ const CompileIt = (fileName: string, snapShot = true): Story => ({
     await clearCompileImages();
     return clearCompileImages;
   },
-  render: () => <CompileImagesViewer imageFilename={fileName} planSheetsTemplate={PlanSheetsTemplate()} />,
+  render: () => <CompileImagesViewer imageFilename={fileName} planSheetsTemplate={PlanSheetsTemplate({})} />,
   parameters: {
     chromatic: {
       viewports: [800],

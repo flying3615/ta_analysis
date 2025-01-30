@@ -1,4 +1,18 @@
-import { BoundingBox12, CollectionReturnValue, EdgeSingular, NodeSingular } from "cytoscape";
+import {
+  BoundingBox12,
+  CollectionReturnValue,
+  EdgeSingular,
+  EventObjectEdge,
+  EventObjectNode,
+  NodeSingular,
+  Position,
+} from "cytoscape";
+
+export const ELEMENT_CLASS_MOVE_CONTROL = "element-move-control"; // allow move
+export const ELEMENT_SELECTOR_MOVE_CONTROL = `.${ELEMENT_CLASS_MOVE_CONTROL}`;
+// Prevent unintentional moves on mouse down drag
+export const DX_MOVE_THRESHOLD = 2;
+export const DY_MOVE_THRESHOLD = 2;
 
 export function getRelatedLabels(
   elements: CollectionReturnValue,
@@ -124,4 +138,48 @@ export function getMoveElementsExtent(selectedElements: CollectionReturnValue): 
     }
   });
   return { x1, y1, x2, y2 };
+}
+
+export function isMultiSelectEvent(event: EventObjectEdge | EventObjectNode) {
+  return event.originalEvent.ctrlKey || event.originalEvent.shiftKey;
+}
+
+export function isMovementOverThreshold(dx: number, dy: number) {
+  return Math.abs(dx) > DX_MOVE_THRESHOLD || Math.abs(dy) > DY_MOVE_THRESHOLD;
+}
+
+export function addSelectedElemtId(elementId: string, selectedElementIds: string[]) {
+  return !selectedElementIds.includes(elementId) ? [...selectedElementIds, elementId] : selectedElementIds;
+}
+
+export function replaceSelection(
+  previousSelection: CollectionReturnValue | undefined,
+  newSelection: CollectionReturnValue,
+) {
+  const prevSelectionIds = (previousSelection ?? []).map((el) => el.id());
+  const newSelectionIds = newSelection.map((el) => el.id());
+  return previousSelection?.length === newSelection.length &&
+    newSelectionIds.every((item) => prevSelectionIds.includes(item))
+    ? previousSelection
+    : newSelection;
+}
+
+export function areIdsEqual(previousSelection: CollectionReturnValue | undefined, newSelection: CollectionReturnValue) {
+  const previousSelectionIds = (previousSelection ?? []).map((el) => el.id());
+  const newSelectionIds = newSelection.map((el) => el.id());
+  return (
+    (previousSelection?.length || 0) === newSelection.length &&
+    newSelectionIds.every((item) => previousSelectionIds.includes(item))
+  );
+}
+
+export function replacePosition(previousPosition: Position | undefined, newPosition: Position | undefined) {
+  return arePositionsEqual(previousPosition, newPosition) ? previousPosition : newPosition;
+}
+
+export function arePositionsEqual(previousPosition: Position | undefined, newPosition: Position | undefined) {
+  return (
+    (!previousPosition && !newPosition) ||
+    (previousPosition?.x === newPosition?.x && previousPosition?.y === newPosition?.y)
+  );
 }

@@ -9,6 +9,8 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION_LINES_MULTISELECT = "survey-plan-generation-lines-multi-select",
   SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT = "survey-plan-generation-coordinates-multi-select",
   SURVEY_PLAN_GENERATION_BACKGROUND_ERRORS = "survey-plan-generation-background-errors",
+  SURVEY_PLAN_GENERATION_MOUSE_DOWN_DRAG_ELEMENTS = "survey-plan-generation-mouse-down-drag-elements",
+  SURVEY_PLAN_GENERATION_MOUSE_DOWN_DRAG_DIAGRAMS = "survey-plan-generation-mouse-down-drag-diagrams",
   SURVEY_PLAN_GENERATION_LABEL_MOVE_TO_PAGE = "survey-plan-generation-label-move-to-page",
   SURVEY_PLAN_GENERATION_LINE_MOVE_TO_PAGE = "survey-plan-generation-line-move-to-page",
   SURVEY_PLAN_GENERATION_CHILD_DIAG_LABEL_MOVE_SYNC = "survey-plan-generation-child-diag-label-move-sync",

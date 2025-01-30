@@ -1,5 +1,5 @@
-import { CollectionReturnValue, EventObjectEdge, EventObjectNode } from "cytoscape";
-import { ReactElement, useCallback, useEffect, useState } from "react";
+import { CollectionReturnValue, EventObjectEdge, EventObjectNode, Position } from "cytoscape";
+import React, { ReactElement, useCallback, useEffect, useState } from "react";
 
 import { Tooltips } from "@/components/PlanSheets/interactions/Tooltips";
 import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
@@ -14,7 +14,14 @@ import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 
 import { MoveSelectedHandler } from "./MoveSelectedHandler";
-import { getRelatedElements, getRelatedLabels } from "./selectUtil";
+import {
+  ELEMENT_CLASS_MOVE_CONTROL,
+  getRelatedElements,
+  getRelatedLabels,
+  isMultiSelectEvent,
+  replacePosition,
+  replaceSelection,
+} from "./selectUtil";
 
 export type SelectHandlerMode =
   | PlanMode.SelectCoordinates
@@ -60,6 +67,20 @@ export interface SelectElementHandlerProps {
  * - broken node coordinate -> select line
  * - coordinate symbol -> select coordinate
  *
+ * Dragging a single element (and it's related elements) onMouseDown is enabled by explicitly selecting
+ * that element via a Cytoscape "mousedown" listener
+ * It's initial position is passed to MoveSelectedHandler and the beginMove is called immediately to set up theMoveControl Elements.
+ *
+ * The drag is only processed if the X or Y movement exceeds a threshold of 2 px (configured selectUtils D*_MOVE_THRESHOLD)
+ * This prevents the expensive deep clone when dispatched to redux occurring unintentionally.
+ *
+ * This explicit selecting of an element should not disrupt how we use Cytoscape selection in the app.
+ * However the effect on downstream Cyto event listeners needs to be accounted for.
+ * Cytoscape selection of the candidate element does not occur until AFTER all listeners have fired,
+ * Explicit selection means downstream listeners no longer see a candidate element for selection, but a fully selected element.
+ * e.g. SelectLabelHandler can no longer assume that if an element is already selected this must be the second click.
+ *  So it must now track how many times candidates are clicked and qualify as double-clicked.
+ *
  * @param param0
  * @returns
  */
@@ -67,10 +88,14 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   const { cyto, setSelectedElementIds } = useCytoscapeContext();
   const { handleLabelAlignment } = useSelectTargetLine();
   const [selected, setSelected] = useState<CollectionReturnValue | undefined>();
+  const [mouseDownSelectAndDragStart, setMouseDownSelectAndDragStart] = useState<Position>();
   const selectedElementIds: string[] = useAppSelector(getSelectedElementIds) as string[];
   const { result: isLinesMultiSelectEnabled } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_LINES_MULTISELECT);
   const { result: isCoordinatesMultiSelectEnabled } = useFeatureFlags(
     FEATUREFLAGS.SURVEY_PLAN_GENERATION_COORDINATES_MULTISELECT,
+  );
+  const { result: isMouseDownDragElementsEnabled } = useFeatureFlags(
+    FEATUREFLAGS.SURVEY_PLAN_GENERATION_MOUSE_DOWN_DRAG_ELEMENTS,
   );
   const isChildDiagLabelMoveSyncEnabled = useChildDiagLabelMoveSyncEnabled();
 
@@ -107,15 +132,15 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       return;
     }
 
-    const selection = cyto.$(":selected");
-    selection.forEach((ele) => {
+    const newSelection = cyto.$(":selected");
+    newSelection.forEach((ele) => {
       const related = getRelatedElements(ele);
-      if (related && !selection.contains(related)) {
-        selection.merge(related.select());
+      if (related && !newSelection.contains(related)) {
+        newSelection.merge(related.select());
       }
     });
 
-    setSelected(selection);
+    setSelected((prevSelection) => replaceSelection(prevSelection, newSelection));
   }, [cyto, setSelected]);
 
   useEscapeKey({ callback: onUnselect, enabled: true });
@@ -126,7 +151,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       return;
     }
     const onClick = (event: EventObjectEdge | EventObjectNode) => {
-      if (multiSelectEnabled && (event.originalEvent.ctrlKey || event.originalEvent.shiftKey)) {
+      if (multiSelectEnabled && isMultiSelectEvent(event)) {
         return;
       }
 
@@ -139,7 +164,8 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
 
       const selected = cyto.elements(":selected");
 
-      if (multiSelectEnabled && !selected.contains(clickedElement)) {
+      // This will only occur if isMouseDownDragElementsEnabled is false
+      if (!isMouseDownDragElementsEnabled && multiSelectEnabled && !selected.contains(clickedElement)) {
         // allow normal selection to occur
         return;
       }
@@ -151,12 +177,48 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       setSelected(keepSelected);
     };
 
+    const onMouseDown = (event: EventObjectEdge | EventObjectNode) => {
+      if (
+        (multiSelectEnabled && isMultiSelectEvent(event)) ||
+        // ignore elements already selected and tagged for move - defer to MoveSelectedHandler
+        (event.target?.hasClass && event.target.hasClass(ELEMENT_CLASS_MOVE_CONTROL))
+      ) {
+        return;
+      }
+
+      if (mode === PlanMode.SelectTargetLine) {
+        return;
+      }
+
+      const clickedElement = event.target;
+
+      const selected = cyto.elements(":selected");
+
+      if (selected.contains(clickedElement)) {
+        // allow MoveSelectHandler to process move
+        return;
+      }
+
+      selected.unselect();
+
+      clickedElement.select && clickedElement.select();
+
+      // Allow immediate drag
+      setMouseDownSelectAndDragStart((prevPosition) => replacePosition(prevPosition, event.position));
+    };
+
+    const onMouseUp = () => {
+      setMouseDownSelectAndDragStart(undefined);
+    };
+
     const selector = getSelector(mode);
     const selectableClass = getSelectableClass(mode);
 
     cyto.on("select", onSelect);
     cyto.on("unselect", onUnselect);
     cyto.on("click", selector, onClick);
+    isMouseDownDragElementsEnabled && cyto.on("mousedown", onMouseDown);
+    isMouseDownDragElementsEnabled && cyto.on("mouseup", onMouseUp);
     selectableClass && cyto.$(selector).addClass(selectableClass);
     cyto.$(selector).selectify().style("events", "yes");
     cyto.boxSelectionEnabled(multiSelectEnabled);
@@ -169,6 +231,7 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
       cyto?.off("select", onSelect);
       cyto?.off("unselect", onUnselect);
       cyto?.off("click", selector, onClick);
+      isMouseDownDragElementsEnabled && cyto?.off("mousedown", onMouseDown);
       cyto.$(selector).unselectify().style("events", "no");
 
       onUnselect();
@@ -177,11 +240,12 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
     cyto,
     handleLabelAlignment,
     mode,
+    onSelect,
     onUnselect,
     multiSelectEnabled,
     selectedElementIds,
     setSelectedElementIds,
-    onSelect,
+    isMouseDownDragElementsEnabled,
   ]);
 
   // highlight related labels
@@ -201,7 +265,12 @@ export function SelectElementHandler({ mode }: SelectElementHandlerProps): React
   return (
     <>
       {selected && (
-        <MoveSelectedHandler selectedElements={selected} mode={mode} multiSelectEnabled={multiSelectEnabled} />
+        <MoveSelectedHandler
+          selectedElements={selected}
+          mode={mode}
+          multiSelectEnabled={multiSelectEnabled}
+          mouseDownSelectAndDragStart={mouseDownSelectAndDragStart}
+        />
       )}
       <Tooltips mode={mode} />
     </>

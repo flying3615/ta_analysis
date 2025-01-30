@@ -4,6 +4,7 @@ import "@szhsin/react-menu/dist/index.css";
 import { MockUserContextProvider } from "@linz/lol-auth-js/mocks";
 import { PageDTOPageTypeEnum } from "@linz/survey-plan-generation-api-client";
 import { LuiModalAsyncContextProvider } from "@linzjs/windows";
+import { MockedFeaturesMap } from "@splitsoftware/splitio/types/splitio";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
 import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/testing-library";
@@ -27,6 +28,7 @@ import { Paths } from "@/Paths";
 import { replaceDiagrams, updatePages, UserEdit } from "@/redux/planSheets/planSheetsSlice";
 import { store } from "@/redux/store";
 import { FeatureFlagProvider } from "@/split-functionality/FeatureFlagContext";
+import { FEATUREFLAGS, mockedFeatureFlagsOn } from "@/split-functionality/FeatureFlags";
 import {
   checkCytoElementProperties,
   clickAtCoordinates,
@@ -57,14 +59,18 @@ export type Story = StoryObj<typeof PlanSheets>;
 
 const queryClient = new QueryClient();
 
-export const PlanSheetsTemplate = () => {
+export const PlanSheetsTemplate = ({
+  mockedFeatures = { [FEATUREFLAGS.SURVEY_PLAN_GENERATION_MOUSE_DOWN_DRAG_ELEMENTS]: "off" },
+}: {
+  mockedFeatures?: MockedFeaturesMap;
+}) => {
   return (
     <LuiModalAsyncContextProvider>
       <MockUserContextProvider
         user={singleFirmUserExtsurv1}
         initialSelectedFirmId={singleFirmUserExtsurv1.firms[0]?.id}
       >
-        <FeatureFlagProvider>
+        <FeatureFlagProvider mockedFeatures={{ ...mockedFeatureFlagsOn(), ...mockedFeatures }}>
           <QueryClientProvider client={queryClient}>
             <Provider store={cloneDeep(store)}>
               <ModalStoryWrapper>
