@@ -4,7 +4,12 @@ import { fireEvent, screen, waitFor, within } from "@storybook/testing-library";
 
 import { Default, Story } from "@/components/PlanSheets/__tests__/PlanSheets.stories";
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
-import { checkCytoElementProperties, tabletLandscapeParameters, TestCanvas } from "@/test-utils/storybook-utils";
+import {
+  checkCytoElementProperties,
+  pressEscapeKey,
+  tabletLandscapeParameters,
+  TestCanvas,
+} from "@/test-utils/storybook-utils";
 
 export default {
   title: "DiagramLabels",
@@ -39,11 +44,14 @@ export const RotateDiagramLabel: Story = {
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Select Labels");
+    await checkCytoElementProperties("#LAB_14", { textRotation: 0 });
     await test.contextMenu({ at: [213, 213], select: "Rotate label" }, "hover");
 
     const rangeInput = await within(canvasElement).findByRole("slider");
     fireEvent.change(rangeInput, { target: { value: 50 } });
     fireEvent.focusOut(rangeInput);
+    pressEscapeKey(canvasElement);
+    await checkCytoElementProperties("#LAB_14", { textRotation: 40 });
   },
 };
 

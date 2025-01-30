@@ -1,7 +1,8 @@
 import "./LabelRotationMenuItem.scss";
 
 import { NodeSingular } from "cytoscape";
-import { useMemo, useState } from "react";
+import { debounce } from "lodash";
+import { useMemo, useRef, useState } from "react";
 
 import { CytoscapeCoordinateMapper } from "@/components/CytoscapeCanvas/CytoscapeCoordinateMapper";
 import { getCorrectedLabelPosition } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
@@ -31,6 +32,29 @@ export const LabelRotationMenuItem = (props: {
   const currentAngle = (props.targetLabel.style("text-rotation") as string) ?? "0";
   const [labelAngle, setLabelAngle] = useState<number>(Math.round(convertToDegrees(currentAngle)));
 
+  const debouncedUpdate = useRef(
+    debounce((angle: number) => {
+      props.keepElementSelected(() => {
+        if (props.targetLabel.data("textRotation") !== angle) {
+          const positionCoord = getCorrectedLabelPosition(
+            cyto,
+            cytoCoordMapper,
+            props.targetLabel.id(),
+            "rotationSlide",
+            { rotationAngle: angle, id: Number(props.targetLabel.id().replace("LAB_", "")) },
+          );
+
+          const modifiedLabel = props.targetLabel.clone();
+          modifiedLabel.data({ textRotation: (360 - angle) % 360 });
+          if (positionCoord) {
+            modifiedLabel.position(positionCoord);
+          }
+          updateActiveDiagramsAndPageFromCytoData(modifiedLabel);
+        }
+      });
+    }, 300),
+  ).current;
+
   return (
     <div className="rotate-slider-menu">
       <span className="title">Drag slider to change label rotation</span>
@@ -48,28 +72,7 @@ export const LabelRotationMenuItem = (props: {
             angle -= 90;
             setLabelAngle(angle);
             props.targetLabel.style("text-rotation", `${angle}deg`);
-          }}
-          onBlur={() => {
-            props.keepElementSelected(() => {
-              if (props.targetLabel.data("textRotation") !== labelAngle) {
-                const positionCoord = getCorrectedLabelPosition(
-                  cyto,
-                  cytoCoordMapper,
-                  props.targetLabel.id(),
-                  "rotationSlide",
-                  { rotationAngle: labelAngle, id: Number(props.targetLabel.id().replace("LAB_", "")) },
-                );
-
-                // update a clone to avoid render flicker and reverse the angle within 0-360 range
-                const modifiedLabel = props.targetLabel.clone();
-                modifiedLabel.data({ textRotation: (360 - labelAngle) % 360 });
-                if (positionCoord) {
-                  modifiedLabel.position(positionCoord);
-                }
-
-                updateActiveDiagramsAndPageFromCytoData(modifiedLabel);
-              }
-            });
+            debouncedUpdate(angle);
           }}
         />
       </div>

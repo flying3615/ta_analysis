@@ -5,6 +5,18 @@ import { LabelRotationMenuItem } from "@/components/CytoscapeCanvas/ContextMenuI
 import { renderWithReduxProvider } from "@/test-utils/jest-utils";
 import { getMockedStore, stateVersions } from "@/test-utils/store-mock";
 
+// Mock debounce to call the function immediately
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+jest.mock("lodash", () => ({
+  ...jest.requireActual("lodash"),
+  debounce: (fn: (...args: never[]) => void) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    fn.cancel = jest.fn();
+    return fn;
+  },
+}));
+
 describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
   let targetStyles: Record<string, unknown>;
   let targetLabel: NodeSingular;
@@ -42,7 +54,6 @@ describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "45" } });
     expect(screen.getByText("45°")).toBeInTheDocument();
-    fireEvent.blur(slider);
     expect(keepElementSelectedMock).toHaveBeenCalled();
   });
 
@@ -54,7 +65,6 @@ describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "45" } });
     expect(styleMock).toHaveBeenCalledWith("text-rotation", "-45deg");
-    fireEvent.blur(slider);
     expect(keepElementSelectedMock).toHaveBeenCalled();
   });
 
@@ -66,7 +76,6 @@ describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "200" } });
     expect(styleMock).toHaveBeenCalledWith("text-rotation", "-45deg");
-    fireEvent.blur(slider);
     expect(keepElementSelectedMock).toHaveBeenCalled();
   });
 
@@ -78,7 +87,6 @@ describe.each(stateVersions)("LabelRotationMenuItem for state%s", (version) => {
     const slider = screen.getByRole("slider");
     fireEvent.change(slider, { target: { value: "-10" } });
     expect(styleMock).toHaveBeenCalledWith("text-rotation", "-90deg");
-    fireEvent.blur(slider);
     expect(keepElementSelectedMock).toHaveBeenCalled();
   });
 
