@@ -189,12 +189,14 @@ export const AlignLabelToLine: Story = {
   play: async ({ canvasElement }) => {
     const test = await TestCanvas.Create(canvasElement, "Select Labels");
 
+    await checkCytoElementProperties("#LAB_14", { textRotation: 0 });
     await test.contextMenu({ at: [213, 213] /* Page "Label 14" */, select: "Align label to line" });
     await test.leftClick([360, 250] /* whitespace */, "layer0-selectbox"); // Nothing should change
     await test.leftClick([98, 183] /* Angled line on left */, "layer0-selectbox");
 
     await test.waitForCytoscape();
     await expect(await countSelected()).toBe(1);
+    await checkCytoElementProperties("#LAB_14", { textRotation: 71.56 });
 
     await test.contextMenu({ at: [213, 213], select: "Properties" });
     await expect(test.findProperty("TextInput", "Text angle (degrees)").getAttribute("value")).toBe("18.2606");
@@ -203,7 +205,8 @@ export const AlignLabelToLine: Story = {
     await test.waitForCytoscape();
     await expect(await countSelected()).toBe(1);
 
-    await test.contextMenu({ at: [150, 250] /* Page "Label 13" */, select: "Align label to line" });
+    await test.leftClick([150, 250] /* Page "Label 14" */); // select page label 13
+    await test.contextMenu({ at: [350, 250] /* whitespace*/, select: "Align label to line" }); // right click on whitespace
     await test.hoverOver([96, 284] /* Angled line at lower left */);
     await sleep(500);
     await expect(await screen.findByRole("tooltip")).toHaveTextContent("Select a line to align label to");

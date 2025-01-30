@@ -1,7 +1,7 @@
 import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { degreesToRadians, point, polygon } from "@turf/helpers";
-import { EdgeSingular, NodeSingular } from "cytoscape";
+import { NodeSingular } from "cytoscape";
 import { isNil, last, round } from "lodash-es";
 import { useCallback } from "react";
 
@@ -247,13 +247,11 @@ export const useLabelsFunctions = () => {
     );
   };
 
-  const alignLabelToLine = (event: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) => {
-    if (event.target) {
-      const labelNodeId = event.target.data("id") as string;
-      if (!labelNodeId) return;
-      dispatch(setPlanMode(PlanMode.SelectTargetLine));
-      dispatch(setAlignedLabelNodeId({ nodeId: labelNodeId }));
-    }
+  const alignLabelToLine = (selectedLabel: cytoscape.CollectionArgument) => {
+    const labelNodeId = selectedLabel.data("id") as string;
+    if (!labelNodeId) return;
+    dispatch(setPlanMode(PlanMode.SelectTargetLine));
+    dispatch(setAlignedLabelNodeId({ nodeId: labelNodeId }));
   };
 
   const getStackedLabels = (targetLabel: NodeSingular, clickedPosition: cytoscape.Position) => {

@@ -352,8 +352,7 @@ export const usePlanSheetsContextMenu = () => {
           ? [
               {
                 title: "Align label to line",
-                callback: (e: { target: NodeSingular | EdgeSingular | null; cy: cytoscape.Core | undefined }) =>
-                  keepElementSelected(() => alignLabelToLine(e)),
+                callback: () => keepElementSelected(() => selectedLabels[0] && alignLabelToLine(selectedLabels[0])),
               },
             ]
           : []),
