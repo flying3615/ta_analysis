@@ -19,11 +19,11 @@ import {
 } from "@/test-utils/storybook-utils";
 
 export default {
-  title: "PlanSheets",
+  title: "PlanSheets/MoveCytoElements",
   component: PlanSheets,
 } as Meta<typeof PlanSheets>;
 
-// Enforces 'play' is provided as it is used in PlanSheetsUndo
+// Enforces `play` is provided as it is used in PlanSheetsUndo
 export const MoveDiagramLine: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
@@ -71,6 +71,29 @@ export const MoveDiagramLabel: Story = {
 };
 
 export const MoveChildDiagramLabel: Story & Required<Pick<Story, "play">> = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTitle("Select Labels"));
+    await sleep(500);
+
+    const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
+
+    // move childDiagramLabels
+    const position1 = { clientX: 510, clientY: 190 };
+    await selectAndDrag(getCytoscapeNodeLayer(cytoscapeElement), position1, {
+      clientX: position1.clientX + 150,
+      clientY: position1.clientY,
+    });
+    await sleep(500);
+
+    await checkCytoElementProperties("#LAB_41", { position: { x: 389.81, y: 132.94 } });
+    await checkCytoElementProperties("#LAB_42", { position: { x: 389.81, y: 143.63 } });
+  },
+};
+
+export const MoveMultipleChildDiagramLabel: Story & Required<Pick<Story, "play">> = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
@@ -269,7 +292,7 @@ const BrokenPeckLineLabels: Story = {
     },
   },
 };
-export const CoordTypeCalculated: Story = {
+export const MoveCoordTypeCalculated: Story = {
   ...BrokenPeckLineLabels,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
