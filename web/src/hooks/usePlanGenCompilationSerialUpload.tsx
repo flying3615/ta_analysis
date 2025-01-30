@@ -1,4 +1,3 @@
-import { accessToken } from "@linz/lol-auth-js";
 import { FileUploaderClient, IFileStatusResponse } from "@linz/secure-file-upload";
 import {
   FileUploadDetails,
@@ -340,10 +339,8 @@ export const usePlanGenCompilationSerialUpload = (props: {
         filesUlids: sfuResponse,
       };
 
-      const token = (await accessToken()) || "mocked-token";
       const planCompilationRequest: PlanCompileRequest = {
         transactionId: transactionId,
-        authorization: `Bearer ${token}`,
         planGraphicsCompileRequest: planGraphicsCompileRequest,
       };
       await compilePlan(planCompilationRequest);
