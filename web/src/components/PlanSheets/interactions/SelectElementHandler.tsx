@@ -53,7 +53,7 @@ const PAGE_COORDS = `node[elementType='${PlanElementType.COORDINATES}'][^diagram
 const SELECTOR_COORDINATES = `${DIAGRAM_COORDINATES}, ${PAGE_COORDS}, ${SYMBOL_LABELS}`;
 
 // Selector for the header button "Select lines" is both _page lines_ and _page coordinates_
-const SELECTOR_LINES = `${PAGE_LINES}, ${PAGE_COORDS}`;
+const SELECTOR_LINES = `${PAGE_LINES}, ${PAGE_COORDS}, ${DIAGRAM_COORDINATES}`;
 
 export interface SelectElementHandlerProps {
   // for generic select, make this optional and track selectMode in state after first feature selected.

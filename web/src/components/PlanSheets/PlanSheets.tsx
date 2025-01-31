@@ -11,6 +11,7 @@ import CytoscapeCanvas from "@/components/CytoscapeCanvas/CytoscapeCanvas";
 import { CytoscapeContextProvider } from "@/components/CytoscapeCanvas/CytoscapeContextProvider";
 import { NoPageMessage } from "@/components/Footer/NoPageMessage";
 import Header from "@/components/Header/Header";
+import { AddPageLineHandler } from "@/components/Lines/AddPageLineHandler";
 import { asyncTaskFailedErrorModal } from "@/components/modals/asyncTaskFailedErrorModal";
 import { errorWithResponseModal } from "@/components/modals/errorWithResponseModal";
 import {
@@ -18,7 +19,6 @@ import {
   errorFromSerializedError,
   unhandledErrorModal,
 } from "@/components/modals/unhandledErrorModal";
-import { AddPageLineHandler } from "@/components/PageLine/AddPageLineHandler";
 import { DiagramSelector } from "@/components/PlanSheets/DiagramSelector";
 import { MoveElementToPageModal } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";

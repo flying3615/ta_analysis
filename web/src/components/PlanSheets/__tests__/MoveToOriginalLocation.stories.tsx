@@ -195,8 +195,8 @@ export const MoveMultipleLinesToOrigin: Story = {
     await userEvent.click(await canvas.findByTitle("Select Lines"));
     await sleep(1500);
 
-    const position1 = { clientX: 411, clientY: 136 };
-    const position2 = { clientX: 411 + 160, clientY: 136 };
+    const position1 = { clientX: 411 + 30, clientY: 136 };
+    const position2 = { clientX: 411 + 190, clientY: 136 };
     const cytoscapeElement = await within(canvasElement).findByTestId("MainCytoscapeCanvas");
     await multiSelectAndDrag(
       getCytoscapeNodeLayer(cytoscapeElement),
@@ -208,8 +208,8 @@ export const MoveMultipleLinesToOrigin: Story = {
       2,
     );
     await sleep(1000);
-    await checkCytoElementProperties("#10001", { position: { x: 343.95, y: 53.51 } });
-    await checkCytoElementProperties("#10281", { position: { x: 317.23, y: 240.54 } });
+    await checkCytoElementProperties("#10001", { position: { x: 313, y: 53.51 } });
+    await checkCytoElementProperties("#10281", { position: { x: 106, y: 266 } });
 
     clickAtCoordinates(getCytoscapeNodeLayer(cytoscapeElement), [626, 110], RIGHT_MOUSE_BUTTON);
     await sleep(500);
