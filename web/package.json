@@ -126,7 +126,7 @@
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-react": "^4.3.2",
-    "allure-commandline": "^2.30.0",
+    "allure-commandline": "^2.32.0",
     "allure-jest": "^2.15.1",
     "allure-js-commons": "^2.15.1",
     "babel-jest": "^29.7.0",
