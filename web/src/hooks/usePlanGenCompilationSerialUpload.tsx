@@ -238,11 +238,8 @@ export const usePlanGenCompilationSerialUpload = (props: {
 
           const diagramEdgeData = filterEdgeData(extractDiagramEdges(currentPageDiagrams), "hide");
           const currentPageEdges = filterEdgeData(extractPageEdges([currentPage]), "hide");
-
-          // Filter out the page counter nodes and edges
-          const pageCounterId = "border_page_no";
-          const borderNodes = props.pageConfigsNodeData?.filter((node) => !node.id.startsWith(pageCounterId));
-          const borderEdges = props.pageConfigsEdgeData?.filter((edge) => !edge.sourceNodeId.startsWith(pageCounterId));
+          const borderNodes = props.pageConfigsNodeData;
+          const borderEdges = props.pageConfigsEdgeData;
 
           // We will add border at the backend instead of the frontend, so hide the border nodes and edges
           borderNodes?.forEach((node) => {
@@ -288,6 +285,17 @@ export const usePlanGenCompilationSerialUpload = (props: {
             firstTimeExport = false;
             continue;
           }
+
+          // Unhide the border nodes and edges
+          // We need to delete the property as setting to false doesn't work
+          borderNodes?.forEach((node) => {
+            delete node.properties.invisible;
+          });
+
+          borderEdges?.forEach((edge) => {
+            delete edge.properties.invisible;
+          });
+
           try {
             const image = await compressImage({ name: imageName, blob: jpg });
             const uploadedImageFileResponse = await secureFileUploadClient.uploadFile(image.compressedImage);

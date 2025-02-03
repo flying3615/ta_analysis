@@ -953,6 +953,7 @@ export const SelectMarkAndLinkedLabel: Story & Required<Pick<Story, "play">> = {
 
 export const AutoRecoverPopUpModal: Story = {
   ...Default,
+  parameters: { chromatic: { disable: true } },
   beforeEach: async () => {
     await clearAllRecoveryFiles();
     // setting mocks with recent lastModifiedAt date to trigger auto recover
