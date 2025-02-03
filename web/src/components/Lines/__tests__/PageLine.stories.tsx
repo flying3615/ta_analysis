@@ -8,6 +8,12 @@ import { PlanSheetWithHiddenObject } from "@/components/PlanSheets/__tests__/Vie
 import PlanSheets from "@/components/PlanSheets/PlanSheets";
 import { PlanMode } from "@/components/PlanSheets/PlanSheetType";
 import {
+  hiddenPageLine,
+  userCoordinate1,
+  userCoordinate2,
+} from "@/components/PlanSheets/properties/__tests__/data/LineData";
+import { createCustomMockPlanData, customPlanMock } from "@/test-utils/CustomMock";
+import {
   checkCytoElementProperties,
   countSelected,
   getCytoElement,
@@ -688,39 +694,115 @@ export const DeleteMultiplePageLines: Story = {
   },
 };
 
-export const MovePageLineToPage: Story = {
+export const MoveToPageDialogValidation: Story = {
+  ...Default,
+  play: async ({ canvasElement }) => {
+    const pageLinePosition: [number, number] = [675, 228];
+    const diagramLinePosition: [number, number] = [132, 283];
+    const whiteSpace: [number, number] = [200, 300];
+
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLine); // select line mode
+    await test.waitForCytoscape();
+
+    await test.contextMenu({ at: diagramLinePosition, select: "" });
+    await expect(screen.queryAllByText("Move to page")).toHaveLength(0); // move to page is not available for diagram line
+    await test.leftClick(pageLinePosition, "layer2-node", true); // control select page label
+    await expect(await countSelected()).toBe(2); // verify both line are selected
+    await test.contextMenu({ at: whiteSpace, select: "Move to page" }, "hover"); // bring up context menu and hover move to page
+    await expect(await countSelected()).toBe(1); // only the page line is selected
+
+    // Move page dialog default values and validations
+    const moveToPageMenuOption = await test.findMenuItem("Move to page");
+    await test.user.click(moveToPageMenuOption);
+    const anExistingPageRadio = await screen.findByRole("radio", { name: "An existing page" });
+    await expect(anExistingPageRadio).toBeChecked(); // An existing page radio button is selected by default
+    let enterPageNumber = await screen.findByPlaceholderText("Enter page number");
+    await expect(enterPageNumber).toBeVisible(); // Enter page number field is displayed
+    const aNewLastPage = await screen.findByRole("radio", { name: "A new last page" });
+    await test.user.click(aNewLastPage);
+    await test.waitForCytoscape();
+    await expect(enterPageNumber).not.toBeInTheDocument(); // Enter page number field is hidden
+    await test.user.click(anExistingPageRadio);
+    enterPageNumber = await screen.findByPlaceholderText("Enter page number");
+    await expect(enterPageNumber).toBeVisible(); // Enter page number field is displayed again
+
+    // page number field validations
+    await test.user.click(enterPageNumber);
+    void fireEvent.change(enterPageNumber, { target: { value: "3" } });
+    await expect(enterPageNumber).toHaveValue(3);
+    await expect(await screen.findByText("Enter a number between 1 and 2")).toBeInTheDocument();
+    await test.user.clear(enterPageNumber);
+    void fireEvent.change(enterPageNumber, { target: { value: "1" } });
+    await expect(enterPageNumber).toHaveValue(1);
+    await expect(await screen.findByText("Line is already on page 1")).toBeInTheDocument();
+
+    // selecting cancel closed the Move to page dialog and leave selected labels (page and diagram label)
+    const cancelButton = await screen.findByRole("button", { name: "Cancel" });
+    await test.user.click(cancelButton);
+    await expect(screen.queryAllByRole("heading", { name: "Move labels to page" })).toHaveLength(0); // move to page dialog is closed
+    await expect(await countSelected()).toBe(2); // both labels are selected
+  },
+};
+
+export const MoveSinglePageLineToNewPage: Story = {
   ...Default,
   ...tabletLandscapeParameters,
   play: async ({ canvasElement }) => {
-    const test = await TestCanvas.Create(canvasElement);
+    const pageLinePosition: [number, number] = [675, 228];
+    await MovePageLineToNewPage(canvasElement, pageLinePosition, "#10013_0");
+    // chromatic checks that the label has been moved to new page
+  },
+};
 
-    await test.clickTitle("Select Lines");
+export const MoveSinglePageLineToNewPageUndo: Story = {
+  ...Default,
+  ...tabletLandscapeParameters,
+  play: async ({ canvasElement }) => {
+    const pageLinePosition: [number, number] = [675, 228];
+    await MovePageLineToNewPage(canvasElement, pageLinePosition, "#10013_0");
+    const undoButton = await screen.findByRole("button", { name: "Undo" });
+    await userEvent.click(undoButton);
+    // chromatic checks that the label has been moved back to page 1 and user still on new page
+  },
+};
 
-    // select page line
-    await test.leftClick([675, 228]);
-    // select diagram line
-    await test.leftClick([132, 283], "layer2-node", true);
-    // bring up the context menu
-    await test.rightClick([675, 228]);
+async function MovePageLineToNewPage(
+  canvasElement: HTMLElement,
+  position: [number, number],
+  lineID: string,
+): Promise<TestCanvas> {
+  const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLine);
+  await test.waitForCytoscape();
+  await test.contextMenu({ at: position, select: "Move to page" });
+  const aNewLastPage = await screen.findByRole("radio", { name: "A new last page" });
+  await test.user.click(aNewLastPage);
+  const continueButton = await screen.findByRole("button", { name: "Continue" });
+  await test.user.click(continueButton);
+  console.log(lineID);
+  await expect(await countSelected()).toBe(1); // label remain selected
+  return test;
+}
 
-    await expect(await countSelected()).toBe(2);
-
-    // once the move to page is hovered over, only page line should be selected
-    const moveToPageMenuOption = await test.findMenuItem("Move to page");
-    await test.user.hover(moveToPageMenuOption);
-    await expect(await countSelected()).toBe(1);
-
-    await test.user.click(moveToPageMenuOption);
-    const input = await screen.findByPlaceholderText("Enter page number");
-    await test.user.click(input);
-    void fireEvent.change(input, { target: { value: "1" } });
-    await expect(input).toHaveValue(1);
-    await expect(await screen.findByText("Line is already on page 1")).toBeInTheDocument();
-    await test.user.clear(input);
-    void fireEvent.change(input, { target: { value: "2" } });
+export const MoveMultiplePageLabelsToExistingPage: Story = {
+  ...Default,
+  parameters: customPlanMock(() =>
+    createCustomMockPlanData((data) => {
+      data.pages[0]!.coordinates!.push(userCoordinate1, userCoordinate2);
+      data.pages[0]!.lines!.push(hiddenPageLine);
+    }),
+  ),
+  play: async ({ canvasElement }) => {
+    const pageLine1Position: [number, number] = [675, 228];
+    const pageLine2Position: [number, number] = [468, 165];
+    const test = await TestCanvas.Create(canvasElement, PlanMode.SelectLine);
+    await test.waitForCytoscape();
+    await test.multiSelect([pageLine1Position, pageLine2Position]);
+    await test.contextMenu({ at: pageLine1Position, select: "Move to page" });
+    const enterPageNumber = await screen.findByPlaceholderText("Enter page number");
+    void fireEvent.change(enterPageNumber, { target: { value: "2" } });
     const continueButton = await screen.findByRole("button", { name: "Continue" });
     await test.user.click(continueButton);
-
-    // Chromatic will ensure the page line is moved to page 2
+    await expect(await countSelected()).toBe(2);
+    // chromatic checks that the label has been moved to page 2
   },
 };

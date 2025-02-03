@@ -199,8 +199,8 @@ export const usePlanSheetsContextMenu = () => {
         {
           title: "Move to page",
           hideWhen: () => !canMoveLineToPage || selectedEdges.every((ele) => ele.data("diagramId") !== undefined),
-          onHover: (event) => {
-            if (event.cy && selectedEdges) {
+          onHover: () => {
+            if (selectedEdges) {
               selectedEdges.unselect();
               // filter out diagram-lines and only select user defined lines (page-lines)
               const pageLines = selectedEdges.filter((ele) => ele.data("diagramId") === undefined);
@@ -211,20 +211,25 @@ export const usePlanSheetsContextMenu = () => {
             //re-select all lines
             selectedEdges.select();
           },
-          callback: (event) => {
-            keepElementSelected(() => {
-              if (!event.target || isEmpty(selectedEdges)) return;
-              const elementsToMove = selectedEdges
-                .filter((ele) => ele.data("diagramId") === undefined)
-                .map((ele) => {
-                  return { id: ele.data("id") as string, type: PlanElementType.LINES } as ElementToMove;
+          callback: () => {
+            const diagramLines = selectedEdges.filter((ele) => ele.data("diagramId") !== undefined);
+
+            keepElementSelected(
+              () => {
+                if (isEmpty(selectedEdges)) return;
+                const elementsToMove = selectedEdges
+                  .filter((ele) => ele.data("diagramId") === undefined)
+                  .map((ele) => {
+                    return { id: ele.data("id") as string, type: PlanElementType.LINES } as ElementToMove;
+                  });
+                // edges ids are in the format of "lineId_segmentNumber" so we need to remove the segment number
+                elementsToMove.forEach((element) => {
+                  element.id = (element.id as string).split("_")[0] || element.id;
                 });
-              // edges ids are in the format of "lineId_segmentNumber" so we need to remove the segment number
-              elementsToMove.forEach((element) => {
-                element.id = (element.id as string).split("_")[0] || element.id;
-              });
-              dispatch(setElementsToMove(uniqBy(elementsToMove, "id")));
-            });
+                dispatch(setElementsToMove(uniqBy(elementsToMove, "id")));
+              },
+              diagramLines.map((ele) => ele.data("id") as string),
+            );
           },
         },
         {
