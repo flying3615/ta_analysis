@@ -54,6 +54,8 @@ export const SelectLabelHandler = () => {
         const isDoubleClicked = isMouseDownDragElementsEnabled ? clickedLabelIds.includes(id) : target.selected();
         isDoubleClicked && setLabelData({ id, label, labelType, elementType, diagramId });
         isDoubleClicked && setInputPosition({ x: event.originalEvent.clientX, y: event.originalEvent.clientY });
+        isMouseDownDragElementsEnabled &&
+          setClickedLabelIds(event.originalEvent.shiftKey ? addSelectedElemtId(id, selectedIds) : [id]);
       } else {
         setInputPosition(undefined);
         isMouseDownDragElementsEnabled &&
