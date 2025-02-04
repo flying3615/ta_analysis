@@ -381,8 +381,8 @@ export const RotateMultipleLabelsNearEdge: Story = {
     void fireEvent.change(test.findProperty("TextInput", "Text angle (degrees)"), { target: { value: 0 } });
     await test.clickButton("OK");
     // Confirm the labels are pushed back within the layout boundaries
-    await checkCytoElementProperties("#LAB_21", { position: { x: 356.4, y: 54.6 } });
-    await checkCytoElementProperties("#LAB_519", { position: { x: 469.7, y: 575.4 } });
+    await checkCytoElementProperties("#LAB_21", { position: { x: 356, y: 57 } });
+    await checkCytoElementProperties("#LAB_519", { position: { x: 469.7, y: 570 } });
   },
 };
 

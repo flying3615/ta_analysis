@@ -252,7 +252,14 @@ export class TestCanvas {
   public static Create = async (canvasElement: HTMLElement, firstSelect: string | null = null) => {
     const canvas = within(canvasElement);
     const user = userEvent.setup();
-    const test = new TestCanvas(user, canvasElement, await canvas.findByTestId("MainCytoscapeCanvas"));
+    const test = new TestCanvas(
+      user,
+      canvasElement,
+      await waitFor(() => canvas.findByTestId("MainCytoscapeCanvas"), {
+        timeout: 10000,
+        interval: 500,
+      }),
+    );
     if (firstSelect === null) return test;
     await test.clickTitle(firstSelect);
     return test;
@@ -478,6 +485,7 @@ export class TestCanvas {
   }
 
   async clickButton(buttonName: string) {
+    await sleep(200);
     await userEvent.click(within(this.canvasElement).getByRole("button", { name: buttonName }));
   }
 
@@ -488,6 +496,19 @@ export class TestCanvas {
   async pressDelete(layer: "layer0-selectbox" | "layer1-drag" | "layer2-node" = "layer2-node") {
     await this.waitForCytoscape();
     fireEvent.keyDown(this.getLayer(layer), { key: "Delete" });
+  }
+
+  async fenceSelect(fromLocation: [number, number], toLocation: [number, number]) {
+    const from = this.toClientXY(fromLocation);
+    const to = this.toClientXY(toLocation);
+    const layer = "layer0-selectbox";
+
+    await sleep(200);
+    fireEvent.mouseDown(this.getLayer(layer), { ...from, buttons: 1, ctrlKey: true });
+    fireEvent.mouseMove(this.getLayer(layer), { ...to, buttons: 1, ctrlKey: true });
+    await sleep(400);
+    fireEvent.mouseUp(this.getLayer(layer), { ...to, buttons: 1, ctrlKey: true });
+    await sleep(200);
   }
 }
 

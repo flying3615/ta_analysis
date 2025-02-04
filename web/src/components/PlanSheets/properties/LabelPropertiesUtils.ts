@@ -270,16 +270,141 @@ export const createLineBreakRestrictedEditRegex = (labelText?: string): string =
   return `^${parts.join("([\\r\\n ]*)")}$`;
 };
 
+const getCoordinatesOfLabelAlignments = (
+  width: number,
+  height: number,
+  rotation: number,
+  currentCenterX: number,
+  currentCenterY: number,
+) => {
+  const halfTextDimWidth = width / 2;
+  const halfTextDimHeight = height / 2;
+  const labelCenter = { x: currentCenterX, y: currentCenterY };
+  const tol = 3;
+  // [top-left, top-center, top-right, center-left, center-center, center-right, bottom-left, bottom-center, bottom-right]
+  const labelPolygonHoriz: cytoscape.Position[] = [
+    { x: labelCenter.x - halfTextDimWidth - tol, y: labelCenter.y - halfTextDimHeight - tol },
+    { x: labelCenter.x, y: labelCenter.y - halfTextDimHeight },
+    { x: labelCenter.x + halfTextDimWidth + tol, y: labelCenter.y - halfTextDimHeight - tol },
+
+    { x: labelCenter.x - halfTextDimWidth, y: labelCenter.y },
+    { x: labelCenter.x, y: labelCenter.y },
+    { x: labelCenter.x + halfTextDimWidth, y: labelCenter.y },
+
+    { x: labelCenter.x - halfTextDimWidth - tol, y: labelCenter.y + halfTextDimHeight + tol },
+    { x: labelCenter.x, y: labelCenter.y + halfTextDimHeight },
+    { x: labelCenter.x + halfTextDimWidth + tol, y: labelCenter.y + halfTextDimHeight + tol },
+  ];
+  const labelTextRotation = rotation ? -rotation : 0; // negative because is counter clockwise
+  // Rotate the label polygon
+  const labelPolygonRotated = labelPolygonHoriz.map((point) => {
+    const labelTextRotationRadians = degreesToRadians(labelTextRotation);
+    return {
+      x:
+        labelCenter.x +
+        (point.x - labelCenter.x) * Math.cos(labelTextRotationRadians) -
+        (point.y - labelCenter.y) * Math.sin(labelTextRotationRadians),
+      y:
+        labelCenter.y +
+        (point.x - labelCenter.x) * Math.sin(labelTextRotationRadians) +
+        (point.y - labelCenter.y) * Math.cos(labelTextRotationRadians),
+    };
+  });
+
+  return labelPolygonRotated;
+};
+
+const getCoordinatesOfLabelOrigin = (textAlignment: string, labelPolygonRotated: cytoscape.Position[]) => {
+  let originX, originY;
+
+  if (!textAlignment) {
+    // centerCenter by default
+    originX = labelPolygonRotated[4]?.x;
+    originY = labelPolygonRotated[4]?.y;
+  } else {
+    if (textAlignment.includes("topLeft")) {
+      originX = labelPolygonRotated[0]?.x;
+      originY = labelPolygonRotated[0]?.y;
+    } else if (textAlignment.includes("topCenter")) {
+      originX = labelPolygonRotated[1]?.x;
+      originY = labelPolygonRotated[1]?.y;
+    } else if (textAlignment.includes("topRight")) {
+      originX = labelPolygonRotated[2]?.x;
+      originY = labelPolygonRotated[2]?.y;
+    } else if (textAlignment.includes("centerLeft")) {
+      originX = labelPolygonRotated[3]?.x;
+      originY = labelPolygonRotated[3]?.y;
+    } else if (textAlignment.includes("centerCenter")) {
+      originX = labelPolygonRotated[4]?.x;
+      originY = labelPolygonRotated[4]?.y;
+    } else if (textAlignment.includes("centerRight")) {
+      originX = labelPolygonRotated[5]?.x;
+      originY = labelPolygonRotated[5]?.y;
+    } else if (textAlignment.includes("bottomLeft")) {
+      originX = labelPolygonRotated[6]?.x;
+      originY = labelPolygonRotated[6]?.y;
+    } else if (textAlignment.includes("bottomCenter")) {
+      originX = labelPolygonRotated[7]?.x;
+      originY = labelPolygonRotated[7]?.y;
+    } else if (textAlignment.includes("bottomRight")) {
+      originX = labelPolygonRotated[8]?.x;
+      originY = labelPolygonRotated[8]?.y;
+    } else {
+      throw new Error("Invalid textAlignment");
+    }
+  }
+
+  if (originX === undefined || originY === undefined) throw new Error("Invalid origin coordinates");
+
+  return { x: originX, y: originY };
+};
+
+const rotateLabel = (
+  width: number,
+  height: number,
+  currentRotation: number,
+  newTextRotation: number,
+  origin: string,
+  currentCenterX: number,
+  currentCenterY: number,
+) => {
+  const labelPolygonRotated = getCoordinatesOfLabelAlignments(
+    width,
+    height,
+    currentRotation,
+    currentCenterX,
+    currentCenterY,
+  );
+
+  const { x: originX, y: originY } = getCoordinatesOfLabelOrigin(origin, labelPolygonRotated);
+
+  if (originX === undefined || originY === undefined) throw new Error("Invalid origin coordinates");
+
+  // Convert angle to radians
+  const angle = currentRotation - (360 - newTextRotation);
+  const radians = degreesToRadians(angle);
+
+  // Calculate the new center position after rotation
+  const newCenterX =
+    originX + (currentCenterX - originX) * Math.cos(radians) - (currentCenterY - originY) * Math.sin(radians);
+  const newCenterY =
+    originY + (currentCenterX - originX) * Math.sin(radians) + (currentCenterY - originY) * Math.cos(radians);
+
+  return { x: newCenterX, y: newCenterY };
+};
+
 /**
  * Add a temporary label to the cytoscape canvas so it can be used
  * to evaluate if it should be forced to fit within the page area
  */
 const generateTempLabel = (
   cyto: cytoscape.Core | undefined,
+  cytoCoordMapper: CytoscapeCoordinateMapper | null,
   labelId: string,
   labelPropsToUpdate: LabelPropsToUpdate | undefined,
+  operation: LabelOperation,
 ) => {
-  if (!cyto) throw new Error("Cytoscape is not initialized");
+  if (!cyto || !cytoCoordMapper) throw new Error("Cytoscape is not initialized");
   if (!labelPropsToUpdate) return;
 
   let initialLabelPosition = labelPropsToUpdate.position;
@@ -289,6 +414,11 @@ const generateTempLabel = (
   }
   if (!initialLabelPosition) return;
 
+  const propRotationAngle = labelPropsToUpdate.rotationAngle;
+  // if textRotation is being edited, need to make it anti-clockwise between 0-360
+  const textRotation =
+    propRotationAngle !== undefined ? (360 - propRotationAngle) % 360 : (label.data("textRotation") as number);
+
   const node = {
     group: "nodes" as ElementGroup,
     data: {
@@ -296,22 +426,43 @@ const generateTempLabel = (
       ...labelPropsToUpdate,
       id: `temp_${labelId}`,
       label: labelPropsToUpdate.displayText ?? labelPropsToUpdate.editedText ?? (label.data("label") as string),
-      // if textRotation is being edited, need to make it anti-clockwise between 0-360
-      textRotation:
-        labelPropsToUpdate.rotationAngle !== undefined
-          ? (360 - labelPropsToUpdate.rotationAngle) % 360
-          : (label.data("textRotation") as string),
+      // for rotationSlide and alignToLine operations, the rotation is already applied directly to the label
+      textRotation: ["rotationSlide", "alignToLine"].includes(operation)
+        ? textRotation
+        : (label.data("textRotation") as number),
       font: toDisplayFont(labelPropsToUpdate.font ?? (label?.data("font") as string) ?? "Tahoma"),
       fontSize: labelPropsToUpdate.fontSize ?? (label?.data("fontSize") as string) ?? 14,
     },
     position: initialLabelPosition,
   };
+
   cyto?.add(node);
+
+  // if the operation is not rotationSlide or alignToLine, the rotation depends on the textAlignment of the label,
+  // so the proper rotation is calculated and applied to the temp label
+  if (propRotationAngle !== undefined && !["rotationSlide", "alignToLine"].includes(operation)) {
+    const tempLabel = cyto?.$id(`temp_${labelId}`);
+    const textDim = textDimensions(tempLabel, cytoCoordMapper);
+    const textAlignment = tempLabel?.data("textAlignment") as string;
+    const currentTextRotation = tempLabel?.data("textRotation") as number;
+
+    const rotatedLabelPosition = rotateLabel(
+      textDim.width,
+      textDim.height,
+      currentTextRotation,
+      textRotation,
+      textAlignment,
+      tempLabel.position().x,
+      tempLabel.position().y,
+    );
+    tempLabel?.data("textRotation", propRotationAngle).position(rotatedLabelPosition);
+  }
 };
 
 export type LabelOperation = "textInput" | "propertiesEdit" | "rotationSlide" | "originalLocation" | "alignToLine";
 /**
  * Get the corrected position for a created/edited label if it falls outside the page area
+ * by adding a temporary label to the canvas with the edited values and evaluating its position
  */
 export const getCorrectedLabelPosition = (
   cyto: cytoscape.Core | undefined,
@@ -349,7 +500,7 @@ export const getCorrectedLabelPosition = (
   }
 
   // add a temporary label (based on the created/edited label) to the canvas
-  generateTempLabel(cyto, labelId, labelPropsToUpdate);
+  generateTempLabel(cyto, cytoCoordMapper, labelId, labelPropsToUpdate, operation);
   // get temp label (with edited values) that will be used to evaluate the label dimensions and position within the page area
   const tempLabel = cyto?.$id(`temp_${labelId}`);
 
@@ -359,46 +510,62 @@ export const getCorrectedLabelPosition = (
 
   // get the label dimensions and position
   const textDim = textDimensions(tempLabel, cytoCoordMapper);
-  const halfTextDimWidth = textDim.width / 2;
-  const halfTextDimHeight = textDim.height / 2;
   const labelCenter = tempLabel.position();
-  let labelStartCoord = labelCenter.x - halfTextDimWidth;
-  let labelEndCoord = labelCenter.x + halfTextDimWidth;
-  let labelTopCoord = labelCenter.y - halfTextDimHeight;
-  let labelBottomCoord = labelCenter.y + halfTextDimHeight;
 
-  // if the label has a rotation angle, apply the label rotation to the label dimensions
   const rotationAngle = tempLabel?.data("textRotation") as number;
-  if (!isNil(rotationAngle)) {
-    const angle = degreesToRadians(rotationAngle);
-    const rotatedWidth = textDim.width * Math.abs(Math.cos(angle)) + textDim.height * Math.abs(Math.sin(angle));
-    const rotatedHeight = textDim.width * Math.abs(Math.sin(angle)) + textDim.height * Math.abs(Math.cos(angle));
-    const halfRotatedWidth = rotatedWidth / 2;
-    const halfRotatedHeight = rotatedHeight / 2;
-    labelStartCoord = labelCenter.x - halfRotatedWidth;
-    labelEndCoord = labelCenter.x + halfRotatedWidth;
-    labelTopCoord = labelCenter.y - halfRotatedHeight;
-    labelBottomCoord = labelCenter.y + halfRotatedHeight;
-  }
-
-  const tempLabelPosition = tempLabel.position();
-  const position = JSON.parse(JSON.stringify(tempLabelPosition)) as cytoscape.Position;
+  const textAlignment = tempLabel?.data("textAlignment") as string;
+  const tempLabelPosition = JSON.parse(JSON.stringify(labelCenter)) as cytoscape.Position;
+  const position = JSON.parse(JSON.stringify(labelCenter)) as cytoscape.Position;
 
   // if the temp label is outside the page area, move it back inside
   // (add a tolerance to the correction to prevent the label from being too close to the page edge)
   const tolerance = 7;
-  if (labelStartCoord < pageOuterLimits.x1) {
-    position.x = labelCenter.x + (pageOuterLimits.x1 - labelStartCoord) + tolerance;
+
+  const labelCoords = getCoordinatesOfLabelAlignments(
+    textDim.width,
+    textDim.height,
+    rotationAngle,
+    labelCenter.x,
+    labelCenter.y,
+  );
+  const originCoords = getCoordinatesOfLabelOrigin(textAlignment, labelCoords);
+  if (originCoords.x === undefined || originCoords.y === undefined) throw new Error("Invalid origin coordinates");
+
+  const labelMinCoordY = Math.min(...labelCoords.map((coord) => coord.y));
+  const labelMaxCoordY = Math.max(...labelCoords.map((coord) => coord.y));
+  const labelMinCoordX = Math.min(...labelCoords.map((coord) => coord.x));
+  const labelMaxCoordX = Math.max(...labelCoords.map((coord) => coord.x));
+
+  let positionX;
+  let positionY;
+  let wasCorrected = false;
+  if (labelMinCoordY < pageOuterLimits.y1) {
+    // out of top bounds
+    positionY = originCoords.y + (pageOuterLimits.y1 - labelMinCoordY) + tolerance;
+    wasCorrected = true;
   }
-  if (labelEndCoord > pageOuterLimits.x2) {
-    position.x = labelCenter.x - (labelEndCoord - pageOuterLimits.x2) - tolerance;
+  if (labelMaxCoordY > pageOuterLimits.y2) {
+    // out of bottom bounds
+    positionY = originCoords.y - (labelMaxCoordY - pageOuterLimits.y2) - tolerance;
+    wasCorrected = true;
   }
-  if (labelTopCoord < pageOuterLimits.y1) {
-    position.y = labelCenter.y + (pageOuterLimits.y1 - labelTopCoord) + tolerance;
+  if (labelMinCoordX < pageOuterLimits.x1) {
+    // out of left bounds
+    positionX = originCoords.x + (pageOuterLimits.x1 - labelMinCoordX) + tolerance;
+    wasCorrected = true;
   }
-  if (labelBottomCoord > pageOuterLimits.y2) {
-    position.y = labelCenter.y - (labelBottomCoord - pageOuterLimits.y2) - tolerance;
+  if (labelMaxCoordX > pageOuterLimits.x2) {
+    // out of right bounds
+    positionX = originCoords.x - (labelMaxCoordX - pageOuterLimits.x2) - tolerance;
+    wasCorrected = true;
   }
+
+  if (wasCorrected) {
+    position.x = positionX ?? originCoords.x;
+    position.y = positionY ?? originCoords.y;
+  }
+
+  // remove the temporary label from the canvas
   cyto?.remove(tempLabel);
 
   // if the label position did not need correction to fit the page area, return undefined
@@ -411,7 +578,8 @@ export const getCorrectedLabelPosition = (
     return position;
   }
 
-  // if the label has pointOffset, remove it from the corrected position since it will be applied on canvas render
+  // if the label has pointOffset/anchorAngle, remove it from the corrected position as
+  // it will be applied on rendering the label in the canvas
   const pointOffset = tempLabel?.data("pointOffset") as number;
   const anchorAngle = tempLabel?.data("anchorAngle") as number;
   if (pointOffset && !isNil(anchorAngle)) {

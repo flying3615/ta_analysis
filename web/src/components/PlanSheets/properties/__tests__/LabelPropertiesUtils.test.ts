@@ -431,7 +431,7 @@ describe("getCorrectedLabelPosition", () => {
       {} as LabelPropsToUpdate,
     );
     expect(result).toBeDefined();
-    expect(result?.x).toBeCloseTo(0.3645, 3);
+    expect(result?.x).toBeCloseTo(0.3634, 3);
     expect(result?.y).toBeCloseTo(-0.1231, 3);
   });
 
@@ -445,7 +445,7 @@ describe("getCorrectedLabelPosition", () => {
       {} as LabelPropsToUpdate,
     );
     expect(result).toBeDefined();
-    expect(result?.x).toBeCloseTo(0.0554, 3);
+    expect(result?.x).toBeCloseTo(0.0565, 3);
     expect(result?.y).toBeCloseTo(-0.1231, 3);
   });
 
@@ -472,7 +472,7 @@ describe("getCorrectedLabelPosition", () => {
     );
     expect(result).toBeDefined();
     expect(result?.x).toBeCloseTo(0.3415, 3);
-    expect(result?.y).toBeCloseTo(-0.0507, 3);
+    expect(result?.y).toBeCloseTo(-0.0517, 3);
   });
 
   it("should return corrected position when the label with new rotation (via properties panel) falls outside page area - bottom bound", () => {
@@ -486,7 +486,7 @@ describe("getCorrectedLabelPosition", () => {
     );
     expect(result).toBeDefined();
     expect(result?.x).toBeCloseTo(0.0942, 3);
-    expect(result?.y).toBeCloseTo(-0.2262, 3);
+    expect(result?.y).toBeCloseTo(-0.2252, 3);
   });
 
   it("should return corrected position when the label with new rotation (via rotation slider) falls outside page area - bottom bound", () => {
@@ -500,6 +500,6 @@ describe("getCorrectedLabelPosition", () => {
     );
     expect(result).toBeDefined();
     expect(result?.x).toBeCloseTo(267, 3);
-    expect(result?.y).toBeCloseTo(655.1154, 3);
+    expect(result?.y).toBeCloseTo(652.1154, 3);
   });
 });

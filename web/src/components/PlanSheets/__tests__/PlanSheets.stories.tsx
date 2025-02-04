@@ -7,7 +7,7 @@ import { LuiModalAsyncContextProvider } from "@linzjs/windows";
 import { MockedFeaturesMap } from "@splitsoftware/splitio/types/splitio";
 import { expect } from "@storybook/jest";
 import { Meta, StoryObj } from "@storybook/react";
-import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/testing-library";
+import { fireEvent, screen, userEvent, waitFor, waitForElementToBeRemoved, within } from "@storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cloneDeep } from "lodash-es";
 import { http, HttpResponse } from "msw";
@@ -108,7 +108,7 @@ DiagramsPanelClosed.play = async ({ canvasElement }) => {
   // Use fireEvent to get around known issue in testing-library
   // https://github.com/storybookjs/storybook/issues/26888
   // https://github.com/testing-library/user-event/issues/1075#issuecomment-1948093169
-  fireEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
+  void fireEvent.click(await canvas.findByTitle("Toggle diagrams panel"));
   await sleep(2000);
   await expect(canvas.queryByRole("heading", { name: "Survey sheet diagrams" })).toBeNull();
 };
@@ -286,7 +286,7 @@ export const RenumberPage: Story = {
     const inputField = within(modal).getByPlaceholderText("Enter page number");
 
     if (inputField) {
-      fireEvent.blur(inputField, { target: { value: 2 } });
+      void fireEvent.blur(inputField, { target: { value: 2 } });
     } else {
       throw new Error('Input field with placeholder "Enter page number" not found');
     }
