@@ -1,4 +1,9 @@
-import { DisplayStateEnum, LabelDTOLabelTypeEnum } from "@linz/survey-plan-generation-api-client";
+import {
+  DiagramDTO,
+  DisplayStateEnum,
+  LabelDTOLabelTypeEnum,
+  PlanResponseDTO,
+} from "@linz/survey-plan-generation-api-client";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { degreesToRadians, point, polygon } from "@turf/helpers";
 import { NodeSingular } from "cytoscape";
@@ -25,12 +30,15 @@ import { LabelWithPositionMemo, updateDiagramLabels, updatePageLabels } from "@/
 import {
   getActivePage,
   getElementTypeConfigs,
+  getPlanData,
   replaceDiagrams,
   replacePage,
   setAlignedLabelNodeId,
   setPlanMode,
 } from "@/redux/planSheets/planSheetsSlice";
-import { DiagramLabelField, findLabelById } from "@/util/diagramUtil";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
+import { DiagramLabelField, findLabelById, lineMidpoint } from "@/util/diagramUtil";
 import { atanDegrees360, clampAngleDegrees360, midPoint, subtractIntoDelta } from "@/util/positionUtil";
 
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
@@ -39,10 +47,12 @@ export const useLabelsFunctions = () => {
   const activeDiagrams = useAppSelector(selectActiveDiagrams);
   const activePage = useAppSelector(getActivePage);
   const elemTypeConfigs = useAppSelector(getElementTypeConfigs);
+  const planData = useAppSelector(getPlanData) as PlanResponseDTO;
   const dispatch = useAppDispatch();
+  const { result: irregularLineMidpointMode } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_MIDPOINT_IRREGULAR);
 
   const getDefaultElementConfig = (labelType: string) => {
-    const defaultElemConfigs = elemTypeConfigs.find(
+    const defaultElemConfigs = elemTypeConfigs?.find(
       (config) => config.element === "Label" && config.elementType === labelType,
     )?.attribDefaults;
 
@@ -85,8 +95,30 @@ export const useLabelsFunctions = () => {
       const lineStartCoord = diagram?.coordinates.find((coord) => coord.id === lineStartId);
       const lineEndCoord = diagram?.coordinates.find((coord) => coord.id === lineEndId);
       if (!lineStartCoord || !lineEndCoord) return;
-      const lineAngle = round(atanDegrees360(subtractIntoDelta(lineEndCoord.position, lineStartCoord.position)), 1);
-      newObj.position = midPoint(lineStartCoord.position, lineEndCoord.position);
+      const lineAngle =
+        (line?.coordRefs?.length ?? 0 > 2)
+          ? 0
+          : round(atanDegrees360(subtractIntoDelta(lineEndCoord.position, lineStartCoord.position)), 1);
+
+      if (irregularLineMidpointMode) {
+        if (!planData.surveyCentreLatitude) {
+          console.error(
+            `getLabeloriginalLocation: surveyCentreLatitude not provided, we can't calculate line midpoint`,
+          );
+          throw new Error(
+            `getLabeloriginalLocation: surveyCentreLatitude not provided, we can't recalculate line midpoint`,
+          );
+        }
+        newObj.position = lineMidpoint(
+          planData.surveyCentreLatitude,
+          diagram as DiagramDTO,
+          line?.coordRefs as number[],
+        );
+      } else {
+        // Old version, doesn't support irregular lines
+        newObj.position = midPoint(lineStartCoord.position, lineEndCoord.position);
+      }
+
       newObj.rotationAngle = lineAngle;
       newObj.anchorAngle = clampAngleDegrees360(lineAngle + Number(defaultElemConfig.defaultAnchorAngle));
       newObj.pointOffset = Number(defaultElemConfig.defaultPointOffset);
@@ -328,6 +360,7 @@ export const useLabelsFunctions = () => {
 
   return {
     setOriginalLocation,
+    getLabelOriginalLocation,
     updateLabels,
     filterNonSystemLabels,
     updateLabelsDisplayState,

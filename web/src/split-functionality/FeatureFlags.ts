@@ -16,6 +16,7 @@ export enum FEATUREFLAGS {
   SURVEY_PLAN_GENERATION_CHILD_DIAG_LABEL_MOVE_SYNC = "survey-plan-generation-child-diag-label-move-sync",
   SURVEY_PLAN_GENERATION_COMPILE_SERIAL_UPLOAD = "survey-plan-generation-compile-serial-upload",
   SURVEY_PLAN_GENERATION_CHECK_REGENERATION_STATUS = "survey-plan-generation-check-regeneration-status",
+  SURVEY_PLAN_GENERATION_MIDPOINT_IRREGULAR = "survey-plan-generation-midpoint-irregular",
 }
 
 export enum TREATMENTS {

@@ -23,6 +23,9 @@ export interface State {
   pages: PageDTO[];
   // auto recovery
   lastChangedAt?: string;
+  // survey centre
+  surveyCentreLatitude?: number;
+  surveyCentreLongitude?: number;
   // UI state
   activeSheet: PlanSheetType;
   activePageNumbers: { [key in PlanSheetType]: number };

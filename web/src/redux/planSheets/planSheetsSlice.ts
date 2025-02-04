@@ -27,6 +27,8 @@ const initialState: State = {
   configs: [],
   diagrams: [],
   pages: [],
+  surveyCentreLatitude: undefined,
+  surveyCentreLongitude: undefined,
   activeSheet: PlanSheetType.TITLE,
   activePageNumbers: {
     [PlanSheetType.TITLE]: 0,
@@ -225,6 +227,8 @@ const planSheetsSlice = createSlice({
       state.stateVersion === "V2" ? selectorsV2.getConfigs(state.v2) : selectorsV1.getConfigs(state.v1),
     getLastModifiedAt: (state: PlanSheetsState) =>
       state.stateVersion === "V2" ? selectorsV2.getLastModifiedAt(state.v2) : selectorsV1.getLastModifiedAt(state.v1),
+    getSurveyCentre: (state: PlanSheetsState) =>
+      state.stateVersion === "V2" ? selectorsV2.getSurveyCentre(state.v2) : selectorsV1.getSurveyCentre(state.v1),
     getActiveSheet: (state: PlanSheetsState) =>
       state.stateVersion === "V2" ? selectorsV2.getActiveSheet(state.v2) : selectorsV1.getActiveSheet(state.v1),
     getPageConfigs: (state: PlanSheetsState) =>
@@ -351,6 +355,7 @@ export const {
   getConfigs,
   getDiagrams,
   getLastModifiedAt,
+  getSurveyCentre,
   getPages,
   getActivePages,
   getActivePage,

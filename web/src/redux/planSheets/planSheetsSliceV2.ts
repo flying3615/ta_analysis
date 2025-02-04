@@ -2,11 +2,11 @@ import {
   CoordinateDTO,
   DiagramDTO,
   DisplayStateEnum,
+  LabelDTO,
+  LineDTO,
   PageDTO,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import { LabelDTO } from "@linz/survey-plan-generation-api-client";
-import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { PayloadAction } from "@reduxjs/toolkit";
 
 import { ElementToMove } from "@/components/PlanSheets/interactions/MoveElementToPageModal";
@@ -49,6 +49,8 @@ export const reducersV2 = {
     state.current.configs = action.payload.configs;
     state.current.diagrams = action.payload.diagrams;
     state.current.lastModifiedAt = action.payload.lastModifiedAt;
+    state.current.surveyCentreLatitude = action.payload.surveyCentreLatitude;
+    state.current.surveyCentreLongitude = action.payload.surveyCentreLongitude;
     state.current.pages = action.payload.pages;
     state.current.hasChanges = false;
     state.current.lastChangedAt = undefined;
@@ -461,12 +463,18 @@ export const selectorsV2 = {
   getPlanData: (state: PlanSheetsStateV2) => ({
     diagrams: state.current.diagrams,
     lastModifiedAt: state.current.lastModifiedAt,
+    surveyCentreLatitude: state.current.surveyCentreLatitude,
+    surveyCentreLongitude: state.current.surveyCentreLongitude,
     pages: state.current.pages,
   }),
   getDiagrams: (state: PlanSheetsStateV2) => state.current.diagrams,
   getPages: (state: PlanSheetsStateV2) => state.current.pages,
   getConfigs: (state: PlanSheetsStateV2) => state.current.configs,
   getLastModifiedAt: (state: PlanSheetsStateV2) => state.current.lastModifiedAt,
+  getSurveyCentre: (state: PlanSheetsStateV2) => ({
+    x: state.current.surveyCentreLongitude,
+    y: state.current.surveyCentreLatitude,
+  }),
   getActiveSheet: (state: PlanSheetsStateV2) => state.current.activeSheet,
   getPageConfigs: (state: PlanSheetsStateV2) => state.current.configs?.[0]?.pageConfigs ?? [],
   getElementTypeConfigs: (state: PlanSheetsStateV2) => state.current.configs?.[0]?.elementTypeConfigs ?? [],

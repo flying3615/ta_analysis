@@ -6,7 +6,9 @@ import { PlanElementType } from "@/components/PlanSheets/PlanElementType";
 import { LabelPropsToUpdate } from "@/components/PlanSheets/properties/LabelProperties";
 import { planDataLabelIdToCytoscape } from "@/components/PlanSheets/properties/LabelPropertiesUtils";
 import { selectActiveDiagrams } from "@/modules/plan/selectGraphData";
-import { getActivePage, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
+import { getActivePage, getPlanData, replaceDiagrams } from "@/redux/planSheets/planSheetsSlice";
+import { setMockedSplitFeatures } from "@/setupTests";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
 
 import { useAppDispatch, useAppSelector } from "../reduxHooks";
 import { useLabelsFunctions } from "../useLabelsFunctions";
@@ -20,7 +22,33 @@ describe("useLabelsFunctions", () => {
   const mockDispatch = jest.fn();
   const mockReplaceDiagrams = jest.fn((payload: DiagramDTO[]) => ({ labelType: "REPLACE_DIAGRAMS", payload }));
   jest.mocked(planDataLabelIdToCytoscape).mockImplementation((id) => `LAB_${id}`);
-  const mockActiveDiagrams = [{ id: 1, lines: [], coordinates: [] }] as unknown as DiagramDTO[];
+  const mockActiveDiagrams = [
+    {
+      id: 1,
+      lines: [
+        {
+          id: 1100,
+          coordRefs: [1010, 1011],
+        },
+      ],
+      coordinates: [
+        {
+          id: 1010,
+          position: {
+            x: 15,
+            y: -42,
+          },
+        },
+        {
+          id: 1011,
+          position: {
+            x: 25,
+            y: -42,
+          },
+        },
+      ],
+    },
+  ] as unknown as DiagramDTO[];
   const mockActivePage = { id: 1 } as PageDTO;
 
   beforeEach(() => {
@@ -28,6 +56,8 @@ describe("useLabelsFunctions", () => {
     (useAppSelector as unknown as jest.Mock).mockImplementation((selector) => {
       if (selector === selectActiveDiagrams) return mockActiveDiagrams;
       if (selector === getActivePage) return mockActivePage;
+      if (selector === getPlanData)
+        return { activePage: mockActivePage, activeDiagrams: mockActiveDiagrams, surveyCentreLatitude: -45.0 };
       return undefined;
     });
     (replaceDiagrams as unknown as jest.Mock).mockImplementation(mockReplaceDiagrams);
@@ -313,4 +343,56 @@ describe("useLabelsFunctions", () => {
       expect(mockDispatch).toHaveBeenCalledWith(replaceDiagrams(expectedDiagram));
     },
   );
+
+  describe("getLabelOriginalLocation", () => {
+    test("Gets the default position of the coordinate label", () => {
+      const { result } = renderHook(() => useLabelsFunctions());
+      const label = {
+        id: "LAB_1",
+        label: "Some label",
+        diagramId: 1,
+        elementType: PlanElementType.COORDINATE_LABELS,
+        labelType: LabelDTOLabelTypeEnum.markName,
+        featureId: 1010,
+        featureType: "Coordinate",
+      } as INodeDataProperties;
+
+      const loc = result.current.getLabelOriginalLocation(label);
+      expect(loc?.position).toEqual({ x: 15, y: -42 });
+    });
+
+    test("Gets the default position of a line label without irregularLineMidpointMode", () => {
+      const { result } = renderHook(() => useLabelsFunctions());
+      const label = {
+        id: "LAB_=2",
+        label: "Line label",
+        diagramId: 1,
+        elementType: PlanElementType.LINE_LABELS,
+        labelType: LabelDTOLabelTypeEnum.markName,
+        featureId: 1100,
+        featureType: "Line",
+      } as INodeDataProperties;
+
+      const loc = result.current.getLabelOriginalLocation(label);
+      expect(loc?.position).toEqual({ x: 20, y: -42 });
+    });
+
+    test("Gets the default position of a line label with irregularLineMidpointMode", () => {
+      setMockedSplitFeatures({ [FEATUREFLAGS.SURVEY_PLAN_GENERATION_MIDPOINT_IRREGULAR]: "on" });
+
+      const { result } = renderHook(() => useLabelsFunctions());
+      const label = {
+        id: "LAB_=2",
+        label: "Line label",
+        diagramId: 1,
+        elementType: PlanElementType.LINE_LABELS,
+        labelType: LabelDTOLabelTypeEnum.markName,
+        featureId: 1100,
+        featureType: "Line",
+      } as INodeDataProperties;
+
+      const loc = result.current.getLabelOriginalLocation(label);
+      expect(loc?.position).toEqual({ x: 20, y: -42 });
+    });
+  });
 });

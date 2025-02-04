@@ -38,6 +38,8 @@ export class PlanDataBuilder {
     diagrams: [],
     pages: [],
     configs: [],
+    surveyCentreLatitude: -45.0,
+    surveyCentreLongitude: 10.0,
   };
 
   addDiagram(

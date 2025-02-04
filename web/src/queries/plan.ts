@@ -14,6 +14,8 @@ import { normalizePlanData } from "@/modules/plan/normalizePlanData";
 import { apiConfig } from "@/queries/apiConfig";
 import { PlanGenCompileMutation, PlanGenMutation, PlanGenQuery } from "@/queries/types";
 import { getPlanData } from "@/redux/planSheets/planSheetsSlice";
+import { FEATUREFLAGS } from "@/split-functionality/FeatureFlags";
+import useFeatureFlags from "@/split-functionality/UseFeatureFlags";
 import { performanceMeasure } from "@/util/interactionMeasurementUtil";
 
 export const getPlanQueryKey = (transactionId: number) => ["getPlan", transactionId];
@@ -53,10 +55,12 @@ export const updatePlanQueryKey = (transactionId: number) => ["updatePlan", tran
 
 export const useUpdatePlanMutation = (transactionId: number) => {
   const planData = useAppSelector(getPlanData) as PlanResponseDTO;
+  const { result: irregularLineMidpointMode } = useFeatureFlags(FEATUREFLAGS.SURVEY_PLAN_GENERATION_MIDPOINT_IRREGULAR);
+
   return useMutation({
     mutationKey: updatePlanQueryKey(transactionId),
     mutationFn: () => {
-      const normalizedPlanData = normalizePlanData(planData);
+      const normalizedPlanData = normalizePlanData(planData, irregularLineMidpointMode);
       const body = new Blob([JSON.stringify(normalizedPlanData)], { type: "application/json" });
       return new PlanControllerApi(apiConfig()).updatePlan({ transactionId, body });
     },

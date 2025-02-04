@@ -11,6 +11,7 @@ import {
   getPageConfigs,
   getPages,
   getPlanData,
+  getSurveyCentre,
   UserEdit,
 } from "@/redux/planSheets/planSheetsSlice";
 
@@ -82,8 +83,9 @@ export const selectLastUserEdit = createSelector(
   getConfigs,
   getLastChangedAt,
   getLastModifiedAt,
+  getSurveyCentre,
   getPages,
-  (diagrams, configs, lastChangedAt, lastModifiedAt, pages): UserEdit | undefined => {
+  (diagrams, configs, lastChangedAt, lastModifiedAt, surveyCentre, pages): UserEdit | undefined => {
     if (!configs || !lastChangedAt) {
       return undefined;
     }
@@ -93,6 +95,8 @@ export const selectLastUserEdit = createSelector(
       lastChangedAt,
       lastModifiedAt,
       pages,
+      surveyCentreLatitude: surveyCentre?.y,
+      surveyCentreLongitude: surveyCentre?.x,
     };
   },
 );

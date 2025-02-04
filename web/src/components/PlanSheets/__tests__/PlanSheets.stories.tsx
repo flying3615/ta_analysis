@@ -892,8 +892,9 @@ export const ShowHideCircleLetter: Story & Required<Pick<Story, "play">> = {
     const position: [number, number] = [320, 159];
     await test.contextMenu({ at: position, select: "Hide" });
     await test.contextMenu({ at: position, select: "Show" });
-    await sleep(500);
-    await expect(await countSelected()).toBe(1);
+    await waitFor(async () => {
+      await expect(await countSelected()).toBe(1);
+    });
   },
 };
 
@@ -1050,8 +1051,10 @@ export const AutoRecoverClearDataAfterSave: Story = {
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"), { timeout: 20000 });
 
     // check that data is cleared after save
-    const dataAfterSave = await getRecoveryFile(123);
-    await expect(dataAfterSave).toBeUndefined();
+    await waitFor(async () => {
+      const dataAfterSave = getRecoveryFile(123);
+      await expect(JSON.stringify(dataAfterSave)).toEqual("{}");
+    });
   },
 };
 

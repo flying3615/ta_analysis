@@ -56,6 +56,8 @@ const initialState: PlanSheetsStateV1 = {
   configs: [],
   diagrams: [],
   pages: [],
+  surveyCentreLatitude: undefined,
+  surveyCentreLongitude: undefined,
   activeSheet: PlanSheetType.TITLE,
   activePageNumbers: {
     [PlanSheetType.TITLE]: 1,
@@ -261,12 +263,24 @@ describe.each(stateVersions)("planSheetsSlice%s", (version) => {
         version,
       ),
     });
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams: [], lastModifiedAt: undefined, pages: [] });
+    expect(getPlanData(store.getState())).toStrictEqual({
+      diagrams: [],
+      lastModifiedAt: undefined,
+      pages: [],
+      surveyCentreLatitude: undefined,
+      surveyCentreLongitude: undefined,
+    });
     expect(hasChanges(store.getState())).toBe(true);
 
     store.dispatch(setPlanData({ configs, diagrams, pages }));
     expect(getPageConfigs(store.getState())).toStrictEqual(configs[0]?.pageConfigs);
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, lastModifiedAt: undefined, pages });
+    expect(getPlanData(store.getState())).toStrictEqual({
+      diagrams,
+      lastModifiedAt: undefined,
+      pages,
+      surveyCentreLatitude: undefined,
+      surveyCentreLongitude: undefined,
+    });
     expect(getDiagrams(store.getState())).toStrictEqual(diagrams);
     expect(getPages(store.getState())).toStrictEqual(pages);
     expect(hasChanges(store.getState())).toBe(false);
@@ -283,7 +297,13 @@ describe.each(stateVersions)("planSheetsSlice%s", (version) => {
       ),
     });
 
-    expect(getPlanData(store.getState())).toStrictEqual({ diagrams, lastModifiedAt: undefined, pages: [] });
+    expect(getPlanData(store.getState())).toStrictEqual({
+      diagrams,
+      lastModifiedAt: undefined,
+      pages: [],
+      surveyCentreLatitude: undefined,
+      surveyCentreLongitude: undefined,
+    });
     expect(getPlanData(store.getState()).diagrams[0]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
     expect(getPlanData(store.getState()).diagrams[1]?.bottomRightPoint).toStrictEqual({ x: 80, y: -90 });
     expect(hasChanges(store.getState())).toBe(false);

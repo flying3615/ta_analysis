@@ -136,7 +136,9 @@ export function usePlanAutoRecover(transactionId: number, planData?: PlanRespons
       // when feature not enabled
       const initialDataLoad = performanceMeasure("setPlanData", transactionId, {
         workflow: "loadPlanXML",
-      })(() => Promise.resolve(dispatch(setPlanData(planData))));
+      })(() => {
+        return Promise.resolve(dispatch(setPlanData(planData)));
+      });
       void initialDataLoad.then(() => setIsInitialLoadComplete(true));
       return;
     }

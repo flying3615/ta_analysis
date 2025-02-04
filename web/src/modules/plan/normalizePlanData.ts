@@ -6,7 +6,7 @@ import { GroundMetresPosition } from "@/components/CytoscapeCanvas/cytoscapeDefi
 import { PlanCoordinateMapper } from "@/components/CytoscapeCanvas/PlanCoordinateMapper";
 import { LabelWithPositionMemo } from "@/modules/plan/updatePlanData";
 import { POINTS_PER_CM } from "@/util/cytoscapeUtil";
-import { mapAllDiagramLabels, mapDiagramLabels } from "@/util/diagramUtil";
+import { lineMidpoint, mapAllDiagramLabels, mapDiagramLabels } from "@/util/diagramUtil";
 import {
   addIntoPosition,
   atanDegrees360,
@@ -26,12 +26,10 @@ export const labelOffsetAndAngleToBasePosition = (
     ? planCoordinateMapper.pointsToGroundDistance(diagramId, label.pointOffset)
     : label.pointOffset / (POINTS_PER_CM * 100);
   const offsetDelta = deltaFromPolar(label.anchorAngle, coordinateOffset);
-  const resPosition = addIntoPosition(label.position, offsetDelta);
-  // console.log(`labelOffsetAndAngleToBasePosition ${JSON.stringify(resPosition)}`);
-  return resPosition;
+  return addIntoPosition(label.position, offsetDelta);
 };
 
-export const normalizePlanData = (planData: PlanResponseDTO): PlanResponseDTO => {
+export const normalizePlanData = (planData: PlanResponseDTO, irregularLineMidpointMode: boolean): PlanResponseDTO => {
   const planCoordinateMapper = new PlanCoordinateMapper(planData.diagrams);
 
   const labelDTOPositionToOffsetAndAngle = (
@@ -113,14 +111,29 @@ export const normalizePlanData = (planData: PlanResponseDTO): PlanResponseDTO =>
           throw new Error(`Line with id ${lineLabel.featureId} not found`);
         }
 
-        const lineStartId = parentLine.coordRefs?.[0] as number;
-        const lineEndId = last(parentLine.coordRefs) as number;
-        const lineStartCoord = diagram.coordinates.find((coord) => coord.id === lineStartId);
-        const lineEndCoord = diagram.coordinates.find((coord) => coord.id === lineEndId);
-        if (!lineStartCoord || !lineEndCoord) throw new Error("Line start or end coordinates not found");
-        const lineMidPoint = midPoint(lineStartCoord.position, lineEndCoord.position);
+        let lineLabelCoordinate;
+        if (irregularLineMidpointMode) {
+          if (!planData.surveyCentreLatitude) {
+            console.error(`normalisePlanData surveyCentreLatitude not provided, we can't calculate line midpoint`);
+            throw new Error(`normalisePlanData surveyCentreLatitude not provided, we can't calculate line midpoint`);
+          }
 
-        return labelDTOPositionToOffsetAndAngle(diagram.id, lineMidPoint, lineLabel);
+          lineLabelCoordinate = lineMidpoint(planData.surveyCentreLatitude, diagram, parentLine.coordRefs);
+        } else {
+          const parentLine = diagram.lines.find((line) => line.id === lineLabel.featureId);
+          if (!parentLine) {
+            throw new Error(`Line with id ${lineLabel.featureId} not found`);
+          }
+
+          const lineStartId = parentLine.coordRefs?.[0] as number;
+          const lineEndId = last(parentLine.coordRefs) as number;
+          const lineStartCoord = diagram.coordinates.find((coord) => coord.id === lineStartId);
+          const lineEndCoord = diagram.coordinates.find((coord) => coord.id === lineEndId);
+          if (!lineStartCoord || !lineEndCoord) throw new Error("Line start or end coordinates not found");
+          lineLabelCoordinate = midPoint(lineStartCoord.position, lineEndCoord.position);
+        }
+
+        return labelDTOPositionToOffsetAndAngle(diagram.id, lineLabelCoordinate, lineLabel);
       },
     );
 

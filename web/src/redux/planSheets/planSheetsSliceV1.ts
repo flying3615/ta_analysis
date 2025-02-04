@@ -2,11 +2,11 @@ import {
   CoordinateDTO,
   DiagramDTO,
   DisplayStateEnum,
+  LabelDTO,
+  LineDTO,
   PageDTO,
   PlanResponseDTO,
 } from "@linz/survey-plan-generation-api-client";
-import { LabelDTO } from "@linz/survey-plan-generation-api-client";
-import { LineDTO } from "@linz/survey-plan-generation-api-client";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { cloneDeep } from "lodash-es";
 
@@ -40,6 +40,8 @@ export const reducersV1 = {
     state.configs = action.payload.configs;
     state.diagrams = action.payload.diagrams;
     state.lastModifiedAt = action.payload.lastModifiedAt;
+    state.surveyCentreLatitude = action.payload.surveyCentreLatitude;
+    state.surveyCentreLongitude = action.payload.surveyCentreLongitude;
     state.pages = action.payload.pages;
     state.hasChanges = false;
     state.lastChangedAt = undefined;
@@ -434,12 +436,15 @@ export const selectorsV1 = {
   getPlanData: (state: PlanSheetsStateV1) => ({
     diagrams: state.diagrams,
     lastModifiedAt: state.lastModifiedAt,
+    surveyCentreLatitude: state.surveyCentreLatitude,
+    surveyCentreLongitude: state.surveyCentreLongitude,
     pages: state.pages,
   }),
   getDiagrams: (state: PlanSheetsStateV1) => state.diagrams,
   getPages: (state: PlanSheetsStateV1) => state.pages,
   getConfigs: (state: PlanSheetsStateV1) => state.configs,
   getLastModifiedAt: (state: PlanSheetsStateV1) => state.lastModifiedAt,
+  getSurveyCentre: (state: PlanSheetsStateV1) => ({ x: state.surveyCentreLongitude, y: state.surveyCentreLatitude }),
   getActiveSheet: (state: PlanSheetsStateV1) => state.activeSheet,
   getPageConfigs: (state: PlanSheetsStateV1) => state.configs?.[0]?.pageConfigs ?? [],
   getElementTypeConfigs: (state: PlanSheetsStateV1) => state.configs?.[0]?.elementTypeConfigs ?? [],
