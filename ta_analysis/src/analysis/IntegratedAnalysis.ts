@@ -2012,19 +2012,7 @@ async function executeIntegratedAnalysis(
 
 // 导出所有主要函数和接口
 export {
-  integrateAnalyses,
-  determineEntryStrategy,
-  determineExitStrategy,
-  determineRiskManagement,
-  generateWarnings,
-  generateConfirmationSignals,
-  generateInvalidationConditions,
-  generateKeyObservations,
-  generatePrimaryRationale,
-  generateSecondaryRationale,
-  generateSummary,
   executeIntegratedAnalysis,
-  assignTimeframePriorities,
 };
 
 // executeIntegratedAnalysis('COIN', { chip: 0.3, pattern: 0.7 });

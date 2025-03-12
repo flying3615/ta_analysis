@@ -9,12 +9,10 @@ export {
   MultiTimeframePatternAnalysis,
   ComprehensivePatternAnalysis,
 
-  // 核心分析函数
   analyzeAllPatterns,
   combinePatternAnalyses,
   analyzeMultiTimeframePatterns,
 
-  // 辅助和输出相关函数
   formatAndPrintPatternAnalysis,
 } from './analysis/patterns/multiTimeFramePatternAnalysis.js';
 
@@ -35,17 +33,12 @@ export {
 } from './analysis/trendReversal/trendReversalChecker.js';
 
 export {
-  integrateAnalyses,
-  determineEntryStrategy,
-  determineExitStrategy,
-  determineRiskManagement,
-  generateWarnings,
-  generateConfirmationSignals,
-  generateInvalidationConditions,
-  generateKeyObservations,
-  generatePrimaryRationale,
-  generateSecondaryRationale,
-  generateSummary,
-  executeIntegratedAnalysis,
-  assignTimeframePriorities,
-} from './analysis/IntegratedAnalysis.js';
+  MultiTimeframeAnalysisResult,
+  TimeframeAnalysis,
+  multiTimeFrameChipDistAnalysis,
+  formatAndPrintChipAnalysis,
+} from './analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
+
+export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
+
+export * from './types.js';

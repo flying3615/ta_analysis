@@ -319,4 +319,4 @@ async function main() {
 }
 
 // 加入到active stock里面， 关注是否到了阻力位或支撑位附近
-main();
+// main();
