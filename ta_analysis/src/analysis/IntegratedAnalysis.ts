@@ -2027,5 +2027,4 @@ export {
   assignTimeframePriorities,
 };
 
-// TODO combine BullOrBearishSignal and this to confirm the signal
 // executeIntegratedAnalysis('COIN', { chip: 0.3, pattern: 0.7 });
