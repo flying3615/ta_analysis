@@ -2011,8 +2011,6 @@ async function executeIntegratedAnalysis(
 }
 
 // 导出所有主要函数和接口
-export {
-  executeIntegratedAnalysis,
-};
+export { executeIntegratedAnalysis };
 
 // executeIntegratedAnalysis('COIN', { chip: 0.3, pattern: 0.7 });
