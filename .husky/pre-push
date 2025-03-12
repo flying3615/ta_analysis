@@ -1,7 +1,0 @@
-#!/bin/bash
-cd web
-[ ! -d node_modules ] && npm install
-npm run lint
-cd ../test/e2e
-[ ! -d node_modules ] && npm install
-npm run lint

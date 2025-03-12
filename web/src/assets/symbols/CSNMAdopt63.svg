@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE svg>
-<svg width="%WIDTH%" height="%HEIGHT%" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="14" height="12" fill="white"></rect>
-
-    <path d="M0.937822 11.5L7 1L13.0622 11.5H0.937822Z" fill="white" stroke="%LINE_COLOR%"/>
-</svg>

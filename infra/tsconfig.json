@@ -1,4 +1,0 @@
-{
-  "extends": "@linzjs/style/tsconfig.base.json",
-  "exclude": ["cdk.out"]
-}
