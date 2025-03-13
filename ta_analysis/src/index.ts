@@ -8,11 +8,9 @@ export {
   PatternAnalysisResult,
   MultiTimeframePatternAnalysis,
   ComprehensivePatternAnalysis,
-
   analyzeAllPatterns,
   combinePatternAnalyses,
   analyzeMultiTimeframePatterns,
-
   formatAndPrintPatternAnalysis,
 } from './analysis/patterns/multiTimeFramePatternAnalysis.js';
 
