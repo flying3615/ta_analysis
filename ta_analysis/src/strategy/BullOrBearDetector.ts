@@ -1,12 +1,14 @@
-import { bearish, bullish } from 'technicalindicators';
 import { Candle } from '../types.js';
-import { MarketQuery } from '../finance/MarketQuery.js';
+import { getStockData } from '../util/util.js';
+import EnhancedBullishPatterns from '../util/EnhancedBullishPatterns.js';
+import EnhancedBearishPatterns from '../util/EnhancedBearishPatterns.js';
 
 interface PatternResult {
   date: Date;
   patternType: 'bullish' | 'bearish';
   priceLevel: number;
   strength: number; // 0-100 的强度值
+  patternNames: string[]; // 形态名称
 }
 
 /**
@@ -34,22 +36,16 @@ export const detectBullOrBear = (
     // i+1 为了包含当前K线
     const windowCandles = candles.slice(i - currentWindowSize, i + 1);
 
-    const patternData = {
-      open: windowCandles.map(candle => candle.open),
-      high: windowCandles.map(candle => candle.high),
-      low: windowCandles.map(candle => candle.low),
-      close: windowCandles.map(candle => candle.close),
-      timestamp: windowCandles.map(candle => candle.timestamp),
-    };
-
     // 获取最新K线的信息
     const currentCandle = windowCandles[windowCandles.length - 1];
     const currentDate = currentCandle.timestamp;
     const currentClose = currentCandle.close;
 
     // 检查看涨形态
-    const hasBullishPattern = bullish(patternData) as boolean;
-    if (hasBullishPattern) {
+    const bullishPatternNames = new EnhancedBullishPatterns().hasPattern(
+      windowCandles
+    );
+    if (bullishPatternNames.length > 0) {
       // 计算形态强度
       const patternStrength = calculatePatternStrength(
         windowCandles,
@@ -61,12 +57,15 @@ export const detectBullOrBear = (
         patternType: 'bullish',
         priceLevel: currentClose,
         strength: patternStrength,
+        patternNames: bullishPatternNames,
       });
     }
 
     // 检查看跌形态
-    const hasBearishPattern = bearish(patternData) as boolean;
-    if (hasBearishPattern) {
+    const bearishPatternNames = new EnhancedBearishPatterns().hasPattern(
+      windowCandles
+    );
+    if (bearishPatternNames.length > 0) {
       // 计算形态强度
       const patternStrength = calculatePatternStrength(
         windowCandles,
@@ -78,6 +77,7 @@ export const detectBullOrBear = (
         patternType: 'bearish',
         priceLevel: currentClose,
         strength: patternStrength,
+        patternNames: bearishPatternNames,
       });
     }
   }
@@ -204,21 +204,8 @@ export const multiTimeframeConfirmation = async (
   startDate: Date,
   endDate: Date
 ) => {
-  const marketQuery = new MarketQuery();
-
-  // 获取不同时间周期的数据
-  const dailyCandles = await marketQuery.getHistoricalData(
-    symbol,
-    startDate,
-    endDate,
-    '1d'
-  );
-  const hourlyCandles = await marketQuery.getHistoricalData(
-    symbol,
-    startDate,
-    endDate,
-    '1h'
-  );
+  const dailyCandles = await getStockData(symbol, startDate, endDate, '1d');
+  const hourlyCandles = await getStockData(symbol, startDate, endDate, '1h');
 
   // 检测形态
   const dailyResult = checkBullOrBearRecently(dailyCandles, 5, 60);
@@ -244,3 +231,15 @@ export const multiTimeframeConfirmation = async (
     hourlyResult,
   };
 };
+
+const main = async () => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 30);
+
+  const result = await multiTimeframeConfirmation('MSTR', startDate, endDate);
+
+  console.log('Bull Bear result:', JSON.stringify(result, null, 2));
+};
+
+main();
