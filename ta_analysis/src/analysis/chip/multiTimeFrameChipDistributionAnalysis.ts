@@ -798,9 +798,9 @@ function formatAndPrintChipAnalysis(
 
 // 导出核心函数，使其可供其他模块使用
 export {
-  multiTimeFrameChipDistAnalysis,
   MultiTimeframeAnalysisResult,
   TimeframeAnalysis,
+  multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
 };
 

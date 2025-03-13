@@ -156,7 +156,7 @@ export interface PatternFeatures {
 export interface PatternMatchResult {
   symbol: string;
   isMatch: boolean;
-  matchScore: number;
+  matchScore: string;
   featureMatches: {
     [feature: string]: boolean;
   };
