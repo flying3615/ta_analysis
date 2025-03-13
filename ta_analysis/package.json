@@ -1,6 +1,6 @@
 {
-  "name": "ta_analysis",
-  "version": "1.0.0",
+  "name": "@gabriel3615/ta_analysis",
+  "version": "1.0.3",
   "description": "stock ta analysis",
   "main": "dist/index.js",
   "type": "module",
