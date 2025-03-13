@@ -194,32 +194,16 @@ export const checkBullOrBearRecently = (
 
 /**
  * 多时间周期确认(日，周)
- * @param symbol 股票代码
- * @param startDate 开始日期
- * @param endDate 结束日期
+ * @param dailyCandles 日K线数据
+ * @param weeklyCandles 周K线数据
  * @returns 多周期确认结果
  */
 export const multiTimeframeConfirmation = async (
-  symbol: string,
-  startDate: Date,
-  endDate: Date
+  dailyCandles: Candle[],
+  weeklyCandles: Candle[]
 ) => {
-  // 获取日K线数据
-  const dailyCandles = await getStockData(symbol, startDate, endDate, '1d');
-
   // 检测形态
   const dailyResult = checkBullOrBearRecently(dailyCandles, 5, 60);
-
-  // 使用周K线减少噪音
-  // 需要扩展开始日期以获取足够的周K线数据用于分析
-  const extendedStartDate = new Date(startDate);
-  extendedStartDate.setDate(startDate.getDate() - 90); // 额外获取约90天数据，确保有足够的周K线
-  const weeklyCandles = await getStockData(
-    symbol,
-    extendedStartDate,
-    endDate,
-    '1wk'
-  );
 
   // 周K线应该检查更长的周期，比如8-12周，而小时K线可以检查2天
   const weeklyResult = checkBullOrBearRecently(
@@ -252,24 +236,21 @@ export const multiTimeframeConfirmation = async (
 /**
  * 根据多时间周期信号生成交易建议
  * @param symbol 股票代码
- * @param startDate 开始日期
- * @param endDate 结束日期
+ * @param dailyCandles
+ * @param weeklyCandles
  * @returns 交易建议，包括方向、入场价和止损价
  */
 export const generateTradeRecommendation = async (
   symbol: string,
-  startDate: Date,
-  endDate: Date
+  dailyCandles: Candle[],
+  weeklyCandles: Candle[]
 ) => {
   // 使用周线和日线进行多时间周期确认
   const mtfResult = await multiTimeframeConfirmation(
-    symbol,
-    startDate,
-    endDate
+    dailyCandles,
+    weeklyCandles
   );
 
-  // 获取最新的价格数据用于计算入场价和止损价
-  const dailyCandles = await getStockData(symbol, startDate, endDate, '1d');
   const latestCandle = dailyCandles[dailyCandles.length - 1];
   const currentPrice = latestCandle.close;
 

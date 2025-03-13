@@ -1,16 +1,18 @@
 import { generateTradeRecommendation } from './BullOrBearDetector.js';
+import { Candle } from '../../types.js';
+import { getStockDataForTimeframe } from '../../util/util.js';
 
 /**
  * 生成多个股票的交易计划，并以JSON格式返回
  * @param symbol 股票代码数组
- * @param startDate 开始日期
- * @param endDate 结束日期
+ * @param dailyCandles
+ * @param weeklyCandles
  * @returns 多股票交易计划JSON
  */
-export const generateTradePlans = async (
+const multiTimeCandleAnalysis = async (
   symbol: string,
-  startDate: Date = new Date(new Date().setDate(new Date().getDate() - 365)),
-  endDate: Date = new Date()
+  dailyCandles: Candle[],
+  weeklyCandles: Candle[]
 ): Promise<Record<string, any>> => {
   console.log('生成交易计划...');
 
@@ -18,8 +20,8 @@ export const generateTradePlans = async (
     console.log(`分析 ${symbol}...`);
     const recommendation = await generateTradeRecommendation(
       symbol,
-      startDate,
-      endDate
+      dailyCandles,
+      weeklyCandles
     );
 
     // 计算潜在收益与风险
@@ -133,12 +135,35 @@ export const generateTradePlans = async (
  * 生成JSON格式的交易计划文件
  */
 export const tradesPlanFromCandlesPattern = async (symbol: string) => {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 100); // 获取一年的数据
+  // 获取不同时间周期的数据
+  const today = new Date();
+
+  const startDateWeekly = new Date();
+  startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+
+  const startDateDaily = new Date();
+  startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+
+  const weeklyData = await getStockDataForTimeframe(
+    symbol,
+    startDateWeekly,
+    today,
+    'weekly'
+  );
+
+  const dailyData = await getStockDataForTimeframe(
+    symbol,
+    startDateDaily,
+    today,
+    'daily'
+  );
 
   // 生成交易计划
-  const tradePlans = await generateTradePlans(symbol, startDate, endDate);
+  const tradePlans = await multiTimeCandleAnalysis(
+    symbol,
+    dailyData,
+    weeklyData
+  );
 
   // 将交易计划保存为JSON字符串
   const tradePlansJson = JSON.stringify(tradePlans, null, 2);
@@ -151,7 +176,9 @@ export const tradesPlanFromCandlesPattern = async (symbol: string) => {
 };
 
 // 运行测试
-// main();
-// testTradeRecommendation(); // 显示详细信息
-// const result = generateTradesPlanJson('COIN'); // 生成JSON格式交易计划
-// console.log(JSON.stringify(result, null, 2));
+// TODO need to check if the signal happens on S/R level
+// print out patterns name
+const result = tradesPlanFromCandlesPattern('COIN'); // 生成JSON格式交易计划
+console.log(JSON.stringify(result, null, 2));
+
+export { multiTimeCandleAnalysis };
