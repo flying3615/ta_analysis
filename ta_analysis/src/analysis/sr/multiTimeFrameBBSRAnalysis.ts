@@ -1,12 +1,17 @@
 import { getStockDataForTimeframe } from '../../util/util.js';
-import { Candle } from '../../types.js';
+import { Candle, SRSignal } from '../../types.js';
 import { checkBullBearNearSupportResistance } from './BullBearOnSupportResistAnalysis.js';
+
+export interface MultiTimeFrameBBSRAnalysisResult {
+  weeklyBBSRResult?: SRSignal;
+  dailyBBSRResult?: SRSignal;
+}
 
 const multiTimeBBSRAnalysis = async (
   symbol: string,
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
-) => {
+): Promise<MultiTimeFrameBBSRAnalysisResult> => {
   const weeklyBBSRResult = checkBullBearNearSupportResistance(
     symbol,
     weeklyCandles
@@ -49,4 +54,4 @@ const main = async (symbol: string) => {
   console.log(result);
 };
 
-main('MSTR');
+// main('MSTR');

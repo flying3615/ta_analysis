@@ -104,6 +104,24 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     output += `  未检测到强阻力位\n`;
   }
 
+  if (
+    tradePlan.bbsrAnalysis.dailyBBSRResult ||
+    tradePlan.bbsrAnalysis.weeklyBBSRResult
+  ) {
+    output += `\n【BBSR分析】\n`;
+    if (tradePlan.bbsrAnalysis.dailyBBSRResult) {
+      output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel})}\n`;
+      output += `日期: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate})}\n`;
+      output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')})}\n`;
+    }
+
+    if (tradePlan.bbsrAnalysis.weeklyBBSRResult) {
+      output += `周线BBSR: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult)}\n`;
+      output += `日期: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate})}\n`;
+      output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')})}\n`;
+    }
+  }
+
   // 7. 时间周期分析
   output += `\n【时间周期分析】\n`;
   output += `主要周期: ${formatTimeframe(tradePlan.primaryTimeframe)} | 一致性: ${tradePlan.timeframeConsistency}\n`;

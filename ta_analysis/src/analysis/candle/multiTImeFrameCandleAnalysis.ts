@@ -173,10 +173,7 @@ export const tradesPlanFromCandlesPattern = async (symbol: string) => {
   return tradePlansJson;
 };
 
-// 运行测试
-// TODO need to check if the signal happens on S/R level
-// print out patterns name
-const result = tradesPlanFromCandlesPattern('COIN'); // 生成JSON格式交易计划
-console.log(JSON.stringify(result, null, 2));
+// const result = tradesPlanFromCandlesPattern('COIN'); // 生成JSON格式交易计划
+// console.log(JSON.stringify(result, null, 2));
 
 export { multiTimeCandleAnalysis };

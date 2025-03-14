@@ -13,7 +13,10 @@ import {
   TrendReversalSignal,
 } from './trendReversal/multiTimeFrameTrendReversal.js';
 import { getStockDataForTimeframe } from '../util/util.js';
-import { multiTimeBBSRAnalysis } from './sr/multiTimeFrameBBSRAnalysis.js';
+import {
+  multiTimeBBSRAnalysis,
+  MultiTimeFrameBBSRAnalysisResult,
+} from './sr/multiTimeFrameBBSRAnalysis.js';
 
 /**
  * 综合交易信号强度枚举
@@ -193,6 +196,8 @@ export interface IntegratedTradePlan {
   // 关键价位
   keyLevels: KeyLevel[];
 
+  bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult;
+
   // 确认信号
   confirmationSignals: TradeCondition[];
 
@@ -229,12 +234,14 @@ export interface IntegratedTradePlan {
  * 综合筹码和形态分析结果的方法
  * @param chipAnalysis 筹码分布分析结果
  * @param patternAnalysis 形态分析结果
+ * @param bbsrAnalysis
  * @param customWeights 自定义权重，默认均分
  */
 function integrateAnalyses(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
-  customWeights: { chip: number; pattern: number } = { chip: 0.5, pattern: 0.5 }
+  bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
+  customWeights: { chip: number; pattern: number }
 ): IntegratedTradePlan {
   // 确保权重总和为1
   const totalWeight = customWeights.chip + customWeights.pattern;
@@ -616,6 +623,8 @@ function integrateAnalyses(
     shortTermOutlook,
     mediumTermOutlook,
     longTermOutlook,
+
+    bbsrAnalysis,
 
     entryStrategy,
     exitStrategy,
@@ -1928,7 +1937,10 @@ function generateSummary(
  */
 async function executeIntegratedAnalysis(
   symbol: string,
-  customWeights: { chip: number; pattern: number } = { chip: 0.6, pattern: 0.4 } // 默认筹码分析权重更高
+  customWeights: { chip: number; pattern: number } = {
+    chip: 0.4,
+    pattern: 0.4,
+  } // 默认筹码分析权重更高
 ): Promise<IntegratedTradePlan> {
   try {
     console.log(`======== 开始执行 ${symbol} 综合分析 ========`);
@@ -2002,6 +2014,7 @@ async function executeIntegratedAnalysis(
     const integratedResult = integrateAnalyses(
       multiTimeframeChipDistResult,
       patternAnalysisResult,
+      bbsrAnalysis,
       customWeights
     );
 
@@ -2021,4 +2034,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-// executeIntegratedAnalysis('COIN', { chip: 0.3, pattern: 0.7 });
+// executeIntegratedAnalysis('COIN', { chip: 0.4, pattern: 0.6 });
