@@ -92,8 +92,6 @@ const multiTimeCandleAnalysis = async (
         price: pattern.priceLevel,
       })) || [];
 
-    // 创建交易计划对象
-    // 添加到总交易计划
     return {
       symbol: recommendation.symbol,
       currentPrice: recommendation.currentPrice,

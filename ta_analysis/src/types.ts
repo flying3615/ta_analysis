@@ -1,28 +1,6 @@
-export type ConditionOptions = {
-  shouldHigherThanAveragePriceDays?: number[];
-  priceDeviationWithin?: number;
-  closeToHighestWithin?: number;
-  turnOverRateRange?: [min: number, max?: number];
-  volumeRatioRange?: [min: number, max?: number];
-  minVolume?: number;
-  higherThanLast120DaysHighest?: boolean;
-  maxSharesOutstanding?: number;
-  bullish?: boolean;
-  breakout?: boolean;
-};
-
-export type ConditionOptionsWithSrc = ConditionOptions & {
-  sourceIds: string[];
-};
-
 export type Position = {
   quantity: number;
   price: number;
-};
-
-export type TimeFrameConfig = {
-  interval: string;
-  studies?: Array<{ name: string }>;
 };
 
 export type ChartImg = {
@@ -51,36 +29,31 @@ export type AnalysisObject = {
   position?: Position;
 };
 
-export type PullbackEMA20Result = {
-  stockCode: string;
-  ema20Price: number;
-  priceRange: string;
-  deviation: string;
-};
-
-export interface Analyzer {
-  apiKey: string;
-  modelName: string;
-  withCache?: boolean;
-  // eslint-disable-next-line no-unused-vars
-  doAnalysis: (data: AnalysisObject) => Promise<string>;
-  analysisTrade: (
-    report: TradesReport,
-    historicalPrices: Candle[]
-  ) => Promise<string>;
-}
-
 export interface Strategy<T> {
   run(_): T;
 }
 
+export interface PatternResult {
+  date: Date;
+  patternType: 'bullish' | 'bearish';
+  priceLevel: number;
+  strength: number; // 0-100 的强度值
+  patternNames: string[]; // 形态名称
+}
+
+export interface SRSignal {
+  symbol: string;
+  SRLevel: number;
+  signalDate: Date;
+  currentPrice: number;
+  strength: number;
+  signal: PatternResult;
+}
+
 export interface SupportResistanceResult {
   symbol: string;
-  supportLevels: number[];
-  resistanceLevels: number[];
   dynamicSupport: number | null;
   dynamicResistance: number | null;
-  breakSignals: BreakSignal[];
 }
 
 export interface TradeRecord {

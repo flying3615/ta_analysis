@@ -807,7 +807,7 @@ export {
 /**
  * 多时间周期分析示例
  */
-async function exampleMultiTimeframeUsage(symbol: string) {
+async function main(symbol: string) {
   try {
     console.log(`\n====== 多时间周期筹码分布分析: ${symbol} ======`);
 
@@ -864,4 +864,4 @@ async function exampleMultiTimeframeUsage(symbol: string) {
 }
 
 // 使用示例
-// exampleMultiTimeframeUsage('COIN');
+// main('COIN');

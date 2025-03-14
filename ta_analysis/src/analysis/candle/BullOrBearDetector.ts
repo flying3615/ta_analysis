@@ -1,15 +1,6 @@
-import { Candle } from '../../types.js';
+import { Candle, PatternResult } from '../../types.js';
 import EnhancedBullishPatterns from '../../util/EnhancedBullishPatterns.js';
 import EnhancedBearishPatterns from '../../util/EnhancedBearishPatterns.js';
-import { getStockData } from '../../util/util.js';
-
-interface PatternResult {
-  date: Date;
-  patternType: 'bullish' | 'bearish';
-  priceLevel: number;
-  strength: number; // 0-100 的强度值
-  patternNames: string[]; // 形态名称
-}
 
 /**
  * 检测K线形态
