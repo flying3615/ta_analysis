@@ -178,7 +178,7 @@ function detectSupportResistance(
 function checkBullBearNearSupportResistance(
   symbol: string,
   candles: Candle[]
-): SRSignal | null {
+): SRSignal {
   const srResult = detectSupportResistance(symbol, candles, {
     leftBars: 10,
     rightBars: 10,
@@ -228,7 +228,7 @@ function checkBullBearNearSupportResistance(
         : lastBearishPattern.strength;
   } else {
     // 没有信号
-    return null;
+    return;
   }
 
   // 5. 判断是否在支撑位或阻力位附近
@@ -267,35 +267,3 @@ function checkBullBearNearSupportResistance(
 }
 
 export { detectSupportResistance, checkBullBearNearSupportResistance };
-
-const main = async (symbol: string) => {
-  const today = new Date();
-  console.log('正在获取数据与分析筹码分布...');
-
-  const startDate = new Date();
-  startDate.setDate(today.getDate() - 365); // 获取一年的数据
-
-  const weeklyData = await getStockDataForTimeframe(
-    symbol,
-    startDate,
-    today,
-    'weekly'
-  ); // 获取周线数据
-
-  const dailyData = await getStockDataForTimeframe(
-    symbol,
-    startDate,
-    today,
-    'daily'
-  ); // 获取日线数据
-
-  const weeklyResult = checkBullBearNearSupportResistance(symbol, weeklyData);
-
-  console.log('weeklyResult:', weeklyResult);
-
-  const dailyResult = checkBullBearNearSupportResistance(symbol, dailyData);
-
-  console.log('dailyResult:', dailyResult);
-};
-
-// main('COIN');

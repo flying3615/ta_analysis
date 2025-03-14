@@ -13,6 +13,7 @@ import {
   TrendReversalSignal,
 } from './trendReversal/multiTimeFrameTrendReversal.js';
 import { getStockDataForTimeframe } from '../util/util.js';
+import { multiTimeBBSRAnalysis } from './sr/multiTimeFrameBBSRAnalysis.js';
 
 /**
  * 综合交易信号强度枚举
@@ -1985,6 +1986,13 @@ async function executeIntegratedAnalysis(
     console.log('正在执行形态分析...');
     const patternAnalysisResult = await multiTimeframePatternAnalysis(
       weeklyData,
+      dailyData,
+      hourlyData
+    );
+
+    // 执行支撑阻力关键位k线形态分析
+    const bbsrAnalysis = await multiTimeBBSRAnalysis(
+      symbol,
       dailyData,
       hourlyData
     );
