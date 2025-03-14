@@ -415,7 +415,7 @@ function combinePatternAnalyses(
     .filter(p => p !== hourlyDominant)
     .map(
       p =>
-        `${p.patternType} ${p.keyDates.map(date => date.toISOString()).join('|')})`
+        `${p.patternType} ${p.keyDates.map(date => date.toUTCString()).join('|')})`
     )
     .join('/n');
 
@@ -423,16 +423,16 @@ function combinePatternAnalyses(
     .filter(p => p !== dailyDominant)
     .map(
       p =>
-        `${p.patternType} ${p.keyDates.map(date => date.toISOString()).join('|')})`
+        `${p.patternType} ${p.keyDates.map(date => date.toUTCString()).join('|')})`
     )
     .join('/n');
 
   if (hourlyDominant) {
-    description += ` 小时线主导形态: ${hourlyDominant.patternType}, 关键时间: ${hourlyDominant.keyDates.map(date => date.toISOString()).join('|')} (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
+    description += ` 小时线主导形态: ${hourlyDominant.patternType}, 关键时间: ${hourlyDominant.keyDates.map(date => date.toUTCString()).join('|')} (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
   }
 
   if (dailyDominant) {
-    description += ` 日线主导形态: ${dailyDominant.patternType}, 关键时间: ${dailyDominant.keyDates.map(date => date.toISOString()).join('|')}  (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
+    description += ` 日线主导形态: ${dailyDominant.patternType}, 关键时间: ${dailyDominant.keyDates.map(date => date.toUTCString()).join('|')}  (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
   }
 
   // 添加其他形态描述

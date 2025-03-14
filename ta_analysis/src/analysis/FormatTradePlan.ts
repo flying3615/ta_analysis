@@ -17,13 +17,14 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   // 1. 标题和基本信息 - 简洁显示
   output += `${separator}\n`;
   output += `交易计划 | ${tradePlan.symbol} | ${new Date(tradePlan.date).toLocaleString()}\n`;
-  output += `${separator}\n\n`;
+  output += `\n${sectionSeparator}\n`;
 
   // 2. 核心信息 - 信号、方向和总结
-  output += `【综合信号】\n`;
+  output += `\n【综合信号】\n`;
   output += `方向: ${formatDirection(tradePlan.direction)} | 强度: ${formatSignalStrength(tradePlan.signalStrength)} | 确信度: ${tradePlan.confidenceScore.toFixed(1)}/100\n`;
   output += `${tradePlan.summary}\n\n`;
 
+  output += `${sectionSeparator}\n\n`;
   // 3. 入场策略 - 合并为简洁格式
   output += `【入场策略】\n`;
   output += `价格: ${tradePlan.currentPrice.toFixed(2)} ➔ ${tradePlan.entryStrategy.idealEntryPrice.toFixed(2)} (${formatEntryType(tradePlan.entryStrategy.entryType)})\n`;
@@ -36,8 +37,10 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     .join('\n  ');
   output += `条件:\n  ${criticalConditions}\n\n`;
 
+  output += `\n${sectionSeparator}\n`;
+
   // 4. 出场策略 - 合并为简洁格式
-  output += `【出场策略】\n`;
+  output += `\n【出场策略】\n`;
 
   // 止盈设置 - 简化为表格式格式
   output += `止盈目标:\n`;
@@ -72,6 +75,8 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   output += `建议仓位: ${(tradePlan.riskManagement.suggestionPosition * 100).toFixed(1)}% | 风险回报比: ${tradePlan.riskManagement.riskRewardRatio.toFixed(2)}\n`;
   output += `最大损失: ${tradePlan.riskManagement.maxLoss} | 波动性: ${tradePlan.riskManagement.volatilityConsideration}\n`;
 
+  output += `\n${sectionSeparator}\n`;
+
   // 6. 关键价位 - 分为支撑和阻力两组
   output += `\n【关键价位】\n`;
 
@@ -95,7 +100,6 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   }
 
   // 阻力位
-  output += `阻力位:\n`;
   if (strongResistanceLevels.length > 0) {
     strongResistanceLevels.slice(0, 3).forEach((level, i) => {
       output += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
@@ -108,19 +112,23 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     tradePlan.bbsrAnalysis.dailyBBSRResult ||
     tradePlan.bbsrAnalysis.weeklyBBSRResult
   ) {
+    output += `\n${sectionSeparator}\n`;
+
     output += `\n【BBSR分析】\n`;
     if (tradePlan.bbsrAnalysis.dailyBBSRResult) {
-      output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel})}\n`;
-      output += `日期: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate})}\n`;
-      output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')})}\n`;
+      output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)})}\n`;
+      output += `日期: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate.toUTCString()})}\n`;
+      output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}\n`;
     }
 
     if (tradePlan.bbsrAnalysis.weeklyBBSRResult) {
-      output += `周线BBSR: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult)}\n`;
-      output += `日期: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate})}\n`;
-      output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')})}\n`;
+      output += `周线BBSR: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2))}\n`;
+      output += `日期: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate.toUTCString()})}\n`;
+      output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')}\n`;
     }
   }
+
+  output += `\n${sectionSeparator}\n`;
 
   // 7. 时间周期分析
   output += `\n【时间周期分析】\n`;
@@ -132,6 +140,8 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     tradePlan.trendReversalInfo &&
     tradePlan.trendReversalInfo.hasReversalSignal
   ) {
+    output += `\n${sectionSeparator}\n`;
+
     output += `\n【趋势逆转信号】\n`;
 
     if (tradePlan.trendReversalInfo.primaryReversalSignal) {
@@ -157,10 +167,14 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     }
   }
 
+  output += `\n${sectionSeparator}\n`;
+
   // 9. 关键理由
   output += `\n【交易理由】\n`;
   output += `${tradePlan.primaryRationale}\n`;
   output += `${tradePlan.secondaryRationale}\n`;
+
+  output += `\n${sectionSeparator}\n`;
 
   // 10. 无效信号条件
   output += `\n【无效信号条件】\n`;
@@ -172,11 +186,15 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
 
   // 11. 警告信息
   if (tradePlan.warnings.length > 0) {
+    output += `\n${sectionSeparator}\n`;
+
     output += `\n【警告信息】\n`;
     tradePlan.warnings.forEach((warning, i) => {
       output += `  ⚠️ ${warning}\n`;
     });
   }
+
+  output += `\n${sectionSeparator}\n`;
 
   // 添加分析权重信息
   output += `\n【分析构成】\n`;

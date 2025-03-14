@@ -433,6 +433,9 @@ function integrateAnalyses(
     }
   });
 
+  // 形态总体分析描述
+  const patternDesc = patternAnalysis.description;
+
   // 按价格排序并合并相近的价位
   keyLevels.sort((a, b) => a.price - b.price);
   const mergedKeyLevels: KeyLevel[] = [];
@@ -479,7 +482,6 @@ function integrateAnalyses(
     direction,
     currentPrice,
     mergedKeyLevels,
-    chipAnalysis,
     patternAnalysis,
     confidenceScore
   );
@@ -487,7 +489,6 @@ function integrateAnalyses(
   // 确定出场策略
   const exitStrategy = determineExitStrategy(
     direction,
-    currentPrice,
     mergedKeyLevels,
     entryStrategy.idealEntryPrice,
     chipAnalysis,
@@ -531,7 +532,6 @@ function integrateAnalyses(
   const keyObservations = generateKeyObservations(
     chipAnalysis,
     patternAnalysis,
-    direction,
     mergedKeyLevels
   );
 
@@ -540,13 +540,11 @@ function integrateAnalyses(
     direction,
     chipAnalysis,
     patternAnalysis,
-    normalizedWeights
   );
 
   const secondaryRationale = generateSecondaryRationale(
     direction,
     chipAnalysis,
-    patternAnalysis,
     timeframeConsistency,
     timeframeConsistencyStrength
   );
@@ -557,7 +555,7 @@ function integrateAnalyses(
     direction,
     signalStrength,
     confidenceScore,
-    primaryRationale,
+    patternDesc,
     entryStrategy.idealEntryPrice,
     exitStrategy.takeProfitLevels[0]?.price,
     exitStrategy.stopLossLevels[0]?.price
@@ -644,7 +642,6 @@ function determineEntryStrategy(
   direction: TradeDirection,
   currentPrice: number,
   keyLevels: KeyLevel[],
-  chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: ComprehensivePatternAnalysis,
   confidenceScore: number
 ): IntegratedTradePlan['entryStrategy'] {
@@ -877,7 +874,6 @@ function determineEntryStrategy(
  */
 function determineExitStrategy(
   direction: TradeDirection,
-  currentPrice: number,
   keyLevels: KeyLevel[],
   entryPrice: number,
   chipAnalysis: MultiTimeframeAnalysisResult,
@@ -1453,7 +1449,7 @@ function generateWarnings(
     direction === TradeDirection.Short &&
     timeframe.analysis.profitChipsPercentage < 20
   ) {
-    warnings.push('套牢筹码比例过高，可能面临较强支撑');
+    warnings.push('套牢筹码比例过高, 可能面临较大买盘支撑');
   }
 
   return warnings;
@@ -1615,7 +1611,6 @@ function generateInvalidationConditions(
 function generateKeyObservations(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: ComprehensivePatternAnalysis,
-  direction: TradeDirection,
   keyLevels: KeyLevel[]
 ): string[] {
   const observations: string[] = [];
@@ -1710,7 +1705,6 @@ function generatePrimaryRationale(
   direction: TradeDirection,
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: ComprehensivePatternAnalysis,
-  weights: { chip: number; pattern: number }
 ): string {
   if (direction === TradeDirection.Neutral) {
     return '综合分析显示市场信号中性，无明确交易方向';
@@ -1829,7 +1823,6 @@ function generatePrimaryRationale(
 function generateSecondaryRationale(
   direction: TradeDirection,
   chipAnalysis: MultiTimeframeAnalysisResult,
-  patternAnalysis: ComprehensivePatternAnalysis,
   timeframeConsistency: string,
   timeframeConsistencyStrength: number
 ): string {
@@ -1905,7 +1898,7 @@ function generateSummary(
   direction: TradeDirection,
   signalStrength: SignalStrength,
   confidenceScore: number,
-  primaryRationale: string,
+  patternDesc: string,
   entryPrice: number,
   takeProfitPrice?: number,
   stopLossPrice?: number
@@ -1914,7 +1907,9 @@ function generateSummary(
     return `${symbol}当前无明确交易信号，建议观望等待更清晰的市场方向。信号强度: ${signalStrength}，确信度: ${confidenceScore.toFixed(2)}/100。`;
   }
 
-  let summary = `${symbol}${direction === TradeDirection.Long ? '做多' : '做空'}信号，信号强度: ${signalStrength}，确信度: ${confidenceScore.toFixed(2)}/100。建议入场价格: ${entryPrice.toFixed(2)}`;
+  let summary = `${symbol}${direction === TradeDirection.Long ? '做多' : '做空'}信号，信号强度: ${signalStrength}，确信度: ${confidenceScore.toFixed(2)}/100。建议入场价格: ${entryPrice.toFixed(2)}\n`;
+
+  summary += `形态分析: ${patternDesc}\n`;
 
   if (takeProfitPrice) {
     summary += `，目标价格: ${takeProfitPrice.toFixed(2)}`;
