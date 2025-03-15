@@ -6,6 +6,7 @@ import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
+import {PatternStatus} from "../analysis/patterns/multiTimeFramePatternAnalysis.js";
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -202,4 +203,22 @@ export async function getStockDataForTimeframe(
 
   // 默认返回日线数据
   return rawData;
+}
+
+/**
+ * 获取形态状态描述
+ */
+export function getStatusDescription(status: PatternStatus): string {
+  switch (status) {
+    case PatternStatus.Forming:
+      return '正在形成中';
+    case PatternStatus.Completed:
+      return '已完成但未突破';
+    case PatternStatus.Confirmed:
+      return '已确认突破';
+    case PatternStatus.Failed:
+      return '形成后失败';
+    default:
+      return '未知状态';
+  }
 }

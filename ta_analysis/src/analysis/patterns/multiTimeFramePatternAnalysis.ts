@@ -1,15 +1,14 @@
 import { Candle } from '../../types.js';
-import {
-  detectPeaksAndValleys,
-  findCupAndHandle,
-  findDoubleTopsAndBottoms,
-  findFlagsAndPennants,
-  findHeadAndShoulders,
-  findRoundingPatterns,
-  findTriangles,
-  findWedges,
-} from './findPatterns.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
+
+import _ from 'lodash';
+import { findHeadAndShoulders } from './findHeadAndShoulders.js';
+import { findDoubleTopsAndBottoms } from './findDoubleTopsAndBottoms.js';
+import { findTriangles } from './findTriangles.js';
+import { findWedges } from './findWedges.js';
+import { findFlagsAndPennants } from './findFlagsAndPennants.js';
+import { findCupAndHandle } from './findCupAndHandle.js';
+import { findRoundingPatterns } from './findRoundingPatterns.js';
 
 /**
  * 价格形态类型枚举
@@ -98,6 +97,7 @@ interface PatternAnalysisResult {
   tradingImplication: string; // 交易含义
 
   keyDates: Date[]; // 关键日期
+  keyPrices: number[]; // 关键价格
 }
 
 /**
@@ -118,6 +118,96 @@ interface ComprehensivePatternAnalysis {
   combinedSignal: PatternDirection; // 综合信号
   signalStrength: number; // 信号强度(0-100)
   description: string; // 总体形态分析描述
+}
+
+/**
+ * 增强型峰谷检测函数，更注重最近的价格波动
+ * @param data K线数据
+ * @param windowSize 用于峰谷检测的窗口大小
+ * @param recentEmphasis 最近数据的权重因子
+ */
+function detectPeaksAndValleys(
+  data: Candle[],
+  windowSize: number = 5,
+  recentEmphasis: boolean = true
+): PeakValley[] {
+  const result: PeakValley[] = [];
+
+  // 确保有足够的数据
+  if (data.length < windowSize * 2 + 1) {
+    return result;
+  }
+
+  for (let i = windowSize; i < data.length - windowSize; i++) {
+    const current = data[i];
+    let isPeak = true;
+    let isValley = true;
+
+    // 检查是否是峰
+    for (let j = i - windowSize; j < i; j++) {
+      if (data[j].high >= current.high) {
+        isPeak = false;
+        break;
+      }
+    }
+
+    for (let j = i + 1; j <= i + windowSize; j++) {
+      if (data[j].high >= current.high) {
+        isPeak = false;
+        break;
+      }
+    }
+
+    // 检查是否是谷
+    for (let j = i - windowSize; j < i; j++) {
+      if (data[j].low <= current.low) {
+        isValley = false;
+        break;
+      }
+    }
+
+    for (let j = i + 1; j <= i + windowSize; j++) {
+      if (data[j].low <= current.low) {
+        isValley = false;
+        break;
+      }
+    }
+
+    if (isPeak) {
+      result.push({
+        index: i,
+        price: current.high,
+        date: current.timestamp,
+        type: 'peak',
+      });
+    } else if (isValley) {
+      result.push({
+        index: i,
+        price: current.low,
+        date: current.timestamp,
+        type: 'valley',
+      });
+    }
+  }
+
+  // 当启用最近数据强调时，对峰谷点按照与当前时间的接近程度进行排序
+  if (recentEmphasis && result.length > 0) {
+    const lastIndex = data.length - 1;
+
+    // 对每个峰谷点的重要性进行加权
+    for (const point of result) {
+      // 计算与最后一个K线的距离
+      const distance = lastIndex - point.index;
+
+      // 添加一个重要性属性，随着距离增加而降低
+      (point as any).importance = Math.exp(-0.01 * distance);
+    }
+
+    // 按照新的重要性属性排序
+    result.sort((a, b) => (b as any).importance - (a as any).importance);
+  }
+
+  return result;
 }
 
 /**
@@ -413,35 +503,35 @@ function combinePatternAnalyses(
 
   const hourlyOtherPatternsDesc = hourlyAnalyses?.patterns
     .filter(p => p !== hourlyDominant)
-    .map(
-      p =>
-        `${p.patternType} ${p.keyDates.map(date => date.toUTCString()).join('|')})`
-    )
-    .join('/n');
+    .map(p => {
+      const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
+      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${date.toUTCString()} @ (${price.toFixed(2)})`).join(' | ')}`;
+    })
+    .join('\n');
 
   const dailyOtherPatternsDesc = dailyAnalyses?.patterns
     .filter(p => p !== dailyDominant)
-    .map(
-      p =>
-        `${p.patternType} ${p.keyDates.map(date => date.toUTCString()).join('|')})`
-    )
-    .join('/n');
+    .map(p => {
+      const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
+      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${date.toUTCString()} @ (${price.toFixed(2)})`).join(' | ')}`;
+    })
+    .join('\n');
 
   if (hourlyDominant) {
-    description += ` 小时线主导形态: ${hourlyDominant.patternType}, 关键时间: ${hourlyDominant.keyDates.map(date => date.toUTCString()).join('|')} (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
+    description += `\n\n小时线主导形态: ${hourlyDominant.patternType}\n 关键时间: ${hourlyDominant.keyDates.map(date => date.toUTCString()).join('|')}, (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
   }
 
   if (dailyDominant) {
-    description += ` 日线主导形态: ${dailyDominant.patternType}, 关键时间: ${dailyDominant.keyDates.map(date => date.toUTCString()).join('|')}  (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
+    description += `\n\n日线主导形态: ${dailyDominant.patternType}\n 关键时间: ${dailyDominant.keyDates.map(date => date.toUTCString()).join('|')}  (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
   }
 
   // 添加其他形态描述
   if (hourlyOtherPatternsDesc) {
-    description += ` 小时线其他形态: ${hourlyOtherPatternsDesc}`;
+    description += `\n\n小时线其他形态: ${hourlyOtherPatternsDesc}`;
   }
 
   if (dailyOtherPatternsDesc) {
-    description += ` 日线其他形态: ${dailyOtherPatternsDesc}`;
+    description += `\n\n日线其他形态: ${dailyOtherPatternsDesc}`;
   }
 
   return {
@@ -878,4 +968,4 @@ async function exampleMultiTimeframeUsage(symbol: string) {
 }
 
 // only focus on recently patterns
-// exampleMultiTimeframeUsage('COIN');
+exampleMultiTimeframeUsage('NVDA');
