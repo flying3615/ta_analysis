@@ -101,6 +101,7 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   }
 
   // 阻力位
+  output += `阻力位:\n`;
   if (strongResistanceLevels.length > 0) {
     strongResistanceLevels.slice(0, 3).forEach((level, i) => {
       output += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
