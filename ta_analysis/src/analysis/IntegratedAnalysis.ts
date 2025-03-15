@@ -204,7 +204,7 @@ export interface IntegratedTradePlan {
   // 无效信号条件
   invalidationConditions: TradeCondition[];
 
-  // 趋势逆转信息 (新增)
+  // 趋势逆转信息
   trendReversalInfo?: {
     hasReversalSignal: boolean;
     primaryReversalSignal?: TrendReversalSignal;

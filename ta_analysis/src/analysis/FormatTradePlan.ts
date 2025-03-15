@@ -17,8 +17,7 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
 
   // 1. 标题和基本信息 - 简洁显示
   output += `${separator}\n`;
-  output += `交易计划 | ${tradePlan.symbol} | ${new Date(tradePlan.date).toLocaleString()}\n`;
-  output += `\n${sectionSeparator}\n`;
+  output += `交易计划 | ${tradePlan.symbol} | ${new Date(tradePlan.date).toLocaleString()} ｜ ${tradePlan.currentPrice}\n`;
 
   // 2. 核心信息 - 信号、方向和总结
   output += `\n【综合信号】\n`;
@@ -191,7 +190,7 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     output += `\n${sectionSeparator}\n`;
 
     output += `\n【警告信息】\n`;
-    tradePlan.warnings.forEach((warning, i) => {
+    tradePlan.warnings.forEach(warning => {
       output += `  ⚠️ ${warning}\n`;
     });
   }
