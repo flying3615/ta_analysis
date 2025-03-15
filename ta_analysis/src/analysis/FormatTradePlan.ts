@@ -1,4 +1,5 @@
 import { IntegratedTradePlan } from './IntegratedAnalysis.js';
+import { toEDTString } from '../util/util.js';
 
 /**
  * 格式化交易计划输出结果
@@ -117,13 +118,13 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     output += `\n【BBSR分析】\n`;
     if (tradePlan.bbsrAnalysis.dailyBBSRResult) {
       output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)})}\n`;
-      output += `日期: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate.toUTCString()})}\n`;
+      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate)})}\n`;
       output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}\n`;
     }
 
     if (tradePlan.bbsrAnalysis.weeklyBBSRResult) {
       output += `周线BBSR: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2))}\n`;
-      output += `日期: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate.toUTCString()})}\n`;
+      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate)})}\n`;
       output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')}\n`;
     }
   }

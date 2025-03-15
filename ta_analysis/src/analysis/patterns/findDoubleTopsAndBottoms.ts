@@ -47,6 +47,25 @@ export function findDoubleTopsAndBottoms(
       if (middleValleys.length > 0) {
         const neckline = middleValleys[0].price;
 
+        // 获取双顶形态中的最高价格
+        const highestPrice = Math.max(firstPeak.price, secondPeak.price);
+
+        // 检查形态后的K线是否突破最高点（使形态无效）
+        let isInvalid = false;
+        if (secondPeak.index < data.length - 1) {
+          for (let j = secondPeak.index + 1; j < data.length; j++) {
+            if (data[j].high > highestPrice) {
+              isInvalid = true;
+              break;
+            }
+          }
+        }
+
+        // 如果形态无效，跳过此形态
+        if (isInvalid) {
+          continue;
+        }
+
         // 检查当前是否已突破颈线
         const currentPrice = data[data.length - 1].close;
         let status = PatternStatus.Forming;
@@ -105,12 +124,12 @@ export function findDoubleTopsAndBottoms(
             ),
           },
           priceTarget,
-          stopLoss: Math.max(firstPeak.price, secondPeak.price),
+          stopLoss: highestPrice,
           breakoutExpected: status === PatternStatus.Completed,
           breakoutDirection: PatternDirection.Bearish,
           probableBreakoutZone: [neckline * 0.98, neckline * 1.02],
           description: `双顶形态, ${status === PatternStatus.Confirmed ? '已确认突破颈线' : '正在形成中'}, 颈线位置在 ${neckline.toFixed(2)}`,
-          tradingImplication: `看跌信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${Math.max(firstPeak.price, secondPeak.price).toFixed(2)}`,
+          tradingImplication: `看跌信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${highestPrice.toFixed(2)}`,
           keyDates: [firstPeak.date, middleValleys[0].date, secondPeak.date],
           keyPrices: [
             firstPeak.price,
@@ -142,6 +161,25 @@ export function findDoubleTopsAndBottoms(
 
       if (middlePeaks.length > 0) {
         const neckline = middlePeaks[0].price;
+
+        // 获取双底形态中的最低价格
+        const lowestPrice = Math.min(firstValley.price, secondValley.price);
+
+        // 检查形态后的K线是否突破最低点（使形态无效）
+        let isInvalid = false;
+        if (secondValley.index < data.length - 1) {
+          for (let j = secondValley.index + 1; j < data.length; j++) {
+            if (data[j].low < lowestPrice) {
+              isInvalid = true;
+              break;
+            }
+          }
+        }
+
+        // 如果形态无效，跳过此形态
+        if (isInvalid) {
+          continue;
+        }
 
         // 检查当前是否已突破颈线
         const currentPrice = data[data.length - 1].close;
@@ -201,12 +239,12 @@ export function findDoubleTopsAndBottoms(
             ),
           },
           priceTarget,
-          stopLoss: Math.min(firstValley.price, secondValley.price),
+          stopLoss: lowestPrice,
           breakoutExpected: status === PatternStatus.Completed,
           breakoutDirection: PatternDirection.Bullish,
           probableBreakoutZone: [neckline * 0.98, neckline * 1.02],
           description: `双底形态, ${status === PatternStatus.Confirmed ? '已确认突破颈线' : '正在形成中'}, 颈线位置在 ${neckline.toFixed(2)}`,
-          tradingImplication: `看涨信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${Math.min(firstValley.price, secondValley.price).toFixed(2)}`,
+          tradingImplication: `看涨信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${lowestPrice.toFixed(2)}`,
           keyDates: [firstValley.date, middlePeaks[0].date, secondValley.date],
           keyPrices: [
             firstValley.price,

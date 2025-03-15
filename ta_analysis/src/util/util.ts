@@ -6,7 +6,7 @@ import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
-import {PatternStatus} from "../analysis/patterns/multiTimeFramePatternAnalysis.js";
+import { PatternStatus } from '../analysis/patterns/multiTimeFramePatternAnalysis.js';
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -221,4 +221,19 @@ export function getStatusDescription(status: PatternStatus): string {
     default:
       return '未知状态';
   }
+}
+
+/**
+ * 将日期转换为美东时间字符串
+ * @param date
+ */
+export function toEDTString(date: Date): string {
+  return date.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 }

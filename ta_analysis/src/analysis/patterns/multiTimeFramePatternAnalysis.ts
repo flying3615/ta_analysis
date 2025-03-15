@@ -1,5 +1,5 @@
 import { Candle } from '../../types.js';
-import { getStockDataForTimeframe } from '../../util/util.js';
+import { getStockDataForTimeframe, toEDTString } from '../../util/util.js';
 
 import _ from 'lodash';
 import { findHeadAndShoulders } from './findHeadAndShoulders.js';
@@ -505,7 +505,7 @@ function combinePatternAnalyses(
     .filter(p => p !== hourlyDominant)
     .map(p => {
       const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
-      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${date.toUTCString()} @ (${price.toFixed(2)})`).join(' | ')}`;
+      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
     })
     .join('\n');
 
@@ -513,25 +513,36 @@ function combinePatternAnalyses(
     .filter(p => p !== dailyDominant)
     .map(p => {
       const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
-      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${date.toUTCString()} @ (${price.toFixed(2)})`).join(' | ')}`;
+      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
     })
     .join('\n');
 
   if (hourlyDominant) {
-    description += `\n\n小时线主导形态: ${hourlyDominant.patternType}\n 关键时间: ${hourlyDominant.keyDates.map(date => date.toUTCString()).join('|')}, (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
+    const datePriceMapping = _.zip(
+      hourlyDominant.keyDates,
+      hourlyDominant.keyPrices
+    );
+
+    description += `\n\n小时线主导形态: ${hourlyDominant.patternType}
+    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
   }
 
   if (dailyDominant) {
-    description += `\n\n日线主导形态: ${dailyDominant.patternType}\n 关键时间: ${dailyDominant.keyDates.map(date => date.toUTCString()).join('|')}  (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
+    const datePriceMapping = _.zip(
+      dailyDominant.keyDates,
+      dailyDominant.keyPrices
+    );
+    description += `\n\n日线主导形态: ${dailyDominant.patternType}
+    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
   }
 
   // 添加其他形态描述
   if (hourlyOtherPatternsDesc) {
-    description += `\n\n小时线其他形态: ${hourlyOtherPatternsDesc}`;
+    description += `\n\n小时线其他形态:\n ${hourlyOtherPatternsDesc}`;
   }
 
   if (dailyOtherPatternsDesc) {
-    description += `\n\n日线其他形态: ${dailyOtherPatternsDesc}`;
+    description += `\n\n日线其他形态:\n ${dailyOtherPatternsDesc}`;
   }
 
   return {
@@ -968,4 +979,4 @@ async function exampleMultiTimeframeUsage(symbol: string) {
 }
 
 // only focus on recently patterns
-exampleMultiTimeframeUsage('NVDA');
+exampleMultiTimeframeUsage('MSTU');

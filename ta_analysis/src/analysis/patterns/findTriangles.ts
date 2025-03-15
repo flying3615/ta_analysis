@@ -8,6 +8,42 @@ import {
 } from './multiTimeFramePatternAnalysis.js';
 import { getStatusDescription } from '../../util/util.js';
 
+// 新增：三角形形态无效的原因枚举
+export enum InvalidPatternReason {
+  None = 'none',
+  PriceCrossesTrendlines = 'price_crosses_trendlines',
+  TooFlat = 'too_flat',
+  NearConvergenceNoBreakout = 'near_convergence_no_breakout',
+  AbnormalVolume = 'abnormal_volume',
+  IrregularStructure = 'irregular_structure',
+  InsufficientTouches = 'insufficient_touches',
+  ExcessivePriceVolatility = 'excessive_price_volatility',
+}
+
+/**
+ * 获取无效原因的描述文本
+ */
+function getInvalidReasonDescription(reason: InvalidPatternReason): string {
+  switch (reason) {
+    case InvalidPatternReason.PriceCrossesTrendlines:
+      return '价格多次穿越趋势线';
+    case InvalidPatternReason.TooFlat:
+      return '形态过于扁平';
+    case InvalidPatternReason.NearConvergenceNoBreakout:
+      return '接近收敛点但未突破';
+    case InvalidPatternReason.AbnormalVolume:
+      return '成交量出现异常峰值';
+    case InvalidPatternReason.IrregularStructure:
+      return '形态结构不规则';
+    case InvalidPatternReason.InsufficientTouches:
+      return '趋势线触碰次数不足';
+    case InvalidPatternReason.ExcessivePriceVolatility:
+      return '价格波动过大';
+    default:
+      return '';
+  }
+}
+
 /**
  * 寻找三角形形态
  */
@@ -101,6 +137,28 @@ export function findTriangles(
       // 计算形态高度
       const patternHeight = resistanceLevel - support1.price;
 
+      // 新增：检测形态是否无效
+      const isInvalid = checkTriangleInvalid(
+        data,
+        startIndex,
+        endIndex,
+        laterPeaks,
+        [support1, support2],
+        resistanceLevel,
+        support1.price,
+        supportSlope,
+        0, // 水平阻力线斜率为0
+        convergenceIndex,
+        patternHeight,
+        currentPrice,
+        PatternType.AscendingTriangle
+      );
+
+      // 如果形态无效，则调整状态
+      if (isInvalid.invalid && status !== PatternStatus.Confirmed) {
+        status = PatternStatus.Failed;
+      }
+
       // 计算价格目标（向上突破的目标）
       const priceTarget = resistanceLevel + patternHeight;
 
@@ -119,7 +177,7 @@ export function findTriangles(
         patternType: PatternType.AscendingTriangle,
         status,
         direction: PatternDirection.Bullish,
-        reliability,
+        reliability: isInvalid.invalid ? reliability * 0.5 : reliability, // 如果无效，降低可靠性
         significance: reliability * (patternHeight / currentPrice),
         component: {
           startIndex,
@@ -140,8 +198,8 @@ export function findTriangles(
           status === PatternStatus.Completed && proximityToConvergence > 0.7,
         breakoutDirection: PatternDirection.Bullish,
         probableBreakoutZone: [resistanceLevel * 0.98, resistanceLevel * 1.02],
-        description: `上升三角形, ${getStatusDescription(status)}, 阻力位在 ${resistanceLevel.toFixed(2)}, 支撑趋势线当前在 ${projectedSupport.toFixed(2)}`,
-        tradingImplication: `看涨信号, 突破目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedSupport * 0.98).toFixed(2)}`,
+        description: `上升三角形, ${getStatusDescription(status)}${isInvalid.invalid ? `, 警告: ${getInvalidReasonDescription(isInvalid.reason)}` : ''}, 阻力位在 ${resistanceLevel.toFixed(2)}, 支撑趋势线当前在 ${projectedSupport.toFixed(2)}`,
+        tradingImplication: `看涨信号${isInvalid.invalid ? ' (可信度降低)' : ''}, 突破目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedSupport * 0.98).toFixed(2)}`,
         keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
         keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
       });
@@ -211,6 +269,28 @@ export function findTriangles(
       // 计算形态高度
       const patternHeight = resistance1.price - supportLevel;
 
+      // 新增：检测形态是否无效
+      const isInvalid = checkTriangleInvalid(
+        data,
+        startIndex,
+        endIndex,
+        [resistance1, resistance2],
+        laterValleys,
+        resistance1.price,
+        supportLevel,
+        resistanceSlope,
+        0, // 水平支撑线斜率为0
+        convergenceIndex,
+        patternHeight,
+        currentPrice,
+        PatternType.DescendingTriangle
+      );
+
+      // 如果形态无效，则调整状态
+      if (isInvalid.invalid && status !== PatternStatus.Confirmed) {
+        status = PatternStatus.Failed;
+      }
+
       // 计算价格目标（向下突破的目标）
       const priceTarget = supportLevel - patternHeight;
 
@@ -229,7 +309,7 @@ export function findTriangles(
         patternType: PatternType.DescendingTriangle,
         status,
         direction: PatternDirection.Bearish,
-        reliability,
+        reliability: isInvalid.invalid ? reliability * 0.5 : reliability, // 如果无效，降低可靠性
         significance: reliability * (patternHeight / currentPrice),
         component: {
           startIndex,
@@ -255,8 +335,8 @@ export function findTriangles(
           status === PatternStatus.Completed && proximityToConvergence > 0.7,
         breakoutDirection: PatternDirection.Bearish,
         probableBreakoutZone: [supportLevel * 0.98, supportLevel * 1.02],
-        description: `下降三角形, ${getStatusDescription(status)}, 支撑位在 ${supportLevel.toFixed(2)}, 阻力趋势线当前在 ${projectedResistance.toFixed(2)}`,
-        tradingImplication: `看跌信号, 突破目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedResistance * 1.02).toFixed(2)}`,
+        description: `下降三角形, ${getStatusDescription(status)}${isInvalid.invalid ? `, 警告: ${getInvalidReasonDescription(isInvalid.reason)}` : ''}, 支撑位在 ${supportLevel.toFixed(2)}, 阻力趋势线当前在 ${projectedResistance.toFixed(2)}`,
+        tradingImplication: `看跌信号${isInvalid.invalid ? ' (可信度降低)' : ''}, 突破目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedResistance * 1.02).toFixed(2)}`,
         keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
         keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
       });
@@ -332,6 +412,28 @@ export function findTriangles(
       // 计算形态高度
       const patternHeight = resistance1.price - support1.price;
 
+      // 新增：检测形态是否无效
+      const isInvalid = checkTriangleInvalid(
+        data,
+        startIndex,
+        endIndex,
+        [resistance1, resistance2],
+        [support1, support2],
+        resistance1.price,
+        support1.price,
+        resistanceSlope,
+        supportSlope,
+        convergenceIndex,
+        patternHeight,
+        currentPrice,
+        PatternType.SymmetricalTriangle
+      );
+
+      // 如果形态无效，则调整状态
+      if (isInvalid.invalid && status !== PatternStatus.Confirmed) {
+        status = PatternStatus.Failed;
+      }
+
       // 计算价格目标
       let priceTarget = currentPrice;
       if (breakoutDirection === PatternDirection.Bullish) {
@@ -355,7 +457,7 @@ export function findTriangles(
         patternType: PatternType.SymmetricalTriangle,
         status,
         direction: breakoutDirection,
-        reliability,
+        reliability: isInvalid.invalid ? reliability * 0.5 : reliability, // 如果无效，降低可靠性
         significance: reliability * (patternHeight / currentPrice),
         component: {
           startIndex,
@@ -382,10 +484,10 @@ export function findTriangles(
           status === PatternStatus.Completed && proximityToConvergence > 0.7,
         breakoutDirection,
         probableBreakoutZone: [projectedSupport, projectedResistance],
-        description: `对称三角形, ${getStatusDescription(status)}${breakoutDirection !== PatternDirection.Neutral ? ', ' + (breakoutDirection === PatternDirection.Bullish ? '向上' : '向下') + '突破' : ''}, 阻力趋势线当前在 ${projectedResistance.toFixed(2)}, 支撑趋势线当前在 ${projectedSupport.toFixed(2)}`,
+        description: `对称三角形, ${getStatusDescription(status)}${isInvalid.invalid ? `, 警告: ${getInvalidReasonDescription(isInvalid.reason)}` : ''}${breakoutDirection !== PatternDirection.Neutral ? ', ' + (breakoutDirection === PatternDirection.Bullish ? '向上' : '向下') + '突破' : ''}, 阻力趋势线当前在 ${projectedResistance.toFixed(2)}, 支撑趋势线当前在 ${projectedSupport.toFixed(2)}`,
         tradingImplication:
           status === PatternStatus.Confirmed
-            ? `${breakoutDirection === PatternDirection.Bullish ? '看涨' : '看跌'}信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(breakoutDirection === PatternDirection.Bullish ? projectedSupport : projectedResistance).toFixed(2)}`
+            ? `${breakoutDirection === PatternDirection.Bullish ? '看涨' : '看跌'}信号${isInvalid.invalid ? ' (可信度降低)' : ''}, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(breakoutDirection === PatternDirection.Bullish ? projectedSupport : projectedResistance).toFixed(2)}`
             : '等待突破确认，突破方向将决定交易信号',
         keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
         keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
@@ -502,4 +604,201 @@ function analyzeTriangleVolume(
   } else {
     return '成交量模式中性，无明显趋势';
   }
+}
+
+/**
+ * 新增：检查三角形形态是否无效
+ * 返回一个对象，包含是否无效的布尔值和无效的原因
+ */
+interface InvalidCheckResult {
+  invalid: boolean;
+  reason: InvalidPatternReason;
+}
+
+function checkTriangleInvalid(
+  data: Candle[],
+  startIndex: number,
+  endIndex: number,
+  peaks: PeakValley[],
+  valleys: PeakValley[],
+  topInitialPrice: number,
+  bottomInitialPrice: number,
+  topSlope: number,
+  bottomSlope: number,
+  convergenceIndex: number,
+  patternHeight: number,
+  currentPrice: number,
+  patternType: PatternType
+): InvalidCheckResult {
+  // 默认结果为有效
+  const result: InvalidCheckResult = {
+    invalid: false,
+    reason: InvalidPatternReason.None,
+  };
+
+  // 获取形态内的价格数据
+  const patternData = data.slice(startIndex, endIndex + 1);
+
+  // 1. 检查形态是否过于扁平
+  const avgPrice =
+    patternData.reduce((sum, d) => sum + d.close, 0) / patternData.length;
+  const heightRatio = patternHeight / avgPrice;
+
+  if (heightRatio < 0.01) {
+    // 如果形态高度小于平均价格的1%，认为过于扁平
+    result.invalid = true;
+    result.reason = InvalidPatternReason.TooFlat;
+    return result;
+  }
+
+  // 2. 检查是否有足够的价格触碰趋势线
+  // 检查上趋势线和下趋势线的价格触碰次数
+  const touchesNeeded = 3; // 至少需要3次触碰才视为有效形态
+
+  // 计算有多少次价格接触到阻力线和支撑线
+  let topTouches = 0;
+  let bottomTouches = 0;
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const relativeIndex = i - startIndex;
+    // 计算当前位置的趋势线价格
+    const topTrendLine = topInitialPrice + topSlope * relativeIndex;
+    const bottomTrendLine = bottomInitialPrice + bottomSlope * relativeIndex;
+
+    const highPrice = data[i].high;
+    const lowPrice = data[i].low;
+
+    // 如果高价接近阻力线，计为一次触碰
+    if (Math.abs(highPrice - topTrendLine) / topTrendLine < 0.005) {
+      topTouches++;
+    }
+
+    // 如果低价接近支撑线，计为一次触碰
+    if (Math.abs(lowPrice - bottomTrendLine) / bottomTrendLine < 0.005) {
+      bottomTouches++;
+    }
+  }
+
+  // 如果触碰次数不足，标记为无效
+  if (topTouches < touchesNeeded || bottomTouches < touchesNeeded) {
+    result.invalid = true;
+    result.reason = InvalidPatternReason.InsufficientTouches;
+    return result;
+  }
+
+  // 3. 检查价格是否多次穿越趋势线（表明形态不稳定）
+  let topBreaches = 0;
+  let bottomBreaches = 0;
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    const relativeIndex = i - startIndex;
+    const topTrendLine = topInitialPrice + topSlope * relativeIndex;
+    const bottomTrendLine = bottomInitialPrice + bottomSlope * relativeIndex;
+
+    const highPrice = data[i].high;
+    const lowPrice = data[i].low;
+
+    // 检查是否有穿越顶部趋势线
+    if (highPrice > topTrendLine * 1.01) {
+      topBreaches++;
+    }
+
+    // 检查是否有穿越底部趋势线
+    if (lowPrice < bottomTrendLine * 0.99) {
+      bottomBreaches++;
+    }
+  }
+
+  // 如果有多次严重穿越，形态可能无效
+  if (topBreaches > 2 || bottomBreaches > 2) {
+    result.invalid = true;
+    result.reason = InvalidPatternReason.PriceCrossesTrendlines;
+    return result;
+  }
+
+  // 4. 检测临近收敛点但长时间未突破
+  // 计算当前位置距离收敛点的距离
+  const currentIndex = data.length - 1;
+  const distanceToConvergence = Math.abs(currentIndex - convergenceIndex);
+
+  // 如果接近收敛点（距离小于10个bar）但尚未突破且长时间处于横盘状态
+  if (distanceToConvergence < 10 && currentIndex > endIndex + 15) {
+    // 判断最近是否横盘 - 计算最近价格的标准差
+    const recentPrices = data
+      .slice(endIndex + 1, currentIndex + 1)
+      .map(d => d.close);
+    const avg =
+      recentPrices.reduce((sum, p) => sum + p, 0) / recentPrices.length;
+    const stdDev = Math.sqrt(
+      recentPrices.reduce((sum, p) => sum + Math.pow(p - avg, 2), 0) /
+        recentPrices.length
+    );
+
+    // 如果价格波动很小且接近收敛点，形态可能失效
+    if (stdDev / avg < 0.01) {
+      result.invalid = true;
+      result.reason = InvalidPatternReason.NearConvergenceNoBreakout;
+      return result;
+    }
+  }
+
+  // 5. 检测形态期间的异常成交量
+  // 计算成交量的均值和标准差
+  const volumes = patternData.map(d => d.volume);
+  const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+  const volumeStdDev = Math.sqrt(
+    volumes.reduce((sum, v) => sum + Math.pow(v - avgVolume, 2), 0) /
+      volumes.length
+  );
+
+  // 检查是否有异常大的成交量
+  const abnormalVolumeCount = volumes.filter(
+    v => v > avgVolume + 2.5 * volumeStdDev
+  ).length;
+
+  // 如果有多个异常大的成交量峰值，可能表明形态不稳定
+  if (abnormalVolumeCount > 2) {
+    result.invalid = true;
+    result.reason = InvalidPatternReason.AbnormalVolume;
+    return result;
+  }
+
+  // 6. 检测形态内部结构的规则性
+  // 计算价格的波动率
+  const closePrices = patternData.map(d => d.close);
+  const priceChanges = [];
+  for (let i = 1; i < closePrices.length; i++) {
+    priceChanges.push(Math.abs(closePrices[i] / closePrices[i - 1] - 1));
+  }
+
+  // 计算平均日波动率
+  const avgDailyChange =
+    priceChanges.reduce((sum, c) => sum + c, 0) / priceChanges.length;
+
+  // 计算极端波动的天数
+  const extremeChangeDays = priceChanges.filter(
+    c => c > avgDailyChange * 3
+  ).length;
+
+  // 如果有多个日内极端波动，形态可能不规则
+  if (extremeChangeDays > patternData.length * 0.15) {
+    result.invalid = true;
+    result.reason = InvalidPatternReason.ExcessivePriceVolatility;
+    return result;
+  }
+
+  // 7. 如果是对称三角形，检查形态的对称性
+  if (patternType === PatternType.SymmetricalTriangle) {
+    // 计算趋势线斜率的绝对值比率，理想情况下应接近1（对称）
+    const slopeRatio = Math.abs(topSlope) / Math.abs(bottomSlope);
+
+    // 如果斜率比率过大或过小，表明形态不够对称
+    if (slopeRatio > 2.5 || slopeRatio < 0.4) {
+      result.invalid = true;
+      result.reason = InvalidPatternReason.IrregularStructure;
+      return result;
+    }
+  }
+
+  return result;
 }

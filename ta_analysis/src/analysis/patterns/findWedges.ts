@@ -6,7 +6,7 @@ import {
   PatternType,
   PeakValley,
 } from './multiTimeFramePatternAnalysis.js';
-import {getStatusDescription} from "../../util/util.js";
+import { getStatusDescription } from '../../util/util.js';
 
 /**
  * 寻找楔形形态
@@ -100,57 +100,111 @@ export function findWedges(
         }
       }
 
-      // 计算形态高度（在结束点的高度）
-      const patternHeight = projectedUpperBoundary - projectedLowerBoundary;
+      // 检查形态是否无效 - 上升楔形（看跌）形态
+      let isInvalid = false;
 
-      // 计算价格目标（向下突破的目标，通常是形态起始点的价格）
-      const startHeight = upperBoundary1.price - lowerBoundary1.price;
-      const priceTarget = lowerBoundary1.price - startHeight;
+      // 检查1：如果之前确认了下方突破，后续K线又回到楔形内部或突破上边界，形态无效
+      if (status === PatternStatus.Confirmed && endIndex < data.length - 1) {
+        let foundBreakout = false;
+        let invalidAfterBreakout = false;
 
-      // 计算可靠性分数
-      const reliability = calculateWedgeReliability(
-        data,
-        startIndex,
-        endIndex,
-        patternHeight,
-        proximityToConvergence,
-        status === PatternStatus.Confirmed,
-        PatternType.RisingWedge
-      );
+        for (let i = endIndex + 1; i < data.length; i++) {
+          // 对于当前K线，计算预期的上下边界
+          const upperBound =
+            upperBoundary1.price + peakSlope * (i - upperBoundary1.index);
+          const lowerBound =
+            lowerBoundary1.price + valleySlope * (i - lowerBoundary1.index);
 
-      patterns.push({
-        patternType: PatternType.RisingWedge,
-        status,
-        direction: PatternDirection.Bearish,
-        reliability,
-        significance: reliability * (patternHeight / currentPrice),
-        component: {
+          // 首先检测是否出现下方突破（形态确认）
+          if (!foundBreakout && data[i].close < lowerBound) {
+            foundBreakout = true;
+            continue;
+          }
+
+          // 如果已经确认下方突破，但后续K线回到楔形内部或突破上边界，形态无效
+          if (
+            foundBreakout &&
+            (data[i].close > lowerBound || data[i].high > upperBound)
+          ) {
+            invalidAfterBreakout = true;
+            break;
+          }
+        }
+
+        isInvalid = invalidAfterBreakout;
+      }
+
+      // 检查2：如果价格长时间在楔形内部盘整而没有突破，可能形态无效
+      if (
+        !isInvalid &&
+        currentIndex - endIndex > 15 &&
+        status === PatternStatus.Completed
+      ) {
+        isInvalid = true; // 形态完成后15个K线仍未突破，考虑无效
+      }
+
+      // 如果形态无效，跳过此形态
+      if (isInvalid) {
+        // 跳过此形态，不添加到结果中
+        // continue 在这里没有效果，因为我们不在循环内，所以直接使用 if-else 结构
+      } else {
+        // 计算形态高度（在结束点的高度）
+        const patternHeight = projectedUpperBoundary - projectedLowerBoundary;
+
+        // 计算价格目标（向下突破的目标，通常是形态起始点的价格）
+        const startHeight = upperBoundary1.price - lowerBoundary1.price;
+        const priceTarget = lowerBoundary1.price - startHeight;
+
+        // 计算可靠性分数
+        const reliability = calculateWedgeReliability(
+          data,
           startIndex,
           endIndex,
-          keyPoints: [
-            upperBoundary1,
-            upperBoundary2,
-            lowerBoundary1,
-            lowerBoundary2,
-          ],
           patternHeight,
-          breakoutLevel: projectedLowerBoundary,
-          volumePattern: analyzeWedgeVolume(data, startIndex, endIndex, status),
-        },
-        priceTarget,
-        stopLoss: projectedUpperBoundary * 1.02, // 上边界上方2%
-        breakoutExpected:
-          status === PatternStatus.Completed && proximityToConvergence > 0.7,
-        breakoutDirection: PatternDirection.Bearish,
-        probableBreakoutZone: [
-          projectedLowerBoundary * 0.98,
-          projectedLowerBoundary * 1.02,
-        ],
-        description: `上升楔形, ${getStatusDescription(status)}, 上边界当前在 ${projectedUpperBoundary.toFixed(2)}, 下边界当前在 ${projectedLowerBoundary.toFixed(2)}`,
-        tradingImplication: `看跌信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedUpperBoundary * 1.02).toFixed(2)}`,
-        keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
-        keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
-      });
+          proximityToConvergence,
+          status === PatternStatus.Confirmed,
+          PatternType.RisingWedge
+        );
+
+        patterns.push({
+          patternType: PatternType.RisingWedge,
+          status,
+          direction: PatternDirection.Bearish,
+          reliability,
+          significance: reliability * (patternHeight / currentPrice),
+          component: {
+            startIndex,
+            endIndex,
+            keyPoints: [
+              upperBoundary1,
+              upperBoundary2,
+              lowerBoundary1,
+              lowerBoundary2,
+            ],
+            patternHeight,
+            breakoutLevel: projectedLowerBoundary,
+            volumePattern: analyzeWedgeVolume(
+              data,
+              startIndex,
+              endIndex,
+              status
+            ),
+          },
+          priceTarget,
+          stopLoss: projectedUpperBoundary * 1.02, // 上边界上方2%
+          breakoutExpected:
+            status === PatternStatus.Completed && proximityToConvergence > 0.7,
+          breakoutDirection: PatternDirection.Bearish,
+          probableBreakoutZone: [
+            projectedLowerBoundary * 0.98,
+            projectedLowerBoundary * 1.02,
+          ],
+          description: `上升楔形, ${getStatusDescription(status)}, 上边界当前在 ${projectedUpperBoundary.toFixed(2)}, 下边界当前在 ${projectedLowerBoundary.toFixed(2)}`,
+          tradingImplication: `看跌信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedUpperBoundary * 1.02).toFixed(2)}`,
+          keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
+          keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
+        });
+      }
     }
   }
 
@@ -219,57 +273,111 @@ export function findWedges(
         }
       }
 
-      // 计算形态高度（在结束点的高度）
-      const patternHeight = projectedUpperBoundary - projectedLowerBoundary;
+      // 检查形态是否无效 - 下降楔形（看涨）形态
+      let isInvalid = false;
 
-      // 计算价格目标（向上突破的目标，通常是形态起始点的价格）
-      const startHeight = upperBoundary1.price - lowerBoundary1.price;
-      const priceTarget = upperBoundary1.price + startHeight;
+      // 检查1：如果之前确认了上方突破，后续K线又回到楔形内部或突破下边界，形态无效
+      if (status === PatternStatus.Confirmed && endIndex < data.length - 1) {
+        let foundBreakout = false;
+        let invalidAfterBreakout = false;
 
-      // 计算可靠性分数
-      const reliability = calculateWedgeReliability(
-        data,
-        startIndex,
-        endIndex,
-        patternHeight,
-        proximityToConvergence,
-        status === PatternStatus.Confirmed,
-        PatternType.FallingWedge
-      );
+        for (let i = endIndex + 1; i < data.length; i++) {
+          // 对于当前K线，计算预期的上下边界
+          const upperBound =
+            upperBoundary1.price + peakSlope * (i - upperBoundary1.index);
+          const lowerBound =
+            lowerBoundary1.price + valleySlope * (i - lowerBoundary1.index);
 
-      patterns.push({
-        patternType: PatternType.FallingWedge,
-        status,
-        direction: PatternDirection.Bullish,
-        reliability,
-        significance: reliability * (patternHeight / currentPrice),
-        component: {
+          // 首先检测是否出现上方突破（形态确认）
+          if (!foundBreakout && data[i].close > upperBound) {
+            foundBreakout = true;
+            continue;
+          }
+
+          // 如果已经确认上方突破，但后续K线回到楔形内部或突破下边界，形态无效
+          if (
+            foundBreakout &&
+            (data[i].close < upperBound || data[i].low < lowerBound)
+          ) {
+            invalidAfterBreakout = true;
+            break;
+          }
+        }
+
+        isInvalid = invalidAfterBreakout;
+      }
+
+      // 检查2：如果价格长时间在楔形内部盘整而没有突破，可能形态无效
+      if (
+        !isInvalid &&
+        currentIndex - endIndex > 15 &&
+        status === PatternStatus.Completed
+      ) {
+        isInvalid = true; // 形态完成后15个K线仍未突破，考虑无效
+      }
+
+      // 如果形态无效，跳过此形态
+      if (isInvalid) {
+        // 跳过此形态，不添加到结果中
+        // continue 在这里没有效果，因为我们不在循环内，所以直接使用 if-else 结构
+      } else {
+        // 计算形态高度（在结束点的高度）
+        const patternHeight = projectedUpperBoundary - projectedLowerBoundary;
+
+        // 计算价格目标（向上突破的目标，通常是形态起始点的价格）
+        const startHeight = upperBoundary1.price - lowerBoundary1.price;
+        const priceTarget = upperBoundary1.price + startHeight;
+
+        // 计算可靠性分数
+        const reliability = calculateWedgeReliability(
+          data,
           startIndex,
           endIndex,
-          keyPoints: [
-            upperBoundary1,
-            upperBoundary2,
-            lowerBoundary1,
-            lowerBoundary2,
-          ],
           patternHeight,
-          breakoutLevel: projectedUpperBoundary,
-          volumePattern: analyzeWedgeVolume(data, startIndex, endIndex, status),
-        },
-        priceTarget,
-        stopLoss: projectedLowerBoundary * 0.98, // 下边界下方2%
-        breakoutExpected:
-          status === PatternStatus.Completed && proximityToConvergence > 0.7,
-        breakoutDirection: PatternDirection.Bullish,
-        probableBreakoutZone: [
-          projectedUpperBoundary * 0.98,
-          projectedUpperBoundary * 1.02,
-        ],
-        description: `下降楔形, ${getStatusDescription(status)}, 上边界当前在 ${projectedUpperBoundary.toFixed(2)}, 下边界当前在 ${projectedLowerBoundary.toFixed(2)}`,
-        tradingImplication: `看涨信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedLowerBoundary * 0.98).toFixed(2)}`,
-        keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
-        keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
-      });
+          proximityToConvergence,
+          status === PatternStatus.Confirmed,
+          PatternType.FallingWedge
+        );
+
+        patterns.push({
+          patternType: PatternType.FallingWedge,
+          status,
+          direction: PatternDirection.Bullish,
+          reliability,
+          significance: reliability * (patternHeight / currentPrice),
+          component: {
+            startIndex,
+            endIndex,
+            keyPoints: [
+              upperBoundary1,
+              upperBoundary2,
+              lowerBoundary1,
+              lowerBoundary2,
+            ],
+            patternHeight,
+            breakoutLevel: projectedUpperBoundary,
+            volumePattern: analyzeWedgeVolume(
+              data,
+              startIndex,
+              endIndex,
+              status
+            ),
+          },
+          priceTarget,
+          stopLoss: projectedLowerBoundary * 0.98, // 下边界下方2%
+          breakoutExpected:
+            status === PatternStatus.Completed && proximityToConvergence > 0.7,
+          breakoutDirection: PatternDirection.Bullish,
+          probableBreakoutZone: [
+            projectedUpperBoundary * 0.98,
+            projectedUpperBoundary * 1.02,
+          ],
+          description: `下降楔形, ${getStatusDescription(status)}, 上边界当前在 ${projectedUpperBoundary.toFixed(2)}, 下边界当前在 ${projectedLowerBoundary.toFixed(2)}`,
+          tradingImplication: `看涨信号, 目标价位: ${priceTarget.toFixed(2)}, 止损位: ${(projectedLowerBoundary * 0.98).toFixed(2)}`,
+          keyDates: [...peaks.map(p => p.date), ...valleys.map(v => v.date)],
+          keyPrices: [...peaks.map(p => p.price), ...valleys.map(v => v.price)],
+        });
+      }
     }
   }
 
