@@ -979,4 +979,4 @@ async function exampleMultiTimeframeUsage(symbol: string) {
 }
 
 // only focus on recently patterns
-// exampleMultiTimeframeUsage('MSTU');
+// exampleMultiTimeframeUsage('PLTR');

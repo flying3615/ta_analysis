@@ -115,16 +115,16 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   ) {
     output += `\n${sectionSeparator}\n`;
 
-    output += `\n【BBSR分析】\n`;
+    output += `\n【Bull Bear on Support Resistance分析】\n`;
     if (tradePlan.bbsrAnalysis.dailyBBSRResult) {
-      output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)})}\n`;
-      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate)})}\n`;
+      output += `日线BBSR关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)}\n`;
+      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate)}\n`;
       output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}\n`;
     }
 
     if (tradePlan.bbsrAnalysis.weeklyBBSRResult) {
-      output += `周线BBSR: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2))}\n`;
-      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate)})}\n`;
+      output += `周线BBSR关键位: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2))}\n`;
+      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate)}\n`;
       output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')}\n`;
     }
   }
