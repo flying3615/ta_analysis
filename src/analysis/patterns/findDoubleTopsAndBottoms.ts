@@ -5,7 +5,7 @@ import {
   PatternStatus,
   PatternType,
   PeakValley,
-} from './multiTimeFramePatternAnalysis.js';
+} from './analyzeMultiTimeframePatterns.js';
 
 /**
  * 这里以双顶/双底形态为例，其他形态检测函数类似修改

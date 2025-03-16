@@ -1,7 +1,7 @@
 import {
   analyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
-} from '../patterns/multiTimeFramePatternAnalysis.js';
+} from '../patterns/analyzeMultiTimeframePatterns.js';
 import { Candle } from '../../types.js';
 import { formatAndPrintEnhancedPatternAnalysis } from './formatReport.js';
 import { getStockDataForTimeframe } from '../../util/util.js';

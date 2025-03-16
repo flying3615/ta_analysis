@@ -5,7 +5,7 @@ import {
 import {
   ComprehensivePatternAnalysis,
   PatternDirection,
-} from './patterns/multiTimeFramePatternAnalysis.js';
+} from './patterns/analyzeMultiTimeframePatterns.js';
 import { formatTradePlanOutput } from './FormatTradePlan.js';
 import {
   multiTimeframePatternAnalysis,

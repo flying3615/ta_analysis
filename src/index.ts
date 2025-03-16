@@ -6,13 +6,13 @@ export {
   PeakValley,
   PatternComponent,
   PatternAnalysisResult,
-  MultiTimeframePatternAnalysis,
+  AnalyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
   analyzeAllPatterns,
   combinePatternAnalyses,
   analyzeMultiTimeframePatterns,
   formatAndPrintPatternAnalysis,
-} from './analysis/patterns/multiTimeFramePatternAnalysis.js';
+} from './analysis/patterns/analyzeMultiTimeframePatterns.js';
 
 export {
   determineTrendDirection,

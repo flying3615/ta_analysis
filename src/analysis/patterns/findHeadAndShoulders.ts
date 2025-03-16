@@ -2,7 +2,7 @@ import { Candle } from '../../types.js';
 import {
     PatternAnalysisResult, PatternDirection, PatternStatus, PatternType,
     PeakValley,
-} from './multiTimeFramePatternAnalysis.js';
+} from './analyzeMultiTimeframePatterns.js';
 
 /**
  * 寻找头肩顶/头肩底形态

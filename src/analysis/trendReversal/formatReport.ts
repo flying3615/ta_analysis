@@ -6,7 +6,7 @@ import {
 import {
   formatAndPrintPatternAnalysis,
   PatternDirection,
-} from '../patterns/multiTimeFramePatternAnalysis.js';
+} from '../patterns/analyzeMultiTimeframePatterns.js';
 
 /**
  * 获取趋势方向描述文本

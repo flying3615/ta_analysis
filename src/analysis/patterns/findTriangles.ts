@@ -5,7 +5,7 @@ import {
   PatternStatus,
   PatternType,
   PeakValley,
-} from './multiTimeFramePatternAnalysis.js';
+} from './analyzeMultiTimeframePatterns.js';
 import { getStatusDescription } from '../../util/util.js';
 
 // 新增：三角形形态无效的原因枚举
