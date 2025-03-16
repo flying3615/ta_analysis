@@ -9,7 +9,10 @@ import {
   identifyChipPeaks,
   identifyKeyPriceLevels,
 } from '../../util/chipUtils.js';
-import { calculateTechnicalIndicators, findPriceAtCumulativePercentage } from '../../util/taUtil.js';
+import {
+  calculateTechnicalIndicators,
+  findPriceAtCumulativePercentage,
+} from '../../util/taUtil.js';
 
 export interface ChipDistribution {
   price: number;

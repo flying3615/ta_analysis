@@ -1,7 +1,10 @@
 import { Candle } from '../../types.js';
 import {
-    PatternAnalysisResult, PatternDirection, PatternStatus, PatternType,
-    PeakValley,
+  PatternAnalysisResult,
+  PatternDirection,
+  PatternStatus,
+  PatternType,
+  PeakValley,
 } from './analyzeMultiTimeframePatterns.js';
 
 /**

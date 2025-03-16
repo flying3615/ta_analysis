@@ -539,7 +539,7 @@ function integrateAnalyses(
   const primaryRationale = generatePrimaryRationale(
     direction,
     chipAnalysis,
-    patternAnalysis,
+    patternAnalysis
   );
 
   const secondaryRationale = generateSecondaryRationale(
@@ -1704,7 +1704,7 @@ function generateKeyObservations(
 function generatePrimaryRationale(
   direction: TradeDirection,
   chipAnalysis: MultiTimeframeAnalysisResult,
-  patternAnalysis: ComprehensivePatternAnalysis,
+  patternAnalysis: ComprehensivePatternAnalysis
 ): string {
   if (direction === TradeDirection.Neutral) {
     return '综合分析显示市场信号中性，无明确交易方向';

@@ -6,7 +6,7 @@ import {
   PatternType,
   PeakValley,
 } from './analyzeMultiTimeframePatterns.js';
-import {getStatusDescription} from "../../util/util.js";
+import { getStatusDescription } from '../../util/util.js';
 
 /**
  * 寻找杯柄形态 (Cup and Handle)

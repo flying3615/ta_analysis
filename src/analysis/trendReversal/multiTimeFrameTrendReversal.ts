@@ -356,7 +356,7 @@ function detectTrendReversal(
       Math.abs(
         (recentCandles[recentCandles.length - 1].close -
           recentCandles[0].close) /
-        recentCandles[0].close
+          recentCandles[0].close
       ) * 100;
 
     // 2. 成交量变化
@@ -392,9 +392,9 @@ function detectTrendReversal(
       Math.max(
         0,
         Math.min(35, priceChangePercent * 7) +
-        Math.min(25, volumeIncreasePercent * 0.5) +
-        trendAlignmentScore +
-        trendStrengthScore
+          Math.min(25, volumeIncreasePercent * 0.5) +
+          trendAlignmentScore +
+          trendStrengthScore
       )
     );
 
@@ -415,7 +415,7 @@ function detectTrendReversal(
       largeTimeframe,
       entryPrice,
       stopLoss,
-      targets
+      targets,
     };
   }
 
