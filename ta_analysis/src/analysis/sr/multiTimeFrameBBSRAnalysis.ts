@@ -2,7 +2,7 @@ import { getStockDataForTimeframe } from '../../util/util.js';
 import { Candle, SRSignal } from '../../types.js';
 import { checkBullBearNearSupportResistance } from './BullBearOnSupportResistAnalysis.js';
 
-export interface MultiTimeFrameBBSRAnalysisResult {
+interface MultiTimeFrameBBSRAnalysisResult {
   weeklyBBSRResult?: SRSignal;
   dailyBBSRResult?: SRSignal;
 }
@@ -27,7 +27,7 @@ const multiTimeBBSRAnalysis = async (
   };
 };
 
-export { multiTimeBBSRAnalysis };
+export { multiTimeBBSRAnalysis, MultiTimeFrameBBSRAnalysisResult };
 
 const main = async (symbol: string) => {
   const today = new Date();

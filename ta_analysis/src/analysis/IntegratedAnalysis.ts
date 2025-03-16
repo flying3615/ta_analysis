@@ -5,7 +5,7 @@ import {
 import {
   ComprehensivePatternAnalysis,
   PatternDirection,
-} from './patterns/multiTimeFramePatternAnalysis.js';
+} from './patterns/analyzeMultiTimeframePatterns.js';
 import { formatTradePlanOutput } from './FormatTradePlan.js';
 import {
   multiTimeframePatternAnalysis,
@@ -2029,4 +2029,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-executeIntegratedAnalysis('PLTR', { chip: 0.4, pattern: 0.6 });
+// executeIntegratedAnalysis('PLTR', { chip: 0.4, pattern: 0.6 });

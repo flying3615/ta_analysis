@@ -103,7 +103,7 @@ interface PatternAnalysisResult {
 /**
  * 多时间周期形态分析结果
  */
-interface MultiTimeframePatternAnalysis {
+interface AnalyzeMultiTimeframePatterns {
   timeframe: 'weekly' | 'daily' | '1hour';
   patterns: PatternAnalysisResult[];
   dominantPattern?: PatternAnalysisResult; // 主导形态
@@ -114,7 +114,7 @@ interface MultiTimeframePatternAnalysis {
  * 完整的价格形态分析结果，包含所有时间周期
  */
 interface ComprehensivePatternAnalysis {
-  timeframeAnalyses: MultiTimeframePatternAnalysis[];
+  timeframeAnalyses: AnalyzeMultiTimeframePatterns[];
   combinedSignal: PatternDirection; // 综合信号
   signalStrength: number; // 信号强度(0-100)
   description: string; // 总体形态分析描述
@@ -218,7 +218,7 @@ function detectPeaksAndValleys(
 async function analyzeAllPatterns(
   rawData: Candle[],
   timeframe: 'weekly' | 'daily' | '1hour'
-): Promise<MultiTimeframePatternAnalysis> {
+): Promise<AnalyzeMultiTimeframePatterns> {
   // 仅保留最近100根K线
   const data = rawData.slice(-100);
 
@@ -326,7 +326,7 @@ async function analyzeAllPatterns(
  * @param timeframeAnalyses 各时间周期的形态分析结果
  */
 function combinePatternAnalyses(
-  timeframeAnalyses: MultiTimeframePatternAnalysis[]
+  timeframeAnalyses: AnalyzeMultiTimeframePatterns[]
 ): ComprehensivePatternAnalysis {
   // 计算综合信号
   let bullishCount = 0;
@@ -912,7 +912,7 @@ export {
   PeakValley,
   PatternComponent,
   PatternAnalysisResult,
-  MultiTimeframePatternAnalysis,
+  AnalyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
 
   // 核心分析函数

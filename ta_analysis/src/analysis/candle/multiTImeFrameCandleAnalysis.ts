@@ -129,10 +129,12 @@ const multiTimeCandleAnalysis = async (
   }
 };
 
+export { multiTimeCandleAnalysis };
+
 /**
  * 生成JSON格式的交易计划文件
  */
-export const tradesPlanFromCandlesPattern = async (symbol: string) => {
+export const main = async (symbol: string) => {
   // 获取不同时间周期的数据
   const today = new Date();
 
@@ -173,7 +175,4 @@ export const tradesPlanFromCandlesPattern = async (symbol: string) => {
   return tradePlansJson;
 };
 
-// const result = tradesPlanFromCandlesPattern('COIN'); // 生成JSON格式交易计划
-// console.log(JSON.stringify(result, null, 2));
-
-export { multiTimeCandleAnalysis };
+// main('COIN');

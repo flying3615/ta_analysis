@@ -1,7 +1,7 @@
 import {
   analyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
-} from '../patterns/multiTimeFramePatternAnalysis.js';
+} from '../patterns/analyzeMultiTimeframePatterns.js';
 import { Candle } from '../../types.js';
 import { formatAndPrintEnhancedPatternAnalysis } from './formatReport.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
@@ -356,7 +356,7 @@ function detectTrendReversal(
       Math.abs(
         (recentCandles[recentCandles.length - 1].close -
           recentCandles[0].close) /
-        recentCandles[0].close
+          recentCandles[0].close
       ) * 100;
 
     // 2. 成交量变化
@@ -392,9 +392,9 @@ function detectTrendReversal(
       Math.max(
         0,
         Math.min(35, priceChangePercent * 7) +
-        Math.min(25, volumeIncreasePercent * 0.5) +
-        trendAlignmentScore +
-        trendStrengthScore
+          Math.min(25, volumeIncreasePercent * 0.5) +
+          trendAlignmentScore +
+          trendStrengthScore
       )
     );
 
@@ -415,7 +415,7 @@ function detectTrendReversal(
       largeTimeframe,
       entryPrice,
       stopLoss,
-      targets
+      targets,
     };
   }
 
@@ -483,10 +483,18 @@ async function multiTimeframePatternAnalysis(
   };
 }
 
+export {
+  determineTrendDirection,
+  detectTrendReversal,
+  TrendReversalSignal,
+  EnhancedPatternAnalysis,
+  multiTimeframePatternAnalysis,
+};
+
 /**
  * 多时间周期分析示例 - 增强版（含小周期顺势逆转检测）
  */
-async function printoutMultiTimeFramePatternAnalysis(symbol: string) {
+async function main(symbol: string) {
   try {
     console.log(`====== 多时间周期反转分析: ${symbol} ======`);
 
@@ -543,13 +551,4 @@ async function printoutMultiTimeFramePatternAnalysis(symbol: string) {
   }
 }
 
-export {
-  determineTrendDirection,
-  detectTrendReversal,
-  TrendReversalSignal,
-  EnhancedPatternAnalysis,
-  multiTimeframePatternAnalysis,
-  printoutMultiTimeFramePatternAnalysis,
-};
-
-// printoutMultiTimeFramePatternAnalysis('PRCH');
+main('COIN');

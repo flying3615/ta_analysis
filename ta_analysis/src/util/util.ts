@@ -6,7 +6,7 @@ import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
-import { PatternStatus } from '../analysis/patterns/multiTimeFramePatternAnalysis.js';
+import { PatternStatus } from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
 
 export function isToday(date: Date): boolean {
   const today = new Date();
