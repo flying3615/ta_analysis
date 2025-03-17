@@ -5,6 +5,7 @@ interface InitState {
   feePerTrade: number; // 每次交易的手续费
   downPercent: number; // 下跌买入触发百分比
   upPercent: number; // 上涨卖出触发百分比
+  volatility: number; // 股票波动率
   tradingRatio: number; // 用于交易的股票比例
   maxCycles: number; // 最大循环次数
 }
@@ -25,6 +26,7 @@ function simulateStockTrading(initState: InitState) {
     upPercent,
     tradingRatio,
     maxCycles,
+    volatility,
   } = initState;
 
   // 初始状态计算
@@ -118,8 +120,9 @@ function simulateStockTrading(initState: InitState) {
     // 保存交易记录
     tradeHistory.push(buyTrade, sellTrade);
 
+    const lastPrice = price;
     // 更新价格基准，假设长期趋势稳定在初始的当前价格附近
-    price = currentPrice * (0.9 + Math.random() * 0.2);
+    price = lastPrice * (1 + (Math.random() * 2 - 1) * volatility);
   }
 
   // 计算回本所需涨幅
@@ -238,18 +241,24 @@ const initState: InitState = {
   initialPrice: 30, // 初始买入价格30元
   currentPrice: 15, // 当前市场价格15元
   feePerTrade: 3, // 每次交易手续费3元
-  downPercent: 0.1, // 价格下跌20%触发买入
-  upPercent: 0.1, // 价格上涨20%触发卖出
+  downPercent: 0.1, // 价格下跌10%触发买入
+  upPercent: 0.1, // 价格上涨10%触发卖出
   tradingRatio: 1 / 3, // 使用1/3的股票进行滚仓交易
   maxCycles: 100, // 最多允许100个循环
+  volatility: 0.1, // 价格波动率10%
 };
 
 // 运行模拟并获取结果
-const result1 = runAvgDownSimulation(initState, true);
-console.log(result1);
+// const result1 = runAvgDownSimulation(initState, true);
+// console.log(result1);
 
 // 取消注释下面一行以运行不同参数的比较
-const result2 = compareAvgDownParameters(initState);
-console.log(result2);
+// const result2 = compareAvgDownParameters(initState);
+// console.log(result2);
 
-export { runAvgDownSimulation, compareAvgDownParameters, InitState };
+export {
+  runAvgDownSimulation,
+  compareAvgDownParameters,
+  simulateStockTrading,
+  InitState,
+};
