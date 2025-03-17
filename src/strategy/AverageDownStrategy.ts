@@ -154,7 +154,7 @@ function simulateStockTrading(initState: InitState) {
  * @param printDetails 是否打印详细交易历史
  * @returns 格式化的输出结果
  */
-function runSimulation(initState: InitState, printDetails: boolean) {
+function runAvgDownSimulation(initState: InitState, printDetails: boolean) {
   // 运行模拟
   const result = simulateStockTrading(initState);
   let output = '';
@@ -201,7 +201,7 @@ function runSimulation(initState: InitState, printDetails: boolean) {
  * @param initState 基础参数设置
  * @returns 不同参数比较的结果报告
  */
-function compareParameters(initState: InitState) {
+function compareAvgDownParameters(initState: InitState) {
   let output = '';
   output += '\n参数比较分析:\n';
 
@@ -233,23 +233,23 @@ function compareParameters(initState: InitState) {
   return output;
 }
 
-const initState: InitState = {
-  initialShares: 1000, // 初始持有1000股
-  initialPrice: 30, // 初始买入价格30元
-  currentPrice: 15, // 当前市场价格15元
-  feePerTrade: 3, // 每次交易手续费3元
-  downPercent: 0.2, // 价格下跌20%触发买入
-  upPercent: 0.2, // 价格上涨20%触发卖出
-  tradingRatio: 1 / 3, // 使用1/3的股票进行滚仓交易
-  maxCycles: 100, // 最多允许100个循环
-};
+// const initState: InitState = {
+//   initialShares: 1000, // 初始持有1000股
+//   initialPrice: 30, // 初始买入价格30元
+//   currentPrice: 15, // 当前市场价格15元
+//   feePerTrade: 3, // 每次交易手续费3元
+//   downPercent: 0.2, // 价格下跌20%触发买入
+//   upPercent: 0.2, // 价格上涨20%触发卖出
+//   tradingRatio: 1 / 3, // 使用1/3的股票进行滚仓交易
+//   maxCycles: 100, // 最多允许100个循环
+// };
 
 // 运行模拟并获取结果
 // const result1 = runSimulation(initState, true);
 // console.log(result1);
 
 // 取消注释下面一行以运行不同参数的比较
-const result2 = compareParameters(initState);
-console.log(result2);
+// const result2 = compareParameters(initState);
+// console.log(result2);
 
-export { simulateStockTrading, runSimulation, compareParameters, InitState };
+export { runAvgDownSimulation, compareAvgDownParameters, InitState };
