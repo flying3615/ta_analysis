@@ -237,7 +237,7 @@ function compareAvgDownParameters(initState: InitState) {
 }
 
 const initState: InitState = {
-  initialShares: 950, // 初始持有1000股
+  initialShares: 1000, // 初始持有1000股
   initialPrice: 30, // 初始买入价格30元
   currentPrice: 15, // 当前市场价格15元
   feePerTrade: 3, // 每次交易手续费3元

@@ -390,10 +390,10 @@ const sampleParams: ExpectedReturnParams = {
   initialPrice: 50,
   currentPrice: 50, // 这里设置为同价格，模拟新买入的股票
   feePerTrade: 5,
-  downPercent: 0.1,
-  upPercent: 0.15,
+  downPercent: 0.08,
+  upPercent: 0.1,
   tradingRatio: 0.3,
-  volatility: 0.02, // 2%的日波动率
+  volatility: 0.05, // 5%的日波动率
   expectedGrowthRate: 0.1, // 10%的年化预期增长率
   simulationYears: 3,
   simulationCount: 100,
