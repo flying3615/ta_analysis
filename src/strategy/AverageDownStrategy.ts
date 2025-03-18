@@ -237,7 +237,7 @@ function compareAvgDownParameters(initState: InitState) {
 }
 
 const initState: InitState = {
-  initialShares: 1000, // 初始持有1000股
+  initialShares: 100, // 初始持有100股
   initialPrice: 30, // 初始买入价格30元
   currentPrice: 15, // 当前市场价格15元
   feePerTrade: 3, // 每次交易手续费3元
@@ -249,8 +249,8 @@ const initState: InitState = {
 };
 
 // 运行模拟并获取结果
-// const result1 = runAvgDownSimulation(initState, true);
-// console.log(result1);
+const result1 = runAvgDownSimulation(initState, true);
+console.log(result1);
 
 // 取消注释下面一行以运行不同参数的比较
 // const result2 = compareAvgDownParameters(initState);
