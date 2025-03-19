@@ -249,8 +249,8 @@ const initState: InitState = {
 };
 
 // 运行模拟并获取结果
-const result1 = runAvgDownSimulation(initState, true);
-console.log(result1);
+// const result1 = runAvgDownSimulation(initState, true);
+// console.log(result1);
 
 // 取消注释下面一行以运行不同参数的比较
 // const result2 = compareAvgDownParameters(initState);

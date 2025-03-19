@@ -20,7 +20,7 @@ async function getPrices(symbol: string): Promise<number[]> {
   console.log('正在获取数据...');
 
   const startDate = new Date();
-  startDate.setDate(today.getDate() - 30); // 获取一年的数据
+  startDate.setDate(today.getDate() - 360); // 获取一年的数据
 
   const dailyData = await getStockDataForTimeframe(
     symbol,
@@ -57,9 +57,10 @@ function calculateStrategyReturns(
   let currentShares = initialShares;
   let totalInvestment = initialShares * initialPrice;
   let avgCost = initialPrice;
-  let cashBalance = 0;
+  let cashBalance = Math.floor(initialShares * tradingRatio) * initialPrice;
+  // let cashBalance = 0;
   let totalFees = 0;
-  const tradingPosition = Math.floor(initialShares * tradingRatio);
+  let tradingPosition = Math.floor(initialShares * tradingRatio);
 
   // 跟踪买入状态
   let hasBought = false;
@@ -71,6 +72,8 @@ function calculateStrategyReturns(
   let lastStopLossDay = 0;
 
   const trades = [];
+
+  let hasStopLoss = false;
 
   // 遍历价格路径
   for (let day = 1; day < pricePath.length; day++) {
@@ -97,7 +100,7 @@ function calculateStrategyReturns(
         fee: feePerTrade,
         newShares: 0,
         newAvgCost: 0,
-        cycleProfitLoss: sellValue - currentShares * avgCost - feePerTrade *  2,
+        cycleProfitLoss: sellValue - currentShares * avgCost - feePerTrade * 2,
       };
       trades.push(stopLossTrade);
 
@@ -110,18 +113,32 @@ function calculateStrategyReturns(
       lastStopLossDay = day;
       stopLossCount++;
 
+      hasStopLoss = true;
       continue;
     }
 
     // 如果未买入状态，检查是否满足买入条件
     if (!hasBought) {
+      // 止损之后再次买入信号为当前股价为上次股价的110%时
+
+      let reBuyAfterStopLoss = false;
+      if (hasStopLoss) {
+        hasStopLoss = false;
+        tradingPosition = initialShares;
+        const stopLossPrice = pricePath[lastStopLossDay];
+        reBuyAfterStopLoss = currentPrice >= stopLossPrice * 1.1;
+      }
+
       // 价格下跌达到触发条件
-      if (currentPrice <= pricePath[lastTradeDay] * (1 - downPercent)) {
+      if (
+        currentPrice <= pricePath[lastTradeDay] * (1 - downPercent) ||
+        reBuyAfterStopLoss
+      ) {
         // 执行买入
         const buyValue = tradingPosition * currentPrice;
         const buyFee = feePerTrade;
-
         cashBalance -= buyValue + buyFee;
+
         totalFees += buyFee;
 
         // 更新持股和成本
@@ -132,7 +149,7 @@ function calculateStrategyReturns(
         // 记录交易
         const buyTrade = {
           day,
-          type: 'buy',
+          type: reBuyAfterStopLoss ? 'reBuy' : 'buy',
           price: currentPrice,
           shares: tradingPosition,
           value: buyValue,
@@ -290,77 +307,15 @@ async function runExpectedReturnsAnalysis(
   return formatAnalysisResult(analysis);
 }
 
-// 比较不同波动率下的期望收益
-async function compareVolatilityScenarios(
-  baseParams: ExpectedReturnParams
-): Promise<string> {
-  let output = `# 不同波动率下的滚仓策略比较\n\n`;
-
-  const volatilities = [0.01, 0.02, 0.03, 0.05, 0.08];
-  const results = [];
-
-  for (const vol of volatilities) {
-    const params = { ...baseParams, volatility: vol };
-    const analysis = await analyzeExpectedReturns(params);
-    results.push({
-      volatility: vol,
-      ...analysis.averageResults,
-    });
-  }
-
-  output += `## 比较结果\n\n`;
-  output += `| 波动率 | 平均收益率 | 平均交易次数 | 成功率 | 平均最终成本 | 止损触发次数 |\n`;
-  output += `| ------ | ---------- | ------------ | ------ | ------------ | ------------ |\n`;
-
-  for (const result of results) {
-    output += `| ${(result.volatility * 100).toFixed(1)}% | ${result.averageReturnRate.toFixed(2)}% | ${result.averageTrades.toFixed(1)} | ${result.successRate ? result.successRate.toFixed(2) : 'N/A'}% | ${result.averageFinalCost ? result.averageFinalCost.toFixed(2) : 'N/A'} | ${result.stopLossCount} |\n`;
-  }
-
-  output += `\n## 结论\n\n`;
-
-  // 找出最佳波动率
-  const bestVol = results.reduce(
-    (best, current) =>
-      current.averageReturnRate > best.averageReturnRate ? current : best,
-    results[0]
-  );
-
-  output += `- 在测试的波动率范围内，${(bestVol.volatility * 100).toFixed(1)}%的波动率表现最佳，预期收益率为${bestVol.averageReturnRate.toFixed(2)}%。\n`;
-
-  // 检查止损触发情况
-  const totalStopLossCount = results.reduce(
-    (sum, r) => sum + (r.stopLossCount || 0),
-    0
-  );
-  if (totalStopLossCount > 0) {
-    output += `- 在所有波动率场景中共触发了${totalStopLossCount}次止损机制，有效控制了风险。\n`;
-  }
-
-  // 比较交易频率
-  const highVolTrades = results[results.length - 1].averageTrades;
-  const lowVolTrades = results[0].averageTrades;
-  output += `- 高波动率(${(volatilities[volatilities.length - 1] * 100).toFixed(1)}%)股票的平均交易次数(${highVolTrades.toFixed(1)})是低波动率(${(volatilities[0] * 100).toFixed(1)}%)股票(${lowVolTrades.toFixed(1)})的${(highVolTrades / lowVolTrades).toFixed(1)}倍。\n`;
-
-  // 比较成功率
-  if (results.some(r => r.successRate)) {
-    const successRates = results.map(r => r.successRate || 0);
-    const maxSuccessRate = Math.max(...successRates);
-    const optimalVolIndex = successRates.indexOf(maxSuccessRate);
-    output += `- 最高成功率${maxSuccessRate.toFixed(2)}%出现在波动率为${(volatilities[optimalVolIndex] * 100).toFixed(1)}%的情况下。\n`;
-  }
-
-  return output;
-}
-
 // 使用示例
 const sampleParams: ExpectedReturnParams = {
-  symbol: 'FFAI',
-  initialShares: 1000,
+  symbol: 'TSLA',
+  initialShares: 10,
   feePerTrade: 5,
   downPercent: 0.03,
   upPercent: 0.05,
   tradingRatio: 0.3,
-  stopLossPercent: 0.1, // 20%止损线
+  stopLossPercent: 0.1, // 10%止损线
 };
 
 // 运行分析示例
@@ -377,5 +332,4 @@ export {
   calculateStrategyReturns,
   analyzeExpectedReturns,
   runExpectedReturnsAnalysis,
-  compareVolatilityScenarios,
 };

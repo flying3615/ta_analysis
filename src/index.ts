@@ -40,3 +40,5 @@ export {
 export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
 
 export * from './types.js';
+
+export { getStockDataForTimeframe } from './util/util.js';
