@@ -9,6 +9,8 @@ import { findWedges } from './findWedges.js';
 import { findFlagsAndPennants } from './findFlagsAndPennants.js';
 import { findCupAndHandle } from './findCupAndHandle.js';
 import { findRoundingPatterns } from './findRoundingPatterns.js';
+import { findBuyingClimax } from './findBuyingClimax.js';
+import { findSellingClimax } from './findSellingClimax.js';
 
 /**
  * 价格形态类型枚举
@@ -31,6 +33,8 @@ enum PatternType {
   CupAndHandle = 'cup_and_handle',
   RoundingBottom = 'rounding_bottom',
   RoundingTop = 'rounding_top',
+  BuyingClimax = 'buying_climax',
+  SellingClimax = 'selling_climax',
 }
 
 /**
@@ -233,6 +237,10 @@ async function analyzeAllPatterns(
   const flagsPennants = findFlagsAndPennants(data, peaksValleys);
   const cupHandle = findCupAndHandle(data, peaksValleys);
   const roundingPatterns = findRoundingPatterns(data, peaksValleys);
+  const buyingClimax = findBuyingClimax(data, peaksValleys);
+
+  // 分析卖出高潮形态
+  const sellingClimax = findSellingClimax(data, peaksValleys);
 
   // 合并所有形态
   const allPatterns = [
@@ -243,6 +251,8 @@ async function analyzeAllPatterns(
     ...flagsPennants,
     ...cupHandle,
     ...roundingPatterns,
+    ...buyingClimax,
+    ...sellingClimax,
   ];
 
   // 计算当前最后一根K线的索引
