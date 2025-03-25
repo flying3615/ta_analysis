@@ -230,7 +230,7 @@ export function calculateStandardRSI(prices: number[], period: number): number {
 }
 
 // 辅助函数: 趋势识别
-function identifyTrend(prices: number[]): string {
+export function identifyTrend(prices: number[]): string {
   if (prices.length < 60) return '数据不足';
 
   const sma5 = calculateSMA(prices, 5);
@@ -284,19 +284,298 @@ function identifyTrend(prices: number[]): string {
 }
 
 // 辅助函数 - 计算SMA
-function calculateSMA(data: number[], period: number): number {
+export function calculateSMA(data: number[], period: number): number {
   const slice = data.slice(-period);
   return slice.reduce((sum, price) => sum + price, 0) / slice.length;
 }
 
 // 辅助函数 - 计算标准差
-function calculateStdDev(data: number[], period: number): number {
+export function calculateStdDev(data: number[], period: number): number {
   const slice = data.slice(-period);
   const mean = slice.reduce((sum, val) => sum + val, 0) / slice.length;
   const squaredDiffs = slice.map(val => Math.pow(val - mean, 2));
   const variance =
     squaredDiffs.reduce((sum, val) => sum + val, 0) / slice.length;
   return Math.sqrt(variance);
+}
+
+/**
+ * 计算成交量力量指标
+ */
+export function calculateVolumeForce(
+  data: Candle[],
+  lookbackPeriod: number
+): number {
+  if (data.length < lookbackPeriod) {
+    return 0;
+  }
+
+  const recentData = data.slice(-lookbackPeriod);
+
+  // 计算上涨日的平均成交量和下跌日的平均成交量
+  let upVolume = 0;
+  let upDays = 0;
+  let downVolume = 0;
+  let downDays = 0;
+
+  for (let i = 1; i < recentData.length; i++) {
+    const priceChange = recentData[i].close - recentData[i - 1].close;
+    const volume = recentData[i].volume;
+
+    if (priceChange > 0) {
+      upVolume += volume;
+      upDays++;
+    } else if (priceChange < 0) {
+      downVolume += volume;
+      downDays++;
+    }
+  }
+
+  const avgUpVolume = upDays > 0 ? upVolume / upDays : 0;
+  const avgDownVolume = downDays > 0 ? downVolume / downDays : 0;
+
+  // 防止除以零
+  if (avgUpVolume + avgDownVolume === 0) return 0;
+
+  // 计算成交量力量 (-100 到 100)
+  const volumeForce =
+    (100 * (avgUpVolume - avgDownVolume)) / (avgUpVolume + avgDownVolume);
+
+  return volumeForce;
+}
+
+/**
+ * 计算资金流指标 (Money Flow Index, MFI)
+ */
+export function calculateMoneyFlowIndex(
+  data: Candle[],
+  period: number
+): number {
+  if (data.length <= period) {
+    return 50; // 默认返回中性值
+  }
+
+  const typicalPrices: number[] = [];
+  const moneyFlow: number[] = [];
+
+  // 计算典型价格和资金流
+  for (let i = 0; i < data.length; i++) {
+    const { high, low, close, volume } = data[i];
+    const typicalPrice = (high + low + close) / 3;
+
+    typicalPrices.push(typicalPrice);
+    moneyFlow.push(typicalPrice * volume);
+  }
+
+  // 计算资金流比率
+  let positiveFlow = 0;
+  let negativeFlow = 0;
+
+  for (let i = data.length - period; i < data.length; i++) {
+    if (i > 0) {
+      if (typicalPrices[i] > typicalPrices[i - 1]) {
+        positiveFlow += moneyFlow[i];
+      } else if (typicalPrices[i] < typicalPrices[i - 1]) {
+        negativeFlow += moneyFlow[i];
+      }
+    }
+  }
+
+  // 防止除以零
+  if (negativeFlow === 0) return 100;
+  if (positiveFlow === 0) return 0;
+
+  const moneyFlowRatio = positiveFlow / negativeFlow;
+  const mfi = 100 - 100 / (1 + moneyFlowRatio);
+
+  return mfi;
+}
+
+/**
+ * 计算蔡金摆动指标 (Chaikin Oscillator)
+ */
+export function calculateChaikinOscillator(adLine: number[]): number {
+  if (adLine.length < 10) {
+    return 0;
+  }
+
+  // 计算3日和10日EMA
+  const ema3 = calculateEMA(adLine, 3);
+  const ema10 = calculateEMA(adLine, 10);
+
+  // 蔡金摆动指标是两个EMA的差值
+  return ema3 - ema10;
+}
+
+/**
+ * 计算指数移动平均线 (EMA)
+ */
+function calculateEMA(data: number[], period: number): number {
+  if (data.length < period) {
+    return data[data.length - 1];
+  }
+
+  const alpha = 2 / (period + 1);
+  const recentData = data.slice(-period * 2);
+
+  // 初始EMA为第一个值
+  let ema = recentData[0];
+
+  // 计算EMA
+  for (let i = 1; i < recentData.length; i++) {
+    ema = alpha * recentData[i] + (1 - alpha) * ema;
+  }
+
+  return ema;
+}
+
+/**
+ * 计算积累分布线 (A/D Line)
+ */
+export function calculateADLine(data: Candle[]): number[] {
+  const adLine: number[] = [];
+  let ad = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    const { high, low, close, volume } = data[i];
+
+    // 防止除以零
+    if (high === low) {
+      adLine.push(ad);
+      continue;
+    }
+
+    // 计算货币流量乘数 (Money Flow Multiplier)
+    const mfm = (close - low - (high - close)) / (high - low);
+
+    // 计算货币流量量 (Money Flow Volume)
+    const mfv = mfm * volume;
+
+    // 更新积累分布线
+    ad += mfv;
+    adLine.push(ad);
+  }
+
+  return adLine;
+}
+
+/**
+ * 计算能量潮指标 (OBV)
+ */
+export function calculateOBV(data: Candle[]): number[] {
+  const obv: number[] = [0]; // 初始OBV值设为0
+
+  for (let i = 1; i < data.length; i++) {
+    const currentClose = data[i].close;
+    const previousClose = data[i - 1].close;
+    const currentVolume = data[i].volume;
+
+    if (currentClose > previousClose) {
+      // 收盘价上涨，加上当日成交量
+      obv.push(obv[i - 1] + currentVolume);
+    } else if (currentClose < previousClose) {
+      // 收盘价下跌，减去当日成交量
+      obv.push(obv[i - 1] - currentVolume);
+    } else {
+      // 收盘价不变，OBV保持不变
+      obv.push(obv[i - 1]);
+    }
+  }
+
+  return obv;
+}
+
+/**
+ * 计算返回率序列
+ */
+export function calculateReturns(prices: number[]): number[] {
+  const returns: number[] = [];
+  for (let i = 1; i < prices.length; i++) {
+    returns.push(prices[i] / prices[i - 1] - 1);
+  }
+  return returns;
+}
+
+/**
+ * 计算标准差
+ */
+export function calculateStandardDeviation(data: number[]): number {
+  const mean = data.reduce((sum, value) => sum + value, 0) / data.length;
+  const squaredDiffs = data.map(value => Math.pow(value - mean, 2));
+  const variance =
+    squaredDiffs.reduce((sum, value) => sum + value, 0) / data.length;
+  return Math.sqrt(variance);
+}
+
+/**
+ * 计算最近的ATR值
+ */
+export function calculateATR(data: Candle[], period: number): number {
+  const trValues: number[] = [];
+
+  // 计算真实范围值
+  for (let i = 1; i < data.length; i++) {
+    const high = data[i].high;
+    const low = data[i].low;
+    const prevClose = data[i - 1].close;
+
+    const tr1 = high - low;
+    const tr2 = Math.abs(high - prevClose);
+    const tr3 = Math.abs(low - prevClose);
+
+    const tr = Math.max(tr1, tr2, tr3);
+    trValues.push(tr);
+  }
+
+  // 计算ATR
+  if (trValues.length < period) {
+    return trValues.reduce((sum, tr) => sum + tr, 0) / trValues.length;
+  }
+
+  const recentTRs = trValues.slice(-period);
+  return recentTRs.reduce((sum, tr) => sum + tr, 0) / period;
+}
+
+/**
+ * 计算完整的ATR序列
+ */
+export function calculateATRSeries(data: Candle[], period: number): number[] {
+  const trValues: number[] = [];
+  const atrValues: number[] = [];
+
+  // 计算真实范围值
+  for (let i = 1; i < data.length; i++) {
+    const high = data[i].high;
+    const low = data[i].low;
+    const prevClose = data[i - 1].close;
+
+    const tr1 = high - low;
+    const tr2 = Math.abs(high - prevClose);
+    const tr3 = Math.abs(low - prevClose);
+
+    const tr = Math.max(tr1, tr2, tr3);
+    trValues.push(tr);
+  }
+
+  // 计算初始ATR
+  if (trValues.length < period) {
+    const initialATR =
+      trValues.reduce((sum, tr) => sum + tr, 0) / trValues.length;
+    atrValues.push(initialATR);
+    return atrValues;
+  }
+
+  // 计算第一个ATR
+  let atr = trValues.slice(0, period).reduce((sum, tr) => sum + tr, 0) / period;
+  atrValues.push(atr);
+
+  // 计算其余ATR (Wilder's smoothing)
+  for (let i = period; i < trValues.length; i++) {
+    atr = (atr * (period - 1) + trValues[i]) / period;
+    atrValues.push(atr);
+  }
+
+  return atrValues;
 }
 
 export function rollingMin(prices: number[], window: number): number[] {

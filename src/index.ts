@@ -39,6 +39,29 @@ export {
 
 export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
 
+// 新增的波动率分析导出
+export {
+  calculateVolatilityAnalysis,
+  formatVolatilityAnalysis,
+  VolatilityAnalysisResult,
+} from './analysis/volatility/volatilityAnalysis.js';
+
+// 新增的积累分布线分析导出
+export {
+  calculateAccumulationDistribution,
+  formatAccumulationDistributionAnalysis,
+  AccumulationDistributionResult,
+} from './util/accumulationDistribution.js';
+
+// 新增的综合波动率和量价分析导出
+export {
+  executeVolumeAnalysis,
+  executeVolatilityAnalysis,
+  executeCombinedAnalysis,
+  IntegratedVolumeAnalysisResult,
+  IntegratedVolatilityAnalysisResult,
+} from './analysis/volatility/volumeVolatilityAnalysis.js';
+
 export * from './types.js';
 
 export { getStockDataForTimeframe } from './util/util.js';

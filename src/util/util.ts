@@ -120,19 +120,6 @@ export function percentChange(prices: number[]): number[] {
   return changes;
 }
 
-export function calculateSlope(prices: number[]): number {
-  const n = prices.length;
-  const x = Array.from({ length: n }, (_, i) => i + 1);
-  const y = prices;
-
-  const sumX = x.reduce((a, b) => a + b, 0);
-  const sumY = y.reduce((a, b) => a + b, 0);
-  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
-
-  return (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-}
-
 // same as MarketQuery.getHistoricalData
 export async function getStockData(
   symbol: string,
