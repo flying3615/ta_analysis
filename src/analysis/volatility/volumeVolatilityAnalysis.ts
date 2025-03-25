@@ -371,4 +371,4 @@ async function exampleVVAnalysisUsage(symbol: string) {
   }
 }
 
-// exampleVVAnalysisUsage('TSLA');
+exampleVVAnalysisUsage('COIN');

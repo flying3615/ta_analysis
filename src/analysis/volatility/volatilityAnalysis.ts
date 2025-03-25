@@ -32,7 +32,7 @@ export interface VolatilityAnalysisResult {
  */
 export function calculateVolatilityAnalysis(
   data: Candle[],
-  lookbackPeriod: number = 20
+  lookbackPeriod: number = 15
 ): VolatilityAnalysisResult {
   if (data.length < Math.max(lookbackPeriod, 30)) {
     throw new Error('数据不足以进行有效的波动率分析');
