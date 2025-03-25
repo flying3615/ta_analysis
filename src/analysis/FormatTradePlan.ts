@@ -1,5 +1,6 @@
 import { IntegratedTradePlan } from './IntegratedAnalysis.js';
 import { toEDTString } from '../util/util.js';
+import { CombinedVVAnalysisResult } from './volatility/volumeVolatilityAnalysis.js';
 
 /**
  * 格式化交易计划输出结果
@@ -7,7 +8,10 @@ import { toEDTString } from '../util/util.js';
  * @param tradePlan 综合交易计划对象
  * @returns 格式化的输出字符串
  */
-function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
+function formatTradePlanOutput(
+  tradePlan: IntegratedTradePlan,
+  combinedVolumeVolatilitySummary: string
+): string {
   // 创建分隔线和标题行样式
   const separator = '='.repeat(80);
   const sectionSeparator = '-'.repeat(80);
@@ -135,6 +139,9 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   output += `\n【时间周期分析】\n`;
   output += `主要周期: ${formatTimeframe(tradePlan.primaryTimeframe)} | 一致性: ${tradePlan.timeframeConsistency}\n`;
   output += `短期: ${tradePlan.shortTermOutlook} | 中期: ${tradePlan.mediumTermOutlook} | 长期: ${tradePlan.longTermOutlook}\n`;
+
+  // 7.1 量能分析
+  output += combinedVolumeVolatilitySummary;
 
   // 8. 趋势逆转信号 (如果存在)
   if (
