@@ -1,16 +1,18 @@
-import { IntegratedTradePlan } from './IntegratedAnalysis.js';
 import { toEDTString } from '../util/util.js';
-import { CombinedVVAnalysisResult } from './volatility/volumeVolatilityAnalysis.js';
+import { IntegratedTradePlan } from '../types.js';
 
 /**
  * 格式化交易计划输出结果
  * 将IntegratedTradePlan对象转换为更简洁高效的格式化字符串输出
  * @param tradePlan 综合交易计划对象
+ * @param combinedVolumeVolatilitySummary
  * @returns 格式化的输出字符串
  */
 function formatTradePlanOutput(
   tradePlan: IntegratedTradePlan,
-  combinedVolumeVolatilitySummary: string
+  combinedVolumeVolatilitySummary: string,
+  volumeAnalysisReason: string,
+  volatilityAnalysisReason: string
 ): string {
   // 创建分隔线和标题行样式
   const separator = '='.repeat(80);
@@ -141,7 +143,9 @@ function formatTradePlanOutput(
   output += `短期: ${tradePlan.shortTermOutlook} | 中期: ${tradePlan.mediumTermOutlook} | 长期: ${tradePlan.longTermOutlook}\n`;
 
   // 7.1 量能分析
-  output += combinedVolumeVolatilitySummary;
+  output += `\n【波动率量能分析】\n`;
+  output += `${volumeAnalysisReason}\n`;
+  output += `${volatilityAnalysisReason}\n`;
 
   // 8. 趋势逆转信号 (如果存在)
   if (
@@ -181,6 +185,7 @@ function formatTradePlanOutput(
   output += `\n【交易理由】\n`;
   output += `${tradePlan.primaryRationale}\n`;
   output += `${tradePlan.secondaryRationale}\n`;
+  output += combinedVolumeVolatilitySummary;
 
   output += `\n${sectionSeparator}\n`;
 

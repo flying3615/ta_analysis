@@ -13,6 +13,31 @@ import {
 } from './volumeVolatilityAnalysis.js';
 
 /**
+ * 增强版的波动率分析结果接口 - 扩展了VolatilityAnalysisResult
+ */
+export interface EnhancedVolatilityAnalysisResult
+  extends VolatilityAnalysisResult {
+  // 价格位置信息
+  pricePosition: {
+    relativeToHigh: number; // 0-100，当前价格相对于52周高点的百分比位置
+    relativeToLow: number; // 0-100，当前价格相对于52周低点的百分比位置
+    relativeTo200MA: number; // 相对于200日均线的百分比偏离
+  };
+  // 波动率渐变特征
+  volatilityTransition: {
+    isTransitioning: boolean;
+    fromRegime: 'low' | 'medium' | 'high' | 'extreme';
+    toRegime: 'low' | 'medium' | 'high' | 'extreme';
+    transitionStrength: number; // 0-100
+  };
+  // 底部反转信号指标
+  bottomSignals: {
+    potentialBottomReversal: boolean;
+    reversalStrength: number; // 0-100
+  };
+}
+
+/**
  * 基于ATR百分比和布林带宽度判断波动率状态
  */
 function determineVolatilityRegime(
@@ -279,31 +304,6 @@ export function formatVolatilityAnalysis(
 }
 
 /**
- * 增强版的波动率分析结果接口 - 扩展了VolatilityAnalysisResult
- */
-export interface EnhancedVolatilityAnalysisResult
-  extends VolatilityAnalysisResult {
-  // 价格位置信息
-  pricePosition: {
-    relativeToYearHigh: number; // 0-100，当前价格相对于52周高点的百分比位置
-    relativeToYearLow: number; // 0-100，当前价格相对于52周低点的百分比位置
-    relativeTo200MA: number; // 相对于200日均线的百分比偏离
-  };
-  // 波动率渐变特征
-  volatilityTransition: {
-    isTransitioning: boolean;
-    fromRegime: 'low' | 'medium' | 'high' | 'extreme';
-    toRegime: 'low' | 'medium' | 'high' | 'extreme';
-    transitionStrength: number; // 0-100
-  };
-  // 底部反转信号指标
-  bottomSignals: {
-    potentialBottomReversal: boolean;
-    reversalStrength: number; // 0-100
-  };
-}
-
-/**
  * 增强底部检测的波动率分析函数
  * @param data 历史K线数据
  * @param lookbackPeriod 回溯期
@@ -369,8 +369,8 @@ function calculatePricePosition(
   }
 
   return {
-    relativeToYearHigh,
-    relativeToYearLow,
+    relativeToHigh: relativeToYearHigh,
+    relativeToLow: relativeToYearLow,
     relativeTo200MA,
   };
 }
@@ -440,7 +440,7 @@ function detectBottomSignals(
 
   // 1. 检查价格是否处于历史低位
   const pricePosition = calculatePricePosition(data);
-  if (pricePosition.relativeToYearLow > 80) {
+  if (pricePosition.relativeToLow > 80) {
     signalStrength += 20; // 价格接近年度低点
   }
 
@@ -520,8 +520,8 @@ export function formatEnhancedVolatilityAnalysis(
 
   // 添加价格位置分析
   result += '\n=== 价格位置分析 ===\n';
-  result += `相对52周高点: ${analysis.pricePosition.relativeToYearHigh.toFixed(2)}%\n`;
-  result += `相对52周低点: ${analysis.pricePosition.relativeToYearLow.toFixed(2)}%\n`;
+  result += `相对52周高点: ${analysis.pricePosition.relativeToHigh.toFixed(2)}%\n`;
+  result += `相对52周低点: ${analysis.pricePosition.relativeToLow.toFixed(2)}%\n`;
 
   if (analysis.pricePosition.relativeTo200MA !== 0) {
     result += `相对200日均线: ${analysis.pricePosition.relativeTo200MA.toFixed(2)}%\n`;
@@ -560,14 +560,14 @@ export function generateEnhancedCombinedAnalysis(
 ): string {
   let summary = '\n【波动率量能分析结论】\n\n';
 
-  // 1. 价格位置分析
+  // 1. 价格位置分析， 小时周期用过去60天的数据
   const pricePosition = volatilityAnalysis.pricePosition;
-  if (pricePosition.relativeToYearLow > 80) {
-    summary += `价格位置: 接近年度低点（位于年度区间底部${(100 - pricePosition.relativeToYearLow).toFixed(1)}%处）\n`;
-  } else if (pricePosition.relativeToYearHigh > 80) {
-    summary += `价格位置: 接近年度高点（位于年度区间顶部${pricePosition.relativeToYearHigh.toFixed(1)}%处）\n`;
+  if (pricePosition.relativeToLow > 80) {
+    summary += `价格位置: 接近年度低点（位于年度区间底部${(100 - pricePosition.relativeToLow).toFixed(1)}%处）\n`;
+  } else if (pricePosition.relativeToHigh > 80) {
+    summary += `价格位置: 接近年度高点（位于年度区间顶部${pricePosition.relativeToHigh.toFixed(1)}%处）\n`;
   } else {
-    summary += `价格位置: 位于年度价格区间中段（距底部${(100 - pricePosition.relativeToYearLow).toFixed(1)}%，距顶部${(100 - pricePosition.relativeToYearHigh).toFixed(1)}%）\n`;
+    summary += `价格位置: 位于过去60天价格区间中段（距底部${(100 - pricePosition.relativeToLow).toFixed(1)}%，距顶部${(100 - pricePosition.relativeToHigh).toFixed(1)}%）\n`;
   }
 
   // 2. 波动率状态
@@ -594,7 +594,7 @@ export function generateEnhancedCombinedAnalysis(
 
   // 检测常见底部形态信号
   if (
-    pricePosition.relativeToYearLow > 80 &&
+    pricePosition.relativeToLow > 80 &&
     !volatilityAnalysis.isVolatilityIncreasing
   ) {
     summary += '- 价格处于低位且波动率开始下降，可能是恐慌情绪逐渐释放\n';
@@ -614,10 +614,7 @@ export function generateEnhancedCombinedAnalysis(
     summary += '- 极端波动率开始下降，可能预示趋势将转为震荡或反转\n';
   }
 
-  if (
-    volumeAnalysis.moneyFlowIndex < 30 &&
-    pricePosition.relativeToYearLow > 70
-  ) {
+  if (volumeAnalysis.moneyFlowIndex < 30 && pricePosition.relativeToLow > 70) {
     summary += '- MFI处于超卖区域，且价格位于低位，具备反弹条件\n';
   }
 
@@ -631,7 +628,7 @@ export function generateEnhancedCombinedAnalysis(
   // 针对底部反转情况给出更具体的建议
   if (
     volatilityAnalysis.bottomSignals.potentialBottomReversal &&
-    pricePosition.relativeToYearLow > 70
+    pricePosition.relativeToLow > 70
   ) {
     // 底部区域
     summary += '价格处于低位且展现底部特征，可考虑分批建仓，设置合理止损。';
@@ -745,11 +742,16 @@ export function executeEnhancedCombinedAnalysis(
     // 执行量价分析
     const volumeAnalysisResult = executeVolumeAnalysis(data, lookbackPeriod);
 
+    const volumeAnalysisReason = volumeAnalysisResult.formattedVolumeAnalysis;
+
     // 执行增强版波动率分析
     const volatilityAnalysisResult = executeEnhancedVolatilityAnalysis(
       data,
       lookbackPeriod
     );
+
+    const volatilityAnalysisReason =
+      volatilityAnalysisResult.formattedVolatilityAnalysis;
 
     // 生成增强版综合分析结论
     const enhancedSummary = generateEnhancedCombinedAnalysis(
@@ -759,7 +761,9 @@ export function executeEnhancedCombinedAnalysis(
 
     return {
       volumeAnalysis: volumeAnalysisResult,
+      volumeAnalysisReason,
       volatilityAnalysis: volatilityAnalysisResult,
+      volatilityAnalysisReason,
       combinedAnalysisSummary: enhancedSummary,
     };
   } catch (error) {

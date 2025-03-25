@@ -1,4 +1,7 @@
-import { ComprehensivePatternAnalysis, PatternDirection } from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
+import {
+  ComprehensivePatternAnalysis,
+  PatternDirection,
+} from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
 import { MultiTimeframeAnalysisResult } from '../analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
 import {
   IntegratedVolatilityAnalysisResult,
@@ -584,7 +587,7 @@ export function findPatternStopLoss(
       tfa =>
         tfa.dominantPattern &&
         ((tfa.dominantPattern.direction === PatternDirection.Bullish &&
-            direction === TradeDirection.Long) ||
+          direction === TradeDirection.Long) ||
           (tfa.dominantPattern.direction === PatternDirection.Bearish &&
             direction === TradeDirection.Short)) &&
         tfa.dominantPattern.reliability > 60

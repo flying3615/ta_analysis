@@ -544,7 +544,9 @@ async function executeIntegratedAnalysis(
     // 使用格式化函数输出结果
     const formattedOutput = formatTradePlanOutput(
       integratedResult,
-      combinedVolumeVolatilityAnalysis.combinedAnalysisSummary
+      combinedVolumeVolatilityAnalysis.combinedAnalysisSummary,
+      combinedVolumeVolatilityAnalysis.volumeAnalysisReason,
+      combinedVolumeVolatilityAnalysis.volatilityAnalysisReason
     );
     console.log(formattedOutput);
 

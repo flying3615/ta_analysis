@@ -217,8 +217,6 @@ export enum TimeframePriority {
   Tertiary = 'tertiary', // 第三时间周期
 }
 
-
-
 /**
  * 关键价位类型
  */

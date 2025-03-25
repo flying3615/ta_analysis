@@ -63,7 +63,13 @@ export function calculateAccumulationDistribution(
 
   // 计算能量潮 (OBV)
   const obv = calculateOBV(data);
-  const obvSlope = calculateSlope(obv.slice(-lookbackPeriod));
+
+  // 对OBV进行归一化处理再计算斜率，避免出现异常大的斜率值
+  const recentOBV = obv.slice(-lookbackPeriod);
+  const maxAbsOBV = Math.max(...recentOBV.map(v => Math.abs(v)));
+  const normalizedOBV =
+    maxAbsOBV === 0 ? recentOBV : recentOBV.map(v => v / maxAbsOBV);
+  const obvSlope = calculateSlope(normalizedOBV);
 
   // 判断价格与成交量是否确认趋势
   const volumePriceConfirmation = checkVolumePriceConfirmation(

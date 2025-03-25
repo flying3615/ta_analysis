@@ -43,6 +43,8 @@ export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
 export {
   calculateVolatilityAnalysis,
   formatVolatilityAnalysis,
+  EnhancedVolatilityAnalysisResult,
+  executeEnhancedCombinedAnalysis,
 } from './analysis/volatility/volatilityAnalysis.js';
 
 // 新增的积累分布线分析导出
@@ -55,8 +57,6 @@ export {
 // 新增的综合波动率和量价分析导出
 export {
   executeVolumeAnalysis,
-  executeVolatilityAnalysis,
-  executeCombinedAnalysis,
   IntegratedVolumeAnalysisResult,
   IntegratedVolatilityAnalysisResult,
 } from './analysis/volatility/volumeVolatilityAnalysis.js';

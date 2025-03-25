@@ -393,18 +393,30 @@ export function calculateMoneyFlowIndex(
 
 /**
  * 计算蔡金摆动指标 (Chaikin Oscillator)
+ *
+ * 这个函数执行归一化处理，使返回值在合理范围内。
+ * 原因：A/D线可能会累积到非常大的值，导致蔡金摆动指标也非常大。
  */
 export function calculateChaikinOscillator(adLine: number[]): number {
   if (adLine.length < 10) {
     return 0;
   }
 
+  // 仅使用最近100个数据点计算蔡金摆动指标，避免历史累积值过大
+  const recentADLine = adLine.slice(-100);
+
+  // 根据最大绝对值对参与计算的A/D线进行归一化
+  const maxAbsValue = Math.max(...recentADLine.map(v => Math.abs(v)));
+  const normalizedADLine =
+    maxAbsValue === 0 ? recentADLine : recentADLine.map(v => v / maxAbsValue);
+
   // 计算3日和10日EMA
-  const ema3 = calculateEMA(adLine, 3);
-  const ema10 = calculateEMA(adLine, 10);
+  const ema3 = calculateEMA(normalizedADLine, 3);
+  const ema10 = calculateEMA(normalizedADLine, 10);
 
   // 蔡金摆动指标是两个EMA的差值
-  return ema3 - ema10;
+  // 将差值乘以5使其处于典型的范围内（通常在-5到+5之间）
+  return (ema3 - ema10) * 5;
 }
 
 /**
@@ -461,6 +473,9 @@ export function calculateADLine(data: Candle[]): number[] {
 
 /**
  * 计算能量潮指标 (OBV)
+ *
+ * 注意：OBV是累积型指标，随着数据增多会累积到很大的数值。
+ * 在使用OBV时，应主要关注其变化趋势而非绝对值的大小。
  */
 export function calculateOBV(data: Candle[]): number[] {
   const obv: number[] = [0]; // 初始OBV值设为0
@@ -609,6 +624,12 @@ export function percentChange(prices: number[]): number[] {
   return changes;
 }
 
+/**
+ * 计算数据序列的线性回归斜率
+ *
+ * 注意：对于大值序列（如OBV和A/D Line），在计算斜率前应进行归一化处理。
+ * 该函数默认应用在已经归一化的数据上。
+ */
 export function calculateSlope(prices: number[]): number {
   const n = prices.length;
   const x = Array.from({ length: n }, (_, i) => i + 1);
