@@ -5,15 +5,14 @@ import {
   PatternMatchResult,
 } from '../types.js';
 import {
-  calculateSlope,
   getStockData,
-  getStockDataForTimeframe,
   percentChange,
   rollingMax,
   rollingMin,
   standardDeviation,
 } from '../util/util.js';
 import { EMA, RSI, SMA } from 'technicalindicators';
+import { calculateSlope } from '../util/taUtil.js';
 
 export function extractPatternFeatures(candles: Candle[]): PatternFeatures {
   const analysis = analyzeStockPattern(candles);
