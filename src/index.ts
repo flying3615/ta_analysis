@@ -43,7 +43,6 @@ export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
 export {
   calculateVolatilityAnalysis,
   formatVolatilityAnalysis,
-  VolatilityAnalysisResult,
 } from './analysis/volatility/volatilityAnalysis.js';
 
 // 新增的积累分布线分析导出
