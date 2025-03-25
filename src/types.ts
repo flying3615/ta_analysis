@@ -347,3 +347,21 @@ export interface IntegratedTradePlan {
   // 综合自筹码和形态分析的关键点
   keyObservations: string[];
 }
+
+export interface VolatilityAnalysisResult {
+  historicalVolatility: number;
+  bollingerBandWidth: number;
+  atr: number;
+  atrPercent: number;
+  volatilityRegime: 'low' | 'medium' | 'high' | 'extreme';
+  isVolatilityIncreasing: boolean;
+  impliedVolatility?: number; // 如果有期权数据
+  volatilityPercentile: number; // 当前波动率在过去N天的百分位
+  volatilityTrend: string;
+  recentRanges: { daily: number; weekly: number; monthly: number }; // 各时间段的波动范围（%）
+  riskMetrics: {
+    sharpeRatio?: number; // 在有足够历史数据的情况下
+    maxDrawdown: number;
+    downsideDeviation: number;
+  };
+}

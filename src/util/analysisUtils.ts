@@ -1324,8 +1324,8 @@ export function generateSummary(
   confidenceScore: number,
   patternDesc: string,
   entryPrice: number,
-  volumeAnalysis: IntegratedVolumeAnalysisResult, // 新增：考虑量价分析
-  volatilityAnalysis: IntegratedVolatilityAnalysisResult, // 新增：考虑波动率分析
+  volumeAnalysis: IntegratedVolumeAnalysisResult,
+  volatilityAnalysis: IntegratedVolatilityAnalysisResult,
   takeProfitPrice?: number,
   stopLossPrice?: number
 ): string {
@@ -1339,7 +1339,7 @@ export function generateSummary(
 
   // 新增：添加积累分布线分析
   if (volumeAnalysis) {
-    summary += `积累分布线分析: ${volumeAnalysis.volumeAnalysis.adTrend === 'bullish' ? '资金流入占优' : volumeAnalysis.volumeAnalysis.adTrend === 'bearish' ? '资金流出占优' : '资金流向中性'}`;
+    summary += `\n积累分布线分析: ${volumeAnalysis.volumeAnalysis.adTrend === 'bullish' ? '资金流入占优' : volumeAnalysis.volumeAnalysis.adTrend === 'bearish' ? '资金流出占优' : '资金流向中性'}`;
 
     if (volumeAnalysis.volumeAnalysis.divergence.type !== 'none') {
       summary += `，检测到${volumeAnalysis.volumeAnalysis.divergence.type === 'bullish' ? '看涨' : volumeAnalysis.volumeAnalysis.divergence.type === 'bearish' ? '看跌' : volumeAnalysis.volumeAnalysis.divergence.type === 'hidden_bullish' ? '隐藏看涨' : '隐藏看跌'}背离`;
@@ -1350,7 +1350,7 @@ export function generateSummary(
 
   // 新增：添加波动率分析
   if (volatilityAnalysis) {
-    summary += `波动率分析: ${volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'low' ? '低波动' : volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'medium' ? '中等波动' : volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'high' ? '高波动' : '极端波动'}环境，${volatilityAnalysis.volatilityAnalysis.volatilityTrend}\n`;
+    summary += `\n波动率分析: ${volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'low' ? '低波动' : volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'medium' ? '中等波动' : volatilityAnalysis.volatilityAnalysis.volatilityRegime === 'high' ? '高波动' : '极端波动'}环境，${volatilityAnalysis.volatilityAnalysis.volatilityTrend}\n`;
   }
 
   if (takeProfitPrice) {

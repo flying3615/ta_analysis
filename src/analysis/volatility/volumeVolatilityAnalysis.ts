@@ -1,15 +1,12 @@
-import { Candle } from '../../types.js';
-import {
-  calculateVolatilityAnalysis,
-  formatVolatilityAnalysis,
-  VolatilityAnalysisResult,
-} from './volatilityAnalysis.js';
+import { Candle, VolatilityAnalysisResult } from '../../types.js';
+
 import {
   calculateAccumulationDistribution,
   formatAccumulationDistributionAnalysis,
   AccumulationDistributionResult,
 } from '../../util/accumulationDistribution.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
+import { calculateVolatilityAnalysis, formatVolatilityAnalysis } from './volatilityAnalysis.js';
 
 export interface IntegratedVolumeAnalysisResult {
   volumeAnalysis: AccumulationDistributionResult;

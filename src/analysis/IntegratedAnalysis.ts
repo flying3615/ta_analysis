@@ -35,7 +35,13 @@ import {
   generateSummary,
   generateWarnings,
 } from '../util/analysisUtils.js';
-import { IntegratedTradePlan, KeyLevel, SignalStrength, TradeDirection } from '../types.js';
+import {
+  IntegratedTradePlan,
+  KeyLevel,
+  SignalStrength,
+  TradeDirection,
+} from '../types.js';
+import { executeEnhancedCombinedAnalysis } from './volatility/volatilityAnalysis.js';
 
 /**
  * 综合筹码和形态分析结果的方法
@@ -474,7 +480,7 @@ async function executeIntegratedAnalysis(
     startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
 
     const startDateHourly = new Date();
-    startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
+    startDateHourly.setDate(today.getDate() - 60); // 获取一个月的数据
 
     console.log('正在获取各时间周期数据...');
 
@@ -528,8 +534,9 @@ async function executeIntegratedAnalysis(
       hourlyData
     );
 
-    // 执行波动率，成交量综合分析
-    const combinedVolumeVolatilityAnalysis = executeCombinedAnalysis(dailyData);
+    // 执行波动率，成交量综合分析，小时线
+    const combinedVolumeVolatilityAnalysis =
+      executeEnhancedCombinedAnalysis(hourlyData);
 
     // 整合分析结果
     console.log('正在整合分析结果...');
@@ -560,4 +567,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-// executeIntegratedAnalysis('COIN', { chip: 0.4, pattern: 0.6 });
+executeIntegratedAnalysis('COIN', { chip: 0.4, pattern: 0.6 });
