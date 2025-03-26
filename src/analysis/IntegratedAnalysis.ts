@@ -50,16 +50,19 @@ function integrateAnalyses(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
   bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
-  customWeights: { chip: number; pattern: number } = {
-    chip: 0.5,
-    pattern: 0.5,
+  customWeights: { chip: number; pattern: number; volume: number } = {
+    chip: 0.2,
+    pattern: 0.3,
+    volume: 0.5,
   }
 ): IntegratedTradePlan {
   // 确保权重总和为1
-  const totalWeight = customWeights.chip + customWeights.pattern;
+  const totalWeight =
+    customWeights.chip + customWeights.pattern + customWeights.volume;
   const normalizedWeights = {
     chip: customWeights.chip / totalWeight,
     pattern: customWeights.pattern / totalWeight,
+    volume: customWeights.volume / totalWeight,
   };
 
   // 确定基本信息
@@ -106,6 +109,19 @@ function integrateAnalyses(
     combinedVolumeVolatilityAnalysis.volatilityAnalysis.volatilityAnalysis;
   const volPriceConfirmation =
     combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis;
+
+  // 更高优先级决定交易方向
+  const volumeAnalysisDirection =
+    combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.adTrend;
+  const volumeAnalysisForce =
+    combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.volumeForce;
+
+  let volumeBasedDirection = TradeDirection.Neutral;
+  if (volumeAnalysisDirection === 'bullish' && volumeAnalysisForce > 0) {
+    volumeBasedDirection = TradeDirection.Long;
+  } else if (volumeAnalysisDirection === 'bearish' && volumeAnalysisForce > 0) {
+    volumeBasedDirection = TradeDirection.Short;
+  }
 
   // 计算波动率强度评分 (0-100)
   // 综合ATR百分比和布林带宽度
@@ -179,14 +195,29 @@ function integrateAnalyses(
       : patternDirection === TradeDirection.Short
         ? -1
         : 0);
+
+  // 计算成交量分析的得分,只要volumeAnalysisForce大于0，才有意义
+  let volumeWeightedScore = 0;
+  if (volumeAnalysisForce > 0) {
+    volumeWeightedScore =
+      volumeAnalysisForce *
+      normalizedWeights.volume *
+      (volumeBasedDirection === TradeDirection.Long
+        ? 1
+        : volumeBasedDirection === TradeDirection.Short
+          ? -1
+          : 0);
+  }
+
   // 仅使用筹码和形态分析来决定交易方向
-  const finalScore = chipWeightedScore + patternWeightedScore;
+  const finalScore =
+    chipWeightedScore + patternWeightedScore + volumeWeightedScore;
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
-  if (finalScore > 20) {
+  if (finalScore > 15) {
     direction = TradeDirection.Long;
-  } else if (finalScore < -20) {
+  } else if (finalScore < -15) {
     direction = TradeDirection.Short;
   }
 
@@ -230,16 +261,19 @@ function integrateAnalyses(
     0,
     Math.min(
       100,
-      // 使用波动率调整后的分数
       volatilityAdjustedScore +
         // 筹码和形态方向一致时增加置信度
         (chipDirection === patternDirection &&
         chipDirection !== TradeDirection.Neutral
           ? 20
-          : 0) -
+          : 0) +
+        // 成交量方向与最终方向一致时增加置信度
+        (volumeBasedDirection === direction ? 25 : -15) +
+        // 成交量力度直接贡献
+        volumeAnalysisForce * 0.3 -
         // 信号冲突时降低置信度
         (signalStrength === SignalStrength.Conflicting ? 30 : 0) +
-        // 波动率信号强度直接贡献置信度
+        // 波动率信号强度贡献
         volatilitySignalStrength * 0.2
     )
   );
@@ -548,9 +582,10 @@ function integrateAnalyses(
  */
 async function executeIntegratedAnalysis(
   symbol: string,
-  customWeights: { chip: number; pattern: number } = {
-    chip: 0.4,
-    pattern: 0.4,
+  customWeights: { chip: number; pattern: number; volume: number } = {
+    chip: 0.2,
+    pattern: 0.3,
+    volume: 0.5,
   } // 默认权重分配
 ): Promise<IntegratedTradePlan> {
   try {
@@ -655,4 +690,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-executeIntegratedAnalysis('COIN', { chip: 0.4, pattern: 0.6 });
+// executeIntegratedAnalysis('COIN', { chip: 0.4, pattern: 0.6, volume: 0.4 });
