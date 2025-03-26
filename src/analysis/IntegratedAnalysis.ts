@@ -36,18 +36,24 @@ import { executeEnhancedCombinedAnalysis } from './volatility/volatilityAnalysis
 
 /**
  * 综合筹码和形态分析结果的方法
- * @param combinedVolumeVolatilityAnalysis
+ * @param combinedVolumeVolatilityAnalysis 波动率和成交量分析结果
  * @param chipAnalysis 筹码分布分析结果
  * @param patternAnalysis 形态分析结果
- * @param bbsrAnalysis
+ * @param bbsrAnalysis 支撑阻力分析结果
  * @param customWeights 自定义权重，默认均分
+ *
+ * 注意：波动率分析用于调整信号强度和置信度。
+ * 交易方向仅由筹码分析和形态分析决定，权重中的volatility参数影响波动率对信号强度的调整程度。
  */
 function integrateAnalyses(
   combinedVolumeVolatilityAnalysis: CombinedVVAnalysisResult,
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
   bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
-  customWeights: { chip: number; pattern: number }
+  customWeights: { chip: number; pattern: number } = {
+    chip: 0.5,
+    pattern: 0.5,
+  }
 ): IntegratedTradePlan {
   // 确保权重总和为1
   const totalWeight = customWeights.chip + customWeights.pattern;
@@ -95,6 +101,66 @@ function integrateAnalyses(
     )
   );
   const patternScore = patternAnalysis.signalStrength;
+  // 获取波动率和成交量分析数据
+  const volAnalysis =
+    combinedVolumeVolatilityAnalysis.volatilityAnalysis.volatilityAnalysis;
+  const volPriceConfirmation =
+    combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis;
+
+  // 计算波动率强度评分 (0-100)
+  // 综合ATR百分比和布林带宽度
+  const volatilityStrength = Math.min(
+    100,
+    Math.max(
+      0,
+      volAnalysis.atrPercent * 20 + // ATR百分比贡献
+        volAnalysis.bollingerBandWidth * 5 // 布林带宽度贡献
+    )
+  );
+
+  // 综合评分计算
+  let directionScore = 0;
+
+  // 波动率分析逻辑 - 计算波动率信号强度而非方向
+  if (volatilityStrength > 50) {
+    // 高波动率情况
+    if (volAnalysis.isVolatilityIncreasing) {
+      // 高波动率上升 - 波动率上升时，成交量确认更重要
+      directionScore += volPriceConfirmation.volumePriceConfirmation ? 40 : -40;
+    } else {
+      // 高波动率下降 - 波动率下降时，通常是反转信号
+      directionScore += volPriceConfirmation.volumePriceConfirmation ? -30 : 30;
+    }
+
+    // 极高波动率时的额外调整
+    if (volAnalysis.atrPercent > 3.5) {
+      // 极高波动率通常意味着趋势加速或即将反转
+      const extremeVolatilityAdjustment = volAnalysis.isVolatilityIncreasing
+        ? 15
+        : -15;
+      directionScore += extremeVolatilityAdjustment;
+    }
+  } else if (volatilityStrength > 25) {
+    // 中等波动率情况 - 更平衡地考虑波动率和成交量
+    if (volAnalysis.isVolatilityIncreasing) {
+      directionScore += 20; // 波动率上升
+    } else {
+      directionScore -= 20; // 波动率下降
+    }
+
+    // 成交量确认在中等波动率下的贡献
+    directionScore += volPriceConfirmation.volumePriceConfirmation ? 25 : -25;
+  } else {
+    // 低波动率情况 - 信号较弱，主要依赖成交量确认
+    directionScore += volPriceConfirmation.volumePriceConfirmation ? 15 : -15;
+
+    // 低波动率环境下，整体信号强度降低
+    directionScore = directionScore * 0.7;
+  }
+
+  // 不再使用波动率和成交量来确定交易方向
+  // 而是将波动率信号强度保存，用于后续信号强度计算
+  const volatilitySignalStrength = Math.abs(directionScore);
 
   // 应用权重计算最终方向和分数
   const chipWeightedScore =
@@ -113,6 +179,7 @@ function integrateAnalyses(
       : patternDirection === TradeDirection.Short
         ? -1
         : 0);
+  // 仅使用筹码和形态分析来决定交易方向
   const finalScore = chipWeightedScore + patternWeightedScore;
 
   // 确定最终交易方向
@@ -123,15 +190,32 @@ function integrateAnalyses(
     direction = TradeDirection.Short;
   }
 
-  // 确定信号强度
+  // 确定基础信号强度
   let signalStrength = SignalStrength.Neutral;
   const absScore = Math.abs(finalScore);
 
-  if (absScore > 60) {
+  // 波动率调整因子 (0.7-1.3范围)
+  // 计算逻辑：
+  // 1. volatilitySignalStrength / 100 将波动率信号强度归一化到0-1范围
+  // 2. 减去0.5使得中等波动率(50)对应0，低波动率为负，高波动率为正
+  // 3. 乘以0.6限制调整范围在±30%内，即0.7-1.3
+  //
+  // 调整效果：
+  // - 高波动率(80-100)：信号强度增强10-30%，表示市场确定性更高
+  // - 中等波动率(40-60)：信号强度基本不变，轻微调整±10%
+  // - 低波动率(0-20)：信号强度减弱20-30%，表示市场不确定性高
+  const volatilityAdjustmentFactor =
+    1 + (volatilitySignalStrength / 100 - 0.5) * 0.6;
+
+  // 应用波动率调整后的分数
+  const volatilityAdjustedScore = absScore * volatilityAdjustmentFactor;
+
+  // 基于调整后的分数确定信号强度
+  if (volatilityAdjustedScore > 60) {
     signalStrength = SignalStrength.Strong;
-  } else if (absScore > 40) {
+  } else if (volatilityAdjustedScore > 40) {
     signalStrength = SignalStrength.Moderate;
-  } else if (absScore > 20) {
+  } else if (volatilityAdjustedScore > 20) {
     signalStrength = SignalStrength.Weak;
   } else if (
     chipDirection !== patternDirection &&
@@ -146,12 +230,17 @@ function integrateAnalyses(
     0,
     Math.min(
       100,
-      absScore +
+      // 使用波动率调整后的分数
+      volatilityAdjustedScore +
+        // 筹码和形态方向一致时增加置信度
         (chipDirection === patternDirection &&
         chipDirection !== TradeDirection.Neutral
           ? 20
           : 0) -
-        (signalStrength === SignalStrength.Conflicting ? 30 : 0)
+        // 信号冲突时降低置信度
+        (signalStrength === SignalStrength.Conflicting ? 30 : 0) +
+        // 波动率信号强度直接贡献置信度
+        volatilitySignalStrength * 0.2
     )
   );
 
@@ -414,6 +503,9 @@ function integrateAnalyses(
     signalStrength,
     confidenceScore,
 
+    // 注意：波动率分析现在用于调整信号强度，而不是直接贡献交易方向
+    // 如需添加volatilityAnalysisWeight和volatilityAnalysisContribution，
+    // 需要先更新IntegratedTradePlan类型定义
     chipAnalysisWeight: normalizedWeights.chip,
     patternAnalysisWeight: normalizedWeights.pattern,
     chipAnalysisContribution:
@@ -449,6 +541,9 @@ function integrateAnalyses(
  * 执行综合分析并生成格式化输出
  * @param symbol 股票代码
  * @param customWeights 自定义权重设置
+ *        - chip: 筹码分析权重，影响交易方向
+ *        - pattern: 形态分析权重，影响交易方向
+ *        - volatility: 波动率分析权重，影响信号强度和置信度（不影响交易方向）
  * @returns 综合交易计划对象
  */
 async function executeIntegratedAnalysis(
@@ -456,7 +551,7 @@ async function executeIntegratedAnalysis(
   customWeights: { chip: number; pattern: number } = {
     chip: 0.4,
     pattern: 0.4,
-  } // 默认筹码分析权重更高
+  } // 默认权重分配
 ): Promise<IntegratedTradePlan> {
   try {
     console.log(`======== 开始执行 ${symbol} 综合分析 ========`);
