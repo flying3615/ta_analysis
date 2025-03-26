@@ -115,6 +115,28 @@ interface AnalyzeMultiTimeframePatterns {
 }
 
 /**
+ * 不同时间周期适合的形态说明：
+ *
+ * 1. 长期形态（更适合周线）
+ *    - 头肩顶/底（Head and Shoulders）：需要较长时间形成，在周线上更可靠
+ *    - 双顶/底、三重顶/底：大型反转形态，在周线上信号更强
+ *    - 杯柄形态（Cup and Handle）：形成周期长，通常需要数月时间
+ *    - 圆底/顶：大型反转形态，需要较长时间形成
+ *
+ * 2. 中长期形态（适合周线和日线）
+ *    - 楔形（Wedges）：可以在多个时间周期形成，但中长期更可靠
+ *    - 三角形（Triangles）：在各时间周期都有效，但形成时间较长
+ *
+ * 3. 中短期形态（适合日线和小时线）
+ *    - 旗形和三角旗（Flags and Pennants）：短期整理形态，在日线和小时线上常见
+ *    - 矩形（Rectangles）：短中期整理形态
+ *
+ * 4. 短期形态（主要适合小时线）
+ *    - 买入/卖出高潮：短期市场情绪的爆发，在小时线上更容易识别
+ *    - 小型楔形和三角形：短期整理形态
+ */
+
+/**
  * 完整的价格形态分析结果，包含所有时间周期
  */
 interface ComprehensivePatternAnalysis {
@@ -215,7 +237,7 @@ function detectPeaksAndValleys(
 }
 
 /**
- * 主函数：分析所有形态，增强最近形态的重要性
+ * 主函数：根据时间周期分析适合的形态，增强最近形态的重要性
  * @param rawData K线数据
  * @param timeframe 时间周期
  */
@@ -229,36 +251,76 @@ async function analyzeAllPatterns(
   // 检测所有峰谷点
   const peaksValleys = detectPeaksAndValleys(data);
 
-  // 分析所有形态
-  const headAndShoulders = findHeadAndShoulders(data, peaksValleys);
-  const doubleTopsBottoms = findDoubleTopsAndBottoms(data, peaksValleys);
+  // 初始化形态数组
+  let allPatterns: PatternAnalysisResult[] = [];
+
+  // 根据时间周期选择适合的形态检测
+
+  // 1. 所有时间周期都检测的基本形态
   const triangles = findTriangles(data, peaksValleys);
-  const wedges = findWedges(data, peaksValleys);
-  const flagsPennants = findFlagsAndPennants(data, peaksValleys);
-  const cupHandle = findCupAndHandle(data, peaksValleys);
-  const roundingPatterns = findRoundingPatterns(data, peaksValleys);
-  const buyingClimax = findBuyingClimax(data, peaksValleys);
+  allPatterns = [...allPatterns, ...triangles];
 
-  // 分析卖出高潮形态
-  const sellingClimax = findSellingClimax(data, peaksValleys);
+  // 2. 长期形态检测 (周线)
+  if (timeframe === 'weekly') {
+    const headAndShoulders = findHeadAndShoulders(data, peaksValleys);
+    const doubleTopsBottoms = findDoubleTopsAndBottoms(data, peaksValleys);
+    const cupHandle = findCupAndHandle(data, peaksValleys);
+    const roundingPatterns = findRoundingPatterns(data, peaksValleys);
 
-  // 合并所有形态
-  const allPatterns = [
-    ...headAndShoulders,
-    ...doubleTopsBottoms,
-    ...triangles,
-    ...wedges,
-    ...flagsPennants,
-    ...cupHandle,
-    ...roundingPatterns,
-    ...buyingClimax,
-    ...sellingClimax,
-  ];
+    allPatterns = [
+      ...allPatterns,
+      ...headAndShoulders,
+      ...doubleTopsBottoms,
+      ...cupHandle,
+      ...roundingPatterns,
+    ];
+  }
+
+  // 3. 中长期形态检测 (周线和日线)
+  if (timeframe === 'weekly' || timeframe === 'daily') {
+    const wedges = findWedges(data, peaksValleys);
+
+    // 日线也可以检测头肩顶/底和双顶/底，但可靠性稍低
+    if (timeframe === 'daily') {
+      const headAndShoulders = findHeadAndShoulders(data, peaksValleys);
+      const doubleTopsBottoms = findDoubleTopsAndBottoms(data, peaksValleys);
+      allPatterns = [
+        ...allPatterns,
+        ...wedges,
+        ...headAndShoulders,
+        ...doubleTopsBottoms,
+      ];
+    } else {
+      allPatterns = [...allPatterns, ...wedges];
+    }
+  }
+
+  // 4. 中短期形态检测 (日线和小时线)
+  if (timeframe === 'daily' || timeframe === '1hour') {
+    const flagsPennants = findFlagsAndPennants(data, peaksValleys);
+    allPatterns = [...allPatterns, ...flagsPennants];
+
+    // 日线上也可以检测买入/卖出高潮，但主要在小时线更常见
+    if (timeframe === 'daily') {
+      const buyingClimax = findBuyingClimax(data, peaksValleys);
+      const sellingClimax = findSellingClimax(data, peaksValleys);
+      allPatterns = [...allPatterns, ...buyingClimax, ...sellingClimax];
+    }
+  }
+
+  // 5. 短期形态检测 (主要是小时线)
+  if (timeframe === '1hour') {
+    const buyingClimax = findBuyingClimax(data, peaksValleys);
+    const sellingClimax = findSellingClimax(data, peaksValleys);
+
+    allPatterns = [...allPatterns, ...buyingClimax, ...sellingClimax];
+  }
 
   // 计算当前最后一根K线的索引
   const lastIndex = data.length - 1;
 
   // 修改每个形态的重要性，根据形态结束点与最后一根K线的距离加权
+  // 并根据形态类型与时间周期的匹配度调整可靠性
   allPatterns.forEach(pattern => {
     // 计算形态结束点与当前点的距离
     const distanceFromCurrent = lastIndex - pattern.component.endIndex;
@@ -267,8 +329,76 @@ async function analyzeAllPatterns(
     // 使用指数衰减函数，可以根据需要调整衰减速率
     const distanceFactor = Math.exp(-0.05 * distanceFromCurrent);
 
+    // 根据形态类型和时间周期的匹配度调整可靠性
+    let timeframeMatchFactor = 1.0;
+
+    // 长期形态在周线上更可靠
+    const longTermPatterns = [
+      PatternType.HeadAndShoulders,
+      PatternType.InverseHeadAndShoulders,
+      PatternType.DoubleTop,
+      PatternType.DoubleBottom,
+      PatternType.TripleTop,
+      PatternType.TripleBottom,
+      PatternType.CupAndHandle,
+      PatternType.RoundingBottom,
+      PatternType.RoundingTop,
+    ];
+
+    // 中期形态在日线上更可靠
+    const mediumTermPatterns = [
+      PatternType.AscendingTriangle,
+      PatternType.DescendingTriangle,
+      PatternType.SymmetricalTriangle,
+      PatternType.RisingWedge,
+      PatternType.FallingWedge,
+      PatternType.Rectangle,
+    ];
+
+    // 短期形态在小时线上更可靠
+    const shortTermPatterns = [
+      PatternType.Flag,
+      PatternType.Pennant,
+      PatternType.BuyingClimax,
+      PatternType.SellingClimax,
+    ];
+
+    // 根据形态类型和时间周期调整可靠性
+    if (longTermPatterns.includes(pattern.patternType)) {
+      if (timeframe === 'weekly') {
+        timeframeMatchFactor = 1.3; // 长期形态在周线上更可靠
+      } else if (timeframe === 'daily') {
+        timeframeMatchFactor = 1.1; // 长期形态在日线上也可以，但可靠性稍低
+      } else {
+        timeframeMatchFactor = 0.8; // 长期形态在小时线上可靠性较低
+      }
+    } else if (mediumTermPatterns.includes(pattern.patternType)) {
+      if (timeframe === 'daily') {
+        timeframeMatchFactor = 1.3; // 中期形态在日线上最可靠
+      } else if (timeframe === 'weekly') {
+        timeframeMatchFactor = 1.1; // 中期形态在周线上也可以
+      } else {
+        timeframeMatchFactor = 0.9; // 中期形态在小时线上可靠性稍低
+      }
+    } else if (shortTermPatterns.includes(pattern.patternType)) {
+      if (timeframe === '1hour') {
+        timeframeMatchFactor = 1.3; // 短期形态在小时线上最可靠
+      } else if (timeframe === 'daily') {
+        timeframeMatchFactor = 1.0; // 短期形态在日线上也可以
+      } else {
+        timeframeMatchFactor = 0.7; // 短期形态在周线上可靠性较低
+      }
+    }
+
+    // 调整形态的可靠性
+    pattern.reliability = Math.min(
+      100,
+      pattern.reliability * timeframeMatchFactor
+    );
+
     // 更新形态的重要性，与距离因子成正比
-    pattern.significance = pattern.significance * distanceFactor;
+    pattern.significance =
+      pattern.significance * distanceFactor * timeframeMatchFactor;
 
     // 为已确认突破的形态额外加分
     if (pattern.status === PatternStatus.Confirmed) {
@@ -343,11 +473,13 @@ function combinePatternAnalyses(
   let bearishCount = 0;
   let neutralCount = 0;
 
-  // 对不同时间周期的信号进行加权，短期时间周期权重更高
+  // 对不同时间周期的信号进行加权
+  // 注意：这里我们调整了权重，不再简单地认为短期时间周期权重更高
+  // 而是根据形态的可靠性和时间周期的匹配度来加权
   const timeframeWeights = {
-    weekly: 1.0,
-    daily: 1.5,
-    '1hour': 2.0,
+    weekly: 1.5, // 长期形态在周线上更可靠，提高权重
+    daily: 1.3, // 日线是中间时间周期，适合多种形态
+    '1hour': 1.0, // 短期形态在小时线上有效，但整体可靠性略低
   };
 
   for (const analysis of timeframeAnalyses) {
@@ -990,3 +1122,4 @@ async function exampleMultiTimeframeUsage(symbol: string) {
 
 // only focus on recently patterns
 // exampleMultiTimeframeUsage('PLTR');
+
