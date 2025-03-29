@@ -347,7 +347,7 @@ export type ChartImg = {
   expireAt?: string;
   createdAt?: string;
   media_type: string;
-  imageBase64: string;
+  imageBase64?: string;
 };
 
 export type Interval =
