@@ -22,9 +22,11 @@
   ],
   "dependencies": {
     "@eslint/js": "^9.21.0",
+    "axios": "^1.8.4",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-prettier": "^5.2.3",
     "globals": "^16.0.0",
+    "image-to-base64": "^2.2.0",
     "lodash": "^4.17.21",
     "technicalindicators": "^3.1.0",
     "typescript-eslint": "^8.26.0",
@@ -32,6 +34,7 @@
     "yahoo-finance2": "^2.13.3"
   },
   "devDependencies": {
+    "@types/image-to-base64": "^2.1.2",
     "@types/lodash": "^4.17.16",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",

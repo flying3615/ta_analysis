@@ -61,6 +61,8 @@ export {
   IntegratedVolatilityAnalysisResult,
 } from './analysis/volatility/volumeVolatilityAnalysis.js';
 
+export { fetchChartData } from './image/chartImage.js';
+
 export * from './types.js';
 
 export { getStockDataForTimeframe } from './util/util.js';

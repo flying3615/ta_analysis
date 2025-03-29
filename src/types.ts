@@ -6,15 +6,6 @@ export type Position = {
   price: number;
 };
 
-export type ChartImg = {
-  title: string;
-  url: string;
-  size?: number;
-  expireAt?: string;
-  createdAt?: string;
-  media_type: string;
-};
-
 export type Weight = {
   regularMarketPrice: number;
   regularMarketChangePercent: number;
@@ -153,21 +144,6 @@ export interface AnalysisResult {
   overboughtDays: number;
   oversoldDays: number;
 }
-
-export type Interval =
-  | '1m'
-  | '2m'
-  | '5m'
-  | '15m'
-  | '30m'
-  | '60m'
-  | '90m'
-  | '1h'
-  | '1d'
-  | '5d'
-  | '1wk'
-  | '1mo'
-  | '3mo';
 
 export interface Candle {
   symbol: string;
@@ -363,3 +339,33 @@ export interface VolatilityAnalysisResult {
     downsideDeviation: number;
   };
 }
+
+export type ChartImg = {
+  title: string;
+  url: string;
+  size?: number;
+  expireAt?: string;
+  createdAt?: string;
+  media_type: string;
+  imageBase64: string;
+};
+
+export type Interval =
+  | '1m'
+  | '3m'
+  | '5m'
+  | '15m'
+  | '30m'
+  | '1h'
+  | '2h'
+  | '3h'
+  | '1D'
+  | '1W'
+  | '1M'
+  | '3M'
+  | '1Y';
+
+export type TimeFrameConfig = {
+  interval: Interval;
+  studies?: Array<{ name: string }>;
+};
