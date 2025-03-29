@@ -690,4 +690,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-executeIntegratedAnalysis('MSTU', { chip: 0.4, pattern: 0.6, volume: 0.4 });
+// executeIntegratedAnalysis('MSTU', { chip: 0.4, pattern: 0.6, volume: 0.4 });
