@@ -1,5 +1,6 @@
 import { ChartImg, TimeFrameConfig } from '../types.js';
 import axios from 'axios';
+import imageToBase64 from 'image-to-base64';
 
 export async function fetchChartData(
   symbol: string,
@@ -29,8 +30,7 @@ export async function fetchChartData(
         },
         responseType: 'json', // Optional, but good practice to specify expected response type
       });
-
-      // const imageBase64 = await imageToBase64(response.data.url);
+      const imageBase64 = await imageToBase64(response.data.url);
 
       chartData.push({
         title: `${symbol}-${timeFrameConfig.interval}`,
@@ -39,7 +39,7 @@ export async function fetchChartData(
         expireAt: response.data.expireAt,
         createdAt: response.data.createdAt,
         media_type: 'image/png',
-        // imageBase64,
+        imageBase64,
       });
     } catch (error) {
       console.error('Error fetching chart data:', error);
