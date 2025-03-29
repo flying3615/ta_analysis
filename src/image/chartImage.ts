@@ -4,11 +4,12 @@ import imageToBase64 from 'image-to-base64';
 
 export async function fetchChartData(
   symbol: string,
-  apiKey = process.env.CHART_IMG_API_KEY,
   timeFrameConfigs: TimeFrameConfig[]
 ) {
+  const apiKey = process.env.CHART_IMG_API_KEY;
+
   if (!apiKey) {
-    throw new Error('未设置CHART_IMG_API_KEY环境变量');
+    throw new Error('No API key provided for ChartImg');
   }
 
   const url = 'https://api.chart-img.com/v2/tradingview/advanced-chart/storage';
@@ -46,9 +47,5 @@ export async function fetchChartData(
     }
   }
 
-  console.log(
-    '=====Chart data fetched :',
-    chartData.map(chart => chart.title).join(', ')
-  );
   return chartData;
 }
