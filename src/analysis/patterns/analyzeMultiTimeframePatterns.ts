@@ -237,9 +237,62 @@ function detectPeaksAndValleys(
 }
 
 /**
+ * 形态与时间周期的匹配配置
+ */
+const PATTERN_TIMEFRAME_CONFIG = {
+  // 基础形态（所有时间周期都检测）
+  base: {
+    patterns: ['findTriangles'],
+    timeframes: ['weekly', 'daily', '1hour'],
+  },
+  // 长期形态
+  long: {
+    patterns: [
+      'findHeadAndShoulders',
+      'findDoubleTopsAndBottoms',
+      'findCupAndHandle',
+      'findRoundingPatterns',
+    ],
+    timeframes: ['weekly'],
+  },
+  // 中长期形态
+  mediumLong: {
+    patterns: [
+      'findWedges',
+      'findHeadAndShoulders',
+      'findDoubleTopsAndBottoms',
+    ],
+    timeframes: ['weekly', 'daily'],
+  },
+  // 中短期形态
+  mediumShort: {
+    patterns: ['findFlagsAndPennants'],
+    timeframes: ['daily', '1hour'],
+  },
+  // 短期形态
+  short: {
+    patterns: ['findBuyingClimax', 'findSellingClimax'],
+    timeframes: ['1hour'],
+  },
+};
+
+/**
+ * 形态检测函数映射
+ */
+const PATTERN_DETECTORS = {
+  findTriangles,
+  findHeadAndShoulders,
+  findDoubleTopsAndBottoms,
+  findCupAndHandle,
+  findRoundingPatterns,
+  findWedges,
+  findFlagsAndPennants,
+  findBuyingClimax,
+  findSellingClimax,
+};
+
+/**
  * 主函数：根据时间周期分析适合的形态，增强最近形态的重要性
- * @param rawData K线数据
- * @param timeframe 时间周期
  */
 async function analyzeAllPatterns(
   rawData: Candle[],
@@ -254,158 +307,44 @@ async function analyzeAllPatterns(
   // 初始化形态数组
   let allPatterns: PatternAnalysisResult[] = [];
 
-  // 根据时间周期选择适合的形态检测
-
-  // 1. 所有时间周期都检测的基本形态
-  const triangles = findTriangles(data, peaksValleys);
-  allPatterns = [...allPatterns, ...triangles];
-
-  // 2. 长期形态检测 (周线)
-  if (timeframe === 'weekly') {
-    const headAndShoulders = findHeadAndShoulders(data, peaksValleys);
-    const doubleTopsBottoms = findDoubleTopsAndBottoms(data, peaksValleys);
-    const cupHandle = findCupAndHandle(data, peaksValleys);
-    const roundingPatterns = findRoundingPatterns(data, peaksValleys);
-
-    allPatterns = [
-      ...allPatterns,
-      ...headAndShoulders,
-      ...doubleTopsBottoms,
-      ...cupHandle,
-      ...roundingPatterns,
-    ];
-  }
-
-  // 3. 中长期形态检测 (周线和日线)
-  if (timeframe === 'weekly' || timeframe === 'daily') {
-    const wedges = findWedges(data, peaksValleys);
-
-    // 日线也可以检测头肩顶/底和双顶/底，但可靠性稍低
-    if (timeframe === 'daily') {
-      const headAndShoulders = findHeadAndShoulders(data, peaksValleys);
-      const doubleTopsBottoms = findDoubleTopsAndBottoms(data, peaksValleys);
-      allPatterns = [
-        ...allPatterns,
-        ...wedges,
-        ...headAndShoulders,
-        ...doubleTopsBottoms,
-      ];
-    } else {
-      allPatterns = [...allPatterns, ...wedges];
+  // 遍历配置，执行符合当前时间周期的形态检测
+  for (const [category, config] of Object.entries(PATTERN_TIMEFRAME_CONFIG)) {
+    if (config.timeframes.includes(timeframe)) {
+      for (const patternName of config.patterns) {
+        const detector =
+          PATTERN_DETECTORS[patternName as keyof typeof PATTERN_DETECTORS];
+        const patterns = detector(data, peaksValleys);
+        allPatterns = [...allPatterns, ...patterns];
+      }
     }
-  }
-
-  // 4. 中短期形态检测 (日线和小时线)
-  if (timeframe === 'daily' || timeframe === '1hour') {
-    const flagsPennants = findFlagsAndPennants(data, peaksValleys);
-    allPatterns = [...allPatterns, ...flagsPennants];
-
-    // 日线上也可以检测买入/卖出高潮，但主要在小时线更常见
-    if (timeframe === 'daily') {
-      const buyingClimax = findBuyingClimax(data, peaksValleys);
-      const sellingClimax = findSellingClimax(data, peaksValleys);
-      allPatterns = [...allPatterns, ...buyingClimax, ...sellingClimax];
-    }
-  }
-
-  // 5. 短期形态检测 (主要是小时线)
-  if (timeframe === '1hour') {
-    const buyingClimax = findBuyingClimax(data, peaksValleys);
-    const sellingClimax = findSellingClimax(data, peaksValleys);
-
-    allPatterns = [...allPatterns, ...buyingClimax, ...sellingClimax];
   }
 
   // 计算当前最后一根K线的索引
   const lastIndex = data.length - 1;
 
-  // 修改每个形态的重要性，根据形态结束点与最后一根K线的距离加权
-  // 并根据形态类型与时间周期的匹配度调整可靠性
+  // 调整形态重要性和可靠性
   allPatterns.forEach(pattern => {
-    // 计算形态结束点与当前点的距离
     const distanceFromCurrent = lastIndex - pattern.component.endIndex;
-
-    // 计算距离因子：距离越近，因子越大
-    // 使用指数衰减函数，可以根据需要调整衰减速率
     const distanceFactor = Math.exp(-0.05 * distanceFromCurrent);
 
     // 根据形态类型和时间周期的匹配度调整可靠性
-    let timeframeMatchFactor = 1.0;
+    const timeframeMatchFactor = calculateTimeframeMatchFactor(
+      pattern.patternType,
+      timeframe
+    );
 
-    // 长期形态在周线上更可靠
-    const longTermPatterns = [
-      PatternType.HeadAndShoulders,
-      PatternType.InverseHeadAndShoulders,
-      PatternType.DoubleTop,
-      PatternType.DoubleBottom,
-      PatternType.TripleTop,
-      PatternType.TripleBottom,
-      PatternType.CupAndHandle,
-      PatternType.RoundingBottom,
-      PatternType.RoundingTop,
-    ];
-
-    // 中期形态在日线上更可靠
-    const mediumTermPatterns = [
-      PatternType.AscendingTriangle,
-      PatternType.DescendingTriangle,
-      PatternType.SymmetricalTriangle,
-      PatternType.RisingWedge,
-      PatternType.FallingWedge,
-      PatternType.Rectangle,
-    ];
-
-    // 短期形态在小时线上更可靠
-    const shortTermPatterns = [
-      PatternType.Flag,
-      PatternType.Pennant,
-      PatternType.BuyingClimax,
-      PatternType.SellingClimax,
-    ];
-
-    // 根据形态类型和时间周期调整可靠性
-    if (longTermPatterns.includes(pattern.patternType)) {
-      if (timeframe === 'weekly') {
-        timeframeMatchFactor = 1.3; // 长期形态在周线上更可靠
-      } else if (timeframe === 'daily') {
-        timeframeMatchFactor = 1.1; // 长期形态在日线上也可以，但可靠性稍低
-      } else {
-        timeframeMatchFactor = 0.8; // 长期形态在小时线上可靠性较低
-      }
-    } else if (mediumTermPatterns.includes(pattern.patternType)) {
-      if (timeframe === 'daily') {
-        timeframeMatchFactor = 1.3; // 中期形态在日线上最可靠
-      } else if (timeframe === 'weekly') {
-        timeframeMatchFactor = 1.1; // 中期形态在周线上也可以
-      } else {
-        timeframeMatchFactor = 0.9; // 中期形态在小时线上可靠性稍低
-      }
-    } else if (shortTermPatterns.includes(pattern.patternType)) {
-      if (timeframe === '1hour') {
-        timeframeMatchFactor = 1.3; // 短期形态在小时线上最可靠
-      } else if (timeframe === 'daily') {
-        timeframeMatchFactor = 1.0; // 短期形态在日线上也可以
-      } else {
-        timeframeMatchFactor = 0.7; // 短期形态在周线上可靠性较低
-      }
-    }
-
-    // 调整形态的可靠性
+    // 调整形态的可靠性和重要性
     pattern.reliability = Math.min(
       100,
       pattern.reliability * timeframeMatchFactor
     );
-
-    // 更新形态的重要性，与距离因子成正比
     pattern.significance =
       pattern.significance * distanceFactor * timeframeMatchFactor;
 
-    // 为已确认突破的形态额外加分
+    // 为已确认突破的形态和正在形成的形态调整权重
     if (pattern.status === PatternStatus.Confirmed) {
       pattern.significance *= 1.5;
     }
-
-    // 对正在形成中但接近完成的形态增加一定权重
     if (
       pattern.status === PatternStatus.Forming &&
       pattern.breakoutExpected &&
@@ -420,21 +359,79 @@ async function analyzeAllPatterns(
     (a, b) => b.reliability * b.significance - a.reliability * a.significance
   );
 
-  // 确定主导形态
+  // 确定主导形态和形态综合信号
   const dominantPattern = allPatterns.length > 0 ? allPatterns[0] : undefined;
+  const patternSignal = calculatePatternSignal(allPatterns);
 
-  // 确定形态综合信号，更偏重于最近的形态
-  let patternSignal = PatternDirection.Neutral;
+  return {
+    timeframe,
+    patterns: allPatterns,
+    dominantPattern,
+    patternSignal,
+  };
+}
+
+/**
+ * 计算时间周期匹配因子
+ */
+function calculateTimeframeMatchFactor(
+  patternType: PatternType,
+  timeframe: 'weekly' | 'daily' | '1hour'
+): number {
+  const longTermPatterns = [
+    PatternType.HeadAndShoulders,
+    PatternType.InverseHeadAndShoulders,
+    PatternType.DoubleTop,
+    PatternType.DoubleBottom,
+    PatternType.TripleTop,
+    PatternType.TripleBottom,
+    PatternType.CupAndHandle,
+    PatternType.RoundingBottom,
+    PatternType.RoundingTop,
+  ];
+
+  const mediumTermPatterns = [
+    PatternType.AscendingTriangle,
+    PatternType.DescendingTriangle,
+    PatternType.SymmetricalTriangle,
+    PatternType.RisingWedge,
+    PatternType.FallingWedge,
+    PatternType.Rectangle,
+  ];
+
+  const shortTermPatterns = [
+    PatternType.Flag,
+    PatternType.Pennant,
+    PatternType.BuyingClimax,
+    PatternType.SellingClimax,
+  ];
+
+  if (longTermPatterns.includes(patternType)) {
+    return timeframe === 'weekly' ? 1.3 : timeframe === 'daily' ? 1.1 : 0.8;
+  }
+  if (mediumTermPatterns.includes(patternType)) {
+    return timeframe === 'daily' ? 1.3 : timeframe === 'weekly' ? 1.1 : 0.9;
+  }
+  if (shortTermPatterns.includes(patternType)) {
+    return timeframe === '1hour' ? 1.3 : timeframe === 'daily' ? 1.0 : 0.7;
+  }
+  return 1.0;
+}
+
+/**
+ * 计算形态综合信号
+ */
+function calculatePatternSignal(
+  patterns: PatternAnalysisResult[]
+): PatternDirection {
+  const recentPatternCount = Math.min(10, patterns.length);
+  const recentPatterns = patterns.slice(0, recentPatternCount);
+
   let bullishScore = 0;
   let bearishScore = 0;
 
-  // 仅考虑最近的N个形态来确定信号方向
-  const recentPatternCount = Math.min(10, allPatterns.length);
-  const recentPatterns = allPatterns.slice(0, recentPatternCount);
-
   for (const pattern of recentPatterns) {
     const patternWeight = pattern.reliability * pattern.significance;
-
     if (pattern.direction === PatternDirection.Bullish) {
       bullishScore += patternWeight;
     } else if (pattern.direction === PatternDirection.Bearish) {
@@ -443,22 +440,15 @@ async function analyzeAllPatterns(
   }
 
   if (bullishScore > bearishScore * 1.5) {
-    patternSignal = PatternDirection.Bullish;
+    return PatternDirection.Bullish;
   } else if (bearishScore > bullishScore * 1.5) {
-    patternSignal = PatternDirection.Bearish;
+    return PatternDirection.Bearish;
   } else if (bullishScore > bearishScore) {
-    patternSignal = PatternDirection.Bullish;
+    return PatternDirection.Bullish;
   } else if (bearishScore > bullishScore) {
-    patternSignal = PatternDirection.Bearish;
+    return PatternDirection.Bearish;
   }
-
-  // 返回分析结果
-  return {
-    timeframe,
-    patterns: allPatterns,
-    dominantPattern,
-    patternSignal,
-  };
+  return PatternDirection.Neutral;
 }
 
 /**
@@ -474,12 +464,10 @@ function combinePatternAnalyses(
   let neutralCount = 0;
 
   // 对不同时间周期的信号进行加权
-  // 注意：这里我们调整了权重，不再简单地认为短期时间周期权重更高
-  // 而是根据形态的可靠性和时间周期的匹配度来加权
   const timeframeWeights = {
-    weekly: 1.5, // 长期形态在周线上更可靠，提高权重
-    daily: 1.3, // 日线是中间时间周期，适合多种形态
-    '1hour': 1.0, // 短期形态在小时线上有效，但整体可靠性略低
+    weekly: 1.5,
+    daily: 1.3,
+    '1hour': 1.0,
   };
 
   for (const analysis of timeframeAnalyses) {
@@ -515,51 +503,46 @@ function combinePatternAnalyses(
     signalStrength += 20 * (bullishCount / totalWeight);
     signalStrength +=
       15 *
-      (bullishCount > totalWeight / 2 ? 1 : bullishCount / (totalWeight / 2)); // 多个时间周期一致加分
+      (bullishCount > totalWeight / 2 ? 1 : bullishCount / (totalWeight / 2));
 
-    // 检查短期时间周期
     const hourlyAnalysis = timeframeAnalyses.find(a => a.timeframe === '1hour');
     if (
       hourlyAnalysis &&
       hourlyAnalysis.patternSignal === PatternDirection.Bullish
     ) {
-      signalStrength += 10; // 短期看涨加分
+      signalStrength += 10;
     }
 
-    // 检查日线
     const dailyAnalysis = timeframeAnalyses.find(a => a.timeframe === 'daily');
     if (
       dailyAnalysis &&
       dailyAnalysis.patternSignal === PatternDirection.Bullish
     ) {
-      signalStrength += 15; // 日线看涨加分
+      signalStrength += 15;
     }
   } else if (combinedSignal === PatternDirection.Bearish) {
     signalStrength += 20 * (bearishCount / totalWeight);
     signalStrength +=
       15 *
-      (bearishCount > totalWeight / 2 ? 1 : bearishCount / (totalWeight / 2)); // 多个时间周期一致加分
+      (bearishCount > totalWeight / 2 ? 1 : bearishCount / (totalWeight / 2));
 
-    // 检查短期时间周期
     const hourlyAnalysis = timeframeAnalyses.find(a => a.timeframe === '1hour');
     if (
       hourlyAnalysis &&
       hourlyAnalysis.patternSignal === PatternDirection.Bearish
     ) {
-      signalStrength += 10; // 短期看跌加分
+      signalStrength += 10;
     }
 
-    // 检查日线
     const dailyAnalysis = timeframeAnalyses.find(a => a.timeframe === 'daily');
     if (
       dailyAnalysis &&
       dailyAnalysis.patternSignal === PatternDirection.Bearish
     ) {
-      signalStrength += 15; // 日线看跌加分
+      signalStrength += 15;
     }
   }
 
-  // 检查主导形态的可靠性和最近程度
   for (const analysis of timeframeAnalyses) {
     if (analysis.dominantPattern) {
       const pattern = analysis.dominantPattern;
@@ -567,32 +550,24 @@ function combinePatternAnalyses(
         signalStrength += 10;
       }
 
-      // 根据形态的最近程度额外加分
-      // 获取该时间周期数据的长度（通过分析主导形态的位置估算）
       if (pattern.component) {
-        // 计算形态结束位置与当前位置的距离
         const patternEndIndex = pattern.component.endIndex;
         const estimatedDataLength =
-          patternEndIndex + (patternEndIndex - pattern.component.startIndex); // 估计数据长度
+          patternEndIndex + (patternEndIndex - pattern.component.startIndex);
 
-        // 计算接近程度比率 - 越接近1表示越近期
         const recencyRatio = patternEndIndex / estimatedDataLength;
 
         if (recencyRatio > 0.8) {
-          // 非常近期的形态
           signalStrength += 10;
         } else if (recencyRatio > 0.6) {
-          // 较近期的形态
           signalStrength += 5;
         }
       }
     }
   }
 
-  // 确保信号强度在0-100范围内
   signalStrength = Math.max(0, Math.min(100, signalStrength));
 
-  // 生成总体描述
   let description = '';
 
   if (combinedSignal === PatternDirection.Bullish) {
@@ -605,7 +580,6 @@ function combinePatternAnalyses(
 
   description += `，信号强度: ${signalStrength.toFixed(2)}/100。`;
 
-  // 添加短期和长期一致性描述
   const hourlySignal = timeframeAnalyses.find(
     a => a.timeframe === '1hour'
   )?.patternSignal;
@@ -639,12 +613,8 @@ function combinePatternAnalyses(
   const hourlyAnalyses = timeframeAnalyses.find(a => a.timeframe === '1hour');
   const dailyAnalyses = timeframeAnalyses.find(a => a.timeframe === 'daily');
 
-  // 添加主导形态描述，优先展示短期和日线周期的主导形态
-  const hourlyDominant = hourlyAnalyses?.dominantPattern;
-  const dailyDominant = dailyAnalyses?.dominantPattern;
-
   const hourlyOtherPatternsDesc = hourlyAnalyses?.patterns
-    .filter(p => p !== hourlyDominant)
+    .filter(p => p !== hourlyAnalyses.dominantPattern)
     .map(p => {
       const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
       return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
@@ -652,33 +622,32 @@ function combinePatternAnalyses(
     .join('\n');
 
   const dailyOtherPatternsDesc = dailyAnalyses?.patterns
-    .filter(p => p !== dailyDominant)
+    .filter(p => p !== dailyAnalyses.dominantPattern)
     .map(p => {
       const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
       return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
     })
     .join('\n');
 
-  if (hourlyDominant) {
+  if (hourlyAnalyses?.dominantPattern) {
     const datePriceMapping = _.zip(
-      hourlyDominant.keyDates,
-      hourlyDominant.keyPrices
+      hourlyAnalyses.dominantPattern.keyDates,
+      hourlyAnalyses.dominantPattern.keyPrices
     );
 
-    description += `\n\n小时线主导形态: ${hourlyDominant.patternType}
-    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${hourlyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyDominant.reliability.toFixed(2)}/100。`;
+    description += `\n\n小时线主导形态: ${hourlyAnalyses.dominantPattern.patternType}
+    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${hourlyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
   }
 
-  if (dailyDominant) {
+  if (dailyAnalyses?.dominantPattern) {
     const datePriceMapping = _.zip(
-      dailyDominant.keyDates,
-      dailyDominant.keyPrices
+      dailyAnalyses.dominantPattern.keyDates,
+      dailyAnalyses.dominantPattern.keyPrices
     );
-    description += `\n\n日线主导形态: ${dailyDominant.patternType}
-    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${dailyDominant.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyDominant.reliability.toFixed(2)}/100。`;
+    description += `\n\n日线主导形态: ${dailyAnalyses.dominantPattern.patternType}
+    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${dailyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
   }
 
-  // 添加其他形态描述
   if (hourlyOtherPatternsDesc) {
     description += `\n\n小时线其他形态:\n ${hourlyOtherPatternsDesc}`;
   }
@@ -703,12 +672,10 @@ async function analyzeMultiTimeframePatterns(
   dailyData: Candle[],
   hourlyData: Candle[]
 ): Promise<ComprehensivePatternAnalysis> {
-  // 分析各个时间周期的形态
   const weeklyAnalysis = await analyzeAllPatterns(weeklyData, 'weekly');
   const dailyAnalysis = await analyzeAllPatterns(dailyData, 'daily');
   const hourlyAnalysis = await analyzeAllPatterns(hourlyData, '1hour');
 
-  // 综合分析
   return combinePatternAnalyses([
     weeklyAnalysis,
     dailyAnalysis,
@@ -725,14 +692,11 @@ function formatAndPrintPatternAnalysis(
   analysisResult: ComprehensivePatternAnalysis,
   symbol: string = ''
 ): void {
-  // 显示综合结果标题
   console.log(`\n===== ${symbol ? symbol + ' ' : ''}形态分析综合结果 =====`);
   console.log(`${analysisResult.description}`);
 
-  // 信号强度和一致性
   console.log(`信号强度: ${analysisResult.signalStrength.toFixed(2)}/100`);
 
-  // 按时间周期计算看涨和看跌形态的数量
   const patternCountsByTimeframe = analysisResult.timeframeAnalyses.map(tfa => {
     const bullishPatterns = tfa.patterns.filter(
       p => p.direction === PatternDirection.Bullish
@@ -777,7 +741,6 @@ function formatAndPrintPatternAnalysis(
     );
   });
 
-  // 按照时间周期显示主导形态
   console.log('\n===== 主导形态分析 =====');
 
   analysisResult.timeframeAnalyses.forEach(tfa => {
@@ -850,7 +813,6 @@ function formatAndPrintPatternAnalysis(
       console.log('未检测到显著形态');
     }
 
-    // 显示该时间周期检测到的所有形态
     const bullishPatterns = tfa.patterns.filter(
       p => p.direction === PatternDirection.Bullish
     );
@@ -864,7 +826,7 @@ function formatAndPrintPatternAnalysis(
       if (bullishPatterns.length > 0) {
         console.log('  看涨形态:');
         bullishPatterns.slice(0, 3).forEach((p, idx) => {
-          if (idx === 0 && p === tfa.dominantPattern) return; // 跳过已经详细显示的主导形态
+          if (idx === 0 && p === tfa.dominantPattern) return;
           console.log(
             `   - ${p.patternType} (可靠性: ${p.reliability.toFixed(2)})`
           );
@@ -876,7 +838,7 @@ function formatAndPrintPatternAnalysis(
       if (bearishPatterns.length > 0) {
         console.log('  看空形态:');
         bearishPatterns.slice(0, 3).forEach((p, idx) => {
-          if (idx === 0 && p === tfa.dominantPattern) return; // 跳过已经详细显示的主导形态
+          if (idx === 0 && p === tfa.dominantPattern) return;
           console.log(
             `   - ${p.patternType} (可靠性: ${p.reliability.toFixed(2)})`
           );
@@ -887,10 +849,8 @@ function formatAndPrintPatternAnalysis(
     }
   });
 
-  // 显示关键价位
   console.log('\n===== 关键价位分析 =====');
 
-  // 按照时间周期收集支撑位和阻力位
   analysisResult.timeframeAnalyses.forEach(tfa => {
     const timeframeLabel =
       tfa.timeframe === 'weekly'
@@ -899,23 +859,18 @@ function formatAndPrintPatternAnalysis(
           ? '日线'
           : '小时线';
 
-    // 收集该时间周期所有形态中提到的关键价位
     const supportLevels: number[] = [];
     const resistanceLevels: number[] = [];
 
     tfa.patterns.forEach(p => {
-      // 根据形态方向添加关键价位
       if (p.direction === PatternDirection.Bullish) {
-        // 在看涨形态中，突破位通常是阻力位，止损通常是支撑位附近
         resistanceLevels.push(p.component.breakoutLevel);
         if (p.stopLoss) supportLevels.push(p.stopLoss);
       } else if (p.direction === PatternDirection.Bearish) {
-        // 在看跌形态中，突破位通常是支撑位，止损通常是阻力位附近
         supportLevels.push(p.component.breakoutLevel);
         if (p.stopLoss) resistanceLevels.push(p.stopLoss);
       }
 
-      // 添加目标价
       if (p.priceTarget) {
         if (p.direction === PatternDirection.Bullish) {
           resistanceLevels.push(p.priceTarget);
@@ -925,7 +880,6 @@ function formatAndPrintPatternAnalysis(
       }
     });
 
-    // 去重并排序
     const uniqueSupportLevels = [...new Set(supportLevels)].sort(
       (a, b) => a - b
     );
@@ -960,7 +914,6 @@ function formatAndPrintPatternAnalysis(
         ? '看空'
         : '中性';
 
-  // 计算各时间周期方向的一致性
   const timeframeDirections = analysisResult.timeframeAnalyses.map(
     tfa => tfa.patternSignal
   );
@@ -1002,7 +955,6 @@ function formatAndPrintPatternAnalysis(
     `形态分析信号强度: ${analysisResult.signalStrength.toFixed(2)}/100`
   );
 
-  // 交易建议
   console.log('\n----- 形态分析交易建议 -----');
 
   if (analysisResult.signalStrength > 70) {
@@ -1021,7 +973,6 @@ function formatAndPrintPatternAnalysis(
     console.log('信号强度不足，建议观望或寻求其他分析方法确认');
   }
 
-  // 查找最可靠的形态作为参考
   const mostReliablePattern = analysisResult.timeframeAnalyses
     .flatMap(tfa => tfa.patterns)
     .sort((a, b) => b.reliability - a.reliability)[0];
@@ -1047,7 +998,6 @@ function formatAndPrintPatternAnalysis(
 }
 
 export {
-  // 类型和接口
   PatternType,
   PatternStatus,
   PatternDirection,
@@ -1056,13 +1006,9 @@ export {
   PatternAnalysisResult,
   AnalyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
-
-  // 核心分析函数
   analyzeAllPatterns,
   combinePatternAnalyses,
   analyzeMultiTimeframePatterns,
-
-  // 辅助和输出相关函数
   formatAndPrintPatternAnalysis,
 };
 
@@ -1073,53 +1019,48 @@ async function exampleMultiTimeframeUsage(symbol: string) {
   try {
     console.log(`====== 多时间周期形态分析: ${symbol} ======`);
 
-    // 获取不同时间周期的数据
     const today = new Date();
 
     const startDateWeekly = new Date();
-    startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+    startDateWeekly.setDate(today.getDate() - 365);
 
     const startDateDaily = new Date();
-    startDateDaily.setDate(today.getDate() - 90); // 获取一年的数据
+    startDateDaily.setDate(today.getDate() - 90);
 
     const startDateHourly = new Date();
-    startDateHourly.setDate(today.getDate() - 30); // 获取一年的数据
+    startDateHourly.setDate(today.getDate() - 30);
 
     const weeklyData = await getStockDataForTimeframe(
       symbol,
       startDateWeekly,
       today,
       'weekly'
-    ); // 获取周线数据
+    );
 
     const dailyData = await getStockDataForTimeframe(
       symbol,
       startDateDaily,
       today,
       'daily'
-    ); // 获取日线数据
+    );
 
     const hourlyData = await getStockDataForTimeframe(
       symbol,
       startDateHourly,
       today,
       '1hour'
-    ); // 获取4小时线数据
+    );
 
-    // 进行多时间周期分析
     const multiTimeframeResult = await analyzeMultiTimeframePatterns(
       weeklyData,
       dailyData,
       hourlyData
     );
 
-    // 使用格式化函数打印结果
     formatAndPrintPatternAnalysis(multiTimeframeResult, symbol);
   } catch (error) {
     console.error('多时间周期分析失败:', error);
   }
 }
 
-// only focus on recently patterns
-// exampleMultiTimeframeUsage('PLTR');
-
+// exampleMultiTimeframeUsage('MSTR');
