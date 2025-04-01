@@ -65,4 +65,7 @@ export { fetchChartData } from './image/chartImage.js';
 
 export * from './types.js';
 
-export * from './util/util.js';
+export {
+  getStockDataForTimeframe,
+  getFullExchangeNameBySymbol,
+} from './util/util.js';
