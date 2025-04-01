@@ -224,3 +224,32 @@ export function toEDTString(date: Date): string {
     hour12: false,
   });
 }
+
+/**
+ * Get full exchange name from symbol
+ * @param symbol
+ */
+export async function getFullExchangeNameBySymbol(symbol: string) {
+  try {
+    const result = await yahooFinance.quote(symbol, {
+      fields: ['fullExchangeName'],
+    });
+    if (result) {
+      let fullExchangeName = result.fullExchangeName; // 返回 fullExchangeName
+      fullExchangeName = fullExchangeName.toLowerCase().includes('nasdaq')
+        ? 'NASDAQ'
+        : fullExchangeName;
+
+      return fullExchangeName; // 返回 fullExchangeName
+    } else {
+      console.log(`Can't get ${symbol} full exchange name`);
+      return ''; // 返回 null 表示未找到
+    }
+  } catch (e) {
+    console.error(
+      `Error occurs when getting ${symbol} full exchange name`,
+      e.message
+    );
+    return ''; // 返回 null 表示出错
+  }
+}
