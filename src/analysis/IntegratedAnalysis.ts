@@ -34,6 +34,13 @@ import {
 } from '../types.js';
 import { executeEnhancedCombinedAnalysis } from './volatility/volatilityAnalysis.js';
 
+// 定义决策阈值
+const SCORE_THRESHOLD_LONG = 15;
+const SCORE_THRESHOLD_SHORT = -15;
+const VOLATILITY_ADJUSTED_SCORE_STRONG = 60;
+const VOLATILITY_ADJUSTED_SCORE_MODERATE = 40;
+const VOLATILITY_ADJUSTED_SCORE_WEAK = 20;
+
 /**
  * 综合筹码和形态分析结果的方法
  * @param combinedVolumeVolatilityAnalysis 波动率和成交量分析结果
@@ -50,19 +57,29 @@ function integrateAnalyses(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
   bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
-  customWeights: { chip: number; pattern: number; volume: number } = {
+  customWeights: {
+    chip: number;
+    pattern: number;
+    volume: number;
+    bbsr: number;
+  } = {
     chip: 0.2,
     pattern: 0.3,
     volume: 0.5,
+    bbsr: 0.2,
   }
 ): IntegratedTradePlan {
   // 确保权重总和为1
   const totalWeight =
-    customWeights.chip + customWeights.pattern + customWeights.volume;
+    customWeights.chip +
+    customWeights.pattern +
+    customWeights.volume +
+    customWeights.bbsr;
   const normalizedWeights = {
     chip: customWeights.chip / totalWeight,
     pattern: customWeights.pattern / totalWeight,
     volume: customWeights.volume / totalWeight,
+    bbsr: customWeights.bbsr / totalWeight,
   };
 
   // 确定基本信息
@@ -90,6 +107,18 @@ function integrateAnalyses(
     patternDirection = TradeDirection.Long;
   } else if (patternAnalysis.combinedSignal === PatternDirection.Bearish) {
     patternDirection = TradeDirection.Short;
+  }
+
+  // 提取BBSR分析的信号
+  let bbsrDirection: TradeDirection = TradeDirection.Neutral;
+  let bbsrScore = 0;
+  if (bbsrAnalysis.dailyBBSRResult) {
+    bbsrScore = bbsrAnalysis.dailyBBSRResult.strength;
+    if (bbsrAnalysis.dailyBBSRResult.signal.patternType === 'bullish') {
+      bbsrDirection = TradeDirection.Long;
+    } else if (bbsrAnalysis.dailyBBSRResult.signal.patternType === 'bearish') {
+      bbsrDirection = TradeDirection.Short;
+    }
   }
 
   // 计算各自的贡献分数
@@ -196,6 +225,15 @@ function integrateAnalyses(
         ? -1
         : 0);
 
+  const bbsrWeightedScore =
+    bbsrScore *
+    normalizedWeights.bbsr *
+    (bbsrDirection === TradeDirection.Long
+      ? 1
+      : bbsrDirection === TradeDirection.Short
+        ? -1
+        : 0);
+
   // 计算成交量分析的得分,只要volumeAnalysisForce大于0，才有意义
   let volumeWeightedScore = 0;
   if (volumeAnalysisForce > 0) {
@@ -211,13 +249,16 @@ function integrateAnalyses(
 
   // 仅使用筹码和形态分析来决定交易方向
   const finalScore =
-    chipWeightedScore + patternWeightedScore + volumeWeightedScore;
+    chipWeightedScore +
+    patternWeightedScore +
+    volumeWeightedScore +
+    bbsrWeightedScore;
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
-  if (finalScore > 15) {
+  if (finalScore > SCORE_THRESHOLD_LONG) {
     direction = TradeDirection.Long;
-  } else if (finalScore < -15) {
+  } else if (finalScore < SCORE_THRESHOLD_SHORT) {
     direction = TradeDirection.Short;
   }
 
@@ -582,10 +623,11 @@ function integrateAnalyses(
  */
 async function executeIntegratedAnalysis(
   symbol: string,
-  customWeights: { chip: number; pattern: number; volume: number } = {
+  customWeights: { chip: number; pattern: number; volume: number; bbsr: number } = {
     chip: 0.2,
-    pattern: 0.3,
+    pattern: 0.2,
     volume: 0.5,
+    bbsr: 0.1,
   } // 默认权重分配
 ): Promise<IntegratedTradePlan> {
   try {
@@ -594,14 +636,14 @@ async function executeIntegratedAnalysis(
     // 获取不同时间周期的数据
     const today = new Date();
 
-    const startDateWeekly = new Date();
-    startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+    const startDateWeekly = new Date(today);
+    startDateWeekly.setDate(startDateWeekly.getDate() - 365); // 获取一年的数据
 
-    const startDateDaily = new Date();
-    startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+    const startDateDaily = new Date(today);
+    startDateDaily.setDate(startDateDaily.getDate() - 90); // 获取三个月的数据
 
-    const startDateHourly = new Date();
-    startDateHourly.setDate(today.getDate() - 60); // 获取一个月的数据
+    const startDateHourly = new Date(today);
+    startDateHourly.setDate(startDateHourly.getDate() - 60); // 获取一个月的数据
 
     console.log('正在获取各时间周期数据...');
 
@@ -690,4 +732,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-// executeIntegratedAnalysis('MSTU', { chip: 0.4, pattern: 0.6, volume: 0.4 });
+executeIntegratedAnalysis('MSTU', { chip: 0.3, pattern: 0.6, volume: 0.3, bbsr: 0.2 });
