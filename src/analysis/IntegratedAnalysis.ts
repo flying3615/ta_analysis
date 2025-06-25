@@ -41,6 +41,13 @@ const VOLATILITY_ADJUSTED_SCORE_STRONG = 60;
 const VOLATILITY_ADJUSTED_SCORE_MODERATE = 40;
 const VOLATILITY_ADJUSTED_SCORE_WEAK = 20;
 
+const DEFAULT_WEIGHTS = {
+  chip: 0.25,
+  pattern: 0.35,
+  volume: 0.25,
+  bbsr: 0.15,
+};
+
 /**
  * 综合筹码和形态分析结果的方法
  * @param combinedVolumeVolatilityAnalysis 波动率和成交量分析结果
@@ -62,12 +69,7 @@ function integrateAnalyses(
     pattern: number;
     volume: number;
     bbsr: number;
-  } = {
-    chip: 0.2,
-    pattern: 0.3,
-    volume: 0.5,
-    bbsr: 0.2,
-  }
+  } = DEFAULT_WEIGHTS
 ): IntegratedTradePlan {
   // 确保权重总和为1
   const totalWeight =
@@ -732,4 +734,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-executeIntegratedAnalysis('MSTU', { chip: 0.3, pattern: 0.6, volume: 0.3, bbsr: 0.2 });
+// executeIntegratedAnalysis('MSTU', DEFAULT_WEIGHTS);
