@@ -1,11 +1,34 @@
 import { toEDTString } from '../util/util.js';
 import { IntegratedTradePlan } from '../types.js';
 
+// Common separator constants
+const SEPARATOR = '='.repeat(80);
+const SECTION_SEPARATOR = '-'.repeat(80);
+
+/**
+ * Helper function to build a section of the output
+ */
+function buildSection(
+  title: string,
+  content: string,
+  useSeparator: boolean = true
+): string {
+  let output = '';
+  if (useSeparator) {
+    output += `\n${SECTION_SEPARATOR}\n`;
+  }
+  output += `\n【${title}】\n`;
+  output += content;
+  return output;
+}
+
 /**
  * 格式化交易计划输出结果
  * 将IntegratedTradePlan对象转换为更简洁高效的格式化字符串输出
  * @param tradePlan 综合交易计划对象
  * @param combinedVolumeVolatilitySummary
+ * @param volumeAnalysisReason
+ * @param volatilityAnalysisReason
  * @returns 格式化的输出字符串
  */
 function formatTradePlanOutput(
@@ -14,42 +37,36 @@ function formatTradePlanOutput(
   volumeAnalysisReason: string,
   volatilityAnalysisReason: string
 ): string {
-  // 创建分隔线和标题行样式
-  const separator = '='.repeat(80);
-  const sectionSeparator = '-'.repeat(80);
-
   // 初始化输出字符串
   let output = '';
 
   // 1. 标题和基本信息 - 简洁显示
-  output += `${separator}\n`;
+  output += `${SEPARATOR}\n`;
   output += `交易计划 | ${tradePlan.symbol} | ${new Date(tradePlan.date).toLocaleString()} ｜ ${tradePlan.currentPrice}\n`;
 
   // 2. 核心信息 - 信号、方向和总结
-  output += `\n【综合信号】\n`;
-  output += `方向: ${formatDirection(tradePlan.direction)} | 强度: ${formatSignalStrength(tradePlan.signalStrength)} | 确信度: ${tradePlan.confidenceScore.toFixed(1)}/100\n`;
-  output += `${tradePlan.summary}\n\n`;
+  output += buildSection(
+    '综合信号',
+    `方向: ${formatDirection(tradePlan.direction)} | 强度: ${formatSignalStrength(tradePlan.signalStrength)} | 确信度: ${tradePlan.confidenceScore.toFixed(1)}/100\n` +
+      `${tradePlan.summary}\n`,
+    false
+  );
 
-  output += `${sectionSeparator}\n\n`;
   // 3. 入场策略 - 合并为简洁格式
-  output += `【入场策略】\n`;
-  output += `价格: ${tradePlan.currentPrice.toFixed(2)} ➔ ${tradePlan.entryStrategy.idealEntryPrice.toFixed(2)} (${formatEntryType(tradePlan.entryStrategy.entryType)})\n`;
-  output += `区间: ${tradePlan.entryStrategy.priceZones.ideal[0].toFixed(2)}-${tradePlan.entryStrategy.priceZones.ideal[1].toFixed(2)} | 风险: ${formatRiskLevel(tradePlan.entryStrategy.riskLevel)}\n`;
-
-  // 关键入场条件 - 只显示重要的
   const criticalConditions = tradePlan.entryStrategy.entryConditions
     .filter(c => c.priority === 'critical' || c.priority === 'important')
-    .map((c, i) => `${formatPriority(c.priority)} ${c.description}`)
+    .map(c => `${formatPriority(c.priority)} ${c.description}`)
     .join('\n  ');
-  output += `条件:\n  ${criticalConditions}\n\n`;
 
-  output += `\n${sectionSeparator}\n`;
+  output += buildSection(
+    '入场策略',
+    `价格: ${tradePlan.currentPrice.toFixed(2)} ➔ ${tradePlan.entryStrategy.idealEntryPrice.toFixed(2)} (${formatEntryType(tradePlan.entryStrategy.entryType)})\n` +
+      `区间: ${tradePlan.entryStrategy.priceZones.ideal[0].toFixed(2)}-${tradePlan.entryStrategy.priceZones.ideal[1].toFixed(2)} | 风险: ${formatRiskLevel(tradePlan.entryStrategy.riskLevel)}\n` +
+      `条件:\n  ${criticalConditions}\n`
+  );
 
   // 4. 出场策略 - 合并为简洁格式
-  output += `\n【出场策略】\n`;
-
-  // 止盈设置 - 简化为表格式格式
-  output += `止盈目标:\n`;
+  let exitContent = `止盈目标:\n`;
   tradePlan.exitStrategy.takeProfitLevels.forEach((level, i) => {
     const percent = (
       ((level.price - tradePlan.entryStrategy.idealEntryPrice) /
@@ -58,11 +75,10 @@ function formatTradePlanOutput(
     ).toFixed(1);
     const sign =
       level.price > tradePlan.entryStrategy.idealEntryPrice ? '+' : '';
-    output += `  ${i + 1}. ${level.price.toFixed(2)} (${sign}${percent}%) | ${(level.proportion * 100).toFixed(0)}%仓位\n`;
+    exitContent += `  ${i + 1}. ${level.price.toFixed(2)} (${sign}${percent}%) | ${(level.proportion * 100).toFixed(0)}%仓位\n`;
   });
 
-  // 止损设置 - 简化为表格式格式
-  output += `止损位置:\n`;
+  exitContent += `止损位置:\n`;
   tradePlan.exitStrategy.stopLossLevels.forEach((level, i) => {
     const percent = (
       ((level.price - tradePlan.entryStrategy.idealEntryPrice) /
@@ -71,22 +87,20 @@ function formatTradePlanOutput(
     ).toFixed(1);
     const sign =
       level.price > tradePlan.entryStrategy.idealEntryPrice ? '+' : '';
-    output += `  ${i + 1}. ${level.price.toFixed(2)} (${sign}${percent}%) | ${level.type === 'fixed' ? '固定' : '追踪'}\n`;
+    exitContent += `  ${i + 1}. ${level.price.toFixed(2)} (${sign}${percent}%) | ${level.type === 'fixed' ? '固定' : '追踪'}\n`;
   });
 
-  output += `退出时间: ${tradePlan.exitStrategy.maximumHoldingPeriod}\n\n`;
+  exitContent += `退出时间: ${tradePlan.exitStrategy.maximumHoldingPeriod}\n`;
+  output += buildSection('出场策略', exitContent);
 
   // 5. 风险管理 - 更简洁的布局
-  output += `【风险管理】\n`;
-  output += `建议仓位: ${(tradePlan.riskManagement.suggestionPosition * 100).toFixed(1)}% | 风险回报比: ${tradePlan.riskManagement.riskRewardRatio.toFixed(2)}\n`;
-  output += `最大损失: ${tradePlan.riskManagement.maxLoss} | 波动性: ${tradePlan.riskManagement.volatilityConsideration}\n`;
-
-  output += `\n${sectionSeparator}\n`;
+  output += buildSection(
+    '风险管理',
+    `建议仓位: ${(tradePlan.riskManagement.suggestionPosition * 100).toFixed(1)}% | 风险回报比: ${tradePlan.riskManagement.riskRewardRatio.toFixed(2)}\n` +
+      `最大损失: ${tradePlan.riskManagement.maxLoss} | 波动性: ${tradePlan.riskManagement.volatilityConsideration}\n`
+  );
 
   // 6. 关键价位 - 分为支撑和阻力两组
-  output += `\n【关键价位】\n`;
-
-  // 筛选强支撑位和强阻力位
   const strongSupportLevels = tradePlan.keyLevels
     .filter(level => level.type === 'support' && level.strength === 'strong')
     .sort((a, b) => b.price - a.price);
@@ -95,127 +109,126 @@ function formatTradePlanOutput(
     .filter(level => level.type === 'resistance' && level.strength === 'strong')
     .sort((a, b) => a.price - b.price);
 
-  // 支撑位
-  output += `支撑位:\n`;
+  let keyLevelContent = `支撑位:\n`;
   if (strongSupportLevels.length > 0) {
-    strongSupportLevels.slice(0, 3).forEach((level, i) => {
-      output += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
+    strongSupportLevels.slice(0, 3).forEach(level => {
+      keyLevelContent += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
     });
   } else {
-    output += `  未检测到强支撑位\n`;
+    keyLevelContent += `  未检测到强支撑位\n`;
   }
 
-  // 阻力位
-  output += `阻力位:\n`;
+  keyLevelContent += `阻力位:\n`;
   if (strongResistanceLevels.length > 0) {
-    strongResistanceLevels.slice(0, 3).forEach((level, i) => {
-      output += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
+    strongResistanceLevels.slice(0, 3).forEach(level => {
+      keyLevelContent += `  ${level.price.toFixed(2)} | ${formatLevelSource(level.source)}\n`;
     });
   } else {
-    output += `  未检测到强阻力位\n`;
+    keyLevelContent += `  未检测到强阻力位\n`;
   }
 
+  output += buildSection('关键价位', keyLevelContent);
+
+  // 7. 支撑阻力位的牛熊信号分析 (如果有数据)
   if (
     tradePlan.bbsrAnalysis.dailyBBSRResult ||
     tradePlan.bbsrAnalysis.weeklyBBSRResult
   ) {
-    output += `\n${sectionSeparator}\n`;
-
-    output += `\n【支撑阻力位的牛熊信号分析】\n`;
+    let bbsrContent = '';
     if (tradePlan.bbsrAnalysis.dailyBBSRResult) {
-      output += `日线关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)}\n`;
-      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate)}\n`;
-      output += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}\n`;
+      bbsrContent += `日线关键位: ${tradePlan.bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(2)}\n`;
+      bbsrContent += `日期: ${toEDTString(tradePlan.bbsrAnalysis.dailyBBSRResult.signalDate)}\n`;
+      bbsrContent += `名称: ${tradePlan.bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}\n`;
     }
 
     if (tradePlan.bbsrAnalysis.weeklyBBSRResult) {
-      output += `周线关键位: ${JSON.stringify(tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2))}\n`;
-      output += `日期: ${toEDTString(tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate)}\n`;
-      output += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')}\n`;
+      bbsrContent += `周线关键位: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.SRLevel.toFixed(2)}\n`;
+      bbsrContent += `日期: ${toEDTString(tradePlan.bbsrAnalysis.weeklyBBSRResult.signalDate)}\n`;
+      bbsrContent += `名称: ${tradePlan.bbsrAnalysis.weeklyBBSRResult.signal.patternNames.join(',')}\n`;
     }
+    output += buildSection('支撑阻力位的牛熊信号分析', bbsrContent);
   }
 
-  output += `\n${sectionSeparator}\n`;
+  // 8. 时间周期分析
+  output += buildSection(
+    '时间周期分析',
+    `主要周期: ${formatTimeframe(tradePlan.primaryTimeframe)} | 一致性: ${tradePlan.timeframeConsistency}\n` +
+      `短期: ${tradePlan.shortTermOutlook} | 中期: ${tradePlan.mediumTermOutlook} | 长期: ${tradePlan.longTermOutlook}\n`
+  );
 
-  // 7. 时间周期分析
-  output += `\n【时间周期分析】\n`;
-  output += `主要周期: ${formatTimeframe(tradePlan.primaryTimeframe)} | 一致性: ${tradePlan.timeframeConsistency}\n`;
-  output += `短期: ${tradePlan.shortTermOutlook} | 中期: ${tradePlan.mediumTermOutlook} | 长期: ${tradePlan.longTermOutlook}\n`;
+  // 9. 波动率量能分析
+  output += buildSection(
+    '波动率量能分析',
+    `${volumeAnalysisReason}\n` + `${volatilityAnalysisReason}\n`
+  );
 
-  // 7.1 量能分析
-  output += `\n【波动率量能分析】\n`;
-  output += `${volumeAnalysisReason}\n`;
-  output += `${volatilityAnalysisReason}\n`;
-
-  // 8. 趋势逆转信号 (如果存在)
+  // 10. 趋势逆转信号 (如果存在)
   if (
     tradePlan.trendReversalInfo &&
     tradePlan.trendReversalInfo.hasReversalSignal
   ) {
-    output += `\n${sectionSeparator}\n`;
-
-    output += `\n【趋势逆转信号】\n`;
-
+    let reversalContent = '';
     if (tradePlan.trendReversalInfo.primaryReversalSignal) {
       const signal = tradePlan.trendReversalInfo.primaryReversalSignal;
       const direction = signal.direction > 0 ? '上涨' : '下跌';
 
-      output += `检测到${formatTimeframe(signal.smallTimeframe)}对${formatTimeframe(signal.largeTimeframe)}的顺势逆转\n`;
-      output += `方向: ${direction} | 强度: ${signal.reversalStrength.toFixed(1)}/100\n`;
+      reversalContent += `检测到${formatTimeframe(signal.smallTimeframe)}对${formatTimeframe(signal.largeTimeframe)}的顺势逆转\n`;
+      reversalContent += `方向: ${direction} | 强度: ${signal.reversalStrength.toFixed(1)}/100\n`;
 
       if (signal.entryPrice && signal.stopLoss) {
-        output += `入场价: ${signal.entryPrice.toFixed(2)} | 止损价: ${signal.stopLoss.toFixed(2)}\n`;
+        reversalContent += `入场价: ${signal.entryPrice.toFixed(2)} | 止损价: ${signal.stopLoss.toFixed(2)}\n`;
       }
 
       if (signal.reversalStrength > 70) {
-        output += `评价: ✓ 强烈逆转信号，适合介入\n`;
+        reversalContent += `评价: ✓ 强烈逆转信号，适合介入\n`;
       } else if (signal.reversalStrength > 50) {
-        output += `评价: ✓ 中等强度逆转信号，可以考虑\n`;
+        reversalContent += `评价: ✓ 中等强度逆转信号，可以考虑\n`;
       } else {
-        output += `评价: ⚠ 弱逆转信号，建议等待确认\n`;
+        reversalContent += `评价: ⚠ 弱逆转信号，建议等待确认\n`;
       }
     } else {
-      output += `${tradePlan.trendReversalInfo.description}\n`;
+      reversalContent += `${tradePlan.trendReversalInfo.description}\n`;
     }
+    output += buildSection('趋势逆转信号', reversalContent);
   }
 
-  output += `\n${sectionSeparator}\n`;
+  // 11. 交易理由
+  output += buildSection(
+    '交易理由',
+    `${tradePlan.primaryRationale}\n` +
+      `${tradePlan.secondaryRationale}\n` +
+      combinedVolumeVolatilitySummary
+  );
 
-  // 9. 关键理由
-  output += `\n【交易理由】\n`;
-  output += `${tradePlan.primaryRationale}\n`;
-  output += `${tradePlan.secondaryRationale}\n`;
-  output += combinedVolumeVolatilitySummary;
-
-  output += `\n${sectionSeparator}\n`;
-
-  // 10. 无效信号条件
-  output += `\n【无效信号条件】\n`;
+  // 12. 无效信号条件
+  let invalidationContent = '';
   tradePlan.invalidationConditions
     .filter(c => c.priority === 'critical' || c.priority === 'important')
-    .forEach((condition, i) => {
-      output += `  ${formatPriority(condition.priority)} ${condition.description}\n`;
+    .forEach(condition => {
+      invalidationContent += `  ${formatPriority(condition.priority)} ${condition.description}\n`;
     });
+  output += buildSection('无效信号条件', invalidationContent);
 
-  // 11. 警告信息
+  // 13. 警告信息
   if (tradePlan.warnings.length > 0) {
-    output += `\n${sectionSeparator}\n`;
-
-    output += `\n【警告信息】\n`;
+    let warningContent = '';
     tradePlan.warnings.forEach(warning => {
-      output += `  ⚠️ ${warning}\n`;
+      warningContent += `  ⚠️ ${warning}\n`;
     });
+    output += buildSection('警告信息', warningContent);
   }
 
-  output += `\n${sectionSeparator}\n`;
-
-  // 添加分析权重信息
-  output += `\n【分析构成】\n`;
-  output += `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n`;
-  output += `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n`;
+  // 14. 分析构成
+  output += buildSection(
+    '分析构成',
+    `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n` +
+      `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n` +
+      `量价分析: ${(tradePlan.volumeAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.volumeAnalysisContribution.toFixed(1)}/100)\n` +
+      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n`
+  );
 
   // 结尾分隔线
-  output += `\n${separator}\n`;
+  output += `\n${SEPARATOR}\n`;
 
   return output;
 }

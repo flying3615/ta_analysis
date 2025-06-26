@@ -1,6 +1,6 @@
 import { Candle, SRSignal, SupportResistanceResult } from '../../types.js';
-import { getStockDataForTimeframe } from '../../util/util.js';
 import { checkBullOrBearRecently } from '../candle/BullOrBearDetector.js';
+import { PatternDirection } from '../patterns/analyzeMultiTimeframePatterns.js';
 
 /**
  * 查找枢轴点
@@ -202,28 +202,30 @@ function checkBullBearNearSupportResistance(
       : null;
 
   // 确定最近的信号类型
-  let recentSignalType = '';
+  let recentSignalType: PatternDirection | null = null;
   let recentSignalDate: Date | null = null;
   let signalStrength = 0;
 
   if (!lastBullishPattern && lastBearishPattern) {
-    recentSignalType = 'bearish';
+    recentSignalType = PatternDirection.Bearish;
     recentSignalDate = lastBearishPattern.date;
     signalStrength = lastBearishPattern.strength;
   } else if (lastBullishPattern && !lastBearishPattern) {
-    recentSignalType = 'bullish';
+    recentSignalType = PatternDirection.Bullish;
     recentSignalDate = lastBullishPattern.date;
     signalStrength = lastBullishPattern.strength;
   } else if (lastBullishPattern && lastBearishPattern) {
     // 如果两种信号都有，选择最近的
     recentSignalType =
-      lastBullishPattern.date > lastBearishPattern.date ? 'bullish' : 'bearish';
+      lastBullishPattern.date > lastBearishPattern.date
+        ? PatternDirection.Bullish
+        : PatternDirection.Bearish;
     recentSignalDate =
-      recentSignalType === 'bullish'
+      recentSignalType === PatternDirection.Bullish
         ? lastBullishPattern.date
         : lastBearishPattern.date;
     signalStrength =
-      recentSignalType === 'bullish'
+      recentSignalType === PatternDirection.Bullish
         ? lastBullishPattern.strength
         : lastBearishPattern.strength;
   } else {
@@ -232,7 +234,7 @@ function checkBullBearNearSupportResistance(
   }
 
   // 5. 判断是否在支撑位或阻力位附近
-  if (recentSignalType === 'bullish' && recentSignalDate) {
+  if (recentSignalType === PatternDirection.Bullish && recentSignalDate) {
     // 检查是否在支撑位附近 (当前价格在支撑位 ±10% 范围内)
     const dynamicSupport = srResult.dynamicSupport;
     if (dynamicSupport && isNearLevel(currentPrice, dynamicSupport, 0.1)) {
@@ -247,7 +249,7 @@ function checkBullBearNearSupportResistance(
     }
   }
 
-  if (recentSignalType === 'bearish' && recentSignalDate) {
+  if (recentSignalType === PatternDirection.Bearish && recentSignalDate) {
     // 检查是否在阻力位附近 (当前价格在阻力位 ±10% 范围内)
     const dynamicResistance = srResult.dynamicResistance;
     if (

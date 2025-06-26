@@ -67,7 +67,7 @@ interface MultiTimeframeAnalysisResult {
 /**
  * 分析多个时间周期并生成综合建议
  */
-async function multiTimeFrameChipDistAnalysis(
+function multiTimeFrameChipDistAnalysis(
   symbol: string,
   primaryTimeframe: 'weekly' | 'daily' | '1hour' = 'daily',
   includeTimeframes: ('weekly' | 'daily' | '1hour')[] = [
@@ -83,7 +83,7 @@ async function multiTimeFrameChipDistAnalysis(
   weeklyData: Candle[],
   dailyData: Candle[],
   hourlyData: Candle[]
-): Promise<MultiTimeframeAnalysisResult> {
+): MultiTimeframeAnalysisResult {
   const timeframeAnalyses: TimeframeAnalysis[] = [];
   let candles = [];
 
@@ -117,12 +117,7 @@ async function multiTimeFrameChipDistAnalysis(
   }
 
   // 组合各时间周期的分析结果，生成综合建议
-  const combinedAnalysis = combineTimeframeAnalyses(
-    timeframeAnalyses,
-    primaryTimeframe
-  );
-
-  return combinedAnalysis;
+  return combineTimeframeAnalyses(timeframeAnalyses, primaryTimeframe);
 }
 
 /**

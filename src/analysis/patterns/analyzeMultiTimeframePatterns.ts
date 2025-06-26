@@ -294,10 +294,10 @@ const PATTERN_DETECTORS = {
 /**
  * 主函数：根据时间周期分析适合的形态，增强最近形态的重要性
  */
-async function analyzeAllPatterns(
+function analyzeAllPatterns(
   rawData: Candle[],
   timeframe: 'weekly' | 'daily' | '1hour'
-): Promise<AnalyzeMultiTimeframePatterns> {
+): AnalyzeMultiTimeframePatterns {
   // 仅保留最近100根K线
   const data = rawData.slice(-100);
 
@@ -667,14 +667,14 @@ function combinePatternAnalyses(
 /**
  * 导出的API函数：多时间周期的价格形态分析
  */
-async function analyzeMultiTimeframePatterns(
+function analyzeMultiTimeframePatterns(
   weeklyData: Candle[],
   dailyData: Candle[],
   hourlyData: Candle[]
-): Promise<ComprehensivePatternAnalysis> {
-  const weeklyAnalysis = await analyzeAllPatterns(weeklyData, 'weekly');
-  const dailyAnalysis = await analyzeAllPatterns(dailyData, 'daily');
-  const hourlyAnalysis = await analyzeAllPatterns(hourlyData, '1hour');
+): ComprehensivePatternAnalysis {
+  const weeklyAnalysis = analyzeAllPatterns(weeklyData, 'weekly');
+  const dailyAnalysis = analyzeAllPatterns(dailyData, 'daily');
+  const hourlyAnalysis = analyzeAllPatterns(hourlyData, '1hour');
 
   return combinePatternAnalyses([
     weeklyAnalysis,
@@ -1051,10 +1051,10 @@ async function exampleMultiTimeframeUsage(symbol: string) {
       '1hour'
     );
 
-    const multiTimeframeResult = await analyzeMultiTimeframePatterns(
+    const multiTimeframeResult = analyzeMultiTimeframePatterns(
       weeklyData,
       dailyData,
-      hourlyData
+      hourlyData,
     );
 
     formatAndPrintPatternAnalysis(multiTimeframeResult, symbol);

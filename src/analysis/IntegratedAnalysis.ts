@@ -1,12 +1,12 @@
 import {
-  multiTimeFrameChipDistAnalysis,
   MultiTimeframeAnalysisResult,
+  multiTimeFrameChipDistAnalysis,
 } from './chip/multiTimeFrameChipDistributionAnalysis.js';
 import { PatternDirection } from './patterns/analyzeMultiTimeframePatterns.js';
 import { formatTradePlanOutput } from './FormatTradePlan.js';
 import {
-  multiTimeframePatternAnalysis,
   EnhancedPatternAnalysis,
+  multiTimeframePatternAnalysis,
 } from './trendReversal/multiTimeFrameTrendReversal.js';
 import { getStockDataForTimeframe } from '../util/util.js';
 import {
@@ -34,6 +34,99 @@ import {
 } from '../types.js';
 import { executeEnhancedCombinedAnalysis } from './volatility/volatilityAnalysis.js';
 
+// 定义决策阈值
+const SCORE_THRESHOLD_LONG = 15;
+const SCORE_THRESHOLD_SHORT = -15;
+const VOLATILITY_ADJUSTED_SCORE_STRONG = 60;
+const VOLATILITY_ADJUSTED_SCORE_MODERATE = 40;
+const VOLATILITY_ADJUSTED_SCORE_WEAK = 20;
+
+const DEFAULT_WEIGHTS = {
+  chip: 0.25,
+  pattern: 0.35,
+  volume: 0.25,
+  bbsr: 0.15,
+};
+
+/**
+ * 将形态分析信号转换为交易方向
+ */
+function convertPatternDirectionToTradeDirection(
+  patternDirection: PatternDirection
+): TradeDirection {
+  if (patternDirection === PatternDirection.Bullish) {
+    return TradeDirection.Long;
+  } else if (patternDirection === PatternDirection.Bearish) {
+    return TradeDirection.Short;
+  }
+  return TradeDirection.Neutral;
+}
+
+/**
+ * 计算加权分数
+ */
+function calculateWeightedScore(
+  score: number,
+  weight: number,
+  direction: TradeDirection
+): number {
+  const directionMultiplier =
+    direction === TradeDirection.Long
+      ? 1
+      : direction === TradeDirection.Short
+        ? -1
+        : 0;
+
+  return score * weight * directionMultiplier;
+}
+
+/**
+ * 根据分数确定信号强度
+ */
+function determineSignalStrength(
+  score: number,
+  chipDirection: TradeDirection,
+  patternDirection: TradeDirection
+): SignalStrength {
+  if (score > VOLATILITY_ADJUSTED_SCORE_STRONG) {
+    return SignalStrength.Strong;
+  } else if (score > VOLATILITY_ADJUSTED_SCORE_MODERATE) {
+    return SignalStrength.Moderate;
+  } else if (score > VOLATILITY_ADJUSTED_SCORE_WEAK) {
+    return SignalStrength.Weak;
+  } else if (
+    chipDirection !== patternDirection &&
+    chipDirection !== TradeDirection.Neutral &&
+    patternDirection !== TradeDirection.Neutral
+  ) {
+    return SignalStrength.Conflicting;
+  }
+  return SignalStrength.Neutral;
+}
+
+/**
+ * 添加关键价位到列表
+ */
+function addKeyLevels(
+  keyLevels: KeyLevel[],
+  source: 'chip' | 'pattern' | 'combined',
+  timeframe: 'weekly' | 'daily' | '1hour',
+  levels: number[],
+  type: 'support' | 'resistance',
+  description: string
+): void {
+  levels.forEach((level, index) => {
+    keyLevels.push({
+      price: level,
+      type: type,
+      strength: index < 2 ? 'strong' : 'moderate',
+      source: source,
+      timeframe: timeframe,
+      description: description,
+    });
+  });
+}
+
 /**
  * 综合筹码和形态分析结果的方法
  * @param combinedVolumeVolatilityAnalysis 波动率和成交量分析结果
@@ -50,19 +143,24 @@ function integrateAnalyses(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
   bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
-  customWeights: { chip: number; pattern: number; volume: number } = {
-    chip: 0.2,
-    pattern: 0.3,
-    volume: 0.5,
-  }
+  customWeights: {
+    chip: number;
+    pattern: number;
+    volume: number;
+    bbsr: number;
+  } = DEFAULT_WEIGHTS
 ): IntegratedTradePlan {
   // 确保权重总和为1
   const totalWeight =
-    customWeights.chip + customWeights.pattern + customWeights.volume;
+    customWeights.chip +
+    customWeights.pattern +
+    customWeights.volume +
+    customWeights.bbsr;
   const normalizedWeights = {
     chip: customWeights.chip / totalWeight,
     pattern: customWeights.pattern / totalWeight,
     volume: customWeights.volume / totalWeight,
+    bbsr: customWeights.bbsr / totalWeight,
   };
 
   // 确定基本信息
@@ -85,11 +183,18 @@ function integrateAnalyses(
   }
 
   // 提取形态分析的信号
-  let patternDirection: TradeDirection = TradeDirection.Neutral;
-  if (patternAnalysis.combinedSignal === PatternDirection.Bullish) {
-    patternDirection = TradeDirection.Long;
-  } else if (patternAnalysis.combinedSignal === PatternDirection.Bearish) {
-    patternDirection = TradeDirection.Short;
+  const patternDirection = convertPatternDirectionToTradeDirection(
+    patternAnalysis.combinedSignal
+  );
+
+  // 提取BBSR分析的信号
+  let bbsrDirection = TradeDirection.Neutral;
+  let bbsrScore = 0;
+  if (bbsrAnalysis.dailyBBSRResult) {
+    bbsrScore = bbsrAnalysis.dailyBBSRResult.strength;
+    bbsrDirection = convertPatternDirectionToTradeDirection(
+      bbsrAnalysis.dailyBBSRResult.signal.patternType
+    );
   }
 
   // 计算各自的贡献分数
@@ -104,24 +209,20 @@ function integrateAnalyses(
     )
   );
   const patternScore = patternAnalysis.signalStrength;
+
   // 获取波动率和成交量分析数据
   const volAnalysis =
     combinedVolumeVolatilityAnalysis.volatilityAnalysis.volatilityAnalysis;
   const volPriceConfirmation =
     combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis;
 
-  // 更高优先级决定交易方向
-  const volumeAnalysisDirection =
-    combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.adTrend;
-  const volumeAnalysisForce =
-    combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.volumeForce;
-
-  let volumeBasedDirection = TradeDirection.Neutral;
-  if (volumeAnalysisDirection === 'bullish' && volumeAnalysisForce > 0) {
-    volumeBasedDirection = TradeDirection.Long;
-  } else if (volumeAnalysisDirection === 'bearish' && volumeAnalysisForce > 0) {
-    volumeBasedDirection = TradeDirection.Short;
-  }
+  // 提取成交量分析方向
+  const volumeAnalysisDirection = volPriceConfirmation.adTrend;
+  const volumeAnalysisForce = volPriceConfirmation.volumeForce;
+  const volumeBasedDirection =
+    volumeAnalysisForce > 0
+      ? convertPatternDirectionToTradeDirection(volumeAnalysisDirection)
+      : TradeDirection.Neutral;
 
   // 计算波动率强度评分 (0-100)
   // 综合ATR百分比和布林带宽度
@@ -134,10 +235,8 @@ function integrateAnalyses(
     )
   );
 
-  // 综合评分计算
-  let directionScore = 0;
-
   // 波动率分析逻辑 - 计算波动率信号强度而非方向
+  let directionScore = 0;
   if (volatilityStrength > 50) {
     // 高波动率情况
     if (volAnalysis.isVolatilityIncreasing) {
@@ -174,87 +273,65 @@ function integrateAnalyses(
     directionScore = directionScore * 0.7;
   }
 
-  // 不再使用波动率和成交量来确定交易方向
-  // 而是将波动率信号强度保存，用于后续信号强度计算
+  // 波动率信号强度保存，用于后续信号强度计算
   const volatilitySignalStrength = Math.abs(directionScore);
 
-  // 应用权重计算最终方向和分数
-  const chipWeightedScore =
-    chipScore *
-    normalizedWeights.chip *
-    (chipDirection === TradeDirection.Long
-      ? 1
-      : chipDirection === TradeDirection.Short
-        ? -1
-        : 0);
-  const patternWeightedScore =
-    patternScore *
-    normalizedWeights.pattern *
-    (patternDirection === TradeDirection.Long
-      ? 1
-      : patternDirection === TradeDirection.Short
-        ? -1
-        : 0);
+  // 应用权重计算各分析的得分
+  const chipWeightedScore = calculateWeightedScore(
+    chipScore,
+    normalizedWeights.chip,
+    chipDirection
+  );
+  const patternWeightedScore = calculateWeightedScore(
+    patternScore,
+    normalizedWeights.pattern,
+    patternDirection
+  );
+  const bbsrWeightedScore = calculateWeightedScore(
+    bbsrScore,
+    normalizedWeights.bbsr,
+    bbsrDirection
+  );
 
   // 计算成交量分析的得分,只要volumeAnalysisForce大于0，才有意义
   let volumeWeightedScore = 0;
   if (volumeAnalysisForce > 0) {
-    volumeWeightedScore =
-      volumeAnalysisForce *
-      normalizedWeights.volume *
-      (volumeBasedDirection === TradeDirection.Long
-        ? 1
-        : volumeBasedDirection === TradeDirection.Short
-          ? -1
-          : 0);
+    volumeWeightedScore = calculateWeightedScore(
+      volumeAnalysisForce,
+      normalizedWeights.volume,
+      volumeBasedDirection
+    );
   }
 
-  // 仅使用筹码和形态分析来决定交易方向
+  // 计算最终得分
   const finalScore =
-    chipWeightedScore + patternWeightedScore + volumeWeightedScore;
+    chipWeightedScore +
+    patternWeightedScore +
+    volumeWeightedScore +
+    bbsrWeightedScore;
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
-  if (finalScore > 15) {
+  if (finalScore > SCORE_THRESHOLD_LONG) {
     direction = TradeDirection.Long;
-  } else if (finalScore < -15) {
+  } else if (finalScore < SCORE_THRESHOLD_SHORT) {
     direction = TradeDirection.Short;
   }
 
-  // 确定基础信号强度
-  let signalStrength = SignalStrength.Neutral;
-  const absScore = Math.abs(finalScore);
-
   // 波动率调整因子 (0.7-1.3范围)
-  // 计算逻辑：
-  // 1. volatilitySignalStrength / 100 将波动率信号强度归一化到0-1范围
-  // 2. 减去0.5使得中等波动率(50)对应0，低波动率为负，高波动率为正
-  // 3. 乘以0.6限制调整范围在±30%内，即0.7-1.3
-  //
-  // 调整效果：
-  // - 高波动率(80-100)：信号强度增强10-30%，表示市场确定性更高
-  // - 中等波动率(40-60)：信号强度基本不变，轻微调整±10%
-  // - 低波动率(0-20)：信号强度减弱20-30%，表示市场不确定性高
   const volatilityAdjustmentFactor =
     1 + (volatilitySignalStrength / 100 - 0.5) * 0.6;
 
   // 应用波动率调整后的分数
-  const volatilityAdjustedScore = absScore * volatilityAdjustmentFactor;
+  const volatilityAdjustedScore =
+    Math.abs(finalScore) * volatilityAdjustmentFactor;
 
   // 基于调整后的分数确定信号强度
-  if (volatilityAdjustedScore > 60) {
-    signalStrength = SignalStrength.Strong;
-  } else if (volatilityAdjustedScore > 40) {
-    signalStrength = SignalStrength.Moderate;
-  } else if (volatilityAdjustedScore > 20) {
-    signalStrength = SignalStrength.Weak;
-  } else if (
-    chipDirection !== patternDirection &&
-    chipDirection !== TradeDirection.Neutral &&
-    patternDirection !== TradeDirection.Neutral
-  ) {
-    signalStrength = SignalStrength.Conflicting;
-  }
+  const signalStrength = determineSignalStrength(
+    volatilityAdjustedScore,
+    chipDirection,
+    patternDirection
+  );
 
   // 计算置信度分数
   const confidenceScore = Math.max(
@@ -288,46 +365,44 @@ function integrateAnalyses(
   // 整合关键价位
   const keyLevels: KeyLevel[] = [];
 
-  // 从筹码分析添加支撑位
-  chipAnalysis.aggregatedSupportLevels.forEach((level, index) => {
-    keyLevels.push({
-      price: level,
-      type: 'support',
-      strength: index < 2 ? 'strong' : 'moderate',
-      source: 'chip',
-      timeframe: primaryTimeframe,
-      description: `筹码分析显示的支撑位`,
-    });
-  });
+  // 添加筹码分析的支撑位和阻力位
+  addKeyLevels(
+    keyLevels,
+    'chip',
+    primaryTimeframe,
+    chipAnalysis.aggregatedSupportLevels,
+    'support',
+    '筹码分析显示的支撑位'
+  );
 
-  // 从筹码分析添加阻力位
-  chipAnalysis.aggregatedResistanceLevels.forEach((level, index) => {
-    keyLevels.push({
-      price: level,
-      type: 'resistance',
-      strength: index < 2 ? 'strong' : 'moderate',
-      source: 'chip',
-      timeframe: primaryTimeframe,
-      description: `筹码分析显示的阻力位`,
-    });
-  });
+  addKeyLevels(
+    keyLevels,
+    'chip',
+    primaryTimeframe,
+    chipAnalysis.aggregatedResistanceLevels,
+    'resistance',
+    '筹码分析显示的阻力位'
+  );
 
   // 从形态分析添加关键价位
   patternAnalysis.timeframeAnalyses.forEach(tfAnalysis => {
     if (tfAnalysis.dominantPattern) {
       const pattern = tfAnalysis.dominantPattern;
+      const patternType = pattern.patternType;
+      const patternDirection = pattern.direction;
+      const timeframe = tfAnalysis.timeframe;
 
       // 添加突破水平
       keyLevels.push({
         price: pattern.component.breakoutLevel,
         type:
-          pattern.direction === PatternDirection.Bullish
+          patternDirection === PatternDirection.Bullish
             ? 'resistance'
             : 'support',
         strength: pattern.reliability > 70 ? 'strong' : 'moderate',
         source: 'pattern',
-        timeframe: tfAnalysis.timeframe,
-        description: `${pattern.patternType} 形态的${pattern.direction === PatternDirection.Bullish ? '突破' : '支撑'}位`,
+        timeframe: timeframe,
+        description: `${patternType} 形态的${patternDirection === PatternDirection.Bullish ? '突破' : '支撑'}位`,
       });
 
       // 添加目标价
@@ -335,13 +410,13 @@ function integrateAnalyses(
         keyLevels.push({
           price: pattern.priceTarget,
           type:
-            pattern.direction === PatternDirection.Bullish
+            patternDirection === PatternDirection.Bullish
               ? 'resistance'
               : 'support',
           strength: 'moderate',
           source: 'pattern',
-          timeframe: tfAnalysis.timeframe,
-          description: `${pattern.patternType} 形态的目标价位`,
+          timeframe: timeframe,
+          description: `${patternType} 形态的目标价位`,
         });
       }
 
@@ -350,13 +425,13 @@ function integrateAnalyses(
         keyLevels.push({
           price: pattern.stopLoss,
           type:
-            pattern.direction === PatternDirection.Bullish
+            patternDirection === PatternDirection.Bullish
               ? 'support'
               : 'resistance',
           strength: 'strong',
           source: 'pattern',
-          timeframe: tfAnalysis.timeframe,
-          description: `${pattern.patternType} 形态的建议止损位`,
+          timeframe: timeframe,
+          description: `${patternType} 形态的建议止损位`,
         });
       }
     }
@@ -365,41 +440,8 @@ function integrateAnalyses(
   // 形态总体分析描述
   const patternDesc = patternAnalysis.description;
 
-  // 按价格排序并合并相近的价位
-  keyLevels.sort((a, b) => a.price - b.price);
-  const mergedKeyLevels: KeyLevel[] = [];
-
-  for (let i = 0; i < keyLevels.length; i++) {
-    if (
-      i > 0 &&
-      Math.abs(keyLevels[i].price - keyLevels[i - 1].price) / currentPrice <
-        0.01
-    ) {
-      // 合并相近的价位(相差1%以内)
-      const prevLevel = mergedKeyLevels[mergedKeyLevels.length - 1];
-
-      // 如果同为支撑或阻力，则合并
-      if (prevLevel.type === keyLevels[i].type) {
-        // 提升强度
-        if (
-          keyLevels[i].strength === 'strong' ||
-          prevLevel.strength === 'strong'
-        ) {
-          prevLevel.strength = 'strong';
-        }
-
-        // 更新来源
-        if (prevLevel.source !== keyLevels[i].source) {
-          prevLevel.source = 'combined';
-          prevLevel.description += ` + ${keyLevels[i].description}`;
-        }
-      } else {
-        mergedKeyLevels.push(keyLevels[i]);
-      }
-    } else {
-      mergedKeyLevels.push(keyLevels[i]);
-    }
-  }
+  // 合并相近的关键价位
+  const mergedKeyLevels = mergeNearbyKeyLevels(keyLevels, currentPrice);
 
   // 生成各时间周期的展望
   const shortTermOutlook = chipAnalysis.shortTermOutlook;
@@ -495,37 +537,10 @@ function integrateAnalyses(
   );
 
   // 添加趋势逆转信息处理
-  let trendReversalInfo = undefined;
-  if (
-    patternAnalysis.reversalSignals &&
-    patternAnalysis.reversalSignals.length > 0
-  ) {
-    const primaryReversalSignal = patternAnalysis.primaryReversalSignal;
-
-    trendReversalInfo = {
-      hasReversalSignal: true,
-      primaryReversalSignal,
-      reversalSignalStrength: primaryReversalSignal?.reversalStrength || 0,
-      smallTimeframe: primaryReversalSignal?.smallTimeframe,
-      largeTimeframe: primaryReversalSignal?.largeTimeframe,
-      reversalDirection: primaryReversalSignal?.direction,
-      entryPrice: primaryReversalSignal?.entryPrice,
-      stopLoss: primaryReversalSignal?.stopLoss,
-      description: `检测到${primaryReversalSignal?.smallTimeframe}周期从逆势调整转为顺应${primaryReversalSignal?.largeTimeframe}大趋势，${primaryReversalSignal?.direction > 0 ? '做多' : '做空'}信号`,
-    };
-
-    // 如果存在强趋势逆转信号，将其添加到警告或关键观察中
-    if (primaryReversalSignal && primaryReversalSignal.reversalStrength > 70) {
-      keyObservations.unshift(
-        `强烈的小周期顺势逆转信号: ${primaryReversalSignal.smallTimeframe}周期趋势逆转并顺从${primaryReversalSignal.largeTimeframe}周期趋势，信号强度: ${primaryReversalSignal.reversalStrength.toFixed(1)}/100`
-      );
-    }
-  } else {
-    trendReversalInfo = {
-      hasReversalSignal: false,
-      description: '未检测到小周期顺势逆转信号',
-    };
-  }
+  const trendReversalInfo = processTrendReversalInfo(
+    patternAnalysis,
+    keyObservations
+  );
 
   // 构建完整的交易计划
   return {
@@ -537,15 +552,19 @@ function integrateAnalyses(
     signalStrength,
     confidenceScore,
 
-    // 注意：波动率分析现在用于调整信号强度，而不是直接贡献交易方向
-    // 如需添加volatilityAnalysisWeight和volatilityAnalysisContribution，
-    // 需要先更新IntegratedTradePlan类型定义
     chipAnalysisWeight: normalizedWeights.chip,
     patternAnalysisWeight: normalizedWeights.pattern,
+    volumeAnalysisWeight: normalizedWeights.volume,
+    bbsrAnalysisWeight: normalizedWeights.bbsr,
+
     chipAnalysisContribution:
       Math.abs(chipWeightedScore) / normalizedWeights.chip,
     patternAnalysisContribution:
       Math.abs(patternWeightedScore) / normalizedWeights.pattern,
+    bbsrAnalysisContribution:
+      Math.abs(bbsrWeightedScore) / normalizedWeights.bbsr,
+    volumeAnalysisContribution:
+      Math.abs(volumeWeightedScore) / normalizedWeights.volume,
 
     summary,
     primaryRationale,
@@ -572,6 +591,93 @@ function integrateAnalyses(
 }
 
 /**
+ * 合并相近的关键价位
+ */
+function mergeNearbyKeyLevels(
+  keyLevels: KeyLevel[],
+  currentPrice: number
+): KeyLevel[] {
+  // 按价格排序
+  keyLevels.sort((a, b) => a.price - b.price);
+  const mergedKeyLevels: KeyLevel[] = [];
+
+  for (let i = 0; i < keyLevels.length; i++) {
+    if (
+      i > 0 &&
+      Math.abs(keyLevels[i].price - keyLevels[i - 1].price) / currentPrice <
+        0.01
+    ) {
+      // 合并相近的价位(相差1%以内)
+      const prevLevel = mergedKeyLevels[mergedKeyLevels.length - 1];
+
+      // 如果同为支撑或阻力，则合并
+      if (prevLevel.type === keyLevels[i].type) {
+        // 提升强度
+        if (
+          keyLevels[i].strength === 'strong' ||
+          prevLevel.strength === 'strong'
+        ) {
+          prevLevel.strength = 'strong';
+        }
+
+        // 更新来源
+        if (prevLevel.source !== keyLevels[i].source) {
+          prevLevel.source = 'combined';
+          prevLevel.description += ` + ${keyLevels[i].description}`;
+        }
+      } else {
+        mergedKeyLevels.push(keyLevels[i]);
+      }
+    } else {
+      mergedKeyLevels.push(keyLevels[i]);
+    }
+  }
+
+  return mergedKeyLevels;
+}
+
+/**
+ * 处理趋势逆转信息
+ */
+function processTrendReversalInfo(
+  patternAnalysis: EnhancedPatternAnalysis,
+  keyObservations: string[]
+) {
+  if (
+    patternAnalysis.reversalSignals &&
+    patternAnalysis.reversalSignals.length > 0
+  ) {
+    const primaryReversalSignal = patternAnalysis.primaryReversalSignal;
+
+    const trendReversalInfo = {
+      hasReversalSignal: true,
+      primaryReversalSignal,
+      reversalSignalStrength: primaryReversalSignal?.reversalStrength || 0,
+      smallTimeframe: primaryReversalSignal?.smallTimeframe,
+      largeTimeframe: primaryReversalSignal?.largeTimeframe,
+      reversalDirection: primaryReversalSignal?.direction,
+      entryPrice: primaryReversalSignal?.entryPrice,
+      stopLoss: primaryReversalSignal?.stopLoss,
+      description: `检测到${primaryReversalSignal?.smallTimeframe}周期从逆势调整转为顺应${primaryReversalSignal?.largeTimeframe}大趋势，${primaryReversalSignal?.direction > 0 ? '做多' : '做空'}信号`,
+    };
+
+    // 如果存在强趋势逆转信号，将其添加到关键观察中
+    if (primaryReversalSignal && primaryReversalSignal.reversalStrength > 70) {
+      keyObservations.unshift(
+        `强烈的小周期顺势逆转信号: ${primaryReversalSignal.smallTimeframe}周期趋势逆转并顺从${primaryReversalSignal.largeTimeframe}周期趋势，信号强度: ${primaryReversalSignal.reversalStrength.toFixed(1)}/100`
+      );
+    }
+
+    return trendReversalInfo;
+  } else {
+    return {
+      hasReversalSignal: false,
+      description: '未检测到小周期顺势逆转信号',
+    };
+  }
+}
+
+/**
  * 执行综合分析并生成格式化输出
  * @param symbol 股票代码
  * @param customWeights 自定义权重设置
@@ -582,10 +688,16 @@ function integrateAnalyses(
  */
 async function executeIntegratedAnalysis(
   symbol: string,
-  customWeights: { chip: number; pattern: number; volume: number } = {
+  customWeights: {
+    chip: number;
+    pattern: number;
+    volume: number;
+    bbsr: number;
+  } = {
     chip: 0.2,
-    pattern: 0.3,
+    pattern: 0.2,
     volume: 0.5,
+    bbsr: 0.1,
   } // 默认权重分配
 ): Promise<IntegratedTradePlan> {
   try {
@@ -594,14 +706,14 @@ async function executeIntegratedAnalysis(
     // 获取不同时间周期的数据
     const today = new Date();
 
-    const startDateWeekly = new Date();
-    startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+    const startDateWeekly = new Date(today);
+    startDateWeekly.setDate(startDateWeekly.getDate() - 365); // 获取一年的数据
 
-    const startDateDaily = new Date();
-    startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+    const startDateDaily = new Date(today);
+    startDateDaily.setDate(startDateDaily.getDate() - 90); // 获取三个月的数据
 
-    const startDateHourly = new Date();
-    startDateHourly.setDate(today.getDate() - 60); // 获取一个月的数据
+    const startDateHourly = new Date(today);
+    startDateHourly.setDate(startDateHourly.getDate() - 60); // 获取一个月的数据
 
     console.log('正在获取各时间周期数据...');
 
@@ -630,7 +742,7 @@ async function executeIntegratedAnalysis(
     console.log('正在执行筹码分布分析...');
 
     // 执行筹码分析
-    const multiTimeframeChipDistResult = await multiTimeFrameChipDistAnalysis(
+    const multiTimeframeChipDistResult = multiTimeFrameChipDistAnalysis(
       symbol,
       'daily', // 主要时间周期
       ['weekly', 'daily', '1hour'],
@@ -642,18 +754,14 @@ async function executeIntegratedAnalysis(
 
     // 执行形态分析
     console.log('正在执行形态分析...');
-    const patternAnalysisResult = await multiTimeframePatternAnalysis(
+    const patternAnalysisResult = multiTimeframePatternAnalysis(
       weeklyData,
       dailyData,
       hourlyData
     );
 
     // 执行支撑阻力关键位k线形态分析
-    const bbsrAnalysis = await multiTimeBBSRAnalysis(
-      symbol,
-      dailyData,
-      hourlyData
-    );
+    const bbsrAnalysis = multiTimeBBSRAnalysis(symbol, dailyData, hourlyData);
 
     // 执行波动率，成交量综合分析，小时线
     const combinedVolumeVolatilityAnalysis =
@@ -690,4 +798,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-// executeIntegratedAnalysis('MSTU', { chip: 0.4, pattern: 0.6, volume: 0.4 });
+executeIntegratedAnalysis('TSLA', DEFAULT_WEIGHTS);
