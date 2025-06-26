@@ -1,6 +1,7 @@
 import { Candle, PatternResult } from '../../types.js';
 import EnhancedBullishPatterns from '../../util/EnhancedBullishPatterns.js';
 import EnhancedBearishPatterns from '../../util/EnhancedBearishPatterns.js';
+import { PatternDirection } from '../patterns/analyzeMultiTimeframePatterns.js';
 
 /**
  * 检测K线形态
@@ -40,12 +41,12 @@ export const detectBullOrBear = (
       // 计算形态强度
       const patternStrength = calculatePatternStrength(
         windowCandles,
-        'bullish'
+        PatternDirection.Bullish
       );
 
       bullishPatterns.push({
         date: currentDate,
-        patternType: 'bullish',
+        patternType: PatternDirection.Bullish,
         priceLevel: currentClose,
         strength: patternStrength,
         patternNames: bullishPatternNames,
@@ -60,12 +61,12 @@ export const detectBullOrBear = (
       // 计算形态强度
       const patternStrength = calculatePatternStrength(
         windowCandles,
-        'bearish'
+        PatternDirection.Bearish
       );
 
       bearishPatterns.push({
         date: currentDate,
-        patternType: 'bearish',
+        patternType: PatternDirection.Bearish,
         priceLevel: currentClose,
         strength: patternStrength,
         patternNames: bearishPatternNames,
@@ -87,7 +88,7 @@ export const detectBullOrBear = (
  */
 function calculatePatternStrength(
   candles: Candle[],
-  patternType: 'bullish' | 'bearish'
+  patternType: PatternDirection
 ): number {
   const lastCandle = candles[candles.length - 1];
   const lastBody = Math.abs(lastCandle.close - lastCandle.open);
@@ -120,9 +121,9 @@ function calculatePatternStrength(
   }
 
   // 看涨形态:价格收于上方，看跌形态:价格收于下方
-  if (patternType === 'bullish' && lastCandle.close > lastCandle.open) {
+  if (patternType === PatternDirection.Bullish && lastCandle.close > lastCandle.open) {
     strength += 10;
-  } else if (patternType === 'bearish' && lastCandle.close < lastCandle.open) {
+  } else if (patternType === PatternDirection.Bearish && lastCandle.close < lastCandle.open) {
     strength += 10;
   }
 
@@ -249,7 +250,7 @@ export const generateTradeRecommendation = async (
   const result = {
     symbol,
     hasSignal: false,
-    direction: 'neutral' as 'bullish' | 'bearish' | 'neutral',
+    direction: PatternDirection.Neutral,
     signalStrength: 0,
     currentPrice,
     entryPrice: null as number | null,
@@ -336,7 +337,7 @@ export const generateTradeRecommendation = async (
   if (mtfResult.hasBullishConfirmation && !mtfResult.hasBearishConfirmation) {
     // 看涨信号
     result.hasSignal = true;
-    result.direction = 'bullish';
+    result.direction = PatternDirection.Bullish;
     result.signalStrength = avgBullishStrength;
 
     // 计算建议的入场价、止损价和目标价
@@ -370,7 +371,7 @@ export const generateTradeRecommendation = async (
   ) {
     // 看跌信号
     result.hasSignal = true;
-    result.direction = 'bearish';
+    result.direction = PatternDirection.Bearish;
     result.signalStrength = avgBearishStrength;
 
     // 计算建议的入场价、止损价和目标价
@@ -407,7 +408,7 @@ export const generateTradeRecommendation = async (
 
     if (avgBullishStrength > avgBearishStrength) {
       // 看涨信号更强
-      result.direction = 'bullish';
+      result.direction = PatternDirection.Bullish;
       result.signalStrength = avgBullishStrength - avgBearishStrength; // 信号强度为两者差值
 
       // 入场价、止损价计算(相对保守)
@@ -426,7 +427,7 @@ export const generateTradeRecommendation = async (
       result.reasoning = `出现混合信号，但看涨信号强度(${avgBullishStrength.toFixed(2)})高于看跌信号强度(${avgBearishStrength.toFixed(2)})。建议谨慎买入${symbol}，入场价${result.entryPrice}，止损价${result.stopLossPrice}，目标价${result.takeProfitPrice}。`;
     } else {
       // 看跌信号更强
-      result.direction = 'bearish';
+      result.direction = PatternDirection.Bearish;
       result.signalStrength = avgBearishStrength - avgBullishStrength; // 信号强度为两者差值
 
       // 入场价、止损价计算(相对保守)
@@ -451,3 +452,4 @@ export const generateTradeRecommendation = async (
 
   return result;
 };
+
