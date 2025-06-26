@@ -798,4 +798,4 @@ async function executeIntegratedAnalysis(
 // 导出所有主要函数和接口
 export { executeIntegratedAnalysis };
 
-executeIntegratedAnalysis('TSLA', DEFAULT_WEIGHTS);
+// executeIntegratedAnalysis('TSLA', DEFAULT_WEIGHTS);
