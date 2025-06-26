@@ -1,5 +1,6 @@
 import { MultiTimeFrameBBSRAnalysisResult } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
 import { TrendReversalSignal } from './analysis/trendReversal/multiTimeFrameTrendReversal.js';
+import { PatternDirection } from './analysis/patterns/analyzeMultiTimeframePatterns.js';
 
 export type Position = {
   quantity: number;
@@ -29,7 +30,7 @@ export interface Strategy<T> {
 
 export interface PatternResult {
   date: Date;
-  patternType: 'bullish' | 'bearish';
+  patternType: PatternDirection.Bullish | PatternDirection.Bearish;
   priceLevel: number;
   strength: number; // 0-100 的强度值
   patternNames: string[]; // 形态名称
@@ -230,8 +231,13 @@ export interface IntegratedTradePlan {
   // 各分析方法的权重与贡献
   chipAnalysisWeight: number;
   patternAnalysisWeight: number;
+  volumeAnalysisWeight: number;
+  bbsrAnalysisWeight: number;
+
   chipAnalysisContribution: number; // 0-100
   patternAnalysisContribution: number; // 0-100
+  volumeAnalysisContribution: number; // 0-100
+  bbsrAnalysisContribution: number; // 0-100
 
   // 总体分析描述
   summary: string;

@@ -432,13 +432,13 @@ function detectTrendReversal(
  * 增强版多时间周期价格形态分析，仅包含小时对日线的顺势逆转检测
  * 适用于波段交易，专注于中短期价格变动
  */
-async function multiTimeframePatternAnalysis(
+function multiTimeframePatternAnalysis(
   weeklyData: Candle[],
   dailyData: Candle[],
   hourlyData: Candle[]
-): Promise<EnhancedPatternAnalysis> {
+): EnhancedPatternAnalysis {
   // 获取基础的价格形态分析
-  const baseAnalysis = await analyzeMultiTimeframePatterns(
+  const baseAnalysis = analyzeMultiTimeframePatterns(
     weeklyData,
     dailyData,
     hourlyData

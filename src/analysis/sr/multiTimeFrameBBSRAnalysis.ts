@@ -7,11 +7,11 @@ export interface MultiTimeFrameBBSRAnalysisResult {
   dailyBBSRResult?: SRSignal;
 }
 
-const multiTimeBBSRAnalysis = async (
+const multiTimeBBSRAnalysis = (
   symbol: string,
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
-): Promise<MultiTimeFrameBBSRAnalysisResult> => {
+): MultiTimeFrameBBSRAnalysisResult => {
   const weeklyBBSRResult = checkBullBearNearSupportResistance(
     symbol,
     weeklyCandles

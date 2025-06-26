@@ -7,11 +7,12 @@ import {
   calculateSlope,
   calculateVolumeForce,
 } from './taUtil.js';
+import { PatternDirection } from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
 
 export interface AccumulationDistributionResult {
   adLine: number[]; // 积累分布线的值
   adSlope: number; // 积累分布线的斜率
-  adTrend: 'bullish' | 'bearish' | 'neutral'; // 积累分布线的趋势
+  adTrend: PatternDirection; // 积累分布线的趋势
   divergence: {
     type: 'bullish' | 'bearish' | 'hidden_bullish' | 'hidden_bearish' | 'none';
     strength: number; // 0-100
@@ -109,9 +110,9 @@ export function calculateAccumulationDistribution(
 function determineADTrend(
   adLine: number[],
   lookbackPeriod: number
-): 'bullish' | 'bearish' | 'neutral' {
+): PatternDirection {
   if (adLine.length < lookbackPeriod) {
-    return 'neutral';
+    return PatternDirection.Neutral;
   }
 
   const recentAD = adLine.slice(-lookbackPeriod);
@@ -121,16 +122,16 @@ function determineADTrend(
   const endAD = recentAD[recentAD.length - 1];
 
   // 防止除以零
-  if (startAD === 0) return 'neutral';
+  if (startAD === 0) return PatternDirection.Neutral;
 
   const changeRate = ((endAD - startAD) / Math.abs(startAD)) * 100;
 
   if (changeRate > 2) {
-    return 'bullish';
+    return PatternDirection.Bullish;
   } else if (changeRate < -2) {
-    return 'bearish';
+    return PatternDirection.Bearish;
   } else {
-    return 'neutral';
+    return PatternDirection.Neutral;
   }
 }
 
