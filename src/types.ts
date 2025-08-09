@@ -338,6 +338,9 @@ export interface IntegratedTradePlan {
     patternSummary: string;
     bbsrSummary: string;
     vvSummary: string;
+    structureSummary?: string;
+    supplyDemandSummary?: string;
+    rangeSummary?: string;
   };
 }
 

@@ -31,6 +31,12 @@ import {
   TradeDirection,
 } from '../types.js';
 import { executeEnhancedCombinedAnalysis } from './volatility/volatilityAnalysis.js';
+import { analyzeStructure } from './structure/structureDetector.js';
+import { analyzeSupplyDemand } from './supplyDemand/sdDetector.js';
+import { analyzeRange } from './range/rangeDetector.js';
+import type { StructureResult } from './structure/structureTypes.js';
+import type { SdAnalysisResult } from './supplyDemand/sdTypes.js';
+import type { RangeAnalysisResult } from './range/rangeTypes.ts';
 
 // 定义决策阈值
 const SCORE_THRESHOLD_LONG = 15;
@@ -141,6 +147,9 @@ function integrateAnalyses(
   chipAnalysis: MultiTimeframeAnalysisResult,
   patternAnalysis: EnhancedPatternAnalysis,
   bbsrAnalysis: MultiTimeFrameBBSRAnalysisResult,
+  structureDaily: StructureResult,
+  sdDaily: SdAnalysisResult,
+  rangeDaily: RangeAnalysisResult,
   customWeights: {
     chip: number;
     pattern: number;
@@ -302,11 +311,30 @@ function integrateAnalyses(
   }
 
   // 计算最终得分
-  const finalScore =
+  let finalScore =
     chipWeightedScore +
     patternWeightedScore +
     volumeWeightedScore +
     bbsrWeightedScore;
+
+  const addScore = (raw: number, weight: number) => {
+    finalScore += raw * weight;
+  };
+  // 结构方向
+  const structureDir = structureDaily.trend === 'up' ? 1 : structureDaily.trend === 'down' ? -1 : 0;
+  addScore(structureDir * 30, 0.15);
+  // 供需：最近有效区更近者决定方向
+  const priceNow = sdDaily.premiumDiscount.currentPrice;
+  const dZones = sdDaily.recentEffectiveZones.filter(z => z.type === 'demand');
+  const sZones = sdDaily.recentEffectiveZones.filter(z => z.type === 'supply');
+  const nd = dZones.sort((a, b) => Math.abs(priceNow - mid(a.low, a.high)) - Math.abs(priceNow - mid(b.low, b.high)))[0];
+  const ns = sZones.sort((a, b) => Math.abs(priceNow - mid(a.low, a.high)) - Math.abs(priceNow - mid(b.low, b.high)))[0];
+  const sdDir = nd && ns ? (Math.abs(priceNow - mid(nd.low, nd.high)) <= Math.abs(priceNow - mid(ns.low, ns.high)) ? 1 : -1) : nd ? 1 : ns ? -1 : 0;
+  addScore(sdDir * 25, 0.12);
+  // 区间突破方向与质量
+  const brDir = rangeDaily.breakout ? (rangeDaily.breakout.direction === 'up' ? 1 : -1) : 0;
+  const brQual = rangeDaily.breakout ? rangeDaily.breakout.qualityScore : 0;
+  addScore(brDir * Math.min(30, brQual * 0.3), 0.1);
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
@@ -434,6 +462,65 @@ function integrateAnalyses(
       }
     }
   });
+
+  // 从供需分析添加关键价位（日线近端区带边界）
+  sdDaily.recentEffectiveZones.forEach(z => {
+    if (z.type === 'demand') {
+      keyLevels.push({
+        price: z.low,
+        type: 'support',
+        strength: 'strong',
+        source: 'combined',
+        timeframe: 'daily',
+        description: '供需分析-需求区下沿',
+      });
+      keyLevels.push({
+        price: z.high,
+        type: 'support',
+        strength: 'moderate',
+        source: 'combined',
+        timeframe: 'daily',
+        description: '供需分析-需求区上沿',
+      });
+    } else {
+      keyLevels.push({
+        price: z.high,
+        type: 'resistance',
+        strength: 'strong',
+        source: 'combined',
+        timeframe: 'daily',
+        description: '供需分析-供应区上沿',
+      });
+      keyLevels.push({
+        price: z.low,
+        type: 'resistance',
+        strength: 'moderate',
+        source: 'combined',
+        timeframe: 'daily',
+        description: '供需分析-供应区下沿',
+      });
+    }
+  });
+
+  // 从区间分析添加边界（作为次级支撑/阻力）
+  if (rangeDaily.range) {
+    keyLevels.push({
+      price: rangeDaily.range.low,
+      type: 'support',
+      strength: 'moderate',
+      source: 'combined',
+      timeframe: 'daily',
+      description: '区间下沿',
+    });
+    keyLevels.push({
+      price: rangeDaily.range.high,
+      type: 'resistance',
+      strength: 'moderate',
+      source: 'combined',
+      timeframe: 'daily',
+      description: '区间上沿',
+    });
+  }
 
   // 形态总体分析描述
   const patternDesc = patternAnalysis.description;
@@ -596,6 +683,11 @@ function integrateAnalyses(
           )}`
         : '暂无日线关键位信号',
       vvSummary: `${combinedVolumeVolatilityAnalysis.volatilityAnalysis.volatilityAnalysis.volatilityTrend}；资金流向 ${combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.adTrend}`,
+      structureSummary: `结构: ${structureDaily.trend === 'up' ? '上涨' : structureDaily.trend === 'down' ? '下跌' : '震荡'}${structureDaily.lastEvent ? `，事件: ${structureDaily.lastEvent.type}` : ''}`,
+      supplyDemandSummary: sdDir > 0 ? '靠近需求区，偏多' : sdDir < 0 ? '靠近供应区，偏空' : '附近无明确供需区',
+      rangeSummary: rangeDaily.range
+        ? `区间 ${rangeDaily.range.low.toFixed(2)}-${rangeDaily.range.high.toFixed(2)}${rangeDaily.breakout ? `，突破${rangeDaily.breakout.direction === 'up' ? '向上' : '向下'} 质量 ${rangeDaily.breakout.qualityScore}/100` : '，未突破'}`
+        : '未检测到稳定区间',
     },
   };
 }
@@ -644,6 +736,10 @@ function mergeNearbyKeyLevels(
   }
 
   return mergedKeyLevels;
+}
+
+function mid(a: number, b: number) {
+  return (a + b) / 2;
 }
 
 /**
@@ -779,11 +875,18 @@ async function executeIntegratedAnalysis(
 
     // 整合分析结果
     console.log('正在整合分析结果...');
+    const structureDaily = analyzeStructure(dailyData, 'daily');
+    const sdDaily = analyzeSupplyDemand(symbol, dailyData, 'daily');
+    const rangeDaily = analyzeRange(symbol, dailyData, 'daily');
+
     const integratedResult = integrateAnalyses(
       combinedVolumeVolatilityAnalysis,
       multiTimeframeChipDistResult,
       patternAnalysisResult,
       bbsrAnalysis,
+      structureDaily,
+      sdDaily,
+      rangeDaily,
       customWeights
     );
 

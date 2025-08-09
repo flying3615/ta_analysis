@@ -92,3 +92,19 @@ export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnal
 export { multiTimeBBSRAnalysis, main as runBBSRAnalysis } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
 export { formatAndPrintSrAnalysis } from './analysis/sr/formatSrAnalysis.js';
 export { srConfig, updateSrConfig } from './analysis/sr/srConfig.js';
+
+// Market Structure
+export { runMultiTimeStructure } from './analysis/structure/multiTimeStructure.js';
+export { formatAndPrintStructureResult } from './analysis/structure/formatStructure.js';
+export { structureConfig, updateStructureConfig } from './analysis/structure/structureConfig.js';
+
+// Supply/Demand Zones
+export { analyzeSupplyDemand } from './analysis/supplyDemand/sdDetector.js';
+export { formatAndPrintSupplyDemand } from './analysis/supplyDemand/formatSupplyDemand.js';
+export { sdConfig, updateSdConfig } from './analysis/supplyDemand/sdConfig.js';
+export { multiTimeSupplyDemand } from './analysis/supplyDemand/multiTimeSupplyDemand.js';
+
+// Range & Breakout
+export { analyzeRange } from './analysis/range/rangeDetector.js';
+export { formatAndPrintRange } from './analysis/range/formatRange.js';
+export { rangeConfig, updateRangeConfig } from './analysis/range/rangeConfig.js';
