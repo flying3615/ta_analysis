@@ -10,19 +10,7 @@ import {
 
 const symbol = process.argv[2] || 'COIN';
 
-async function runChip(symbol, { weeklyData, dailyData, hourlyData }) {
-  const result = multiTimeFrameChipDistAnalysis(
-    symbol,
-    'daily',
-    ['weekly', 'daily', '1hour'],
-    { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
-    weeklyData,
-    dailyData,
-    hourlyData
-  );
-
-  formatAndPrintChipAnalysis(result, symbol);
-}
+// 统一在 main 中调用三种分析，保持风格一致
 
 async function main() {
   // 统一一次性获取数据，并在三个分析中复用
@@ -41,7 +29,16 @@ async function main() {
   ]);
 
   console.log(`\n======== ${symbol} - 筹码分析 ========`);
-  await runChip(symbol, { weeklyData, dailyData, hourlyData });
+  const chipResult = multiTimeFrameChipDistAnalysis(
+    symbol,
+    'daily',
+    ['weekly', 'daily', '1hour'],
+    { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
+  formatAndPrintChipAnalysis(chipResult, symbol);
 
   console.log(`\n======== ${symbol} - 蜡烛形态分析 ========`);
   const candlePlan = await multiTimeCandleAnalysis(symbol, dailyData, weeklyData);
