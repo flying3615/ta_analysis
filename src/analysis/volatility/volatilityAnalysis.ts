@@ -7,6 +7,7 @@ import {
   calculateStandardDeviation,
 } from '../../util/taUtil.js';
 import { AccumulationDistributionResult } from '../../util/accumulationDistribution.js';
+import { volatilityConfig } from './volatilityConfig.js';
 import {
   CombinedVVAnalysisResult,
   executeVolumeAnalysis,
@@ -44,12 +45,21 @@ function determineVolatilityRegime(
   atrPercent: number,
   bbWidth: number
 ): 'low' | 'medium' | 'high' | 'extreme' {
-  // 根据ATR百分比和布林带宽度综合判断
-  if (atrPercent < 1.2 && bbWidth < 3.0) {
+  // 根据配置阈值判断
+  if (
+    atrPercent < volatilityConfig.regime.low.atrPercentMax &&
+    bbWidth < volatilityConfig.regime.low.bbWidthMax
+  ) {
     return 'low';
-  } else if (atrPercent < 2.5 && bbWidth < 6.0) {
+  } else if (
+    atrPercent < volatilityConfig.regime.medium.atrPercentMax &&
+    bbWidth < volatilityConfig.regime.medium.bbWidthMax
+  ) {
     return 'medium';
-  } else if (atrPercent < 4.0 || bbWidth < 10.0) {
+  } else if (
+    atrPercent < volatilityConfig.regime.high.atrPercentMax ||
+    bbWidth < volatilityConfig.regime.high.bbWidthMax
+  ) {
     return 'high';
   } else {
     return 'extreme';
@@ -106,15 +116,15 @@ function determineVolatilityTrend(
   const fiveDayChange = ((currentATR - fiveDaysAgoATR) / fiveDaysAgoATR) * 100;
 
   // 根据波动率变化和布林带宽度判断趋势
-  if (fiveDayChange > 15) {
+  if (fiveDayChange > volatilityConfig.trend.fiveDayIncreaseFast) {
     return '波动率快速增加，可能预示着价格剧烈波动';
-  } else if (fiveDayChange > 5) {
+  } else if (fiveDayChange > volatilityConfig.trend.fiveDayIncrease) {
     return '波动率稳步增加，市场不确定性上升';
-  } else if (fiveDayChange < -15) {
+  } else if (fiveDayChange < volatilityConfig.trend.fiveDayDecreaseFast) {
     return '波动率显著下降，价格可能进入盘整阶段';
-  } else if (fiveDayChange < -5) {
+  } else if (fiveDayChange < volatilityConfig.trend.fiveDayDecrease) {
     return '波动率逐渐下降，市场趋于稳定';
-  } else if (bbWidth < 3) {
+  } else if (bbWidth < volatilityConfig.trend.bbSqueezeWidth) {
     return '波动率处于极低水平，可能即将爆发行情';
   } else {
     return '波动率保持相对稳定';
@@ -125,8 +135,8 @@ function determineVolatilityTrend(
  * 计算夏普比率
  */
 function calculateSharpeRatio(returns: number[]): number {
-  const annualFactor = 252; // 假设是日收益率，年化因子为252个交易日
-  const riskFreeRate = 0.04 / annualFactor; // 假设无风险利率为4%
+  const annualFactor = volatilityConfig.sharpe.annualFactor; // 交易日
+  const riskFreeRate = volatilityConfig.sharpe.riskFreeRateAnnual / annualFactor;
 
   // 计算超额收益
   const excessReturns = returns.map(r => r - riskFreeRate);
@@ -190,7 +200,7 @@ function calculatePercentile(value: number, array: number[]): number {
  */
 export function calculateVolatilityAnalysis(
   data: Candle[],
-  lookbackPeriod: number = 15
+  lookbackPeriod: number = volatilityConfig.periods.defaultLookback
 ): VolatilityAnalysisResult {
   if (data.length < Math.max(lookbackPeriod, 30)) {
     throw new Error('数据不足以进行有效的波动率分析');
@@ -209,14 +219,16 @@ export function calculateVolatilityAnalysis(
     calculateStandardDeviation(recentReturns) * Math.sqrt(252); // 年化
 
   // 2. 计算布林带宽度 (相对于价格的百分比)
-  const sma20 = calculateSMA(closes, 20);
-  const stdDev = calculateStandardDeviation(closes.slice(-20));
+  const sma20 = calculateSMA(closes, volatilityConfig.periods.smaShort);
+  const stdDev = calculateStandardDeviation(
+    closes.slice(-volatilityConfig.periods.smaShort)
+  );
   const upperBand = sma20 + stdDev * 2;
   const lowerBand = sma20 - stdDev * 2;
   const bollingerBandWidth = ((upperBand - lowerBand) / sma20) * 100;
 
   // 3. 计算平均真实范围 (ATR)
-  const atr = calculateATR(data, 14);
+  const atr = calculateATR(data, volatilityConfig.periods.atr);
   const atrPercent = (atr / closes[closes.length - 1]) * 100;
 
   // 4. 判断波动率状态
@@ -226,12 +238,12 @@ export function calculateVolatilityAnalysis(
   );
 
   // 5. 波动率趋势判断
-  const atrValues = calculateATRSeries(data, 14);
+  const atrValues = calculateATRSeries(data, volatilityConfig.periods.atr);
   const isVolatilityIncreasing =
     atrValues[atrValues.length - 1] > atrValues[atrValues.length - 5];
 
   // 6. 计算波动率百分位
-  const longTermATRs = calculateATRSeries(data, 14);
+  const longTermATRs = calculateATRSeries(data, volatilityConfig.periods.atr);
   const volatilityPercentile = calculatePercentile(
     atrValues[atrValues.length - 1],
     longTermATRs
@@ -361,7 +373,7 @@ function calculatePricePosition(
   // relativeToYearLow实际表示距离低点的百分比距离，接近0表示接近低点
   const relativeToYearLow = 100 - positionInRange;
 
-  // 计算200日均线（如果有足够数据）
+  // 计算长期均线（如果有足够数据）
   let relativeTo200MA = 0;
   if (data.length >= 200) {
     const ma200 = calculateSMA(closes, 200);

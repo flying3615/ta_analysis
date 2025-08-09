@@ -54,6 +54,7 @@ export {
   EnhancedVolatilityAnalysisResult,
   executeEnhancedCombinedAnalysis,
 } from './analysis/volatility/volatilityAnalysis.js';
+export { volatilityConfig, updateVolatilityConfig } from './analysis/volatility/volatilityConfig.js';
 
 // 新增的积累分布线分析导出
 export {

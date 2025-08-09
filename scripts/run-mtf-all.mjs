@@ -10,6 +10,7 @@ import {
   formatAndPrintSrAnalysis,
   enhancePatternWithTrendReversal,
   formatAndPrintEnhancedPatternAnalysis,
+  executeEnhancedCombinedAnalysis,
 } from '../dist/index.js';
 
 const symbol = process.argv[2] || 'COIN';
@@ -62,6 +63,12 @@ async function main() {
   console.log(`\n======== ${symbol} - 趋势逆转(小时→日线) 分析 ========`);
   const enhanced = enhancePatternWithTrendReversal(patternResult, weeklyData, dailyData, hourlyData);
   formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, weeklyData, dailyData, hourlyData);
+
+  console.log(`\n======== ${symbol} - 波动率/量能 分析 ========`);
+  const vv = executeEnhancedCombinedAnalysis(hourlyData);
+  console.log(vv.volatilityAnalysisReason);
+  console.log(vv.volumeAnalysisReason);
+  console.log(vv.combinedAnalysisSummary);
 }
 
 main().catch(err => {
