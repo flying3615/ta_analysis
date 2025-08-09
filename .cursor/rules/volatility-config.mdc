@@ -1,0 +1,19 @@
+---
+globs: src/analysis/volatility/*.ts
+---
+# 波动率配置规范
+
+- 配置文件: [volatilityConfig.ts](mdc:src/analysis/volatility/volatilityConfig.ts)
+- 导出与更新: `volatilityConfig`, `updateVolatilityConfig(partial)`
+- 覆盖范围:
+  - `periods`: ATR/短期SMA/长期SMA周期与默认回溯期
+  - `sharpe`: 年化因子、无风险利率
+  - `regime`: 低/中/高波动状态的 ATR% 与布林带宽阈值
+  - `trend`: 近5日ATR增减阈值、布林带挤压宽度
+  - `transition`: 过渡窗口长度、ATR变化映射系数
+  - `pricePosition`: 年度天数样本
+  - `bottomSignal`: 底部信号分项阈值、权重与强判阈值
+- 使用约定:
+  - 逻辑类文件仅读取配置，不写入。
+  - 通过主导出 [src/index.ts](mdc:src/index.ts) 暴露配置；Runner 层可动态覆盖。
+  - 导入使用 ESM `.js` 后缀。

@@ -1,0 +1,18 @@
+---
+globs: src/analysis/trendReversal/*.ts
+---
+# 趋势逆转配置规范
+
+- 配置文件: [trendReversalConfig.ts](mdc:src/analysis/trendReversal/trendReversalConfig.ts)
+- 导出与更新: `trendReversalConfig`, `updateTrendReversalConfig(partial)`
+- 覆盖范围:
+  - `trendDirection`: 均线周期与斜率点数
+  - `movingAverage`: 小/大周期均线默认值
+  - `window`: 计算窗口（理想/下限）
+  - `stopLossOffsetPercent`: 多/空止损偏移
+  - `targets`: 目标价扩展系数
+  - `strengthThreshold`: 强/中等阈值与默认判定阈值
+- 使用约定:
+  - 增强器 `enhancePatternWithTrendReversal` 仅读取配置。
+  - 在 Runner 或外部应用中可用 `updateTrendReversalConfig` 动态调整。
+  - 导入使用 ESM `.js` 后缀。

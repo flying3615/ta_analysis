@@ -1,0 +1,14 @@
+---
+globs: src/analysis/IntegratedAnalysis.ts,src/analysis/FormatTradePlan.ts
+---
+# 综合整合分析器规范
+
+- 组成：筹码(Chip) + 形态(基于 chart patterns) + 趋势逆转增强(小时→日) + BBSR(支撑/阻力+近期K线信号) + 波动率/量能(Volatility/Volume)。
+- 数据：周/日/小时数据一次性获取后在各子分析中复用。
+- 形态与逆转：先调用 [analyzeMultiTimeframePatterns.ts](mdc:src/analysis/patterns/analyzeMultiTimeframePatterns.ts) 获取基础结果，再用 `enhancePatternWithTrendReversal(base, weekly,daily,hourly)` 增强，避免重复计算与重复输出。
+- 波动率/量能：调用 `executeEnhancedCombinedAnalysis(hourlyData)` 获取 `combinedAnalysisSummary` 与两个 reason 字符串。
+- 统一输出：最终字符串由 [FormatTradePlan.ts](mdc:src/analysis/FormatTradePlan.ts) 生成，中文分节，先“综合信号”，再“各子分析关键建议”，然后策略/风险/关键位/时间周期/波动率量能/趋势逆转/理由/无效条件/警告/构成。
+
+扩展点：
+- 新增子分析时，先在 IntegratedAnalysis 中计算结果与一行摘要，合并到 `tradePlan.summaries`，并在 `FormatTradePlan` 中追加显示条目。
+- 保持 `IntegratedTradePlan` 的结构扩展友好：新字段添加到 `summaries` 内部或新增独立 section。
