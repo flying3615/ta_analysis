@@ -1,0 +1,13 @@
+---
+globs: *.ts
+---
+# 配置集中管理与更新
+
+- 所有阈值、权重与时间窗口禁止硬编码：
+  - 筹码: [chipConfig.ts](mdc:src/analysis/chip/chipConfig.ts)
+  - 蜡烛: [candleConfig.ts](mdc:src/analysis/candle/candleConfig.ts)
+  - 形态: [patternConfig.ts](mdc:src/analysis/patterns/patternConfig.ts)
+  - BBSR: [srConfig.ts](mdc:src/analysis/sr/srConfig.ts)
+- 通过 `updateXxxConfig(partial)` 进行外部覆盖；内部逻辑仅读取配置。
+- 时间周期权重与阈值应定义在配置对象中，并提供合理默认值。
+- 新增模块需同步在 [src/index.ts](mdc:src/index.ts) 暴露配置与更新函数。

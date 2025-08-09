@@ -1,0 +1,11 @@
+---
+globs: src/index.ts
+---
+# 主导出规范
+
+- 新增模块完成后，需在 [src/index.ts](mdc:src/index.ts) 统一导出：
+  - 分析入口（编排函数与 main 运行函数）
+  - 格式化函数
+  - 配置对象与 `updateXxxConfig`
+- 避免默认导出；使用命名导出。
+- 导出路径使用 ESM `.js` 后缀（匹配 TS 编译结果）。

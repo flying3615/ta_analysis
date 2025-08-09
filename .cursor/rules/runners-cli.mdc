@@ -1,0 +1,11 @@
+---
+globs: scripts/*.mjs
+---
+# Runner/CLI 规范
+
+- 从编译产物导入：统一使用 [dist/index.js](mdc:dist/index.js) 暴露的入口方法。
+- 数据获取只调用一次：
+  - 使用 `Promise.all` 并发拉取 `weekly/daily/1hour` 数据，存入变量复用。
+  - 示例: [run-mtf-all.mjs](mdc:scripts/run-mtf-all.mjs)
+- 段落输出顺序与标题一致：筹码 → 蜡烛 → 形态（→ BBSR 按需加入），中文标题一致。
+- 若仅单模块 Runner，也保持相同标题风格，便于比对。

@@ -1,0 +1,13 @@
+---
+globs: *.ts,*.tsx
+---
+# 类型与导入约定（TypeScript）
+
+- 使用 `import type { ... } from '...'` 引入纯类型，避免运行时依赖。
+- 类型集中：
+  - 筹码: [chipTypes.ts](mdc:src/analysis/chip/chipTypes.ts), [chipMultiTypes.ts](mdc:src/analysis/chip/chipMultiTypes.ts)
+  - BBSR: [srTypes.ts](mdc:src/analysis/sr/srTypes.ts)
+  - 通用: [src/types.ts](mdc:src/types.ts)
+- 不从实现文件导入类型（避免循环依赖）。
+- 对 `Object.values(...)` 参与数值计算的场景，需显式断言为 `number[]` 或使用安全的归约策略，避免 `unknown` 算术。
+- 导出面向外部使用的类型时，通过 [src/index.ts](mdc:src/index.ts) 统一转出。

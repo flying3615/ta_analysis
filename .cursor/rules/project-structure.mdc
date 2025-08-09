@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+---
+# 项目结构与主入口
+
+- 主导出入口: [src/index.ts](mdc:src/index.ts)
+  - 统一导出分析模块与配置：Chip、Candle、Patterns、BBSR、Volatility、Util。
+  - 确保新增模块完成后在主导出注册，使用命名导出保持 tree-shaking 友好。
+
+- 分析模块目录: [src/analysis](mdc:src/analysis)
+  - 筹码: [chip](mdc:src/analysis/chip)
+    - 类型集中: [chipTypes.ts](mdc:src/analysis/chip/chipTypes.ts), [chipMultiTypes.ts](mdc:src/analysis/chip/chipMultiTypes.ts)
+    - 配置: [chipConfig.ts](mdc:src/analysis/chip/chipConfig.ts)
+    - 组合逻辑: [combineTimeframes.ts](mdc:src/analysis/chip/combineTimeframes.ts)
+    - 格式化: [formatChipAnalysis.ts](mdc:src/analysis/chip/formatChipAnalysis.ts)
+  - 蜡烛: [candle](mdc:src/analysis/candle)
+    - 配置: [candleConfig.ts](mdc:src/analysis/candle/candleConfig.ts)
+    - 工具: [candleUtils.ts](mdc:src/analysis/candle/candleUtils.ts)
+    - 格式化: [formatCandleAnalysis.ts](mdc:src/analysis/candle/formatCandleAnalysis.ts)
+  - 形态: [patterns](mdc:src/analysis/patterns)
+    - 配置: [patternConfig.ts](mdc:src/analysis/patterns/patternConfig.ts)
+  - 支撑阻力(BBSR): [sr](mdc:src/analysis/sr)
+    - 配置: [srConfig.ts](mdc:src/analysis/sr/srConfig.ts)
+    - 类型: [srTypes.ts](mdc:src/analysis/sr/srTypes.ts)
+    - 格式化: [formatSrAnalysis.ts](mdc:src/analysis/sr/formatSrAnalysis.ts)
+
+- 工具与通用类型: [src/util](mdc:src/util), [src/types.ts](mdc:src/types.ts)
+- 运行脚本: [scripts](mdc:scripts)
+  - 综合: [run-mtf-all.mjs](mdc:scripts/run-mtf-all.mjs)
+  - 各单项: [run-mtf-chip.mjs](mdc:scripts/run-mtf-chip.mjs), [run-mtf-candle.mjs](mdc:scripts/run-mtf-candle.mjs), [run-mtf-patterns.mjs](mdc:scripts/run-mtf-patterns.mjs)
+
+规范要点:
+- 新增功能需拆分为: 类型/配置/核心逻辑/格式化/编排(main) 五层。
+- 导入使用 ESM 路径后缀 `.js`（由 TS 编译产物对应）。

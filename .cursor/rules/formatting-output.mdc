@@ -1,0 +1,15 @@
+---
+globs: src/analysis/**/format*.ts
+---
+# 统一输出风格（中文）
+
+- 标题风格：
+  - 一级段落: `===== 标题 =====`
+  - 小节: `----- 小节 -----`
+- 输出全部采用中文说明；数值保留两位小数（如适用）。
+- 格式化职责与核心分析解耦：仅接收结构化结果并打印。
+- 现有格式化入口：
+  - 筹码: [formatChipAnalysis.ts](mdc:src/analysis/chip/formatChipAnalysis.ts)
+  - 蜡烛: [formatCandleAnalysis.ts](mdc:src/analysis/candle/formatCandleAnalysis.ts)
+  - BBSR: [formatSrAnalysis.ts](mdc:src/analysis/sr/formatSrAnalysis.ts)
+- 如需输出 JSON，仅作为补充，不替代人类可读输出。
