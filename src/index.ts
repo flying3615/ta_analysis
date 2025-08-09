@@ -13,6 +13,8 @@ export {
   analyzeMultiTimeframePatterns,
   formatAndPrintPatternAnalysis,
 } from './analysis/patterns/analyzeMultiTimeframePatterns.js';
+// 暴露形态分析配置，便于外部项目按需调整
+export { patternConfig, updatePatternConfig } from './analysis/patterns/patternConfig.js';
 
 export {
   determineTrendDirection,
@@ -72,3 +74,6 @@ export {
   getStockDataForTimeframe,
   getFullExchangeNameBySymbol,
 } from './util/util.js';
+
+// 暴露蜡烛图配置，便于外部按需调整
+export { candleConfig, updateCandleConfig } from './analysis/candle/candleConfig.js';

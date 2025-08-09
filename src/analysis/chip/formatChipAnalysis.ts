@@ -7,7 +7,7 @@ export function formatAndPrintChipAnalysis(
   analysisResult: MultiTimeframeAnalysisResult,
   symbol: string = ''
 ): void {
-  console.log(`\n${symbol ? '===== ' + symbol + ' ' : '====='}筹码分析综合结果 =====`);
+  console.log(`\n${symbol ? '===== ' + symbol + ' ' : '====='}多时间周期分析（筹码） =====`);
   console.log(`股票代码: ${analysisResult.symbol}`);
   console.log(`当前价格: ${analysisResult.currentPrice.toFixed(2)}`);
 
@@ -34,7 +34,7 @@ export function formatAndPrintChipAnalysis(
     console.log(`${timeframeName}| ${buyStrength}    | ${shortStrength}    | ${diffStrength}    | ${recommendation}`);
   });
 
-  console.log('\n===== 交易建议 =====');
+  console.log('\n----- 交易建议 -----');
   console.log(`\n----- 主要建议 -----`);
   console.log(analysisResult.combinedRecommendation);
   console.log(analysisResult.recommendationComment);

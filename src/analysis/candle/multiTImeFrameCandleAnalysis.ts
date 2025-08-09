@@ -3,6 +3,7 @@ import { Candle } from '../../types.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
 import { candleConfig } from './candleConfig.js';
 import { computeRiskReward } from './candleUtils.js';
+import { formatAndPrintCandleAnalysis } from './formatCandleAnalysis.js';
 
 /**
  * 生成多个股票的交易计划，并以JSON格式返回
@@ -155,9 +156,13 @@ export const main = async (symbol: string) => {
   // 将交易计划保存为JSON字符串
   const tradePlansJson = JSON.stringify(tradePlans, null, 2);
 
-  // 打印JSON字符串
-  console.log('\n===== 交易计划JSON =====');
-  console.log(tradePlansJson);
+  // 打印人类可读格式
+  try {
+    formatAndPrintCandleAnalysis(JSON.parse(tradePlansJson) as any, symbol);
+  } catch {
+    console.log('\n===== 交易计划JSON =====');
+    console.log(tradePlansJson);
+  }
 
   return tradePlansJson;
 };

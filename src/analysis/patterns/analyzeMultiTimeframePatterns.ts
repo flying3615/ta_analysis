@@ -1,5 +1,6 @@
 import { Candle } from '../../types.js';
 import { getStockDataForTimeframe, toEDTString } from '../../util/util.js';
+import { patternConfig } from './patternConfig.js';
 
 import _ from 'lodash';
 import { findHeadAndShoulders } from './findHeadAndShoulders.js';
@@ -154,8 +155,8 @@ interface ComprehensivePatternAnalysis {
  */
 function detectPeaksAndValleys(
   data: Candle[],
-  windowSize: number = 5,
-  recentEmphasis: boolean = true
+  windowSize: number = patternConfig.windows.peakWindow,
+  recentEmphasis: boolean = patternConfig.windows.recentEmphasis
 ): PeakValley[] {
   const result: PeakValley[] = [];
 
@@ -226,7 +227,9 @@ function detectPeaksAndValleys(
       const distance = lastIndex - point.index;
 
       // 添加一个重要性属性，随着距离增加而降低
-      (point as any).importance = Math.exp(-0.01 * distance);
+      (point as any).importance = Math.exp(
+        -patternConfig.weights.peakImportanceDecay * distance
+      );
     }
 
     // 按照新的重要性属性排序
@@ -298,8 +301,8 @@ function analyzeAllPatterns(
   rawData: Candle[],
   timeframe: 'weekly' | 'daily' | '1hour'
 ): AnalyzeMultiTimeframePatterns {
-  // 仅保留最近100根K线
-  const data = rawData.slice(-100);
+  // 仅保留最近N根K线
+  const data = rawData.slice(-patternConfig.windows.sliceRecentCount);
 
   // 检测所有峰谷点
   const peaksValleys = detectPeaksAndValleys(data);
@@ -325,7 +328,9 @@ function analyzeAllPatterns(
   // 调整形态重要性和可靠性
   allPatterns.forEach(pattern => {
     const distanceFromCurrent = lastIndex - pattern.component.endIndex;
-    const distanceFactor = Math.exp(-0.05 * distanceFromCurrent);
+    const distanceFactor = Math.exp(
+      -patternConfig.weights.patternDistanceDecay * distanceFromCurrent
+    );
 
     // 根据形态类型和时间周期的匹配度调整可靠性
     const timeframeMatchFactor = calculateTimeframeMatchFactor(
@@ -343,14 +348,14 @@ function analyzeAllPatterns(
 
     // 为已确认突破的形态和正在形成的形态调整权重
     if (pattern.status === PatternStatus.Confirmed) {
-      pattern.significance *= 1.5;
+      pattern.significance *= patternConfig.weights.confirmedBoost;
     }
     if (
       pattern.status === PatternStatus.Forming &&
       pattern.breakoutExpected &&
-      distanceFromCurrent < 5
+      distanceFromCurrent < patternConfig.windows.formingNearDistance
     ) {
-      pattern.significance *= 1.3;
+      pattern.significance *= patternConfig.weights.formingBoost;
     }
   });
 
@@ -424,7 +429,10 @@ function calculateTimeframeMatchFactor(
 function calculatePatternSignal(
   patterns: PatternAnalysisResult[]
 ): PatternDirection {
-  const recentPatternCount = Math.min(10, patterns.length);
+  const recentPatternCount = Math.min(
+    patternConfig.signals.recentCount,
+    patterns.length
+  );
   const recentPatterns = patterns.slice(0, recentPatternCount);
 
   let bullishScore = 0;
@@ -439,9 +447,9 @@ function calculatePatternSignal(
     }
   }
 
-  if (bullishScore > bearishScore * 1.5) {
+  if (bullishScore > bearishScore * patternConfig.signals.strongRatio) {
     return PatternDirection.Bullish;
-  } else if (bearishScore > bullishScore * 1.5) {
+  } else if (bearishScore > bullishScore * patternConfig.signals.strongRatio) {
     return PatternDirection.Bearish;
   } else if (bullishScore > bearishScore) {
     return PatternDirection.Bullish;
@@ -464,11 +472,7 @@ function combinePatternAnalyses(
   let neutralCount = 0;
 
   // 对不同时间周期的信号进行加权
-  const timeframeWeights = {
-    weekly: 1.5,
-    daily: 1.3,
-    '1hour': 1.0,
-  };
+  const timeframeWeights = patternConfig.weights.timeframe;
 
   for (const analysis of timeframeAnalyses) {
     const weight = timeframeWeights[analysis.timeframe] || 1.0;
@@ -484,9 +488,9 @@ function combinePatternAnalyses(
 
   let combinedSignal: PatternDirection;
 
-  if (bullishCount > bearishCount * 1.2) {
+  if (bullishCount > bearishCount * patternConfig.signals.combineBiasRatio) {
     combinedSignal = PatternDirection.Bullish;
-  } else if (bearishCount > bullishCount * 1.2) {
+  } else if (bearishCount > bullishCount * patternConfig.signals.combineBiasRatio) {
     combinedSignal = PatternDirection.Bearish;
   } else {
     combinedSignal = PatternDirection.Neutral;
@@ -494,8 +498,8 @@ function combinePatternAnalyses(
 
   // 计算信号强度
   let signalStrength = 50; // 中性起点
-  const totalWeight = Object.values(timeframeWeights).reduce(
-    (sum, weight) => sum + weight,
+  const totalWeight = (Object.values(timeframeWeights) as number[]).reduce(
+    (sum: number, weight: number) => sum + weight,
     0
   );
 
@@ -546,8 +550,8 @@ function combinePatternAnalyses(
   for (const analysis of timeframeAnalyses) {
     if (analysis.dominantPattern) {
       const pattern = analysis.dominantPattern;
-      if (pattern.reliability > 70) {
-        signalStrength += 10;
+      if (pattern.reliability > patternConfig.signals.reliabilityBoostThreshold) {
+        signalStrength += patternConfig.signals.recencyMediumBonus;
       }
 
       if (pattern.component) {
@@ -557,10 +561,10 @@ function combinePatternAnalyses(
 
         const recencyRatio = patternEndIndex / estimatedDataLength;
 
-        if (recencyRatio > 0.8) {
-          signalStrength += 10;
-        } else if (recencyRatio > 0.6) {
-          signalStrength += 5;
+        if (recencyRatio > patternConfig.signals.recencyHighThreshold) {
+          signalStrength += patternConfig.signals.recencyHighBonus;
+        } else if (recencyRatio > patternConfig.signals.recencyMediumThreshold) {
+          signalStrength += patternConfig.signals.recencyMediumBonus;
         }
       }
     }
