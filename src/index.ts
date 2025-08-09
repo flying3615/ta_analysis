@@ -77,3 +77,9 @@ export {
 
 // 暴露蜡烛图配置，便于外部按需调整
 export { candleConfig, updateCandleConfig } from './analysis/candle/candleConfig.js';
+// 暴露蜡烛图多时间框架分析入口与格式化
+export {
+  multiTimeCandleAnalysis,
+  main as runMultiTimeframeCandleAnalysis,
+} from './analysis/candle/multiTImeFrameCandleAnalysis.js';
+export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnalysis.js';

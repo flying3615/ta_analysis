@@ -4,6 +4,7 @@ import {
   formatAndPrintPatternAnalysis,
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
+  runMultiTimeframeCandleAnalysis,
 } from '../dist/index.js';
 
 const symbol = process.argv[2] || 'COIN';
@@ -55,6 +56,9 @@ async function runChip(symbol) {
 async function main() {
   console.log(`\n======== ${symbol} - 筹码分析 ========`);
   await runChip(symbol);
+
+  console.log(`\n======== ${symbol} - 蜡烛形态分析 ========`);
+  await runMultiTimeframeCandleAnalysis(symbol);
 
   console.log(`\n======== ${symbol} - 形态分析 ========`);
   const today = new Date();
