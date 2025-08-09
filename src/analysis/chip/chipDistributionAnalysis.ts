@@ -9,108 +9,12 @@ import {
   identifyChipPeaks,
   identifyKeyPriceLevels,
 } from '../../util/chipUtils.js';
-import {
-  calculateTechnicalIndicators,
-  findPriceAtCumulativePercentage,
-} from '../../util/taUtil.js';
+import { calculateTechnicalIndicators, findPriceAtCumulativePercentage } from '../../util/taUtil.js';
+import type { ChipDistribution, ChipPeak, ChipAnalysisResult } from './chipTypes.js';
+import { scoreBuySignal, scoreShortSignal, buildOverallSuggestion, enrichCommentsWithPeaks } from './chipSignals.js';
+import { printChipAnalysis } from './chipFormat.js';
 
-export interface ChipDistribution {
-  price: number;
-  weight: number;
-  percentage: number;
-}
-
-export interface ChipPeak {
-  price: number;
-  weight: number;
-  percentage: number;
-  peakType: 'major' | 'secondary' | 'minor';
-  distance: number; // 距离当前价格的百分比
-}
-
-// 扩展接口，添加卖空相关分析结果
-export interface ChipAnalysisResult {
-  // 基本信息
-  symbol: string;
-  currentPrice: number;
-
-  // 筹码集中度分析
-  concentrationIndex: number; // 筹码集中指数(0-100)，越高表示越集中
-  concentrationLevel: string; // 集中度评级: 高/中/低
-  isEasyToPush: boolean; // 是否易于拉升
-  concentrationComment: string; // 集中度详细分析
-  entropyValue: number; // 筹码分布熵值
-  bullBearRatio: number; // 多空比率
-
-  // 上方套牢盘分析
-  trappedChipsAbove: number; // 上方套牢筹码百分比
-  resistanceLevel: string; // 阻力评级: 强/中/弱
-  isPushingDifficult: boolean; // 拉升是否困难
-  resistanceComment: string; // 阻力详细分析
-
-  // 获利盘分析
-  profitChipsPercentage: number; // 获利筹码百分比
-  profitTakingRisk: string; // 获利风险评级: 高/中/低
-  isRiskyToChase: boolean; // 追高是否有风险
-  profitComment: string; // 获利盘详细分析
-
-  // 筹码峰分析 - 新增
-  chipPeaks: ChipPeak[]; // 所有筹码峰
-  majorPeaks: ChipPeak[]; // 主要筹码峰
-  peakDistribution: string; // 峰值分布特征：左侧集中/右侧集中/双峰/多峰分散
-  peakComment: string; // 筹码峰详细分析
-
-  // 筹码形态分析 - 新增
-  chipShape: string; // 筹码形态：左高右低/左低右高/均衡分布/双峰分布
-  shapeBuySignal: boolean; // 形态是否有利于买入
-  shapeComment: string; // 形态详细分析
-
-  // 成交量萎缩与活跃度分析 - 新增
-  recentVolumeChange: number; // 近期成交量变化(%)
-  volumeTrend: string; // 成交量趋势：放大/萎缩/稳定
-  volumeComment: string; // 成交量详细分析
-
-  // 筹码移动趋势分析 - 新增
-  chipMigrationDirection: string; // 筹码移动方向：向上/向下/横盘
-  chipMigrationSpeed: number; // 筹码移动速度(0-100)
-  migrationComment: string; // 筹码移动详细分析
-
-  // 买入建议 - 新增
-  buySignalStrength: number; // 买入信号强度(0-100)
-  buyRecommendation: string; // 买入建议：强烈推荐/谨慎推荐/不推荐/等待观察
-  buyComment: string; // 买入详细分析与建议
-
-  // 卖空建议 - 新增
-  shortSignalStrength: number; // 卖空信号强度(0-100)
-  shortRecommendation: string; // 卖空建议：强烈推荐/谨慎推荐/不推荐/等待观察
-  shortComment: string; // 卖空详细分析与建议
-  isShortRecommended: boolean; // 是否推荐卖空
-
-  // 综合交易建议 - 新增
-  overallRecommendation: string; // 综合建议：做多/做空/观望
-  positionSuggestion: string; // 仓位建议：重仓/中等仓位/轻仓/空仓观望
-  overallComment: string; // 综合建议详细分析
-
-  // 附加信息
-  majorSupportLevels: number[]; // 主要支撑位
-  majorResistanceLevels: number[]; // 主要阻力位
-  giniCoefficient: number; // 基尼系数(衡量不平等程度)
-
-  // 关键价格水平分析 - 新增
-  strongSupportLevels: number[]; // 强支撑位
-  moderateSupportLevels: number[]; // 中等支撑位
-  strongResistanceLevels: number[]; // 强阻力位
-  moderateResistanceLevels: number[]; // 中等阻力位
-
-  // 累积分布函数 - 新增
-  cumulativeDistribution: { price: number; cumulativePercentage: number }[];
-
-  // 技术指标整合 - 新增
-  macdSignal: string; // MACD信号：金叉/死叉/背离/中性
-  rsiLevel: number; // RSI水平(0-100)
-  bollingerStatus: string; // 布林带状态：上轨/中轨/下轨/突破上轨/突破下轨
-  technicalSignal: string; // 综合技术信号：强买入/买入/中性/卖出/强卖出
-}
+// 类型已迁移到 chipTypes.ts
 
 /**
  * 计算筹码分布
@@ -616,235 +520,51 @@ export function analyzeChipDistribution(
   // 9. 计算技术指标
   const technicalIndicators = calculateTechnicalIndicators(data);
 
-  // 10. 生成买入建议
-  // 买入信号强度评分系统 (0-100)
-  let buyScore = 0;
+  // 10. 生成买入建议（使用评分模块）
+  const buy = scoreBuySignal({
+    concentrationLevel,
+    bullBearRatio,
+    resistanceLevel,
+    shapeBuySignal: peakAnalysis.shapeBuySignal,
+    volumeTrend: volumeAnalysis.volumeTrend,
+    profitChipsPercentage,
+    chipMigrationDirection: migrationAnalysis.chipMigrationDirection,
+    technicalSignal: technicalIndicators.technicalSignal,
+  });
+  let buyScore = buy.score;
+  let buyRecommendation = buy.recommendation;
+  let buyComment = buy.comment;
 
-  // 集中度评分
-  if (concentrationLevel === '高') buyScore += 15;
-  else if (concentrationLevel === '中') buyScore += 10;
-  else buyScore += 5;
+  // 11. 新增：生成卖空建议（使用评分模块）
+  const short = scoreShortSignal({
+    concentrationLevel,
+    bullBearRatio,
+    resistanceLevel,
+    shapeBuySignal: peakAnalysis.shapeBuySignal,
+    volumeTrend: volumeAnalysis.volumeTrend,
+    profitChipsPercentage,
+    chipMigrationDirection: migrationAnalysis.chipMigrationDirection,
+    technicalSignal: technicalIndicators.technicalSignal,
+    rsiLevel: technicalIndicators.rsiLevel,
+  });
+  let shortScore = short.score;
+  let shortRecommendation = short.recommendation;
+  let shortComment = short.comment;
+  const isShortRecommended = short.isShort;
 
-  // 多空比率评分
-  if (bullBearRatio > 3)
-    buyScore += 15; // 多方占优势
-  else if (bullBearRatio > 1.5) buyScore += 10;
-  else if (bullBearRatio < 0.5) buyScore -= 10; // 空方占优势
+  // 12. 制定综合交易建议（使用评分模块）
+  const overall = buildOverallSuggestion(buyScore, shortScore);
+  let overallRecommendation = overall.overallRecommendation;
+  let positionSuggestion = overall.positionSuggestion;
+  let overallComment = overall.overallComment;
 
-  // 上方阻力评分
-  if (resistanceLevel === '弱') buyScore += 20;
-  else if (resistanceLevel === '中') buyScore += 10;
-  else buyScore += 0;
-
-  // 筹码形态评分
-  if (peakAnalysis.shapeBuySignal) buyScore += 20;
-
-  // 成交量评分
-  if (volumeAnalysis.volumeTrend === '明显萎缩')
-    buyScore += 10; // 底部特征
-  else if (volumeAnalysis.volumeTrend === '小幅放大')
-    buyScore += 15; // 开始上涨特征
-  else if (
-    volumeAnalysis.volumeTrend === '明显放大' &&
-    profitChipsPercentage < 30
-  )
-    buyScore += 20; // 突破初期
-  else if (
-    volumeAnalysis.volumeTrend === '明显放大' &&
-    profitChipsPercentage > 60
-  )
-    buyScore -= 10; // 可能是顶部
-
-  // 筹码迁移评分
-  if (migrationAnalysis.chipMigrationDirection === '明显向上') buyScore += 10;
-  else if (migrationAnalysis.chipMigrationDirection === '缓慢向上')
-    buyScore += 15;
-  else if (migrationAnalysis.chipMigrationDirection === '明显向下')
-    buyScore -= 10;
-
-  // 技术指标评分
-  if (technicalIndicators.technicalSignal === '强买入') buyScore += 15;
-  else if (technicalIndicators.technicalSignal === '买入') buyScore += 10;
-  else if (technicalIndicators.technicalSignal === '强卖出') buyScore -= 15;
-  else if (technicalIndicators.technicalSignal === '卖出') buyScore -= 10;
-
-  // 确保分数在0-100范围内
-  buyScore = Math.max(0, Math.min(100, buyScore));
-
-  // 确定买入建议
-  let buyRecommendation = '';
-  let buyComment = '';
-
-  if (buyScore >= 75) {
-    buyRecommendation = '强烈推荐买入';
-    buyComment =
-      '多项指标显示极佳的买入时机，筹码结构优良，上方阻力小，技术指标支持。';
-  } else if (buyScore >= 60) {
-    buyRecommendation = '建议买入';
-    buyComment = '筹码结构良好，具备上涨条件，可以考虑分批买入。';
-  } else if (buyScore >= 40) {
-    buyRecommendation = '谨慎买入';
-    buyComment =
-      '筹码结构一般，存在一定风险，建议小仓位试探性买入或等待更好时机。';
-  } else if (buyScore >= 25) {
-    buyRecommendation = '暂时观望';
-    buyComment = '当前筹码结构不佳，建议等待筹码结构改善后再考虑买入。';
-  } else {
-    buyRecommendation = '不建议买入';
-    buyComment =
-      '多项指标显示不适合当前买入，筹码结构差，上方阻力大，技术指标不支持。';
-  }
-
-  // 11. 新增：生成卖空建议
-  // 卖空信号强度评分系统 (0-100)
-  let shortScore = 0;
-
-  // 集中度评分 - 集中度高的情况下卖空风险较大
-  if (concentrationLevel === '高') shortScore -= 15;
-  else if (concentrationLevel === '中') shortScore -= 5;
-  else shortScore += 10; // 分散的筹码结构利于卖空
-
-  // 多空比率评分
-  if (bullBearRatio < 0.5)
-    shortScore += 20; // 空方明显占优势
-  else if (bullBearRatio < 1)
-    shortScore += 10; // 空方略占优势
-  else if (bullBearRatio > 3) shortScore -= 20; // 多方明显占优势
-
-  // 上方阻力评分 - 阻力越大卖空越有利
-  if (resistanceLevel === '强') shortScore += 20;
-  else if (resistanceLevel === '中') shortScore += 10;
-  else shortScore -= 5;
-
-  // 筹码形态评分
-  if (!peakAnalysis.shapeBuySignal) shortScore += 15; // 不利于买入的形态有利于卖空
-
-  // 成交量评分
-  if (volumeAnalysis.volumeTrend === '明显放大' && profitChipsPercentage > 60)
-    shortScore += 15; // 可能是顶部放量
-  else if (volumeAnalysis.volumeTrend === '明显萎缩' && isRiskyToChase)
-    shortScore += 10; // 高位萎缩
-  else if (
-    volumeAnalysis.volumeTrend === '明显放大' &&
-    profitChipsPercentage < 30
-  )
-    shortScore -= 15; // 可能是底部放量，不利于卖空
-
-  // 筹码迁移评分
-  if (migrationAnalysis.chipMigrationDirection === '明显向下') shortScore += 20;
-  else if (migrationAnalysis.chipMigrationDirection === '缓慢向下')
-    shortScore += 10;
-  else if (migrationAnalysis.chipMigrationDirection === '明显向上')
-    shortScore -= 20;
-  else if (migrationAnalysis.chipMigrationDirection === '缓慢向上')
-    shortScore -= 10;
-
-  // 技术指标评分
-  if (technicalIndicators.technicalSignal === '强卖出') shortScore += 20;
-  else if (technicalIndicators.technicalSignal === '卖出') shortScore += 15;
-  else if (technicalIndicators.technicalSignal === '强买入') shortScore -= 20;
-  else if (technicalIndicators.technicalSignal === '买入') shortScore -= 15;
-
-  // RSI指标对卖空的特殊评分
-  if (technicalIndicators.rsiLevel > 70)
-    shortScore += 15; // 超买区域
-  else if (technicalIndicators.rsiLevel < 30) shortScore -= 15; // 超卖区域
-
-  // 确保分数在0-100范围内
-  shortScore = Math.max(0, Math.min(100, shortScore));
-
-  // 确定卖空建议
-  let shortRecommendation = '';
-  let shortComment = '';
-  let isShortRecommended = false;
-
-  if (shortScore >= 75) {
-    shortRecommendation = '强烈推荐卖空';
-    shortComment =
-      '多项指标显示极佳的卖空时机，筹码结构处于高位，下方支撑弱，技术指标支持做空。';
-    isShortRecommended = true;
-  } else if (shortScore >= 60) {
-    shortRecommendation = '建议卖空';
-    shortComment = '筹码结构偏弱，具备下跌条件，可以考虑分批做空。';
-    isShortRecommended = true;
-  } else if (shortScore >= 40) {
-    shortRecommendation = '谨慎卖空';
-    shortComment =
-      '存在一定做空机会，但风险较高，建议小仓位试探性做空或等待更好时机。';
-    isShortRecommended = false;
-  } else if (shortScore >= 25) {
-    shortRecommendation = '暂不建议卖空';
-    shortComment = '当前做空条件不成熟，建议等待更好的做空机会。';
-    isShortRecommended = false;
-  } else {
-    shortRecommendation = '不建议卖空';
-    shortComment =
-      '多项指标显示当前不适合做空，筹码结构健康，支撑较强，技术指标不支持做空。';
-    isShortRecommended = false;
-  }
-
-  // 12. 制定综合交易建议
-  let overallRecommendation = '';
-  let positionSuggestion = '';
-  let overallComment = '';
-
-  // 综合多空信号对比
-  if (buyScore > 60 && shortScore < 30) {
-    overallRecommendation = '做多';
-    if (buyScore > 80) {
-      positionSuggestion = '重仓做多';
-      overallComment = '强烈看多信号，建议积极入场做多，可适当加大仓位。';
-    } else {
-      positionSuggestion = '中等仓位做多';
-      overallComment = '看多信号明确，建议择机入场做多，控制好仓位。';
-    }
-  } else if (shortScore > 60 && buyScore < 30) {
-    overallRecommendation = '做空';
-    if (shortScore > 80) {
-      positionSuggestion = '重仓做空';
-      overallComment = '强烈看空信号，建议积极入场做空，可适当加大仓位。';
-    } else {
-      positionSuggestion = '中等仓位做空';
-      overallComment = '看空信号明确，建议择机入场做空，控制好仓位。';
-    }
-  } else if (
-    buyScore >= 40 &&
-    buyScore <= 60 &&
-    shortScore >= 40 &&
-    shortScore <= 60
-  ) {
-    overallRecommendation = '观望';
-    positionSuggestion = '空仓观望';
-    overallComment = '多空信号交织，市场方向不明确，建议暂时观望等待明确信号。';
-  } else if (buyScore > shortScore + 15) {
-    overallRecommendation = '偏多';
-    positionSuggestion = '轻仓做多';
-    overallComment = '偏向看多，但信号不够强烈，建议小仓位试探性做多。';
-  } else if (shortScore > buyScore + 15) {
-    overallRecommendation = '偏空';
-    positionSuggestion = '轻仓做空';
-    overallComment = '偏向看空，但信号不够强烈，建议小仓位试探性做空。';
-  } else {
-    overallRecommendation = '中性';
-    positionSuggestion = '观望为主';
-    overallComment =
-      '多空双方力量相当，市场处于震荡状态，建议以观望为主，等待明确信号出现。';
-  }
-
-  // 增加一些具体细节到建议中
-  if (majorPeaks.length > 0) {
-    const nearestPeak = majorPeaks.reduce((nearest, peak) =>
-      Math.abs(peak.distance) < Math.abs(nearest.distance) ? peak : nearest
-    );
-
-    if (nearestPeak.price < currentPrice && nearestPeak.distance > -10) {
-      buyComment += ` 当前价格刚刚突破主要筹码峰(${nearestPeak.price.toFixed(2)})，可能是突破买点。`;
-      shortComment += ` 注意当前价格刚刚突破主要筹码峰(${nearestPeak.price.toFixed(2)})，做空存在风险。`;
-    } else if (nearestPeak.price > currentPrice && nearestPeak.distance < 10) {
-      buyComment += ` 注意上方${nearestPeak.distance.toFixed(2)}%处存在主要筹码峰(${nearestPeak.price.toFixed(2)})，可能形成阻力。`;
-      shortComment += ` 上方${nearestPeak.distance.toFixed(2)}%处存在主要筹码峰(${nearestPeak.price.toFixed(2)})，可作为做空参考点位。`;
-    }
-  }
+  // 增加一些具体细节到建议中（使用封装方法）
+  ({ buyComment, shortComment } = enrichCommentsWithPeaks(
+    majorPeaks,
+    currentPrice,
+    buyComment,
+    shortComment
+  ));
 
   // 在处理强支撑位的地方保存 closestSupport
   let closestSupport = null;

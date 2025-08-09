@@ -37,6 +37,9 @@ export {
   formatAndPrintChipAnalysis,
 } from './analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
 
+// 暴露筹码配置，便于外部项目调整阈值与权重
+export { chipConfig, updateChipConfig } from './analysis/chip/chipConfig.js';
+
 export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
 
 // 新增的波动率分析导出
