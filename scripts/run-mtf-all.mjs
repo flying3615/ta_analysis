@@ -6,6 +6,8 @@ import {
   formatAndPrintChipAnalysis,
   multiTimeCandleAnalysis,
   formatAndPrintCandleAnalysis,
+  multiTimeBBSRAnalysis,
+  formatAndPrintSrAnalysis,
 } from '../dist/index.js';
 
 const symbol = process.argv[2] || 'COIN';
@@ -51,6 +53,10 @@ async function main() {
     hourlyData,
   );
   formatAndPrintPatternAnalysis(patternResult, symbol);
+
+  console.log(`\n======== ${symbol} - 支撑/阻力(BBSR) 分析 ========`);
+  const bbsrResult = multiTimeBBSRAnalysis(symbol, dailyData, weeklyData);
+  formatAndPrintSrAnalysis(bbsrResult, symbol);
 }
 
 main().catch(err => {
