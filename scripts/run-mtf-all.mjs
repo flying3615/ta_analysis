@@ -4,42 +4,13 @@ import {
   formatAndPrintPatternAnalysis,
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
-  runMultiTimeframeCandleAnalysis,
+  multiTimeCandleAnalysis,
+  formatAndPrintCandleAnalysis,
 } from '../dist/index.js';
 
 const symbol = process.argv[2] || 'COIN';
 
-async function runChip(symbol) {
-  const today = new Date();
-
-  const startDateWeekly = new Date(today);
-  startDateWeekly.setDate(today.getDate() - 365);
-
-  const startDateDaily = new Date(today);
-  startDateDaily.setDate(today.getDate() - 90);
-
-  const startDateHourly = new Date(today);
-  startDateHourly.setDate(today.getDate() - 30);
-
-  const weeklyData = await getStockDataForTimeframe(
-    symbol,
-    startDateWeekly,
-    today,
-    'weekly'
-  );
-  const dailyData = await getStockDataForTimeframe(
-    symbol,
-    startDateDaily,
-    today,
-    'daily'
-  );
-  const hourlyData = await getStockDataForTimeframe(
-    symbol,
-    startDateHourly,
-    today,
-    '1hour'
-  );
-
+async function runChip(symbol, { weeklyData, dailyData, hourlyData }) {
   const result = multiTimeFrameChipDistAnalysis(
     symbol,
     'daily',
@@ -54,25 +25,29 @@ async function runChip(symbol) {
 }
 
 async function main() {
-  console.log(`\n======== ${symbol} - 筹码分析 ========`);
-  await runChip(symbol);
-
-  console.log(`\n======== ${symbol} - 蜡烛形态分析 ========`);
-  await runMultiTimeframeCandleAnalysis(symbol);
-
-  console.log(`\n======== ${symbol} - 形态分析 ========`);
+  // 统一一次性获取数据，并在三个分析中复用
   const today = new Date();
-  const startDateWeekly = new Date();
+  const startDateWeekly = new Date(today);
   startDateWeekly.setDate(today.getDate() - 365);
-  const startDateDaily = new Date();
+  const startDateDaily = new Date(today);
   startDateDaily.setDate(today.getDate() - 120);
-  const startDateHourly = new Date();
+  const startDateHourly = new Date(today);
   startDateHourly.setDate(today.getDate() - 30);
+
   const [weeklyData, dailyData, hourlyData] = await Promise.all([
     getStockDataForTimeframe(symbol, startDateWeekly, today, 'weekly'),
     getStockDataForTimeframe(symbol, startDateDaily, today, 'daily'),
     getStockDataForTimeframe(symbol, startDateHourly, today, '1hour'),
   ]);
+
+  console.log(`\n======== ${symbol} - 筹码分析 ========`);
+  await runChip(symbol, { weeklyData, dailyData, hourlyData });
+
+  console.log(`\n======== ${symbol} - 蜡烛形态分析 ========`);
+  const candlePlan = await multiTimeCandleAnalysis(symbol, dailyData, weeklyData);
+  formatAndPrintCandleAnalysis(candlePlan, symbol);
+
+  console.log(`\n======== ${symbol} - 形态分析 ========`);
   const patternResult = analyzeMultiTimeframePatterns(
     weeklyData,
     dailyData,
