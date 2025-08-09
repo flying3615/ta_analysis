@@ -1,4 +1,3 @@
-import { MultiTimeFrameBBSRAnalysisResult } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
 import { TrendReversalSignal } from './analysis/trendReversal/multiTimeFrameTrendReversal.js';
 import { PatternDirection } from './analysis/patterns/analyzeMultiTimeframePatterns.js';
 
@@ -49,6 +48,12 @@ export interface SupportResistanceResult {
   symbol: string;
   dynamicSupport: number | null;
   dynamicResistance: number | null;
+}
+
+// 多时间框架BBSR分析结果
+export interface MultiTimeFrameBBSRAnalysisResult {
+  weeklyBBSRResult?: SRSignal;
+  dailyBBSRResult?: SRSignal;
 }
 
 export interface TradeRecord {

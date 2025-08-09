@@ -83,3 +83,8 @@ export {
   main as runMultiTimeframeCandleAnalysis,
 } from './analysis/candle/multiTImeFrameCandleAnalysis.js';
 export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnalysis.js';
+
+// 暴露BBSR（支撑阻力 + 近期多空）分析能力与配置
+export { multiTimeBBSRAnalysis, main as runBBSRAnalysis } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
+export { formatAndPrintSrAnalysis } from './analysis/sr/formatSrAnalysis.js';
+export { srConfig, updateSrConfig } from './analysis/sr/srConfig.js';

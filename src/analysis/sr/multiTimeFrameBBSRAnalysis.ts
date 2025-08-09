@@ -1,57 +1,34 @@
+import type { Candle } from '../../types.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
-import { Candle, SRSignal } from '../../types.js';
 import { checkBullBearNearSupportResistance } from './BullBearOnSupportResistAnalysis.js';
-
-export interface MultiTimeFrameBBSRAnalysisResult {
-  weeklyBBSRResult?: SRSignal;
-  dailyBBSRResult?: SRSignal;
-}
+import type { MultiTimeFrameBBSRAnalysisResult } from './srTypes.js';
+import { formatAndPrintSrAnalysis } from './formatSrAnalysis.js';
 
 const multiTimeBBSRAnalysis = (
   symbol: string,
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
 ): MultiTimeFrameBBSRAnalysisResult => {
-  const weeklyBBSRResult = checkBullBearNearSupportResistance(
-    symbol,
-    weeklyCandles
-  );
-  const dailyBBSRResult = checkBullBearNearSupportResistance(
-    symbol,
-    dailyCandles
-  );
+  const weeklyBBSRResult = checkBullBearNearSupportResistance(symbol, weeklyCandles);
+  const dailyBBSRResult = checkBullBearNearSupportResistance(symbol, dailyCandles);
 
-  return {
-    weeklyBBSRResult,
-    dailyBBSRResult,
-  };
+  return { weeklyBBSRResult, dailyBBSRResult };
 };
 
 export { multiTimeBBSRAnalysis };
 
-const main = async (symbol: string) => {
+export const main = async (symbol: string) => {
   const today = new Date();
-  console.log('正在获取数据与分析筹码分布...');
-
   const startDate = new Date();
-  startDate.setDate(today.getDate() - 365); // 获取一年的数据
+  startDate.setDate(today.getDate() - 365);
 
-  const weeklyData = await getStockDataForTimeframe(
-    symbol,
-    startDate,
-    today,
-    'weekly'
-  ); // 获取周线数据
+  const [weeklyData, dailyData] = await Promise.all([
+    getStockDataForTimeframe(symbol, startDate, today, 'weekly'),
+    getStockDataForTimeframe(symbol, startDate, today, 'daily'),
+  ]);
 
-  const dailyData = await getStockDataForTimeframe(
-    symbol,
-    startDate,
-    today,
-    'daily'
-  ); // 获取日线数据
-
-  const result = await multiTimeBBSRAnalysis(symbol, dailyData, weeklyData);
-  console.log(result);
+  const result = multiTimeBBSRAnalysis(symbol, dailyData, weeklyData);
+  formatAndPrintSrAnalysis(result, symbol);
+  return result;
 };
 
-// main('MSTR');

@@ -1,6 +1,7 @@
 import { Candle, SRSignal, SupportResistanceResult } from '../../types.js';
 import { checkBullOrBearRecently } from '../candle/BullOrBearDetector.js';
 import { PatternDirection } from '../patterns/analyzeMultiTimeframePatterns.js';
+import { srConfig } from './srConfig.js';
 
 /**
  * 查找枢轴点
@@ -179,10 +180,7 @@ function checkBullBearNearSupportResistance(
   symbol: string,
   candles: Candle[]
 ): SRSignal {
-  const srResult = detectSupportResistance(symbol, candles, {
-    leftBars: 10,
-    rightBars: 10,
-  });
+  const srResult = detectSupportResistance(symbol, candles, srConfig.pivot);
 
   const { bullishPatternsDetails, bearishPatternsDetails } =
     checkBullOrBearRecently(candles);
@@ -237,7 +235,7 @@ function checkBullBearNearSupportResistance(
   if (recentSignalType === PatternDirection.Bullish && recentSignalDate) {
     // 检查是否在支撑位附近 (当前价格在支撑位 ±10% 范围内)
     const dynamicSupport = srResult.dynamicSupport;
-    if (dynamicSupport && isNearLevel(currentPrice, dynamicSupport, 0.1)) {
+    if (dynamicSupport && isNearLevel(currentPrice, dynamicSupport, srConfig.nearThresholdPercent)) {
       return {
         symbol,
         SRLevel: dynamicSupport,
@@ -252,10 +250,7 @@ function checkBullBearNearSupportResistance(
   if (recentSignalType === PatternDirection.Bearish && recentSignalDate) {
     // 检查是否在阻力位附近 (当前价格在阻力位 ±10% 范围内)
     const dynamicResistance = srResult.dynamicResistance;
-    if (
-      dynamicResistance &&
-      isNearLevel(currentPrice, dynamicResistance, 0.1)
-    ) {
+    if (dynamicResistance && isNearLevel(currentPrice, dynamicResistance, srConfig.nearThresholdPercent)) {
       return {
         symbol: symbol,
         SRLevel: dynamicResistance,

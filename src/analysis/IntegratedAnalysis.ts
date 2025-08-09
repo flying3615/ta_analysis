@@ -9,10 +9,8 @@ import {
   multiTimeframePatternAnalysis,
 } from './trendReversal/multiTimeFrameTrendReversal.js';
 import { getStockDataForTimeframe } from '../util/util.js';
-import {
-  multiTimeBBSRAnalysis,
-  MultiTimeFrameBBSRAnalysisResult,
-} from './sr/multiTimeFrameBBSRAnalysis.js';
+import { multiTimeBBSRAnalysis } from './sr/multiTimeFrameBBSRAnalysis.js';
+import type { MultiTimeFrameBBSRAnalysisResult } from '../types.js';
 import { CombinedVVAnalysisResult } from './volatility/volumeVolatilityAnalysis.js';
 import {
   determineEntryStrategy,
