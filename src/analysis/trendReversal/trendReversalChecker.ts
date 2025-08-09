@@ -4,6 +4,7 @@ import {
 } from './multiTimeFrameTrendReversal.js';
 import { Candle } from '../../types.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
+import { trendReversalConfig } from './trendReversalConfig.js';
 
 /**
  * 检查股票是否出现小时对日线的顺势逆转信号 - 增强版，含目标价位
@@ -16,7 +17,7 @@ import { getStockDataForTimeframe } from '../../util/util.js';
 function hasTrendReversalSignal(
   hourlyData: Candle[],
   dailyData: Candle[],
-  signalThreshold: number = 40
+  signalThreshold: number = trendReversalConfig.strengthThreshold.defaultSignalThreshold
 ): {
   hasSignal: boolean;
   primarySignal?: TrendReversalSignal;

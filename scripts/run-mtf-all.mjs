@@ -8,6 +8,8 @@ import {
   formatAndPrintCandleAnalysis,
   multiTimeBBSRAnalysis,
   formatAndPrintSrAnalysis,
+  enhancePatternWithTrendReversal,
+  formatAndPrintEnhancedPatternAnalysis,
 } from '../dist/index.js';
 
 const symbol = process.argv[2] || 'COIN';
@@ -46,17 +48,20 @@ async function main() {
   const candlePlan = await multiTimeCandleAnalysis(symbol, dailyData, weeklyData);
   formatAndPrintCandleAnalysis(candlePlan, symbol);
 
-  console.log(`\n======== ${symbol} - 形态分析 ========`);
+  // 预先计算形态分析结果，供增强器复用（不单独打印，避免重复输出）
   const patternResult = analyzeMultiTimeframePatterns(
     weeklyData,
     dailyData,
     hourlyData,
   );
-  formatAndPrintPatternAnalysis(patternResult, symbol);
 
   console.log(`\n======== ${symbol} - 支撑/阻力(BBSR) 分析 ========`);
   const bbsrResult = multiTimeBBSRAnalysis(symbol, dailyData, weeklyData);
   formatAndPrintSrAnalysis(bbsrResult, symbol);
+
+  console.log(`\n======== ${symbol} - 趋势逆转(小时→日线) 分析 ========`);
+  const enhanced = enhancePatternWithTrendReversal(patternResult, weeklyData, dailyData, hourlyData);
+  formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, weeklyData, dailyData, hourlyData);
 }
 
 main().catch(err => {

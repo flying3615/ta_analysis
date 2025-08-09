@@ -21,9 +21,12 @@ export {
   detectTrendReversal,
   TrendReversalSignal,
   EnhancedPatternAnalysis,
+  enhancePatternWithTrendReversal,
   multiTimeframePatternAnalysis,
   printoutMultiTimeFramePatternAnalysis,
 } from './analysis/trendReversal/multiTimeFrameTrendReversal.js';
+export { trendReversalConfig, updateTrendReversalConfig } from './analysis/trendReversal/trendReversalConfig.js';
+export { formatAndPrintEnhancedPatternAnalysis } from './analysis/trendReversal/formatReport.js';
 
 export {
   hasTrendReversalSignal,

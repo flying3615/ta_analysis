@@ -5,6 +5,7 @@ import {
 import { Candle } from '../../types.js';
 import { formatAndPrintEnhancedPatternAnalysis } from './formatReport.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
+import { trendReversalConfig } from './trendReversalConfig.js';
 
 /**
  * 趋势逆转信号接口
@@ -186,8 +187,8 @@ export function calculateMeasuredMoveTargets(
  */
 function determineTrendDirection(
   data: Candle[],
-  period: number = 20,
-  minSlopePoints: number = 5
+  period: number = trendReversalConfig.trendDirection.defaultPeriod,
+  minSlopePoints: number = trendReversalConfig.trendDirection.minSlopePoints
 ): number {
   // 动态调整周期，确保能够处理较小数据集
   const effectivePeriod = Math.min(period, Math.floor(data.length / 2));
@@ -264,8 +265,8 @@ function detectTrendReversal(
   largeTimeframeData: Candle[],
   smallTimeframe: string,
   largeTimeframe: string,
-  smallPeriod: number = 15,
-  largePeriod: number = 60
+  smallPeriod: number = trendReversalConfig.movingAverage.smallPeriod,
+  largePeriod: number = trendReversalConfig.movingAverage.largePeriod
 ): TrendReversalSignal {
   // 确定大趋势方向
   const largerTrendDirection = determineTrendDirection(
@@ -287,11 +288,11 @@ function detectTrendReversal(
   // 定义时间窗口大小，根据数据量动态调整
   const availableDataPoints = smallTimeframeData.length;
   // 每个窗口最少需要5根K线，否则可能无法可靠判断趋势
-  const minWindowSize = 5;
+  const minWindowSize = trendReversalConfig.window.minWindowSize;
 
   // 根据可用数据量确定窗口大小
   const windowSize = Math.min(
-    20, // 理想的窗口大小
+    trendReversalConfig.window.idealWindowSize,
     Math.max(minWindowSize, Math.floor(availableDataPoints / 4))
   );
 
@@ -338,12 +339,12 @@ function detectTrendReversal(
     // 做多
     // 找最近的低点作为止损
     const recentLow = Math.min(...recentCandles.map(c => c.low));
-    stopLoss = recentLow * 0.99; // 低点下方1%
+    stopLoss = recentLow * (1 - trendReversalConfig.stopLossOffsetPercent.long);
   } else {
     // 做空
     // 找最近的高点作为止损
     const recentHigh = Math.max(...recentCandles.map(c => c.high));
-    stopLoss = recentHigh * 1.01; // 高点上方1%
+    stopLoss = recentHigh * (1 + trendReversalConfig.stopLossOffsetPercent.short);
   }
 
   // 计算逆转强度 (0-100)
@@ -432,19 +433,13 @@ function detectTrendReversal(
  * 增强版多时间周期价格形态分析，仅包含小时对日线的顺势逆转检测
  * 适用于波段交易，专注于中短期价格变动
  */
-function multiTimeframePatternAnalysis(
+function enhancePatternWithTrendReversal(
+  baseAnalysis: ComprehensivePatternAnalysis,
   weeklyData: Candle[],
   dailyData: Candle[],
   hourlyData: Candle[]
 ): EnhancedPatternAnalysis {
-  // 获取基础的价格形态分析
-  const baseAnalysis = analyzeMultiTimeframePatterns(
-    weeklyData,
-    dailyData,
-    hourlyData
-  );
-
-  // 只检查小时对比日线的逆转 (移除了日线对周线的检测)
+  // 只检查小时对比日线的逆转
   const hourlyVsDailyReversal = detectTrendReversal(
     hourlyData,
     dailyData,
@@ -452,35 +447,47 @@ function multiTimeframePatternAnalysis(
     'daily'
   );
 
-  // 收集逆转信号 (现在只有小时对日线一种可能)
   const reversalSignals = [hourlyVsDailyReversal].filter(
     signal => signal.isReversal
   );
 
-  // 设置主要逆转信号
   let primaryReversalSignal: TrendReversalSignal | undefined;
+  const enhanced: EnhancedPatternAnalysis = {
+    ...baseAnalysis,
+    reversalSignals: [],
+  } as EnhancedPatternAnalysis;
 
   if (reversalSignals.length > 0) {
     primaryReversalSignal = reversalSignals[0];
-
-    // 修改原有分析的描述和信号强度
     const directionText = primaryReversalSignal.direction > 0 ? '做多' : '做空';
-    baseAnalysis.description = `${baseAnalysis.description} 检测到小时周期趋势逆转并顺从日线周期趋势，提供${directionText}交易机会，逆转强度: ${primaryReversalSignal.reversalStrength.toFixed(1)}/100。`;
+    enhanced.description = `${baseAnalysis.description} 检测到小时周期趋势逆转并顺从日线周期趋势，提供${directionText}交易机会，逆转强度: ${primaryReversalSignal.reversalStrength.toFixed(1)}/100。`;
 
-    // 如果逆转信号较强，增强整体信号强度
     if (primaryReversalSignal.reversalStrength > 50) {
-      baseAnalysis.signalStrength = Math.min(
-        100,
-        baseAnalysis.signalStrength + 10
-      );
+      enhanced.signalStrength = Math.min(100, baseAnalysis.signalStrength + 10);
     }
   }
 
-  return {
-    ...baseAnalysis,
-    reversalSignals,
-    primaryReversalSignal,
-  };
+  enhanced.reversalSignals = reversalSignals;
+  enhanced.primaryReversalSignal = primaryReversalSignal;
+  return enhanced;
+}
+
+function multiTimeframePatternAnalysis(
+  weeklyData: Candle[],
+  dailyData: Candle[],
+  hourlyData: Candle[]
+): EnhancedPatternAnalysis {
+  const baseAnalysis = analyzeMultiTimeframePatterns(
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
+  return enhancePatternWithTrendReversal(
+    baseAnalysis,
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
 }
 
 /**
@@ -548,6 +555,7 @@ export {
   detectTrendReversal,
   TrendReversalSignal,
   EnhancedPatternAnalysis,
+  enhancePatternWithTrendReversal,
   multiTimeframePatternAnalysis,
   printoutMultiTimeFramePatternAnalysis,
 };

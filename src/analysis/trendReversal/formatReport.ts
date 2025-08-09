@@ -7,6 +7,7 @@ import {
   formatAndPrintPatternAnalysis,
   PatternDirection,
 } from '../patterns/analyzeMultiTimeframePatterns.js';
+import { trendReversalConfig } from './trendReversalConfig.js';
 
 /**
  * 获取趋势方向描述文本
@@ -57,9 +58,9 @@ export function formatAndPrintEnhancedPatternAnalysis(
     }
 
     // 判断是否适合当前介入
-    if (signal.reversalStrength > 70) {
+    if (signal.reversalStrength > trendReversalConfig.strengthThreshold.strong) {
       console.log('\n✓ 强烈逆转信号，非常适合当前介入');
-    } else if (signal.reversalStrength > 50) {
+    } else if (signal.reversalStrength > trendReversalConfig.strengthThreshold.medium) {
       console.log('\n✓ 中等强度逆转信号，适合当前介入');
     } else {
       console.log('\n⚠ 弱逆转信号，建议等待更多确认后再介入');
