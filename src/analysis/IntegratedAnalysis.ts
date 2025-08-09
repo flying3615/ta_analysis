@@ -585,6 +585,18 @@ function integrateAnalyses(
     invalidationConditions,
     keyObservations,
     trendReversalInfo,
+    summaries: {
+      chipSummary: `筹码差值 ${Math.abs(
+        chipAnalysis.combinedBuySignalStrength - chipAnalysis.combinedShortSignalStrength
+      )}/100，主要周期 ${primaryTimeframe}，一致性：${timeframeConsistency}`,
+      patternSummary: patternDesc,
+      bbsrSummary: bbsrAnalysis.dailyBBSRResult
+        ? `日线${bbsrAnalysis.dailyBBSRResult.signal.patternNames.join(',')}，强度 ${bbsrAnalysis.dailyBBSRResult.strength}/100 @ ${bbsrAnalysis.dailyBBSRResult.SRLevel.toFixed(
+            2
+          )}`
+        : '暂无日线关键位信号',
+      vvSummary: `${combinedVolumeVolatilityAnalysis.volatilityAnalysis.volatilityAnalysis.volatilityTrend}；资金流向 ${combinedVolumeVolatilityAnalysis.volumeAnalysis.volumeAnalysis.adTrend}`,
+    },
   };
 }
 

@@ -331,6 +331,14 @@ export interface IntegratedTradePlan {
 
   // 综合自筹码和形态分析的关键点
   keyObservations: string[];
+
+  // 各子分析关键建议摘要
+  summaries: {
+    chipSummary: string;
+    patternSummary: string;
+    bbsrSummary: string;
+    vvSummary: string;
+  };
 }
 
 export interface VolatilityAnalysisResult {

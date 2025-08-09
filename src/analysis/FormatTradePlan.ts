@@ -52,6 +52,15 @@ function formatTradePlanOutput(
     false
   );
 
+  // 2.1 各子分析关键建议摘要
+  output += buildSection(
+    '各子分析关键建议',
+    `筹码: ${tradePlan.summaries.chipSummary}\n` +
+      `形态/逆转: ${tradePlan.summaries.patternSummary}\n` +
+      `支阻位: ${tradePlan.summaries.bbsrSummary}\n` +
+      `波动率/量能: ${tradePlan.summaries.vvSummary}\n`
+  );
+
   // 3. 入场策略 - 合并为简洁格式
   const criticalConditions = tradePlan.entryStrategy.entryConditions
     .filter(c => c.priority === 'critical' || c.priority === 'important')
