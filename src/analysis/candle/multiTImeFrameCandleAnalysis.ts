@@ -1,6 +1,8 @@
 import { generateTradeRecommendation } from './BullOrBearDetector.js';
 import { Candle } from '../../types.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
+import { candleConfig } from './candleConfig.js';
+import { computeRiskReward } from './candleUtils.js';
 
 /**
  * 生成多个股票的交易计划，并以JSON格式返回
@@ -24,39 +26,24 @@ const multiTimeCandleAnalysis = async (
       weeklyCandles
     );
 
-    // 计算潜在收益与风险
+    // 计算潜在收益与风险（封装为工具函数）
     let potentialProfit = 0;
     let potentialLoss = 0;
     let riskRewardRatio = 0;
     let profitPercentage = 0;
     let lossPercentage = 0;
 
-    if (
-      recommendation.hasSignal &&
-      recommendation.direction === 'bullish' &&
-      recommendation.takeProfitPrice &&
-      recommendation.stopLossPrice
-    ) {
-      potentialProfit =
-        recommendation.takeProfitPrice - recommendation.currentPrice;
-      potentialLoss =
-        recommendation.currentPrice - recommendation.stopLossPrice;
-      riskRewardRatio = potentialProfit / potentialLoss;
-      profitPercentage = (potentialProfit / recommendation.currentPrice) * 100;
-      lossPercentage = (potentialLoss / recommendation.currentPrice) * 100;
-    } else if (
-      recommendation.hasSignal &&
-      recommendation.direction === 'bearish' &&
-      recommendation.takeProfitPrice &&
-      recommendation.stopLossPrice
-    ) {
-      potentialProfit =
-        recommendation.currentPrice - recommendation.takeProfitPrice;
-      potentialLoss =
-        recommendation.stopLossPrice - recommendation.currentPrice;
-      riskRewardRatio = potentialProfit / potentialLoss;
-      profitPercentage = (potentialProfit / recommendation.currentPrice) * 100;
-      lossPercentage = (potentialLoss / recommendation.currentPrice) * 100;
+    if (recommendation.hasSignal && recommendation.takeProfitPrice && recommendation.stopLossPrice) {
+      const rr = computeRiskReward({
+        direction: recommendation.direction === 'bullish' ? 'bullish' : 'bearish',
+        currentPrice: recommendation.currentPrice,
+        stopLossPrice: recommendation.stopLossPrice,
+      });
+      potentialProfit = rr.potentialProfit;
+      potentialLoss = rr.potentialLoss;
+      riskRewardRatio = rr.riskRewardRatio;
+      profitPercentage = rr.profitPercentage;
+      lossPercentage = rr.lossPercentage;
     }
 
     // 格式化日线和周线形态数据
