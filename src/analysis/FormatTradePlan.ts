@@ -109,7 +109,8 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
       `波动率/量能: ${tradePlan.summaries.vvSummary}\n` +
       `结构: ${tradePlan.summaries.structureSummary || '—'}\n` +
       `供需区: ${tradePlan.summaries.supplyDemandSummary || '—'}\n` +
-      `区间/突破: ${tradePlan.summaries.rangeSummary || '—'}\n`
+      `区间/突破: ${tradePlan.summaries.rangeSummary || '—'}\n` +
+      `趋势线/通道: ${tradePlan.summaries.trendlineSummary || '—'}\n`
   );
 
   // 3. 入场策略 - 合并为简洁格式
@@ -290,7 +291,10 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n` +
       `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n` +
       `量价分析: ${(tradePlan.volumeAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.volumeAnalysisContribution.toFixed(1)}/100)\n` +
-      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n`
+      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n` +
+      (typeof tradePlan.trendlineAnalysisContribution === 'number'
+        ? `（附加）趋势线/通道: (得分:${tradePlan.trendlineAnalysisContribution.toFixed(1)}/100)\n`
+        : '')
   );
 
   // 结尾分隔线

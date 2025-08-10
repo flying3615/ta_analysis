@@ -249,6 +249,7 @@ export interface IntegratedTradePlan {
   structureAnalysisContribution?: number; // 0-100 (归一化显示)
   supplyDemandAnalysisContribution?: number; // 0-100 (归一化显示)
   rangeAnalysisContribution?: number; // 0-100 (归一化显示)
+  trendlineAnalysisContribution?: number; // 0-100 (归一化显示)
 
   // 总体分析描述
   summary: string;
@@ -347,6 +348,7 @@ export interface IntegratedTradePlan {
     structureSummary?: string;
     supplyDemandSummary?: string;
     rangeSummary?: string;
+    trendlineSummary?: string;
   };
 
   // 波动率/量能模块的详细文案，便于 formatter 直接使用

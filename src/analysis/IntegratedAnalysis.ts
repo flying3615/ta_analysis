@@ -37,6 +37,8 @@ import { analyzeRange } from './range/rangeDetector.js';
 import type { StructureResult } from './structure/structureTypes.js';
 import type { SdAnalysisResult } from './supplyDemand/sdTypes.js';
 import type { RangeAnalysisResult } from './range/rangeTypes.ts';
+import { analyzeTrendlinesAndChannels } from './trendline/trendlineDetector.js';
+import type { TrendlineChannelAnalysisResult } from './trendline/trendlineTypes.js';
 
 // 定义决策阈值
 const SCORE_THRESHOLD_LONG = 15;
@@ -150,6 +152,7 @@ function integrateAnalyses(
   structureDaily: StructureResult,
   sdDaily: SdAnalysisResult,
   rangeDaily: RangeAnalysisResult,
+  trendlineDaily: TrendlineChannelAnalysisResult,
   customWeights: {
     chip: number;
     pattern: number;
@@ -320,6 +323,7 @@ function integrateAnalyses(
   let structureWeighted = 0;
   let sdWeighted = 0;
   let rangeWeighted = 0;
+  let trendlineWeighted = 0;
   const addScore = (raw: number, weight: number) => raw * weight;
   // 结构方向
   const structureDir = structureDaily.trend === 'up' ? 1 : structureDaily.trend === 'down' ? -1 : 0;
@@ -339,6 +343,13 @@ function integrateAnalyses(
   const brQual = rangeDaily.breakout ? rangeDaily.breakout.qualityScore : 0;
   rangeWeighted = addScore(brDir * Math.min(30, brQual * 0.3), 0.1);
   finalScore += rangeWeighted;
+  // 趋势线/通道：若存在“突破+回踩确认”，按照方向加分
+  if (trendlineDaily.breakoutRetest) {
+    const tdir = trendlineDaily.breakoutRetest.direction === 'up' ? 1 : -1;
+    const tqual = trendlineDaily.breakoutRetest.qualityScore;
+    trendlineWeighted = addScore(tdir * Math.min(25, tqual * 0.25), 0.1);
+    finalScore += trendlineWeighted;
+  }
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
@@ -526,6 +537,29 @@ function integrateAnalyses(
     });
   }
 
+  // 从趋势线/通道添加动态边界（作为关键位）
+  if (trendlineDaily.channel) {
+    const lastIndex = trendlineDaily.channel.upper.endIndex;
+    const upperNow = trendlineDaily.channel.upper.slope * lastIndex + trendlineDaily.channel.upper.intercept;
+    const lowerNow = trendlineDaily.channel.lower.slope * lastIndex + trendlineDaily.channel.lower.intercept;
+    keyLevels.push({
+      price: lowerNow,
+      type: 'support',
+      strength: 'moderate',
+      source: 'combined',
+      timeframe: 'daily',
+      description: '趋势通道下边界',
+    });
+    keyLevels.push({
+      price: upperNow,
+      type: 'resistance',
+      strength: 'moderate',
+      source: 'combined',
+      timeframe: 'daily',
+      description: '趋势通道上边界',
+    });
+  }
+
   // 形态总体分析描述
   const patternDesc = patternAnalysis.description;
 
@@ -545,6 +579,14 @@ function integrateAnalyses(
     patternAnalysis,
     confidenceScore
   );
+
+  // 若趋势线/通道存在，追加“回踩入场”相关提示
+  if (trendlineDaily.breakoutRetest) {
+    const desc = trendlineDaily.breakoutRetest.retested
+      ? '已回踩通道边界，顺势介入'
+      : '关注回踩通道边界的入场机会';
+    entryStrategy.entryConditions.push({ type: 'price', description: desc, priority: 'important' });
+  }
 
   // 确定出场策略
   const exitStrategy = determineExitStrategy(
@@ -580,6 +622,14 @@ function integrateAnalyses(
     chipAnalysis,
     patternAnalysis
   );
+
+  if (trendlineDaily.breakoutRetest && trendlineDaily.breakoutRetest.retested) {
+    confirmationSignals.push({
+      type: 'price',
+      description: `通道${trendlineDaily.breakoutRetest.direction === 'up' ? '上破' : '下破'}后回踩确认`,
+      priority: 'important',
+    });
+  }
 
   // 生成无效信号条件
   const invalidationConditions = generateInvalidationConditions(
@@ -654,7 +704,8 @@ function integrateAnalyses(
       Math.abs(bbsrWeightedScore) / normalizedWeights.bbsr,
     volumeAnalysisContribution:
       Math.abs(volumeWeightedScore) / normalizedWeights.volume,
-    // 结构/供需/区间突破作为附加因子参与总分，但不计入百分比构成展示，避免总和超过100
+    trendlineAnalysisContribution: Math.abs(trendlineWeighted) / 0.1,
+    // 结构/供需/区间突破/趋势线作为附加因子参与总分，但不计入百分比构成展示，避免总和超过100
 
     summary,
     primaryRationale,
@@ -701,6 +752,9 @@ function integrateAnalyses(
       rangeSummary: rangeDaily.range
         ? `区间 ${rangeDaily.range.low.toFixed(2)}-${rangeDaily.range.high.toFixed(2)}${rangeDaily.breakout ? `，突破${rangeDaily.breakout.direction === 'up' ? '向上' : '向下'} 质量 ${rangeDaily.breakout.qualityScore}/100` : '，未突破'}`
         : '未检测到稳定区间',
+      trendlineSummary: trendlineDaily.breakoutRetest
+        ? `通道${trendlineDaily.breakoutRetest.direction === 'up' ? '向上' : '向下'}突破${trendlineDaily.breakoutRetest.retested ? '且回踩确认' : ''}，质量 ${trendlineDaily.breakoutRetest.qualityScore}/100`
+        : trendlineDaily.summary,
     },
   };
 }
@@ -891,6 +945,7 @@ async function executeIntegratedAnalysis(
     const structureDaily = analyzeStructure(dailyData, 'daily');
     const sdDaily = analyzeSupplyDemand(symbol, dailyData, 'daily');
     const rangeDaily = analyzeRange(symbol, dailyData, 'daily');
+    const trendlineDaily = analyzeTrendlinesAndChannels(symbol, dailyData, 'daily');
 
     const integratedResult = integrateAnalyses(
       combinedVolumeVolatilityAnalysis,
@@ -900,6 +955,7 @@ async function executeIntegratedAnalysis(
       structureDaily,
       sdDaily,
       rangeDaily,
+      trendlineDaily,
       customWeights
     );
 

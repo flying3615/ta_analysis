@@ -110,3 +110,9 @@ export { multiTimeSupplyDemand } from './analysis/supplyDemand/multiTimeSupplyDe
 export { analyzeRange } from './analysis/range/rangeDetector.js';
 export { formatAndPrintRange } from './analysis/range/formatRange.js';
 export { rangeConfig, updateRangeConfig } from './analysis/range/rangeConfig.js';
+
+// Trendlines & Channels
+export { analyzeTrendlinesAndChannels } from './analysis/trendline/trendlineDetector.js';
+export { formatAndPrintTrendlines } from './analysis/trendline/formatTrendline.js';
+export { multiTimeTrendlines } from './analysis/trendline/multiTimeTrendlines.js';
+export { trendlineConfig, updateTrendlineConfig } from './analysis/trendline/trendlineConfig.js';
