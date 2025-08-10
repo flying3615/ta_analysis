@@ -903,11 +903,6 @@ async function executeIntegratedAnalysis(
       customWeights
     );
 
-    console.log(`\n======== ${symbol} 综合分析完成 ========`);
-
-    // 使用格式化函数输出结果
-    const formattedOutput = formatTradePlanOutput(integratedResult);
-    console.log(formattedOutput);
 
     return integratedResult;
   } catch (error) {
