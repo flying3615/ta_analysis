@@ -40,6 +40,10 @@ import type { RangeAnalysisResult } from './range/rangeTypes.ts';
 import { analyzeTrendlinesAndChannels } from './trendline/trendlineDetector.js';
 import type { TrendlineChannelAnalysisResult } from './trendline/trendlineTypes.js';
 
+// 新架构模块导入
+import { IntegratedOrchestrator } from './integration/IntegratedOrchestrator.js';
+import type { IntegrationConfig } from './integration/IntegrationConfig.js';
+
 // 定义决策阈值
 const SCORE_THRESHOLD_LONG = 15;
 const SCORE_THRESHOLD_SHORT = -15;
@@ -853,11 +857,17 @@ function processTrendReversalInfo(
 /**
  * 执行综合分析并生成格式化输出
  * @param symbol 股票代码
- * @param customWeights 自定义权重设置
- *        - chip: 筹码分析权重，影响交易方向
- *        - pattern: 形态分析权重，影响交易方向
- *        - volatility: 波动率分析权重，影响信号强度和置信度（不影响交易方向）
- * @returns 综合交易计划对象
+ * @param customConfig 自定义配置，包括权重、阈值等
+ * @returns 综合分析结果对象
+ * 
+ * @deprecated 推荐使用新的 IntegratedOrchestrator 类进行分析
+ * @example
+ * ```typescript
+ * import { IntegratedOrchestrator, DEFAULT_INTEGRATION_CONFIG } from 'ta_analysis';
+ * 
+ * const orchestrator = new IntegratedOrchestrator();
+ * const result = await orchestrator.executeIntegratedAnalysis('AAPL');
+ * ```
  */
 async function executeIntegratedAnalysis(
   symbol: string,
@@ -965,6 +975,50 @@ async function executeIntegratedAnalysis(
     console.error('综合分析执行失败:', error);
     throw error;
   }
+}
+
+// === 新架构快捷入口 ===
+
+/**
+ * 新架构快捷入口函数
+ * 使用新的集成编排器执行分析
+ */
+export async function executeIntegratedAnalysisV2(
+  symbol: string,
+  config?: Partial<IntegrationConfig>
+) {
+  const orchestrator = new IntegratedOrchestrator();
+  const result = await orchestrator.executeIntegratedAnalysis(symbol, config);
+  return result.tradePlan; // 返回交易计划，保持向后兼容
+}
+
+/**
+ * 获取完整的分析结果（包含性能和诊断信息）
+ */
+export async function executeIntegratedAnalysisWithDiagnostics(
+  symbol: string,
+  config?: Partial<IntegrationConfig>
+) {
+  const orchestrator = new IntegratedOrchestrator();
+  return await orchestrator.executeIntegratedAnalysis(symbol, config);
+}
+
+/**
+ * 批量分析多个股票
+ */
+export async function executeBatchAnalysis(
+  symbols: string[],
+  config?: Partial<IntegrationConfig>,
+  parallelLimit?: number
+) {
+  const orchestrator = new IntegratedOrchestrator();
+  if (config) {
+    orchestrator.updateConfig(config);
+  }
+  return await orchestrator.executeBatchAnalysis({
+    symbols,
+    parallelLimit,
+  });
 }
 
 // 导出所有主要函数和接口

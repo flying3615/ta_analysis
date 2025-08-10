@@ -45,7 +45,13 @@ export {
 // 暴露筹码配置，便于外部项目调整阈值与权重
 export { chipConfig, updateChipConfig } from './analysis/chip/chipConfig.js';
 
-export { executeIntegratedAnalysis } from './analysis/IntegratedAnalysis.js';
+// 综合分析（支持新旧架构）
+export { 
+  executeIntegratedAnalysis,
+  executeIntegratedAnalysisV2,
+  executeIntegratedAnalysisWithDiagnostics,
+  executeBatchAnalysis,
+} from './analysis/IntegratedAnalysis.js';
 
 // 新增的波动率分析导出
 export {
@@ -116,3 +122,45 @@ export { analyzeTrendlinesAndChannels } from './analysis/trendline/trendlineDete
 export { formatAndPrintTrendlines } from './analysis/trendline/formatTrendline.js';
 export { multiTimeTrendlines } from './analysis/trendline/multiTimeTrendlines.js';
 export { trendlineConfig, updateTrendlineConfig } from './analysis/trendline/trendlineConfig.js';
+
+// === 新架构集成分析模块 ===
+// 集成配置管理
+export { 
+  DEFAULT_INTEGRATION_CONFIG,
+  updateIntegrationConfig,
+  normalizeWeights,
+  validateConfig,
+} from './analysis/integration/IntegrationConfig.js';
+export type {
+  IntegrationConfig,
+  IntegrationWeights,
+  IntegrationThresholds,
+  IntegrationOptions,
+} from './analysis/integration/IntegrationConfig.js';
+
+// 集成类型定义
+export type {
+  AnalysisInputData,
+  SignalAggregationResult,
+  AnalysisResultWrapper,
+  AnalysisError,
+  KeyLevelMergeResult,
+  StrategyGenerationInput,
+  StrategyGenerationResult,
+  IntegrationContext,
+  IntegratedAnalysisResult,
+  BatchAnalysisInput,
+  BatchAnalysisResult,
+} from './analysis/integration/IntegrationTypes.js';
+
+// 信号汇总器
+export { SignalAggregator } from './analysis/integration/SignalAggregator.js';
+
+// 关键位管理器
+export { KeyLevelManager } from './analysis/integration/KeyLevelManager.js';
+
+// 策略生成器
+export { StrategyGenerator } from './analysis/integration/StrategyGenerator.js';
+
+// 集成编排器（主要入口）
+export { IntegratedOrchestrator } from './analysis/integration/IntegratedOrchestrator.js';

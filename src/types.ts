@@ -206,7 +206,7 @@ export interface KeyLevel {
   price: number;
   type: 'support' | 'resistance';
   strength: 'strong' | 'moderate' | 'weak';
-  source: 'chip' | 'pattern' | 'combined';
+  source: 'chip' | 'pattern' | 'combined' | 'bbsr' | 'structure' | 'supplyDemand' | 'range' | 'trendline';
   timeframe: 'weekly' | 'daily' | '1hour';
   description: string;
 }

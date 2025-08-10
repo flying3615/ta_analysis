@@ -17,6 +17,13 @@ export function isToday(date: Date): boolean {
   );
 }
 
+/**
+ * 生成唯一标识符
+ */
+export function generateUniqueId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export interface NamedPromise<T> {
   promise: Promise<T>;
   name: string;
