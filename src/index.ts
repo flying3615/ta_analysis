@@ -87,6 +87,8 @@ export {
   main as runMultiTimeframeCandleAnalysis,
 } from './analysis/candle/multiTImeFrameCandleAnalysis.js';
 export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnalysis.js';
+// 导出综合交易计划的格式化与机器摘要构建
+export { formatTradePlanOutput, buildMachineReadableSummary } from './analysis/FormatTradePlan.js';
 
 // 暴露BBSR（支撑阻力 + 近期多空）分析能力与配置
 export { multiTimeBBSRAnalysis, main as runBBSRAnalysis } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
