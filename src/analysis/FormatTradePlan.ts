@@ -27,17 +27,10 @@ function buildSection(
  * 格式化交易计划输出结果
  * 将IntegratedTradePlan对象转换为更简洁高效的格式化字符串输出
  * @param tradePlan 综合交易计划对象
- * @param combinedVolumeVolatilitySummary
- * @param volumeAnalysisReason
- * @param volatilityAnalysisReason
+ * 仅需 IntegratedTradePlan 一个参数
  * @returns 格式化的输出字符串
  */
-function formatTradePlanOutput(
-  tradePlan: IntegratedTradePlan,
-  combinedVolumeVolatilitySummary: string,
-  volumeAnalysisReason: string,
-  volatilityAnalysisReason: string
-): string {
+function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
   // 初始化输出字符串
   let output = '';
 
@@ -170,10 +163,13 @@ function formatTradePlanOutput(
   );
 
   // 9. 波动率量能分析
-  output += buildSection(
-    '波动率量能分析',
-    `${volumeAnalysisReason}\n` + `${volatilityAnalysisReason}\n`
-  );
+  if (tradePlan.vvInsights) {
+    output += buildSection(
+      '波动率量能分析',
+      `${tradePlan.vvInsights.volumeAnalysisReason}\n` +
+        `${tradePlan.vvInsights.volatilityAnalysisReason}\n`
+    );
+  }
 
   // 10. 趋势逆转信号 (如果存在)
   if (
@@ -210,7 +206,7 @@ function formatTradePlanOutput(
     '交易理由',
     `${tradePlan.primaryRationale}\n` +
       `${tradePlan.secondaryRationale}\n` +
-      combinedVolumeVolatilitySummary
+      (tradePlan.vvInsights?.combinedAnalysisSummary ?? '')
   );
 
   // 11.1 机器可解析摘要（单行JSON）

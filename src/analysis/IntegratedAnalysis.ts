@@ -677,6 +677,14 @@ function integrateAnalyses(
     invalidationConditions,
     keyObservations,
     trendReversalInfo,
+    vvInsights: {
+      volumeAnalysisReason:
+        combinedVolumeVolatilityAnalysis.volumeAnalysisReason,
+      volatilityAnalysisReason:
+        combinedVolumeVolatilityAnalysis.volatilityAnalysisReason,
+      combinedAnalysisSummary:
+        combinedVolumeVolatilityAnalysis.combinedAnalysisSummary,
+    },
     summaries: {
       chipSummary: `筹码差值 ${Math.abs(
         chipAnalysis.combinedBuySignalStrength - chipAnalysis.combinedShortSignalStrength
@@ -898,12 +906,7 @@ async function executeIntegratedAnalysis(
     console.log(`\n======== ${symbol} 综合分析完成 ========`);
 
     // 使用格式化函数输出结果
-    const formattedOutput = formatTradePlanOutput(
-      integratedResult,
-      combinedVolumeVolatilityAnalysis.combinedAnalysisSummary,
-      combinedVolumeVolatilityAnalysis.volumeAnalysisReason,
-      combinedVolumeVolatilityAnalysis.volatilityAnalysisReason
-    );
+    const formattedOutput = formatTradePlanOutput(integratedResult);
     console.log(formattedOutput);
 
     return integratedResult;

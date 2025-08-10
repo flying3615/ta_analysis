@@ -348,6 +348,13 @@ export interface IntegratedTradePlan {
     supplyDemandSummary?: string;
     rangeSummary?: string;
   };
+
+  // 波动率/量能模块的详细文案，便于 formatter 直接使用
+  vvInsights?: {
+    volumeAnalysisReason: string;
+    volatilityAnalysisReason: string;
+    combinedAnalysisSummary: string;
+  };
 }
 
 export interface VolatilityAnalysisResult {
