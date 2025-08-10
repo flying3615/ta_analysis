@@ -854,128 +854,6 @@ function processTrendReversalInfo(
   }
 }
 
-/**
- * 执行综合分析并生成格式化输出
- * @param symbol 股票代码
- * @param customConfig 自定义配置，包括权重、阈值等
- * @returns 综合分析结果对象
- * 
- * @deprecated 推荐使用新的 IntegratedOrchestrator 类进行分析
- * @example
- * ```typescript
- * import { IntegratedOrchestrator, DEFAULT_INTEGRATION_CONFIG } from 'ta_analysis';
- * 
- * const orchestrator = new IntegratedOrchestrator();
- * const result = await orchestrator.executeIntegratedAnalysis('AAPL');
- * ```
- */
-async function executeIntegratedAnalysis(
-  symbol: string,
-  customWeights: {
-    chip: number;
-    pattern: number;
-    volume: number;
-    bbsr: number;
-  } = {
-    chip: 0.2,
-    pattern: 0.2,
-    volume: 0.5,
-    bbsr: 0.1,
-  } // 默认权重分配
-): Promise<IntegratedTradePlan> {
-  try {
-    console.log(`======== 开始执行 ${symbol} 综合分析 ========`);
-
-    // 获取不同时间周期的数据
-    const today = new Date();
-
-    const startDateWeekly = new Date(today);
-    startDateWeekly.setDate(startDateWeekly.getDate() - 365); // 获取一年的数据
-
-    const startDateDaily = new Date(today);
-    startDateDaily.setDate(startDateDaily.getDate() - 90); // 获取三个月的数据
-
-    const startDateHourly = new Date(today);
-    startDateHourly.setDate(startDateHourly.getDate() - 60); // 获取一个月的数据
-
-    console.log('正在获取各时间周期数据...');
-
-    // 获取周线、日线和小时线数据
-    const weeklyData = await getStockDataForTimeframe(
-      symbol,
-      startDateWeekly,
-      today,
-      'weekly'
-    );
-
-    const dailyData = await getStockDataForTimeframe(
-      symbol,
-      startDateDaily,
-      today,
-      'daily'
-    );
-
-    const hourlyData = await getStockDataForTimeframe(
-      symbol,
-      startDateHourly,
-      today,
-      '1hour'
-    );
-
-    console.log('正在执行筹码分布分析...');
-
-    // 执行筹码分析
-    const multiTimeframeChipDistResult = multiTimeFrameChipDistAnalysis(
-      symbol,
-      'daily', // 主要时间周期
-      ['weekly', 'daily', '1hour'],
-      { weekly: 0.3, daily: 0.5, '1hour': 0.2 }, // 时间周期权重
-      weeklyData,
-      dailyData,
-      hourlyData
-    );
-
-    // 执行形态分析
-    console.log('正在执行形态分析...');
-    const patternAnalysisResult = multiTimeframePatternAnalysis(
-      weeklyData,
-      dailyData,
-      hourlyData
-    );
-
-    // 执行支撑阻力关键位k线形态分析
-    const bbsrAnalysis = multiTimeBBSRAnalysis(symbol, dailyData, hourlyData);
-
-    // 执行波动率，成交量综合分析，小时线
-    const combinedVolumeVolatilityAnalysis =
-      executeEnhancedCombinedAnalysis(hourlyData);
-
-    // 整合分析结果
-    console.log('正在整合分析结果...');
-    const structureDaily = analyzeStructure(dailyData, 'daily');
-    const sdDaily = analyzeSupplyDemand(symbol, dailyData, 'daily');
-    const rangeDaily = analyzeRange(symbol, dailyData, 'daily');
-    const trendlineDaily = analyzeTrendlinesAndChannels(symbol, dailyData, 'daily');
-
-    const integratedResult = integrateAnalyses(
-      combinedVolumeVolatilityAnalysis,
-      multiTimeframeChipDistResult,
-      patternAnalysisResult,
-      bbsrAnalysis,
-      structureDaily,
-      sdDaily,
-      rangeDaily,
-      trendlineDaily,
-      customWeights
-    );
-
-
-    return integratedResult;
-  } catch (error) {
-    console.error('综合分析执行失败:', error);
-    throw error;
-  }
-}
 
 // === 新架构快捷入口 ===
 
@@ -1021,7 +899,6 @@ export async function executeBatchAnalysis(
   });
 }
 
-// 导出所有主要函数和接口
-export { executeIntegratedAnalysis };
+// 导出所有主要函数和接口（已移除旧版 executeIntegratedAnalysis）
 
-// executeIntegratedAnalysis('TSLA', DEFAULT_WEIGHTS);
+// 旧版 executeIntegratedAnalysis 已移除

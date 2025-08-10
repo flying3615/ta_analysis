@@ -409,6 +409,16 @@ function formatLevelSource(source: string): string {
       return '筹码分析';
     case 'pattern':
       return '形态分析';
+    case 'bbsr':
+      return '支阻位分析';
+    case 'structure':
+      return '结构分析';
+    case 'supplyDemand':
+      return '供需区分析';
+    case 'range':
+      return '区间/突破';
+    case 'trendline':
+      return '趋势线/通道';
     case 'combined':
       return '综合分析';
     default:

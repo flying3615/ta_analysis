@@ -586,9 +586,9 @@ export class IntegratedOrchestrator {
       
       primaryTimeframe: 'daily',
       timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
-      shortTermOutlook: '基于当前分析的短期展望',
-      mediumTermOutlook: '基于当前分析的中期展望',
-      longTermOutlook: '基于当前分析的长期展望',
+      shortTermOutlook: this.buildShortTermOutlook(analysisData.analyses),
+      mediumTermOutlook: this.buildMediumTermOutlook(analysisData.analyses),
+      longTermOutlook: this.buildLongTermOutlook(analysisData.analyses),
       
       trendReversalInfo: this.extractTrendReversalInfo(analysisData.analyses.pattern),
       
@@ -599,14 +599,14 @@ export class IntegratedOrchestrator {
       },
       
       summaries: {
-        chipSummary: '筹码分析摘要',
-        patternSummary: '形态分析摘要',
-        bbsrSummary: 'BBSR分析摘要',
-        vvSummary: '波动率成交量分析摘要',
-        structureSummary: '结构分析摘要',
-        supplyDemandSummary: '供需分析摘要',
-        rangeSummary: '区间分析摘要',
-        trendlineSummary: analysisData.analyses.trendline.summary || '趋势线分析摘要',
+        chipSummary: this.buildChipSummary(analysisData.analyses.chip),
+        patternSummary: this.buildPatternSummary(analysisData.analyses.pattern),
+        bbsrSummary: this.buildBbsrSummary(analysisData.analyses.bbsr),
+        vvSummary: this.buildVvSummary(analysisData.analyses.volatility),
+        structureSummary: this.buildStructureSummary(analysisData.analyses.structure),
+        supplyDemandSummary: this.buildSupplyDemandSummary(analysisData.analyses.supplyDemand),
+        rangeSummary: this.buildRangeSummary(analysisData.analyses.range),
+        trendlineSummary: this.buildTrendlineSummary(analysisData.analyses.trendline),
       },
     };
   }
@@ -732,6 +732,75 @@ export class IntegratedOrchestrator {
       hasReversalSignal: false,
       description: '未检测到趋势反转信号',
     };
+  }
+
+  // === 各模块摘要构建 ===
+  private buildChipSummary(chip: AnalysisInputData['analyses']['chip']): string {
+    return `买入强度:${chip.combinedBuySignalStrength} 做空强度:${chip.combinedShortSignalStrength} 主周期:${chip.primaryTimeframe}`;
+  }
+
+  private buildPatternSummary(pattern: AnalysisInputData['analyses']['pattern']): string {
+    return `形态综合方向:${pattern.combinedSignal} 强度:${pattern.signalStrength.toFixed?.(1) ?? pattern.signalStrength}`;
+  }
+
+  private buildBbsrSummary(bbsr: AnalysisInputData['analyses']['bbsr']): string {
+    const daily = bbsr.dailyBBSRResult?.strength;
+    const weekly = bbsr.weeklyBBSRResult?.strength;
+    return `BBSR(日/周) 强度:${daily ?? '-'} / ${weekly ?? '-'}`;
+  }
+
+  private buildVvSummary(vv: AnalysisInputData['analyses']['volatility']): string {
+    const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
+    const atrp = vv.volatilityAnalysis?.volatilityAnalysis?.atrPercent ?? 0;
+    const volConfirm = vv.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation ? '确认' : '未确认';
+    return `波动率:${regime} ATR%:${atrp.toFixed?.(2) ?? atrp} 成交量确认:${volConfirm}`;
+  }
+
+  private buildStructureSummary(structure: AnalysisInputData['analyses']['structure']): string {
+    return `结构趋势:${structure.trend} 关键位数:${structure.keyLevels?.length ?? 0}`;
+  }
+
+  private buildSupplyDemandSummary(sd: AnalysisInputData['analyses']['supplyDemand']): string {
+    const pos = sd.premiumDiscount?.position ?? 50;
+    const zones = sd.recentEffectiveZones?.length ?? 0;
+    return `供需位置:${pos.toFixed?.(1) ?? pos} 有效区域:${zones}`;
+  }
+
+  private buildRangeSummary(range: AnalysisInputData['analyses']['range']): string {
+    const comp = range.compressionScore;
+    const br = range.breakout ? `${range.breakout.direction}/${range.breakout.qualityScore}` : '无突破';
+    return `压缩:${comp} 突破:${br}`;
+  }
+
+  private buildTrendlineSummary(tl: AnalysisInputData['analyses']['trendline']): string {
+    const slope = tl.channel?.slope ?? 0;
+    return tl.summary || `通道斜率:${slope.toFixed?.(4) ?? slope}`;
+  }
+
+  // === 展望构建 ===
+  private buildShortTermOutlook(analyses: AnalysisInputData['analyses']): string {
+    const pattern = analyses.pattern;
+    const vv = analyses.volatility;
+    const tl = analyses.trendline;
+    const dir = pattern.combinedSignal;
+    const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
+    const slope = tl.channel?.slope ?? 0;
+    return `短期(${dir})，波动率${regime}，通道斜率${slope.toFixed?.(3) ?? slope}`;
+  }
+
+  private buildMediumTermOutlook(analyses: AnalysisInputData['analyses']): string {
+    const chip = analyses.chip;
+    const sd = analyses.supplyDemand;
+    const pos = sd.premiumDiscount?.position ?? 50;
+    return `中期(筹码买:${chip.combinedBuySignalStrength}/卖:${chip.combinedShortSignalStrength})，估值位置${pos.toFixed?.(1) ?? pos}`;
+  }
+
+  private buildLongTermOutlook(analyses: AnalysisInputData['analyses']): string {
+    const structure = analyses.structure;
+    const range = analyses.range;
+    const trend = structure.trend;
+    const comp = range.compressionScore;
+    return `长期(${trend})，压缩度${comp}`;
   }
 
   /**

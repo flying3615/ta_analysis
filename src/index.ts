@@ -47,7 +47,6 @@ export { chipConfig, updateChipConfig } from './analysis/chip/chipConfig.js';
 
 // 综合分析（支持新旧架构）
 export { 
-  executeIntegratedAnalysis,
   executeIntegratedAnalysisV2,
   executeIntegratedAnalysisWithDiagnostics,
   executeBatchAnalysis,
