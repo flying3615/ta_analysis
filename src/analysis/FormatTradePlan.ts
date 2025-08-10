@@ -58,7 +58,10 @@ function formatTradePlanOutput(
     `筹码: ${tradePlan.summaries.chipSummary}\n` +
       `形态/逆转: ${tradePlan.summaries.patternSummary}\n` +
       `支阻位: ${tradePlan.summaries.bbsrSummary}\n` +
-      `波动率/量能: ${tradePlan.summaries.vvSummary}\n`
+      `波动率/量能: ${tradePlan.summaries.vvSummary}\n` +
+      `结构: ${tradePlan.summaries.structureSummary || '—'}\n` +
+      `供需区: ${tradePlan.summaries.supplyDemandSummary || '—'}\n` +
+      `区间/突破: ${tradePlan.summaries.rangeSummary || '—'}\n`
   );
 
   // 3. 入场策略 - 合并为简洁格式
@@ -208,6 +211,25 @@ function formatTradePlanOutput(
       `${tradePlan.secondaryRationale}\n` +
       combinedVolumeVolatilitySummary
   );
+
+  // 11.1 机器可解析摘要（单行JSON）
+  const jsonSummary = {
+    symbol: tradePlan.symbol,
+    direction: tradePlan.direction,
+    confidence: Number(tradePlan.confidenceScore.toFixed(1)),
+    entry: Number(tradePlan.entryStrategy.idealEntryPrice.toFixed(4)),
+    stopLoss: tradePlan.exitStrategy.stopLossLevels[0]?.price ?? null,
+    takeProfit: tradePlan.exitStrategy.takeProfitLevels[0]?.price ?? null,
+    riskReward: Number(tradePlan.riskManagement.riskRewardRatio.toFixed(2)),
+    votes: {
+      chip: tradePlan.chipAnalysisContribution,
+      pattern: tradePlan.patternAnalysisContribution,
+      volume: tradePlan.volumeAnalysisContribution,
+      bbsr: tradePlan.bbsrAnalysisContribution,
+    },
+    summaries: tradePlan.summaries,
+  };
+  output += buildSection('机器可解析摘要', JSON.stringify(jsonSummary));
 
   // 12. 无效信号条件
   let invalidationContent = '';

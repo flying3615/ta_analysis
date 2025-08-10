@@ -317,12 +317,14 @@ function integrateAnalyses(
     volumeWeightedScore +
     bbsrWeightedScore;
 
-  const addScore = (raw: number, weight: number) => {
-    finalScore += raw * weight;
-  };
+  let structureWeighted = 0;
+  let sdWeighted = 0;
+  let rangeWeighted = 0;
+  const addScore = (raw: number, weight: number) => raw * weight;
   // 结构方向
   const structureDir = structureDaily.trend === 'up' ? 1 : structureDaily.trend === 'down' ? -1 : 0;
-  addScore(structureDir * 30, 0.15);
+  structureWeighted = addScore(structureDir * 30, 0.15);
+  finalScore += structureWeighted;
   // 供需：最近有效区更近者决定方向
   const priceNow = sdDaily.premiumDiscount.currentPrice;
   const dZones = sdDaily.recentEffectiveZones.filter(z => z.type === 'demand');
@@ -330,11 +332,13 @@ function integrateAnalyses(
   const nd = dZones.sort((a, b) => Math.abs(priceNow - mid(a.low, a.high)) - Math.abs(priceNow - mid(b.low, b.high)))[0];
   const ns = sZones.sort((a, b) => Math.abs(priceNow - mid(a.low, a.high)) - Math.abs(priceNow - mid(b.low, b.high)))[0];
   const sdDir = nd && ns ? (Math.abs(priceNow - mid(nd.low, nd.high)) <= Math.abs(priceNow - mid(ns.low, ns.high)) ? 1 : -1) : nd ? 1 : ns ? -1 : 0;
-  addScore(sdDir * 25, 0.12);
+  sdWeighted = addScore(sdDir * 25, 0.12);
+  finalScore += sdWeighted;
   // 区间突破方向与质量
   const brDir = rangeDaily.breakout ? (rangeDaily.breakout.direction === 'up' ? 1 : -1) : 0;
   const brQual = rangeDaily.breakout ? rangeDaily.breakout.qualityScore : 0;
-  addScore(brDir * Math.min(30, brQual * 0.3), 0.1);
+  rangeWeighted = addScore(brDir * Math.min(30, brQual * 0.3), 0.1);
+  finalScore += rangeWeighted;
 
   // 确定最终交易方向
   let direction = TradeDirection.Neutral;
@@ -650,6 +654,7 @@ function integrateAnalyses(
       Math.abs(bbsrWeightedScore) / normalizedWeights.bbsr,
     volumeAnalysisContribution:
       Math.abs(volumeWeightedScore) / normalizedWeights.volume,
+    // 结构/供需/区间突破作为附加因子参与总分，但不计入百分比构成展示，避免总和超过100
 
     summary,
     primaryRationale,

@@ -238,11 +238,17 @@ export interface IntegratedTradePlan {
   patternAnalysisWeight: number;
   volumeAnalysisWeight: number;
   bbsrAnalysisWeight: number;
+  structureAnalysisWeight?: number;
+  supplyDemandAnalysisWeight?: number;
+  rangeAnalysisWeight?: number;
 
   chipAnalysisContribution: number; // 0-100
   patternAnalysisContribution: number; // 0-100
   volumeAnalysisContribution: number; // 0-100
   bbsrAnalysisContribution: number; // 0-100
+  structureAnalysisContribution?: number; // 0-100 (归一化显示)
+  supplyDemandAnalysisContribution?: number; // 0-100 (归一化显示)
+  rangeAnalysisContribution?: number; // 0-100 (归一化显示)
 
   // 总体分析描述
   summary: string;
