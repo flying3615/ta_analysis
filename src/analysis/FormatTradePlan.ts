@@ -264,9 +264,6 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
       (tradePlan.vvInsights?.combinedAnalysisSummary ?? '')
   );
 
-  // 11.1 机器可解析摘要（单行JSON）
-  output += buildSection('机器可解析摘要', buildMachineReadableSummary(tradePlan));
-
   // 12. 无效信号条件
   let invalidationContent = '';
   tradePlan.invalidationConditions
