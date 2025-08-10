@@ -344,7 +344,8 @@ function detectTrendReversal(
     // 做空
     // 找最近的高点作为止损
     const recentHigh = Math.max(...recentCandles.map(c => c.high));
-    stopLoss = recentHigh * (1 + trendReversalConfig.stopLossOffsetPercent.short);
+    stopLoss =
+      recentHigh * (1 + trendReversalConfig.stopLossOffsetPercent.short);
   }
 
   // 计算逆转强度 (0-100)

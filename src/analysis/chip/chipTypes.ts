@@ -92,5 +92,3 @@ export interface ChipAnalysisResult {
   bollingerStatus: string;
   technicalSignal: string;
 }
-
-

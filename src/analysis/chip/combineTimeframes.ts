@@ -61,7 +61,10 @@ export function determineStopLossLevels(
     const relevantResistances = resistanceLevels
       .filter(level => level > currentPrice)
       .sort((a, b) => a - b);
-    return relevantResistances.slice(0, Math.min(2, relevantResistances.length));
+    return relevantResistances.slice(
+      0,
+      Math.min(2, relevantResistances.length)
+    );
   }
 
   const closestSupport = supportLevels
@@ -88,7 +91,10 @@ export function determineTakeProfitLevels(
     const relevantResistances = resistanceLevels
       .filter(level => level > currentPrice)
       .sort((a, b) => a - b);
-    return relevantResistances.slice(0, Math.min(3, relevantResistances.length));
+    return relevantResistances.slice(
+      0,
+      Math.min(3, relevantResistances.length)
+    );
   } else if (recommendation.includes('空')) {
     const relevantSupports = supportLevels
       .filter(level => level < currentPrice)
@@ -106,8 +112,12 @@ export function identifyTimeframeConflicts(
 ): string[] {
   const conflicts: string[] = [];
 
-  const shortTerm = timeframeAnalyses.find(ta => ta.timeframe === '1hour')?.analysis;
-  const mediumTerm = timeframeAnalyses.find(ta => ta.timeframe === 'daily')?.analysis;
+  const shortTerm = timeframeAnalyses.find(
+    ta => ta.timeframe === '1hour'
+  )?.analysis;
+  const mediumTerm = timeframeAnalyses.find(
+    ta => ta.timeframe === 'daily'
+  )?.analysis;
 
   if (shortTerm && mediumTerm) {
     if (
@@ -123,7 +133,9 @@ export function identifyTimeframeConflicts(
     }
   }
 
-  const longTerm = timeframeAnalyses.find(ta => ta.timeframe === 'weekly')?.analysis;
+  const longTerm = timeframeAnalyses.find(
+    ta => ta.timeframe === 'weekly'
+  )?.analysis;
 
   if (mediumTerm && longTerm) {
     if (
@@ -140,7 +152,10 @@ export function identifyTimeframeConflicts(
   }
 
   for (const ta of timeframeAnalyses) {
-    if (ta.analysis.technicalSignal.includes('买入') && !ta.analysis.shapeBuySignal) {
+    if (
+      ta.analysis.technicalSignal.includes('买入') &&
+      !ta.analysis.shapeBuySignal
+    ) {
       conflicts.push(
         `${ta.timeframe === 'weekly' ? '周线' : ta.timeframe === 'daily' ? '日线' : '1小时'}技术指标看多但筹码形态不支持`
       );
@@ -160,15 +175,19 @@ export function identifyTimeframeConflicts(
 /**
  * 根据单个时间周期的分析生成展望
  */
-export function generateTimeframeOutlook(analysis?: ChipAnalysisResult): string {
+export function generateTimeframeOutlook(
+  analysis?: ChipAnalysisResult
+): string {
   if (!analysis) return '数据不足，无法分析';
 
   if (analysis.buySignalStrength > 75) return '强烈看多';
   if (analysis.buySignalStrength > 60) return '看多';
   if (analysis.shortSignalStrength > 75) return '强烈看空';
   if (analysis.shortSignalStrength > 60) return '看空';
-  if (analysis.buySignalStrength > analysis.shortSignalStrength + 10) return '偏多';
-  if (analysis.shortSignalStrength > analysis.buySignalStrength + 10) return '偏空';
+  if (analysis.buySignalStrength > analysis.shortSignalStrength + 10)
+    return '偏多';
+  if (analysis.shortSignalStrength > analysis.buySignalStrength + 10)
+    return '偏空';
   return '中性';
 }
 
@@ -179,7 +198,9 @@ export function combineTimeframeAnalyses(
   timeframeAnalyses: TimeframeAnalysis[],
   primaryTimeframe: 'weekly' | 'daily' | '1hour'
 ): MultiTimeframeAnalysisResult {
-  const primaryAnalysis = timeframeAnalyses.find(ta => ta.timeframe === primaryTimeframe)?.analysis;
+  const primaryAnalysis = timeframeAnalyses.find(
+    ta => ta.timeframe === primaryTimeframe
+  )?.analysis;
   if (!primaryAnalysis) {
     throw new Error(`未找到主要时间周期 ${primaryTimeframe} 的分析结果`);
   }
@@ -194,23 +215,35 @@ export function combineTimeframeAnalyses(
   }
 
   const combinedBuySignalStrength = Math.round(weightedBuySignal / totalWeight);
-  const combinedShortSignalStrength = Math.round(weightedShortSignal / totalWeight);
+  const combinedShortSignalStrength = Math.round(
+    weightedShortSignal / totalWeight
+  );
 
-  const bullishCount = timeframeAnalyses.filter(ta => ta.analysis.overallRecommendation.includes('多')).length;
-  const bearishCount = timeframeAnalyses.filter(ta => ta.analysis.overallRecommendation.includes('空')).length;
+  const bullishCount = timeframeAnalyses.filter(ta =>
+    ta.analysis.overallRecommendation.includes('多')
+  ).length;
+  const bearishCount = timeframeAnalyses.filter(ta =>
+    ta.analysis.overallRecommendation.includes('空')
+  ).length;
   const neutralCount = timeframeAnalyses.length - bullishCount - bearishCount;
 
   let timeframeAlignment = '混合';
   let alignmentStrength = 0;
   if (bullishCount > bearishCount && bullishCount > neutralCount) {
     timeframeAlignment = '看多';
-    alignmentStrength = Math.round((bullishCount / timeframeAnalyses.length) * 100);
+    alignmentStrength = Math.round(
+      (bullishCount / timeframeAnalyses.length) * 100
+    );
   } else if (bearishCount > bullishCount && bearishCount > neutralCount) {
     timeframeAlignment = '看空';
-    alignmentStrength = Math.round((bearishCount / timeframeAnalyses.length) * 100);
+    alignmentStrength = Math.round(
+      (bearishCount / timeframeAnalyses.length) * 100
+    );
   } else if (neutralCount >= bullishCount && neutralCount >= bearishCount) {
     timeframeAlignment = '中性';
-    alignmentStrength = Math.round((neutralCount / timeframeAnalyses.length) * 100);
+    alignmentStrength = Math.round(
+      (neutralCount / timeframeAnalyses.length) * 100
+    );
   }
 
   const trendDirections = timeframeAnalyses.map(ta => {
@@ -226,10 +259,16 @@ export function combineTimeframeAnalyses(
   const rangingCount = trendDirections.filter(t => t === '震荡整理').length;
 
   let trendDirection = '震荡整理';
-  if (uptrendCount > downtrendCount && uptrendCount > rangingCount) trendDirection = '上升趋势';
-  else if (downtrendCount > uptrendCount && downtrendCount > rangingCount) trendDirection = '下降趋势';
+  if (uptrendCount > downtrendCount && uptrendCount > rangingCount)
+    trendDirection = '上升趋势';
+  else if (downtrendCount > uptrendCount && downtrendCount > rangingCount)
+    trendDirection = '下降趋势';
 
-  const dominantTrendCount = Math.max(uptrendCount, downtrendCount, rangingCount);
+  const dominantTrendCount = Math.max(
+    uptrendCount,
+    downtrendCount,
+    rangingCount
+  );
   const trendConsistencyRatio = dominantTrendCount / timeframeAnalyses.length;
   let trendConsistency = '弱';
   if (trendConsistencyRatio >= 0.8) trendConsistency = '强';
@@ -244,8 +283,14 @@ export function combineTimeframeAnalyses(
     ...ta.analysis.moderateResistanceLevels,
   ]);
 
-  const aggregatedSupportLevels = groupNearbyLevels(allSupportLevels, primaryAnalysis.currentPrice);
-  const aggregatedResistanceLevels = groupNearbyLevels(allResistanceLevels, primaryAnalysis.currentPrice);
+  const aggregatedSupportLevels = groupNearbyLevels(
+    allSupportLevels,
+    primaryAnalysis.currentPrice
+  );
+  const aggregatedResistanceLevels = groupNearbyLevels(
+    allResistanceLevels,
+    primaryAnalysis.currentPrice
+  );
 
   const timeframeConflicts = identifyTimeframeConflicts(timeframeAnalyses);
 
@@ -264,32 +309,48 @@ export function combineTimeframeAnalyses(
   let entryStrategy = '';
   let exitStrategy = '';
 
-  if (combinedBuySignalStrength > combinedShortSignalStrength + chipConfig.combine.signalDiffThreshold) {
+  if (
+    combinedBuySignalStrength >
+    combinedShortSignalStrength + chipConfig.combine.signalDiffThreshold
+  ) {
     combinedRecommendation = '综合建议：做多';
-    if (timeframeAlignment === '看多' && alignmentStrength > chipConfig.combine.alignmentStrongThreshold) {
+    if (
+      timeframeAlignment === '看多' &&
+      alignmentStrength > chipConfig.combine.alignmentStrongThreshold
+    ) {
       recommendationComment = '多个时间周期一致看多，强烈建议买入。';
       entryStrategy = '可积极入场，建议在支撑位附近分批买入。';
     } else if (timeframeAlignment === '看多') {
       recommendationComment = '多个时间周期偏向看多，建议买入。';
       entryStrategy = '建议在回调到支撑位时买入。';
     } else {
-      recommendationComment = '综合指标偏向看多，但时间周期一致性不强，建议谨慎买入。';
+      recommendationComment =
+        '综合指标偏向看多，但时间周期一致性不强，建议谨慎买入。';
       entryStrategy = '建议小仓位试探性买入，等待更多确认。';
     }
-    exitStrategy = '可设置在主要阻力位附近，或当短期时间周期出现卖出信号时离场。';
-  } else if (combinedShortSignalStrength > combinedBuySignalStrength + chipConfig.combine.signalDiffThreshold) {
+    exitStrategy =
+      '可设置在主要阻力位附近，或当短期时间周期出现卖出信号时离场。';
+  } else if (
+    combinedShortSignalStrength >
+    combinedBuySignalStrength + chipConfig.combine.signalDiffThreshold
+  ) {
     combinedRecommendation = '综合建议：做空';
-    if (timeframeAlignment === '看空' && alignmentStrength > chipConfig.combine.alignmentStrongThreshold) {
+    if (
+      timeframeAlignment === '看空' &&
+      alignmentStrength > chipConfig.combine.alignmentStrongThreshold
+    ) {
       recommendationComment = '多个时间周期一致看空，强烈建议卖出/做空。';
       entryStrategy = '可积极入场做空，建议在阻力位附近分批做空。';
     } else if (timeframeAlignment === '看空') {
       recommendationComment = '多个时间周期偏向看空，建议卖出/做空。';
       entryStrategy = '建议在反弹到阻力位时做空。';
     } else {
-      recommendationComment = '综合指标偏向看空，但时间周期一致性不强，建议谨慎做空。';
+      recommendationComment =
+        '综合指标偏向看空，但时间周期一致性不强，建议谨慎做空。';
       entryStrategy = '建议小仓位试探性做空，等待更多确认。';
     }
-    exitStrategy = '可设置在主要支撑位附近，或当短期时间周期出现买入信号时离场。';
+    exitStrategy =
+      '可设置在主要支撑位附近，或当短期时间周期出现买入信号时离场。';
   } else {
     combinedRecommendation = '综合建议：观望';
     recommendationComment = '各时间周期信号不一致或中性，建议暂时观望。';
@@ -343,5 +404,3 @@ export function combineTimeframeAnalyses(
     longTermOutlook,
   };
 }
-
-

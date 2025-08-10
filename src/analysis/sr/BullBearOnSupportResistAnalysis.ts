@@ -235,7 +235,10 @@ function checkBullBearNearSupportResistance(
   if (recentSignalType === PatternDirection.Bullish && recentSignalDate) {
     // 检查是否在支撑位附近 (当前价格在支撑位 ±10% 范围内)
     const dynamicSupport = srResult.dynamicSupport;
-    if (dynamicSupport && isNearLevel(currentPrice, dynamicSupport, srConfig.nearThresholdPercent)) {
+    if (
+      dynamicSupport &&
+      isNearLevel(currentPrice, dynamicSupport, srConfig.nearThresholdPercent)
+    ) {
       return {
         symbol,
         SRLevel: dynamicSupport,
@@ -250,7 +253,14 @@ function checkBullBearNearSupportResistance(
   if (recentSignalType === PatternDirection.Bearish && recentSignalDate) {
     // 检查是否在阻力位附近 (当前价格在阻力位 ±10% 范围内)
     const dynamicResistance = srResult.dynamicResistance;
-    if (dynamicResistance && isNearLevel(currentPrice, dynamicResistance, srConfig.nearThresholdPercent)) {
+    if (
+      dynamicResistance &&
+      isNearLevel(
+        currentPrice,
+        dynamicResistance,
+        srConfig.nearThresholdPercent
+      )
+    ) {
       return {
         symbol: symbol,
         SRLevel: dynamicResistance,

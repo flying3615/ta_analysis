@@ -11,10 +11,10 @@ function buildMachineReadableSummary(tradePlan: IntegratedTradePlan): string {
   const stopUsed = (() => {
     if (tradePlan.direction === 'long') {
       const below = stopPrices.filter(p => p < entry);
-      return below.length > 0 ? Math.max(...below) : stopPrices[0] ?? entry;
+      return below.length > 0 ? Math.max(...below) : (stopPrices[0] ?? entry);
     } else if (tradePlan.direction === 'short') {
       const above = stopPrices.filter(p => p > entry);
-      return above.length > 0 ? Math.min(...above) : stopPrices[0] ?? entry;
+      return above.length > 0 ? Math.min(...above) : (stopPrices[0] ?? entry);
     }
     return stopPrices[0] ?? entry;
   })();
@@ -37,7 +37,8 @@ function buildMachineReadableSummary(tradePlan: IntegratedTradePlan): string {
       ? Number(
           (
             entry +
-            (tradePlan.direction === 'long' ? 1 : -1) * Math.max(0, weightedReward)
+            (tradePlan.direction === 'long' ? 1 : -1) *
+              Math.max(0, weightedReward)
           ).toFixed(4)
         )
       : null,
@@ -288,10 +289,7 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n` +
       `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n` +
       `量价分析: ${(tradePlan.volumeAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.volumeAnalysisContribution.toFixed(1)}/100)\n` +
-      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n` +
-      (typeof tradePlan.trendlineAnalysisContribution === 'number'
-        ? `（附加）趋势线/通道: (得分:${tradePlan.trendlineAnalysisContribution.toFixed(1)}/100)\n`
-        : '')
+      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n`
   );
 
   // 结尾分隔线

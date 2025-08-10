@@ -29,10 +29,16 @@ export const structureConfig: StructureConfig = {
 };
 
 export function updateStructureConfig(partial: Partial<StructureConfig>) {
-  if (partial.pivot) structureConfig.pivot = { ...structureConfig.pivot, ...partial.pivot };
-  if (partial.thresholds) structureConfig.thresholds = { ...structureConfig.thresholds, ...partial.thresholds };
+  if (partial.pivot)
+    structureConfig.pivot = { ...structureConfig.pivot, ...partial.pivot };
+  if (partial.thresholds)
+    structureConfig.thresholds = {
+      ...structureConfig.thresholds,
+      ...partial.thresholds,
+    };
   if (partial.timeframeWeights)
-    structureConfig.timeframeWeights = { ...structureConfig.timeframeWeights, ...partial.timeframeWeights } as any;
+    structureConfig.timeframeWeights = {
+      ...structureConfig.timeframeWeights,
+      ...partial.timeframeWeights,
+    } as any;
 }
-
-

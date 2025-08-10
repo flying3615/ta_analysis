@@ -38,5 +38,3 @@ export interface MultiTimeframeStructureAnalysis {
   consistency: 'strong' | 'medium' | 'weak' | 'mixed';
   combinedSummary: string;
 }
-
-

@@ -697,11 +697,21 @@ export function determineRiskManagement(
     if (direction === TradeDirection.Long) {
       const below = stopPrices.filter(p => p < entry);
       // 取最贴近入场价的下方止损（风险最小）
-      chosenStop = below.length > 0 ? Math.max(...below) : stopPrices.reduce((a, b) => (Math.abs(a - entry) < Math.abs(b - entry) ? a : b));
+      chosenStop =
+        below.length > 0
+          ? Math.max(...below)
+          : stopPrices.reduce((a, b) =>
+              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
+            );
     } else if (direction === TradeDirection.Short) {
       const above = stopPrices.filter(p => p > entry);
       // 取最贴近入场价的上方止损
-      chosenStop = above.length > 0 ? Math.min(...above) : stopPrices.reduce((a, b) => (Math.abs(a - entry) < Math.abs(b - entry) ? a : b));
+      chosenStop =
+        above.length > 0
+          ? Math.min(...above)
+          : stopPrices.reduce((a, b) =>
+              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
+            );
     }
 
     const potentialRisk = Math.max(1e-8, Math.abs(entry - chosenStop));

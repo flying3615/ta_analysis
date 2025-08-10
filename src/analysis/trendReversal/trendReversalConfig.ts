@@ -67,7 +67,9 @@ export const trendReversalConfig: TrendReversalConfig = {
   },
 };
 
-export function updateTrendReversalConfig(partial: Partial<TrendReversalConfig>): void {
+export function updateTrendReversalConfig(
+  partial: Partial<TrendReversalConfig>
+): void {
   if (partial.trendDirection) {
     trendReversalConfig.trendDirection = {
       ...trendReversalConfig.trendDirection,
@@ -105,5 +107,3 @@ export function updateTrendReversalConfig(partial: Partial<TrendReversalConfig>)
     };
   }
 }
-
-

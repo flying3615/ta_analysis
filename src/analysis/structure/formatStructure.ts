@@ -1,9 +1,17 @@
-import type { MultiTimeframeStructureAnalysis, StructureResult, StructureEvent } from './structureTypes.js';
+import type {
+  MultiTimeframeStructureAnalysis,
+  StructureResult,
+  StructureEvent,
+} from './structureTypes.js';
 import { structureConfig } from './structureConfig.js';
 
-export function formatAndPrintStructureResult(result: MultiTimeframeStructureAnalysis) {
+export function formatAndPrintStructureResult(
+  result: MultiTimeframeStructureAnalysis
+) {
   console.log(`\n===== ${result.symbol} 结构分析 =====`);
-  console.log(`综合趋势: ${translateTrend(result.combinedTrend)} | 一致性: ${result.consistency}`);
+  console.log(
+    `综合趋势: ${translateTrend(result.combinedTrend)} | 一致性: ${result.consistency}`
+  );
   console.log(`概述: ${result.combinedSummary}`);
 
   const printTf = (r: StructureResult) => {
@@ -16,7 +24,9 @@ export function formatAndPrintStructureResult(result: MultiTimeframeStructureAna
       console.log(`建议: ${suggestion}`);
     }
     if (r.keyLevels?.length) {
-      console.log(`关键结构位: ${r.keyLevels.map(p => p.toFixed(2)).join(', ')}`);
+      console.log(
+        `关键结构位: ${r.keyLevels.map(p => p.toFixed(2)).join(', ')}`
+      );
     }
     console.log(r.summary);
   };
@@ -29,7 +39,12 @@ function translateTrend(t: string) {
 }
 
 function translateEvent(e: StructureEvent) {
-  const dir = e.direction === 'bullish' ? '（看涨）' : e.direction === 'bearish' ? '（看跌）' : '';
+  const dir =
+    e.direction === 'bullish'
+      ? '（看涨）'
+      : e.direction === 'bearish'
+        ? '（看跌）'
+        : '';
   switch (e.type) {
     case 'BOS':
       return `结构突破${dir}`;
@@ -52,7 +67,11 @@ function buildSuggestion(r: StructureResult): string | null {
 
   // 若趋势为震荡但存在事件方向，则用事件方向作为临时趋势
   let trend: 'up' | 'down' | 'sideways' = r.trend as any;
-  if (trend === 'sideways' && r.lastEvent && r.lastEvent.direction !== 'neutral') {
+  if (
+    trend === 'sideways' &&
+    r.lastEvent &&
+    r.lastEvent.direction !== 'neutral'
+  ) {
     trend = r.lastEvent.direction === 'bullish' ? 'up' : 'down';
   }
 
@@ -85,4 +104,3 @@ function computeRRShort(entry: number, stop: number, target: number) {
   const reward = Math.max(0, entry - target);
   return reward / risk;
 }
-

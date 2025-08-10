@@ -34,9 +34,14 @@ const multiTimeCandleAnalysis = async (
     let profitPercentage = 0;
     let lossPercentage = 0;
 
-    if (recommendation.hasSignal && recommendation.takeProfitPrice && recommendation.stopLossPrice) {
+    if (
+      recommendation.hasSignal &&
+      recommendation.takeProfitPrice &&
+      recommendation.stopLossPrice
+    ) {
       const rr = computeRiskReward({
-        direction: recommendation.direction === 'bullish' ? 'bullish' : 'bearish',
+        direction:
+          recommendation.direction === 'bullish' ? 'bullish' : 'bearish',
         currentPrice: recommendation.currentPrice,
         stopLossPrice: recommendation.stopLossPrice,
       });

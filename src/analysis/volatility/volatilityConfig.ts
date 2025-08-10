@@ -110,13 +110,33 @@ export const volatilityConfig: VolatilityConfig = {
   },
 };
 
-export function updateVolatilityConfig(partial: Partial<VolatilityConfig>): void {
-  if (partial.periods) volatilityConfig.periods = { ...volatilityConfig.periods, ...partial.periods };
-  if (partial.sharpe) volatilityConfig.sharpe = { ...volatilityConfig.sharpe, ...partial.sharpe };
-  if (partial.regime) volatilityConfig.regime = { ...volatilityConfig.regime, ...partial.regime } as any;
-  if (partial.trend) volatilityConfig.trend = { ...volatilityConfig.trend, ...partial.trend };
-  if (partial.transition) volatilityConfig.transition = { ...volatilityConfig.transition, ...partial.transition };
-  if (partial.pricePosition) volatilityConfig.pricePosition = { ...volatilityConfig.pricePosition, ...partial.pricePosition };
+export function updateVolatilityConfig(
+  partial: Partial<VolatilityConfig>
+): void {
+  if (partial.periods)
+    volatilityConfig.periods = {
+      ...volatilityConfig.periods,
+      ...partial.periods,
+    };
+  if (partial.sharpe)
+    volatilityConfig.sharpe = { ...volatilityConfig.sharpe, ...partial.sharpe };
+  if (partial.regime)
+    volatilityConfig.regime = {
+      ...volatilityConfig.regime,
+      ...partial.regime,
+    } as any;
+  if (partial.trend)
+    volatilityConfig.trend = { ...volatilityConfig.trend, ...partial.trend };
+  if (partial.transition)
+    volatilityConfig.transition = {
+      ...volatilityConfig.transition,
+      ...partial.transition,
+    };
+  if (partial.pricePosition)
+    volatilityConfig.pricePosition = {
+      ...volatilityConfig.pricePosition,
+      ...partial.pricePosition,
+    };
   if (partial.bottomSignal) {
     volatilityConfig.bottomSignal = {
       ...volatilityConfig.bottomSignal,
@@ -128,5 +148,3 @@ export function updateVolatilityConfig(partial: Partial<VolatilityConfig>): void
     };
   }
 }
-
-

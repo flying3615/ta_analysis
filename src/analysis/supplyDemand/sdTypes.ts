@@ -32,5 +32,3 @@ export interface MultiTimeSdAnalysis {
   results: SdAnalysisResult[];
   overlaps: Zone[]; // 跨周期重叠区（聚合）
 }
-
-

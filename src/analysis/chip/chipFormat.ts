@@ -88,5 +88,3 @@ export function printChipAnalysis(analysis: ChipAnalysisResult) {
     `75%筹码价格: ${findPriceAtCumulativePercentage(analysis.cumulativeDistribution, 75).toFixed(2)}`
   );
 }
-
-

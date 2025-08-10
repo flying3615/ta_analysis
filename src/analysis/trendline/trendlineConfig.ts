@@ -12,7 +12,12 @@ export interface TrendlineConfig {
   retestWindowBars: number; // 回踩确认窗口
   retestTolerancePercent: number; // 回踩触达容差
 
-  scoreWeights: { touches: number; slope: number; retest: number; follow: number };
+  scoreWeights: {
+    touches: number;
+    slope: number;
+    retest: number;
+    follow: number;
+  };
 }
 
 export const trendlineConfig: TrendlineConfig = {
@@ -35,5 +40,3 @@ export const trendlineConfig: TrendlineConfig = {
 export function updateTrendlineConfig(partial: Partial<TrendlineConfig>) {
   Object.assign(trendlineConfig, partial);
 }
-
-

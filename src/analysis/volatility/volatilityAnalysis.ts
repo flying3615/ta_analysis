@@ -136,7 +136,8 @@ function determineVolatilityTrend(
  */
 function calculateSharpeRatio(returns: number[]): number {
   const annualFactor = volatilityConfig.sharpe.annualFactor; // 交易日
-  const riskFreeRate = volatilityConfig.sharpe.riskFreeRateAnnual / annualFactor;
+  const riskFreeRate =
+    volatilityConfig.sharpe.riskFreeRateAnnual / annualFactor;
 
   // 计算超额收益
   const excessReturns = returns.map(r => r - riskFreeRate);

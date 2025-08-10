@@ -19,7 +19,9 @@ function intersectZones(a: Zone, b: Zone): Zone | null {
   };
 }
 
-export async function multiTimeSupplyDemand(symbol: string): Promise<MultiTimeSdAnalysis> {
+export async function multiTimeSupplyDemand(
+  symbol: string
+): Promise<MultiTimeSdAnalysis> {
   const today = new Date();
   const startW = new Date();
   startW.setDate(today.getDate() - 365);
@@ -39,7 +41,11 @@ export async function multiTimeSupplyDemand(symbol: string): Promise<MultiTimeSd
   const rH: SdAnalysisResult = analyzeSupplyDemand(symbol, hourly, '1hour');
 
   const overlaps: Zone[] = [];
-  const pools = [rW.recentEffectiveZones, rD.recentEffectiveZones, rH.recentEffectiveZones];
+  const pools = [
+    rW.recentEffectiveZones,
+    rD.recentEffectiveZones,
+    rH.recentEffectiveZones,
+  ];
   for (let i = 0; i < pools.length; i++) {
     for (let j = i + 1; j < pools.length; j++) {
       for (const a of pools[i]) {
@@ -53,5 +59,3 @@ export async function multiTimeSupplyDemand(symbol: string): Promise<MultiTimeSd
 
   return { symbol, results: [rW, rD, rH], overlaps };
 }
-
-

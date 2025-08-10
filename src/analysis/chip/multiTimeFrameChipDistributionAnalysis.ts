@@ -77,9 +77,7 @@ function multiTimeFrameChipDistAnalysis(
 }
 
 // 导出核心函数，使其可供其他模块使用
-export {
-  multiTimeFrameChipDistAnalysis,
-};
+export { multiTimeFrameChipDistAnalysis };
 
 export type { MultiTimeframeAnalysisResult, TimeframeAnalysis };
 export { formatAndPrintChipAnalysis };

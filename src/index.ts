@@ -14,18 +14,23 @@ export {
   formatAndPrintPatternAnalysis,
 } from './analysis/patterns/analyzeMultiTimeframePatterns.js';
 // 暴露形态分析配置，便于外部项目按需调整
-export { patternConfig, updatePatternConfig } from './analysis/patterns/patternConfig.js';
+export {
+  patternConfig,
+  updatePatternConfig,
+} from './analysis/patterns/patternConfig.js';
 
 export {
   determineTrendDirection,
   detectTrendReversal,
   TrendReversalSignal,
   EnhancedPatternAnalysis,
-  enhancePatternWithTrendReversal,
   multiTimeframePatternAnalysis,
   printoutMultiTimeFramePatternAnalysis,
 } from './analysis/trendReversal/multiTimeFrameTrendReversal.js';
-export { trendReversalConfig, updateTrendReversalConfig } from './analysis/trendReversal/trendReversalConfig.js';
+export {
+  trendReversalConfig,
+  updateTrendReversalConfig,
+} from './analysis/trendReversal/trendReversalConfig.js';
 export { formatAndPrintEnhancedPatternAnalysis } from './analysis/trendReversal/formatReport.js';
 
 export {
@@ -45,10 +50,8 @@ export {
 // 暴露筹码配置，便于外部项目调整阈值与权重
 export { chipConfig, updateChipConfig } from './analysis/chip/chipConfig.js';
 
-// 综合分析（支持新旧架构）
-export { 
+export {
   executeIntegratedAnalysisV2,
-  executeIntegratedAnalysisWithDiagnostics,
   executeBatchAnalysis,
 } from './analysis/IntegratedAnalysis.js';
 
@@ -59,7 +62,10 @@ export {
   EnhancedVolatilityAnalysisResult,
   executeEnhancedCombinedAnalysis,
 } from './analysis/volatility/volatilityAnalysis.js';
-export { volatilityConfig, updateVolatilityConfig } from './analysis/volatility/volatilityConfig.js';
+export {
+  volatilityConfig,
+  updateVolatilityConfig,
+} from './analysis/volatility/volatilityConfig.js';
 
 // 新增的积累分布线分析导出
 export {
@@ -85,7 +91,10 @@ export {
 } from './util/util.js';
 
 // 暴露蜡烛图配置，便于外部按需调整
-export { candleConfig, updateCandleConfig } from './analysis/candle/candleConfig.js';
+export {
+  candleConfig,
+  updateCandleConfig,
+} from './analysis/candle/candleConfig.js';
 // 暴露蜡烛图多时间框架分析入口与格式化
 export {
   multiTimeCandleAnalysis,
@@ -93,17 +102,26 @@ export {
 } from './analysis/candle/multiTImeFrameCandleAnalysis.js';
 export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnalysis.js';
 // 导出综合交易计划的格式化与机器摘要构建
-export { formatTradePlanOutput, buildMachineReadableSummary } from './analysis/FormatTradePlan.js';
+export {
+  formatTradePlanOutput,
+  buildMachineReadableSummary,
+} from './analysis/FormatTradePlan.js';
 
 // 暴露BBSR（支撑阻力 + 近期多空）分析能力与配置
-export { multiTimeBBSRAnalysis, main as runBBSRAnalysis } from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
+export {
+  multiTimeBBSRAnalysis,
+  main as runBBSRAnalysis,
+} from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
 export { formatAndPrintSrAnalysis } from './analysis/sr/formatSrAnalysis.js';
 export { srConfig, updateSrConfig } from './analysis/sr/srConfig.js';
 
 // Market Structure
 export { runMultiTimeStructure } from './analysis/structure/multiTimeStructure.js';
 export { formatAndPrintStructureResult } from './analysis/structure/formatStructure.js';
-export { structureConfig, updateStructureConfig } from './analysis/structure/structureConfig.js';
+export {
+  structureConfig,
+  updateStructureConfig,
+} from './analysis/structure/structureConfig.js';
 
 // Supply/Demand Zones
 export { analyzeSupplyDemand } from './analysis/supplyDemand/sdDetector.js';
@@ -114,17 +132,23 @@ export { multiTimeSupplyDemand } from './analysis/supplyDemand/multiTimeSupplyDe
 // Range & Breakout
 export { analyzeRange } from './analysis/range/rangeDetector.js';
 export { formatAndPrintRange } from './analysis/range/formatRange.js';
-export { rangeConfig, updateRangeConfig } from './analysis/range/rangeConfig.js';
+export {
+  rangeConfig,
+  updateRangeConfig,
+} from './analysis/range/rangeConfig.js';
 
 // Trendlines & Channels
 export { analyzeTrendlinesAndChannels } from './analysis/trendline/trendlineDetector.js';
 export { formatAndPrintTrendlines } from './analysis/trendline/formatTrendline.js';
 export { multiTimeTrendlines } from './analysis/trendline/multiTimeTrendlines.js';
-export { trendlineConfig, updateTrendlineConfig } from './analysis/trendline/trendlineConfig.js';
+export {
+  trendlineConfig,
+  updateTrendlineConfig,
+} from './analysis/trendline/trendlineConfig.js';
 
 // === 新架构集成分析模块 ===
 // 集成配置管理
-export { 
+export {
   DEFAULT_INTEGRATION_CONFIG,
   updateIntegrationConfig,
   normalizeWeights,

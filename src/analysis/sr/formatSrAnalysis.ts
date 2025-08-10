@@ -1,6 +1,9 @@
 import type { MultiTimeFrameBBSRAnalysisResult } from './srTypes.js';
 
-export function formatAndPrintSrAnalysis(result: MultiTimeFrameBBSRAnalysisResult, symbol: string) {
+export function formatAndPrintSrAnalysis(
+  result: MultiTimeFrameBBSRAnalysisResult,
+  symbol: string
+) {
   console.log(`\n===== ${symbol} 支撑/阻力 + 近期多空信号 (BBSR) =====`);
 
   const render = (title: string, s?: any) => {
@@ -19,5 +22,3 @@ export function formatAndPrintSrAnalysis(result: MultiTimeFrameBBSRAnalysisResul
   render('周线', result.weeklyBBSRResult);
   render('日线', result.dailyBBSRResult);
 }
-
-

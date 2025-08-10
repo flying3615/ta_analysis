@@ -4,10 +4,10 @@
  */
 
 import type { KeyLevel } from '../../types.js';
-import type { 
-  AnalysisInputData, 
-  KeyLevelMergeResult, 
-  IntegrationContext 
+import type {
+  AnalysisInputData,
+  KeyLevelMergeResult,
+  IntegrationContext,
 } from './IntegrationTypes.js';
 import type { IntegrationConfig } from './IntegrationConfig.js';
 
@@ -28,20 +28,23 @@ export class KeyLevelManager {
     allLevels.push(...this.extractPatternKeyLevels(input.analyses.pattern));
     allLevels.push(...this.extractBBSRKeyLevels(input.analyses.bbsr));
     allLevels.push(...this.extractStructureKeyLevels(input.analyses.structure));
-    allLevels.push(...this.extractSupplyDemandKeyLevels(input.analyses.supplyDemand));
+    allLevels.push(
+      ...this.extractSupplyDemandKeyLevels(input.analyses.supplyDemand)
+    );
     allLevels.push(...this.extractRangeKeyLevels(input.analyses.range));
     allLevels.push(...this.extractTrendlineKeyLevels(input.analyses.trendline));
 
     const originalCount = allLevels.length;
-    
+
     // 排序关键位
     const sortedLevels = this.sortKeyLevels(allLevels);
-    
+
     // 合并相近的关键位
     const mergedLevels = this.mergeNearbyLevels(sortedLevels);
-    
+
     const mergedCount = mergedLevels.length;
-    const compressionRatio = originalCount > 0 ? mergedCount / originalCount : 1;
+    const compressionRatio =
+      originalCount > 0 ? mergedCount / originalCount : 1;
 
     return {
       mergedLevels,
@@ -54,7 +57,9 @@ export class KeyLevelManager {
   /**
    * 从筹码分析提取关键位
    */
-  private extractChipKeyLevels(chipAnalysis: AnalysisInputData['analyses']['chip']): KeyLevel[] {
+  private extractChipKeyLevels(
+    chipAnalysis: AnalysisInputData['analyses']['chip']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
     const timeframe = chipAnalysis.primaryTimeframe;
 
@@ -87,7 +92,9 @@ export class KeyLevelManager {
   /**
    * 从形态分析提取关键位
    */
-  private extractPatternKeyLevels(patternAnalysis: AnalysisInputData['analyses']['pattern']): KeyLevel[] {
+  private extractPatternKeyLevels(
+    patternAnalysis: AnalysisInputData['analyses']['pattern']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
     // 从各时间框架主导形态中提取关键位（突破位、止损位）
     patternAnalysis.timeframeAnalyses?.forEach(tfa => {
@@ -124,15 +131,21 @@ export class KeyLevelManager {
   /**
    * 从BBSR分析提取关键位
    */
-  private extractBBSRKeyLevels(bbsrAnalysis: AnalysisInputData['analyses']['bbsr']): KeyLevel[] {
+  private extractBBSRKeyLevels(
+    bbsrAnalysis: AnalysisInputData['analyses']['bbsr']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
     // 从BBSR日线和周线结果中提取关键位
-    const bbsrSignals = [bbsrAnalysis.dailyBBSRResult, bbsrAnalysis.weeklyBBSRResult].filter(Boolean);
+    const bbsrSignals = [
+      bbsrAnalysis.dailyBBSRResult,
+      bbsrAnalysis.weeklyBBSRResult,
+    ].filter(Boolean);
     bbsrSignals.forEach(signal => {
       levels.push({
         price: signal!.SRLevel,
-        type: signal!.signal.patternType === 'bullish' ? 'support' : 'resistance',
+        type:
+          signal!.signal.patternType === 'bullish' ? 'support' : 'resistance',
         strength: signal!.strength > 70 ? 'strong' : 'moderate',
         source: 'bbsr',
         timeframe: 'daily',
@@ -146,25 +159,30 @@ export class KeyLevelManager {
   /**
    * 从结构分析提取关键位
    */
-  private extractStructureKeyLevels(structureAnalysis: AnalysisInputData['analyses']['structure']): KeyLevel[] {
+  private extractStructureKeyLevels(
+    structureAnalysis: AnalysisInputData['analyses']['structure']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
     // 结构突破位
     // 部分结构实现可能没有 lastBreakLevel，这里仅基于趋势与基本关键点提取
 
     // 关键摆动点
-    (structureAnalysis as any).swingPoints?.forEach((point: any, index: number) => {
-      if (index < 3) { // 只取最近3个摆动点
-        levels.push({
-          price: point.price,
-          type: point.type === 'high' ? 'resistance' : 'support',
-          strength: 'moderate',
-          source: 'structure',
-          timeframe: structureAnalysis.timeframe,
-          description: `结构摆动${point.type === 'high' ? '高' : '低'}点`,
-        });
+    (structureAnalysis as any).swingPoints?.forEach(
+      (point: any, index: number) => {
+        if (index < 3) {
+          // 只取最近3个摆动点
+          levels.push({
+            price: point.price,
+            type: point.type === 'high' ? 'resistance' : 'support',
+            strength: 'moderate',
+            source: 'structure',
+            timeframe: structureAnalysis.timeframe,
+            description: `结构摆动${point.type === 'high' ? '高' : '低'}点`,
+          });
+        }
       }
-    });
+    );
 
     return levels;
   }
@@ -172,7 +190,9 @@ export class KeyLevelManager {
   /**
    * 从供需分析提取关键位
    */
-  private extractSupplyDemandKeyLevels(sdAnalysis: AnalysisInputData['analyses']['supplyDemand']): KeyLevel[] {
+  private extractSupplyDemandKeyLevels(
+    sdAnalysis: AnalysisInputData['analyses']['supplyDemand']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
     // 供需区域
@@ -206,7 +226,9 @@ export class KeyLevelManager {
   /**
    * 从区间分析提取关键位
    */
-  private extractRangeKeyLevels(rangeAnalysis: AnalysisInputData['analyses']['range']): KeyLevel[] {
+  private extractRangeKeyLevels(
+    rangeAnalysis: AnalysisInputData['analyses']['range']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
     // 区间上下边界
@@ -236,22 +258,28 @@ export class KeyLevelManager {
   /**
    * 从趋势线分析提取关键位
    */
-  private extractTrendlineKeyLevels(trendlineAnalysis: AnalysisInputData['analyses']['trendline']): KeyLevel[] {
+  private extractTrendlineKeyLevels(
+    trendlineAnalysis: AnalysisInputData['analyses']['trendline']
+  ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
     // 趋势通道边界
     if (trendlineAnalysis.channel) {
       // trendline types 使用 upper/lower 或者 upperBand/lowerBand，这里兼容
-      const upper = (trendlineAnalysis.channel as any).upperBand ?? (trendlineAnalysis.channel as any).upper?.high;
-      const lower = (trendlineAnalysis.channel as any).lowerBand ?? (trendlineAnalysis.channel as any).lower?.low;
+      const upper =
+        (trendlineAnalysis.channel as any).upperBand ??
+        (trendlineAnalysis.channel as any).upper?.high;
+      const lower =
+        (trendlineAnalysis.channel as any).lowerBand ??
+        (trendlineAnalysis.channel as any).lower?.low;
       if (typeof upper === 'number') {
         levels.push({
           price: upper,
-        type: 'resistance',
-        strength: 'moderate',
+          type: 'resistance',
+          strength: 'moderate',
           source: 'trendline',
-        timeframe: trendlineAnalysis.timeframe,
-        description: '趋势通道上边界',
+          timeframe: trendlineAnalysis.timeframe,
+          description: '趋势通道上边界',
         });
       }
 
@@ -288,7 +316,7 @@ export class KeyLevelManager {
 
     for (let i = 0; i < sortedLevels.length; i++) {
       const currentLevel = sortedLevels[i];
-      
+
       if (mergedLevels.length === 0) {
         mergedLevels.push({ ...currentLevel });
         continue;
@@ -315,10 +343,12 @@ export class KeyLevelManager {
    */
   private mergeTwoLevels(target: KeyLevel, source: KeyLevel): void {
     // 使用加权平均价格
-    const totalWeight = this.getStrengthWeight(target.strength) + this.getStrengthWeight(source.strength);
+    const totalWeight =
+      this.getStrengthWeight(target.strength) +
+      this.getStrengthWeight(source.strength);
     const targetWeight = this.getStrengthWeight(target.strength) / totalWeight;
     const sourceWeight = this.getStrengthWeight(source.strength) / totalWeight;
-    
+
     target.price = target.price * targetWeight + source.price * sourceWeight;
 
     // 如果类型相同，提升强度
@@ -335,7 +365,10 @@ export class KeyLevelManager {
     }
 
     // 选择更高级别的时间周期
-    if (this.getTimeframeRank(source.timeframe) > this.getTimeframeRank(target.timeframe)) {
+    if (
+      this.getTimeframeRank(source.timeframe) >
+      this.getTimeframeRank(target.timeframe)
+    ) {
       target.timeframe = source.timeframe;
     }
   }
@@ -345,10 +378,14 @@ export class KeyLevelManager {
    */
   private getStrengthWeight(strength: string): number {
     switch (strength) {
-      case 'strong': return 3;
-      case 'moderate': return 2;
-      case 'weak': return 1;
-      default: return 1;
+      case 'strong':
+        return 3;
+      case 'moderate':
+        return 2;
+      case 'weak':
+        return 1;
+      default:
+        return 1;
     }
   }
 
@@ -357,10 +394,14 @@ export class KeyLevelManager {
    */
   private getTimeframeRank(timeframe: string): number {
     switch (timeframe) {
-      case 'weekly': return 3;
-      case 'daily': return 2;
-      case '1hour': return 1;
-      default: return 1;
+      case 'weekly':
+        return 3;
+      case 'daily':
+        return 2;
+      case '1hour':
+        return 1;
+      default:
+        return 1;
     }
   }
 
@@ -368,8 +409,8 @@ export class KeyLevelManager {
    * 过滤关键位（按距离当前价格的距离）
    */
   filterKeyLevelsByDistance(
-    levels: KeyLevel[], 
-    currentPrice: number, 
+    levels: KeyLevel[],
+    currentPrice: number,
     maxDistancePercent: number = 0.1
   ): KeyLevel[] {
     return levels.filter(level => {
@@ -385,9 +426,11 @@ export class KeyLevelManager {
     return levels
       .sort((a, b) => {
         // 先按强度排序，再按来源权重排序
-        const strengthDiff = this.getStrengthWeight(b.strength) - this.getStrengthWeight(a.strength);
+        const strengthDiff =
+          this.getStrengthWeight(b.strength) -
+          this.getStrengthWeight(a.strength);
         if (strengthDiff !== 0) return strengthDiff;
-        
+
         return this.getSourceWeight(b.source) - this.getSourceWeight(a.source);
       })
       .slice(0, count);
@@ -398,15 +441,24 @@ export class KeyLevelManager {
    */
   private getSourceWeight(source: string): number {
     switch (source) {
-      case 'combined': return 5;
-      case 'chip': return 4;
-      case 'structure': return 4;
-      case 'bbsr': return 3;
-      case 'pattern': return 3;
-      case 'supplyDemand': return 3;
-      case 'trendline': return 2;
-      case 'range': return 2;
-      default: return 1;
+      case 'combined':
+        return 5;
+      case 'chip':
+        return 4;
+      case 'structure':
+        return 4;
+      case 'bbsr':
+        return 3;
+      case 'pattern':
+        return 3;
+      case 'supplyDemand':
+        return 3;
+      case 'trendline':
+        return 2;
+      case 'range':
+        return 2;
+      default:
+        return 1;
     }
   }
 }

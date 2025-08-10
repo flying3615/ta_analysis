@@ -42,7 +42,9 @@ export function formatAndPrintCandleAnalysis(
   analysis: CandleAnalysisPrint,
   symbol: string = ''
 ) {
-  console.log(`\n${symbol ? '===== ' + symbol + ' ' : '====='}蜡烛多时间周期分析 =====`);
+  console.log(
+    `\n${symbol ? '===== ' + symbol + ' ' : '====='}蜡烛多时间周期分析 =====`
+  );
   console.log(`股票代码: ${analysis.symbol}`);
   console.log(`当前价格: ${analysis.currentPrice.toFixed(2)}`);
 
@@ -72,7 +74,13 @@ export function formatAndPrintCandleAnalysis(
       console.log('  (none)');
       return;
     }
-    console.log('  ' + padRight('日期', 24) + padRight('形态', 24) + padRight('强度', 10) + '价格');
+    console.log(
+      '  ' +
+        padRight('日期', 24) +
+        padRight('形态', 24) +
+        padRight('强度', 10) +
+        '价格'
+    );
     for (const p of list.slice(-10)) {
       const date = padRight(p.date, 24);
       const names = padRight(p.patterns.join(','), 24);
@@ -90,5 +98,3 @@ export function formatAndPrintCandleAnalysis(
   printPatternBlock('周线看涨', analysis.patterns.weekly.bullish);
   printPatternBlock('周线看跌', analysis.patterns.weekly.bearish);
 }
-
-

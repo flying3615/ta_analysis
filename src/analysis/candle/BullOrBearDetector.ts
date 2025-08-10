@@ -121,9 +121,15 @@ function calculatePatternStrength(
   }
 
   // 看涨形态:价格收于上方，看跌形态:价格收于下方
-  if (patternType === PatternDirection.Bullish && lastCandle.close > lastCandle.open) {
+  if (
+    patternType === PatternDirection.Bullish &&
+    lastCandle.close > lastCandle.open
+  ) {
     strength += 10;
-  } else if (patternType === PatternDirection.Bearish && lastCandle.close < lastCandle.open) {
+  } else if (
+    patternType === PatternDirection.Bearish &&
+    lastCandle.close < lastCandle.open
+  ) {
     strength += 10;
   }
 
@@ -452,4 +458,3 @@ export const generateTradeRecommendation = async (
 
   return result;
 };
-

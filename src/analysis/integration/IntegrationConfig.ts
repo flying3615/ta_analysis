@@ -117,13 +117,16 @@ export function updateIntegrationConfig(
 }
 
 // 权重归一化函数
-export function normalizeWeights(weights: IntegrationWeights): IntegrationWeights {
-  const totalWeight = weights.chip + weights.pattern + weights.volume + weights.bbsr;
-  
+export function normalizeWeights(
+  weights: IntegrationWeights
+): IntegrationWeights {
+  const totalWeight =
+    weights.chip + weights.pattern + weights.volume + weights.bbsr;
+
   if (totalWeight === 0) {
     throw new Error('权重总和不能为0');
   }
-  
+
   return {
     chip: weights.chip / totalWeight,
     pattern: weights.pattern / totalWeight,
@@ -138,26 +141,34 @@ export function normalizeWeights(weights: IntegrationWeights): IntegrationWeight
 }
 
 // 验证配置函数
-export function validateConfig(config: IntegrationConfig): { valid: boolean; errors: string[] } {
+export function validateConfig(config: IntegrationConfig): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
-  
+
   // 检查权重
-  const totalMainWeight = config.weights.chip + config.weights.pattern + 
-                         config.weights.volume + config.weights.bbsr;
+  const totalMainWeight =
+    config.weights.chip +
+    config.weights.pattern +
+    config.weights.volume +
+    config.weights.bbsr;
   if (totalMainWeight <= 0) {
     errors.push('主要权重(chip+pattern+volume+bbsr)总和必须大于0');
   }
-  
+
   // 检查阈值
   if (config.thresholds.scoreLong <= config.thresholds.scoreShort) {
     errors.push('做多阈值必须大于做空阈值');
   }
-  
+
   // 检查时间范围
-  if (config.timeframes.weekly.lookbackDays < config.timeframes.daily.lookbackDays) {
+  if (
+    config.timeframes.weekly.lookbackDays < config.timeframes.daily.lookbackDays
+  ) {
     errors.push('周线回看天数应该大于等于日线回看天数');
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,

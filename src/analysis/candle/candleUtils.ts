@@ -70,7 +70,9 @@ export function calcEntryStopTake(params: {
     let stopLoss = round2(currentPrice * (1 - dynamicPct));
     if (stopLoss < support) stopLoss = round2(support);
     const risk = currentPrice - stopLoss;
-    const takeProfit = round2(currentPrice + risk * candleConfig.risk.bullishRiskReward);
+    const takeProfit = round2(
+      currentPrice + risk * candleConfig.risk.bullishRiskReward
+    );
     return { entryPrice, stopLossPrice: stopLoss, takeProfitPrice: takeProfit };
   } else {
     const highs = recentCandles.map(c => c.high);
@@ -78,7 +80,9 @@ export function calcEntryStopTake(params: {
     let stopLoss = round2(currentPrice * (1 + dynamicPct));
     if (stopLoss > resistance) stopLoss = round2(resistance);
     const risk = stopLoss - currentPrice;
-    const takeProfit = round2(currentPrice - risk * candleConfig.risk.bearishRiskReward);
+    const takeProfit = round2(
+      currentPrice - risk * candleConfig.risk.bearishRiskReward
+    );
     return { entryPrice, stopLossPrice: stopLoss, takeProfitPrice: takeProfit };
   }
 }
@@ -86,5 +90,3 @@ export function calcEntryStopTake(params: {
 export function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
-
-

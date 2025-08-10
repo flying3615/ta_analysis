@@ -9,9 +9,21 @@ import {
   identifyChipPeaks,
   identifyKeyPriceLevels,
 } from '../../util/chipUtils.js';
-import { calculateTechnicalIndicators, findPriceAtCumulativePercentage } from '../../util/taUtil.js';
-import type { ChipDistribution, ChipPeak, ChipAnalysisResult } from './chipTypes.js';
-import { scoreBuySignal, scoreShortSignal, buildOverallSuggestion, enrichCommentsWithPeaks } from './chipSignals.js';
+import {
+  calculateTechnicalIndicators,
+  findPriceAtCumulativePercentage,
+} from '../../util/taUtil.js';
+import type {
+  ChipDistribution,
+  ChipPeak,
+  ChipAnalysisResult,
+} from './chipTypes.js';
+import {
+  scoreBuySignal,
+  scoreShortSignal,
+  buildOverallSuggestion,
+  enrichCommentsWithPeaks,
+} from './chipSignals.js';
 import { printChipAnalysis } from './chipFormat.js';
 
 // 类型已迁移到 chipTypes.ts
@@ -531,8 +543,8 @@ export function analyzeChipDistribution(
     chipMigrationDirection: migrationAnalysis.chipMigrationDirection,
     technicalSignal: technicalIndicators.technicalSignal,
   });
-  let buyScore = buy.score;
-  let buyRecommendation = buy.recommendation;
+  const buyScore = buy.score;
+  const buyRecommendation = buy.recommendation;
   let buyComment = buy.comment;
 
   // 11. 新增：生成卖空建议（使用评分模块）
@@ -547,15 +559,15 @@ export function analyzeChipDistribution(
     technicalSignal: technicalIndicators.technicalSignal,
     rsiLevel: technicalIndicators.rsiLevel,
   });
-  let shortScore = short.score;
-  let shortRecommendation = short.recommendation;
+  const shortScore = short.score;
+  const shortRecommendation = short.recommendation;
   let shortComment = short.comment;
   const isShortRecommended = short.isShort;
 
   // 12. 制定综合交易建议（使用评分模块）
   const overall = buildOverallSuggestion(buyScore, shortScore);
-  let overallRecommendation = overall.overallRecommendation;
-  let positionSuggestion = overall.positionSuggestion;
+  const overallRecommendation = overall.overallRecommendation;
+  const positionSuggestion = overall.positionSuggestion;
   let overallComment = overall.overallComment;
 
   // 增加一些具体细节到建议中（使用封装方法）

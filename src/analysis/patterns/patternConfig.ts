@@ -66,5 +66,3 @@ export function updatePatternConfig(partial: Partial<PatternConfig>) {
     signals: { ...patternConfig.signals, ...(partial.signals || {}) },
   };
 }
-
-

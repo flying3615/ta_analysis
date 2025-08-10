@@ -10,5 +10,3 @@ export type BBSRAnalyzer = (
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
 ) => MultiTimeFrameBBSRAnalysisResult;
-
-

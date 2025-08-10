@@ -23,10 +23,6 @@ export type AnalysisObject = {
   position?: Position;
 };
 
-export interface Strategy<T> {
-  run(_): T;
-}
-
 export interface PatternResult {
   date: Date;
   patternType: PatternDirection.Bullish | PatternDirection.Bearish;
@@ -206,7 +202,15 @@ export interface KeyLevel {
   price: number;
   type: 'support' | 'resistance';
   strength: 'strong' | 'moderate' | 'weak';
-  source: 'chip' | 'pattern' | 'combined' | 'bbsr' | 'structure' | 'supplyDemand' | 'range' | 'trendline';
+  source:
+    | 'chip'
+    | 'pattern'
+    | 'combined'
+    | 'bbsr'
+    | 'structure'
+    | 'supplyDemand'
+    | 'range'
+    | 'trendline';
   timeframe: 'weekly' | 'daily' | '1hour';
   description: string;
 }
@@ -246,10 +250,6 @@ export interface IntegratedTradePlan {
   patternAnalysisContribution: number; // 0-100
   volumeAnalysisContribution: number; // 0-100
   bbsrAnalysisContribution: number; // 0-100
-  structureAnalysisContribution?: number; // 0-100 (归一化显示)
-  supplyDemandAnalysisContribution?: number; // 0-100 (归一化显示)
-  rangeAnalysisContribution?: number; // 0-100 (归一化显示)
-  trendlineAnalysisContribution?: number; // 0-100 (归一化显示)
 
   // 总体分析描述
   summary: string;

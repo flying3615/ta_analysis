@@ -3,9 +3,9 @@
  * 负责协调各个分析模块的执行和结果整合
  */
 
+import type { IntegratedTradePlan } from '../../types.js';
 import { Candle } from '../../types.js';
-import { getStockDataForTimeframe } from '../../util/util.js';
-import { generateUniqueId } from '../../util/util.js';
+import { generateUniqueId, getStockDataForTimeframe } from '../../util/util.js';
 
 // 分析模块导入
 import { multiTimeFrameChipDistAnalysis } from '../chip/multiTimeFrameChipDistributionAnalysis.js';
@@ -23,19 +23,18 @@ import { KeyLevelManager } from './KeyLevelManager.js';
 import { StrategyGenerator } from './StrategyGenerator.js';
 
 import type {
-  AnalysisInputData,
-  IntegratedAnalysisResult,
-  IntegrationContext,
-  AnalysisResultWrapper,
   AnalysisError,
+  AnalysisInputData,
+  AnalysisResultWrapper,
   BatchAnalysisInput,
   BatchAnalysisResult,
+  IntegratedAnalysisResult,
+  IntegrationContext,
 } from './IntegrationTypes.js';
-import { 
+import {
   DEFAULT_INTEGRATION_CONFIG,
-  type IntegrationConfig
+  type IntegrationConfig,
 } from './IntegrationConfig.js';
-import type { IntegratedTradePlan } from '../../types.js';
 
 export class IntegratedOrchestrator {
   private signalAggregator: SignalAggregator;
@@ -58,10 +57,12 @@ export class IntegratedOrchestrator {
   ): Promise<IntegratedAnalysisResult> {
     const startTime = Date.now();
     const executionId = generateUniqueId();
-    
+
     // 合并配置
-    const finalConfig = customConfig ? { ...this.config, ...customConfig } : this.config;
-    
+    const finalConfig = customConfig
+      ? { ...this.config, ...customConfig }
+      : this.config;
+
     // 创建执行上下文
     const context: IntegrationContext = {
       symbol,
@@ -76,33 +77,42 @@ export class IntegratedOrchestrator {
 
     try {
       if (finalConfig.options.logLevel !== 'silent') {
-        console.log(`======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`);
+        console.log(
+          `======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`
+        );
       }
 
       // 获取数据
       const dataStartTime = Date.now();
-      const { weeklyData, dailyData, hourlyData } = await this.getMultiTimeframeData(symbol, finalConfig);
+      const { weeklyData, dailyData, hourlyData } =
+        await this.getMultiTimeframeData(symbol, finalConfig);
       const dataEndTime = Date.now();
 
       // 执行各个分析模块
       const analysisStartTime = Date.now();
       const analysisData = await this.executeAllAnalyses(
-        symbol, 
-        weeklyData, 
-        dailyData, 
-        hourlyData, 
+        symbol,
+        weeklyData,
+        dailyData,
+        hourlyData,
         context
       );
       const analysisEndTime = Date.now();
 
       // 信号汇总
       const signalStartTime = Date.now();
-      const signalResult = this.signalAggregator.aggregateSignals(analysisData, context);
+      const signalResult = this.signalAggregator.aggregateSignals(
+        analysisData,
+        context
+      );
       const signalEndTime = Date.now();
 
       // 关键位管理
       const keyLevelStartTime = Date.now();
-      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(analysisData, context);
+      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
+        analysisData,
+        context
+      );
       const keyLevelEndTime = Date.now();
 
       // 策略生成
@@ -115,7 +125,8 @@ export class IntegratedOrchestrator {
         analyses: analysisData.analyses,
         config: finalConfig,
       };
-      const strategyResult = this.strategyGenerator.generateStrategy(strategyInput);
+      const strategyResult =
+        this.strategyGenerator.generateStrategy(strategyInput);
       const strategyEndTime = Date.now();
 
       // 构建最终交易计划
@@ -147,16 +158,17 @@ export class IntegratedOrchestrator {
       };
 
       if (finalConfig.options.logLevel !== 'silent') {
-        console.log(`======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`);
+        console.log(
+          `======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`
+        );
       }
 
       return result;
-
     } catch (error) {
       console.error(`综合分析执行失败 (${symbol}):`, error);
-      
+
       // 创建错误结果
-      const errorResult: IntegratedAnalysisResult = {
+      return {
         tradePlan: this.createFallbackTradePlan(symbol, context),
         context,
         performance: {
@@ -165,44 +177,50 @@ export class IntegratedOrchestrator {
         },
         diagnostics: {
           warnings: [],
-          errors: [{
-            code: 'EXECUTION_FAILED',
-            message: error instanceof Error ? error.message : 'Unknown error',
-            module: 'orchestrator',
-            details: error,
-            recoverable: false,
-          }],
+          errors: [
+            {
+              code: 'EXECUTION_FAILED',
+              message: error instanceof Error ? error.message : 'Unknown error',
+              module: 'orchestrator',
+              details: error,
+              recoverable: false,
+            },
+          ],
           fallbacksUsed: ['fallback-trade-plan'],
         },
       };
-
-      return errorResult;
     }
   }
 
   /**
    * 批量执行分析
    */
-  async executeBatchAnalysis(input: BatchAnalysisInput): Promise<BatchAnalysisResult> {
+  async executeBatchAnalysis(
+    input: BatchAnalysisInput
+  ): Promise<BatchAnalysisResult> {
     const startTime = Date.now();
     const results = new Map<string, IntegratedAnalysisResult>();
     const errors = new Map<string, AnalysisError>();
-    
+
     const parallelLimit = input.parallelLimit || 3;
     const symbols = [...input.symbols];
-    
+
     // 分批处理
     for (let i = 0; i < symbols.length; i += parallelLimit) {
       const batch = symbols.slice(i, i + parallelLimit);
-      
+
       const batchPromises = batch.map(async symbol => {
         try {
-          const result = await this.executeIntegratedAnalysis(symbol, input.config);
+          const result = await this.executeIntegratedAnalysis(
+            symbol,
+            input.config
+          );
           results.set(symbol, result);
         } catch (error) {
           const analysisError: AnalysisError = {
             code: 'BATCH_ANALYSIS_FAILED',
-            message: error instanceof Error ? error.message : 'Batch analysis failed',
+            message:
+              error instanceof Error ? error.message : 'Batch analysis failed',
             module: 'orchestrator',
             details: error,
             recoverable: true,
@@ -210,13 +228,13 @@ export class IntegratedOrchestrator {
           errors.set(symbol, analysisError);
         }
       });
-      
+
       await Promise.all(batchPromises);
     }
-    
+
     const endTime = Date.now();
     const totalExecutionTime = endTime - startTime;
-    
+
     return {
       results,
       summary: {
@@ -234,20 +252,30 @@ export class IntegratedOrchestrator {
    * 获取多时间周期数据
    */
   private async getMultiTimeframeData(
-    symbol: string, 
+    symbol: string,
     config: IntegrationConfig
-  ): Promise<{ weeklyData: Candle[]; dailyData: Candle[]; hourlyData: Candle[] }> {
+  ): Promise<{
+    weeklyData: Candle[];
+    dailyData: Candle[];
+    hourlyData: Candle[];
+  }> {
     const today = new Date();
-    
+
     // 计算开始日期
     const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays);
-    
+    weeklyStartDate.setDate(
+      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
+    );
+
     const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(dailyStartDate.getDate() - config.timeframes.daily.lookbackDays);
-    
+    dailyStartDate.setDate(
+      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
+    );
+
     const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays);
+    hourlyStartDate.setDate(
+      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
+    );
 
     if (config.options.enableParallelAnalysis) {
       // 并行获取数据
@@ -256,14 +284,29 @@ export class IntegratedOrchestrator {
         this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
         this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
       ]);
-      
+
       return { weeklyData, dailyData, hourlyData };
     } else {
       // 串行获取数据
-      const weeklyData = await this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly');
-      const dailyData = await this.getCachedStockData(symbol, dailyStartDate, today, 'daily');
-      const hourlyData = await this.getCachedStockData(symbol, hourlyStartDate, today, '1hour');
-      
+      const weeklyData = await this.getCachedStockData(
+        symbol,
+        weeklyStartDate,
+        today,
+        'weekly'
+      );
+      const dailyData = await this.getCachedStockData(
+        symbol,
+        dailyStartDate,
+        today,
+        'daily'
+      );
+      const hourlyData = await this.getCachedStockData(
+        symbol,
+        hourlyStartDate,
+        today,
+        '1hour'
+      );
+
       return { weeklyData, dailyData, hourlyData };
     }
   }
@@ -278,21 +321,26 @@ export class IntegratedOrchestrator {
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
     const cacheKey = `${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    
+
     if (this.dataCache.has(cacheKey)) {
       return this.dataCache.get(cacheKey)!;
     }
-    
-    const data = await getStockDataForTimeframe(symbol, startDate, endDate, timeframe);
+
+    const data = await getStockDataForTimeframe(
+      symbol,
+      startDate,
+      endDate,
+      timeframe
+    );
     this.dataCache.set(cacheKey, data);
-    
+
     // 清理过期缓存（保留最近100个条目）
     if (this.dataCache.size > 100) {
       const keys = Array.from(this.dataCache.keys());
       const keysToDelete = keys.slice(0, keys.length - 100);
       keysToDelete.forEach(key => this.dataCache.delete(key));
     }
-    
+
     return data;
   }
 
@@ -307,7 +355,7 @@ export class IntegratedOrchestrator {
     context: IntegrationContext
   ): Promise<AnalysisInputData> {
     const config = context.config;
-    
+
     if (config.options.logLevel === 'verbose') {
       console.log('正在执行各分析模块...');
     }
@@ -326,19 +374,21 @@ export class IntegratedOrchestrator {
           trendlineAnalysis,
         ] = await Promise.all([
           this.executeWithFallback(
-            () => multiTimeFrameChipDistAnalysis(
-              symbol,
-              'daily',
-              ['weekly', 'daily', '1hour'],
-              { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
-              weeklyData,
-              dailyData,
-              hourlyData
-            ),
+            () =>
+              multiTimeFrameChipDistAnalysis(
+                symbol,
+                'daily',
+                ['weekly', 'daily', '1hour'],
+                { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
+                weeklyData,
+                dailyData,
+                hourlyData
+              ),
             'chip'
           ),
           this.executeWithFallback(
-            () => multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
+            () =>
+              multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
             'pattern'
           ),
           this.executeWithFallback(
@@ -386,15 +436,16 @@ export class IntegratedOrchestrator {
           console.log('正在执行筹码分布分析...');
         }
         const chipAnalysis = await this.executeWithFallback(
-          () => multiTimeFrameChipDistAnalysis(
-            symbol,
-            'daily',
-            ['weekly', 'daily', '1hour'],
-            { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
-            weeklyData,
-            dailyData,
-            hourlyData
-          ),
+          () =>
+            multiTimeFrameChipDistAnalysis(
+              symbol,
+              'daily',
+              ['weekly', 'daily', '1hour'],
+              { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
+              weeklyData,
+              dailyData,
+              hourlyData
+            ),
           'chip'
         );
 
@@ -402,7 +453,8 @@ export class IntegratedOrchestrator {
           console.log('正在执行形态分析...');
         }
         const patternAnalysis = await this.executeWithFallback(
-          () => multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
+          () =>
+            multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
           'pattern'
         );
 
@@ -452,7 +504,9 @@ export class IntegratedOrchestrator {
         };
       }
     } catch (error) {
-      throw new Error(`分析模块执行失败: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `分析模块执行失败: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -464,10 +518,10 @@ export class IntegratedOrchestrator {
     moduleName: string
   ): Promise<AnalysisResultWrapper<T>> {
     const startTime = Date.now();
-    
+
     try {
       const result = await analysisFunction();
-      
+
       return {
         success: true,
         data: result,
@@ -493,7 +547,7 @@ export class IntegratedOrchestrator {
           executionTime: Date.now() - startTime,
         };
       }
-      
+
       throw error;
     }
   }
@@ -543,70 +597,83 @@ export class IntegratedOrchestrator {
       symbol,
       currentPrice: analysisData.analyses.chip.currentPrice,
       date: context.timestamp,
-      
+
       direction: signalResult.direction,
       signalStrength: signalResult.signalStrength,
       confidenceScore: signalResult.confidenceScore,
-      
+
       // 权重信息
       chipAnalysisWeight: context.config.weights.chip,
       patternAnalysisWeight: context.config.weights.pattern,
       volumeAnalysisWeight: context.config.weights.volume,
       bbsrAnalysisWeight: context.config.weights.bbsr,
-      
+
       // 贡献度
       chipAnalysisContribution: signalResult.contributions.chip,
       patternAnalysisContribution: signalResult.contributions.pattern,
       volumeAnalysisContribution: signalResult.contributions.volume,
       bbsrAnalysisContribution: signalResult.contributions.bbsr,
-      structureAnalysisContribution: signalResult.contributions.structure,
-      supplyDemandAnalysisContribution: signalResult.contributions.supplyDemand,
-      rangeAnalysisContribution: signalResult.contributions.range,
-      trendlineAnalysisContribution: signalResult.contributions.trendline,
-      
+
       // 策略相关
       entryStrategy: strategyResult.entryStrategy,
       exitStrategy: strategyResult.exitStrategy,
       riskManagement: strategyResult.riskManagement,
-      
+
       // 关键信息
       keyLevels: keyLevelResult.mergedLevels,
       confirmationSignals: strategyResult.confirmationSignals,
       invalidationConditions: strategyResult.invalidationConditions,
       keyObservations: strategyResult.keyObservations,
       warnings: strategyResult.warnings,
-      
+
       // 分析相关
       bbsrAnalysis: analysisData.analyses.bbsr,
-      
+
       // 新增字段
       summary: this.generateSummary(signalResult, analysisData),
-      primaryRationale: this.generatePrimaryRationale(signalResult, analysisData),
-      secondaryRationale: this.generateSecondaryRationale(signalResult, analysisData),
-      
+      primaryRationale: this.generatePrimaryRationale(
+        signalResult,
+        analysisData
+      ),
+      secondaryRationale: this.generateSecondaryRationale(
+        signalResult,
+        analysisData
+      ),
+
       primaryTimeframe: 'daily',
       timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
       shortTermOutlook: this.buildShortTermOutlook(analysisData.analyses),
       mediumTermOutlook: this.buildMediumTermOutlook(analysisData.analyses),
       longTermOutlook: this.buildLongTermOutlook(analysisData.analyses),
-      
-      trendReversalInfo: this.extractTrendReversalInfo(analysisData.analyses.pattern),
-      
+
+      trendReversalInfo: this.extractTrendReversalInfo(
+        analysisData.analyses.pattern
+      ),
+
       vvInsights: {
-        volumeAnalysisReason: analysisData.analyses.volatility.volumeAnalysisReason || '',
-        volatilityAnalysisReason: analysisData.analyses.volatility.volatilityAnalysisReason || '',
-        combinedAnalysisSummary: analysisData.analyses.volatility.combinedAnalysisSummary || '',
+        volumeAnalysisReason:
+          analysisData.analyses.volatility.volumeAnalysisReason || '',
+        volatilityAnalysisReason:
+          analysisData.analyses.volatility.volatilityAnalysisReason || '',
+        combinedAnalysisSummary:
+          analysisData.analyses.volatility.combinedAnalysisSummary || '',
       },
-      
+
       summaries: {
         chipSummary: this.buildChipSummary(analysisData.analyses.chip),
         patternSummary: this.buildPatternSummary(analysisData.analyses.pattern),
         bbsrSummary: this.buildBbsrSummary(analysisData.analyses.bbsr),
         vvSummary: this.buildVvSummary(analysisData.analyses.volatility),
-        structureSummary: this.buildStructureSummary(analysisData.analyses.structure),
-        supplyDemandSummary: this.buildSupplyDemandSummary(analysisData.analyses.supplyDemand),
+        structureSummary: this.buildStructureSummary(
+          analysisData.analyses.structure
+        ),
+        supplyDemandSummary: this.buildSupplyDemandSummary(
+          analysisData.analyses.supplyDemand
+        ),
         rangeSummary: this.buildRangeSummary(analysisData.analyses.range),
-        trendlineSummary: this.buildTrendlineSummary(analysisData.analyses.trendline),
+        trendlineSummary: this.buildTrendlineSummary(
+          analysisData.analyses.trendline
+        ),
       },
     };
   }
@@ -614,7 +681,10 @@ export class IntegratedOrchestrator {
   /**
    * 创建降级交易计划
    */
-  private createFallbackTradePlan(symbol: string, context: IntegrationContext): IntegratedTradePlan {
+  private createFallbackTradePlan(
+    symbol: string,
+    context: IntegrationContext
+  ): IntegratedTradePlan {
     return {
       symbol,
       currentPrice: 0,
@@ -696,30 +766,45 @@ export class IntegratedOrchestrator {
   /**
    * 生成摘要
    */
-  private generateSummary(signalResult: any, analysisData: AnalysisInputData): string {
-    const direction = signalResult.direction === 'long' ? '做多' : 
-                     signalResult.direction === 'short' ? '做空' : '中性';
+  private generateSummary(
+    signalResult: any,
+    analysisData: AnalysisInputData
+  ): string {
+    const direction =
+      signalResult.direction === 'long'
+        ? '做多'
+        : signalResult.direction === 'short'
+          ? '做空'
+          : '中性';
     return `基于综合分析，建议${direction}，置信度${signalResult.confidenceScore.toFixed(1)}%`;
   }
 
   /**
    * 生成主要逻辑
    */
-  private generatePrimaryRationale(signalResult: any, analysisData: AnalysisInputData): string {
+  private generatePrimaryRationale(
+    signalResult: any,
+    analysisData: AnalysisInputData
+  ): string {
     return '综合各模块分析结果，形成主要交易逻辑';
   }
 
   /**
    * 生成次要逻辑
    */
-  private generateSecondaryRationale(signalResult: any, analysisData: AnalysisInputData): string {
+  private generateSecondaryRationale(
+    signalResult: any,
+    analysisData: AnalysisInputData
+  ): string {
     return '辅助分析因子支持主要判断';
   }
 
   /**
    * 计算时间周期一致性
    */
-  private calculateTimeframeConsistency(analysisData: AnalysisInputData): string {
+  private calculateTimeframeConsistency(
+    analysisData: AnalysisInputData
+  ): string {
     // 简化实现：返回字符串以符合 IntegratedTradePlan 类型定义
     return '80%';
   }
@@ -735,67 +820,96 @@ export class IntegratedOrchestrator {
   }
 
   // === 各模块摘要构建 ===
-  private buildChipSummary(chip: AnalysisInputData['analyses']['chip']): string {
+  private buildChipSummary(
+    chip: AnalysisInputData['analyses']['chip']
+  ): string {
     return `买入强度:${chip.combinedBuySignalStrength} 做空强度:${chip.combinedShortSignalStrength} 主周期:${chip.primaryTimeframe}`;
   }
 
-  private buildPatternSummary(pattern: AnalysisInputData['analyses']['pattern']): string {
+  private buildPatternSummary(
+    pattern: AnalysisInputData['analyses']['pattern']
+  ): string {
     return `形态综合方向:${pattern.combinedSignal} 强度:${pattern.signalStrength.toFixed?.(1) ?? pattern.signalStrength}`;
   }
 
-  private buildBbsrSummary(bbsr: AnalysisInputData['analyses']['bbsr']): string {
+  private buildBbsrSummary(
+    bbsr: AnalysisInputData['analyses']['bbsr']
+  ): string {
     const daily = bbsr.dailyBBSRResult?.strength;
     const weekly = bbsr.weeklyBBSRResult?.strength;
     return `BBSR(日/周) 强度:${daily ?? '-'} / ${weekly ?? '-'}`;
   }
 
-  private buildVvSummary(vv: AnalysisInputData['analyses']['volatility']): string {
-    const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
+  private buildVvSummary(
+    vv: AnalysisInputData['analyses']['volatility']
+  ): string {
+    const regime =
+      vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
     const atrp = vv.volatilityAnalysis?.volatilityAnalysis?.atrPercent ?? 0;
-    const volConfirm = vv.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation ? '确认' : '未确认';
+    const volConfirm = vv.volumeAnalysis?.volumeAnalysis
+      ?.volumePriceConfirmation
+      ? '确认'
+      : '未确认';
     return `波动率:${regime} ATR%:${atrp.toFixed?.(2) ?? atrp} 成交量确认:${volConfirm}`;
   }
 
-  private buildStructureSummary(structure: AnalysisInputData['analyses']['structure']): string {
+  private buildStructureSummary(
+    structure: AnalysisInputData['analyses']['structure']
+  ): string {
     return `结构趋势:${structure.trend} 关键位数:${structure.keyLevels?.length ?? 0}`;
   }
 
-  private buildSupplyDemandSummary(sd: AnalysisInputData['analyses']['supplyDemand']): string {
+  private buildSupplyDemandSummary(
+    sd: AnalysisInputData['analyses']['supplyDemand']
+  ): string {
     const pos = sd.premiumDiscount?.position ?? 50;
     const zones = sd.recentEffectiveZones?.length ?? 0;
     return `供需位置:${pos.toFixed?.(1) ?? pos} 有效区域:${zones}`;
   }
 
-  private buildRangeSummary(range: AnalysisInputData['analyses']['range']): string {
+  private buildRangeSummary(
+    range: AnalysisInputData['analyses']['range']
+  ): string {
     const comp = range.compressionScore;
-    const br = range.breakout ? `${range.breakout.direction}/${range.breakout.qualityScore}` : '无突破';
+    const br = range.breakout
+      ? `${range.breakout.direction}/${range.breakout.qualityScore}`
+      : '无突破';
     return `压缩:${comp} 突破:${br}`;
   }
 
-  private buildTrendlineSummary(tl: AnalysisInputData['analyses']['trendline']): string {
+  private buildTrendlineSummary(
+    tl: AnalysisInputData['analyses']['trendline']
+  ): string {
     const slope = tl.channel?.slope ?? 0;
     return tl.summary || `通道斜率:${slope.toFixed?.(4) ?? slope}`;
   }
 
   // === 展望构建 ===
-  private buildShortTermOutlook(analyses: AnalysisInputData['analyses']): string {
+  private buildShortTermOutlook(
+    analyses: AnalysisInputData['analyses']
+  ): string {
     const pattern = analyses.pattern;
     const vv = analyses.volatility;
     const tl = analyses.trendline;
     const dir = pattern.combinedSignal;
-    const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
+    const regime =
+      vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
     const slope = tl.channel?.slope ?? 0;
     return `短期(${dir})，波动率${regime}，通道斜率${slope.toFixed?.(3) ?? slope}`;
   }
 
-  private buildMediumTermOutlook(analyses: AnalysisInputData['analyses']): string {
+  private buildMediumTermOutlook(
+    analyses: AnalysisInputData['analyses']
+  ): string {
     const chip = analyses.chip;
     const sd = analyses.supplyDemand;
     const pos = sd.premiumDiscount?.position ?? 50;
     return `中期(筹码买:${chip.combinedBuySignalStrength}/卖:${chip.combinedShortSignalStrength})，估值位置${pos.toFixed?.(1) ?? pos}`;
   }
 
-  private buildLongTermOutlook(analyses: AnalysisInputData['analyses']): string {
+  private buildLongTermOutlook(
+    analyses: AnalysisInputData['analyses']
+  ): string {
     const structure = analyses.structure;
     const range = analyses.range;
     const trend = structure.trend;
@@ -808,7 +922,7 @@ export class IntegratedOrchestrator {
    */
   updateConfig(newConfig: Partial<IntegrationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // 更新子模块配置
     this.signalAggregator = new SignalAggregator(this.config);
     this.keyLevelManager = new KeyLevelManager(this.config);

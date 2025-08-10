@@ -2,7 +2,7 @@
  * 集成分析专用类型定义
  */
 
-import type { 
+import type {
   MultiTimeFrameBBSRAnalysisResult,
   IntegratedTradePlan,
   TradeDirection,

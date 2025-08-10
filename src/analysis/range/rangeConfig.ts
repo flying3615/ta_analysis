@@ -25,5 +25,3 @@ export const rangeConfig: RangeConfig = {
 export function updateRangeConfig(partial: Partial<RangeConfig>) {
   Object.assign(rangeConfig, partial);
 }
-
-

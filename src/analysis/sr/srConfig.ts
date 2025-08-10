@@ -52,5 +52,3 @@ export function updateSrConfig(partial: Partial<SrConfig>): void {
     srConfig.nearThresholdPercent = partial.nearThresholdPercent;
   }
 }
-
-

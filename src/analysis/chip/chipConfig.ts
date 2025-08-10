@@ -31,7 +31,12 @@ export type ChipConfig = {
     /** 筹码迁移方向加权 */
     migration: { strongUp: number; slowUp: number; strongDown: number };
     /** 技术信号加权 */
-    technical: { strongBuy: number; buy: number; strongSell: number; sell: number };
+    technical: {
+      strongBuy: number;
+      buy: number;
+      strongSell: number;
+      sell: number;
+    };
   };
   /** 卖空评分配置 */
   short: {
@@ -59,11 +64,26 @@ export type ChipConfig = {
       bottomProfitThreshold: number; // 底部判定阈值（%）
     };
     /** 筹码迁移方向对做空的影响 */
-    migration: { strongDown: number; slowDown: number; strongUp: number; slowUp: number };
+    migration: {
+      strongDown: number;
+      slowDown: number;
+      strongUp: number;
+      slowUp: number;
+    };
     /** 技术信号加权（做空） */
-    technical: { strongSell: number; sell: number; strongBuy: number; buy: number };
+    technical: {
+      strongSell: number;
+      sell: number;
+      strongBuy: number;
+      buy: number;
+    };
     /** RSI 超买/超卖阈值与对应加权 */
-    rsi: { overbought: number; oversold: number; overboughtThreshold: number; oversoldThreshold: number };
+    rsi: {
+      overbought: number;
+      oversold: number;
+      overboughtThreshold: number;
+      oversoldThreshold: number;
+    };
   };
   /** 综合建议阈值配置 */
   overall: {
@@ -86,22 +106,54 @@ export type ChipConfig = {
 export let chipConfig: ChipConfig = {
   buy: {
     concentration: { high: 15, medium: 10, low: 5 },
-    bullBear: { strongBull: 15, moderateBull: 10, strongBear: -10, strongBullRatio: 3, moderateBullRatio: 1.5, strongBearRatio: 0.5 },
+    bullBear: {
+      strongBull: 15,
+      moderateBull: 10,
+      strongBear: -10,
+      strongBullRatio: 3,
+      moderateBullRatio: 1.5,
+      strongBearRatio: 0.5,
+    },
     resistance: { weak: 20, medium: 10 },
     shapeBuy: 20,
-    volume: { shrinkStrong: 10, expandSmall: 15, expandBreakout: 20, expandTop: -10, breakoutProfitThreshold: 30, topProfitThreshold: 60 },
+    volume: {
+      shrinkStrong: 10,
+      expandSmall: 15,
+      expandBreakout: 20,
+      expandTop: -10,
+      breakoutProfitThreshold: 30,
+      topProfitThreshold: 60,
+    },
     migration: { strongUp: 10, slowUp: 15, strongDown: -10 },
     technical: { strongBuy: 15, buy: 10, strongSell: -15, sell: -10 },
   },
   short: {
     concentration: { high: -15, medium: -5, low: 10 },
-    bullBear: { strongBear: 20, slightBear: 10, strongBull: -20, strongBearRatio: 0.5, slightBearRatio: 1, strongBullRatio: 3 },
+    bullBear: {
+      strongBear: 20,
+      slightBear: 10,
+      strongBull: -20,
+      strongBearRatio: 0.5,
+      slightBearRatio: 1,
+      strongBullRatio: 3,
+    },
     resistance: { strong: 20, medium: 10, weak: -5 },
     shapeAgainstBuy: 15,
-    volume: { expandTop: 15, shrinkHigh: 10, expandBottom: -15, topProfitThreshold: 60, bottomProfitThreshold: 30 },
+    volume: {
+      expandTop: 15,
+      shrinkHigh: 10,
+      expandBottom: -15,
+      topProfitThreshold: 60,
+      bottomProfitThreshold: 30,
+    },
     migration: { strongDown: 20, slowDown: 10, strongUp: -20, slowUp: -10 },
     technical: { strongSell: 20, sell: 15, strongBuy: -20, buy: -15 },
-    rsi: { overbought: 15, oversold: -15, overboughtThreshold: 70, oversoldThreshold: 30 },
+    rsi: {
+      overbought: 15,
+      oversold: -15,
+      overboughtThreshold: 70,
+      oversoldThreshold: 30,
+    },
   },
   overall: {
     buyStrongThreshold: 60,
@@ -129,5 +181,3 @@ export function updateChipConfig(partial: Partial<ChipConfig>) {
     combine: { ...chipConfig.combine, ...(partial.combine || {}) },
   };
 }
-
-

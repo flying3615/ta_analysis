@@ -490,7 +490,10 @@ function combinePatternAnalyses(
 
   if (bullishCount > bearishCount * patternConfig.signals.combineBiasRatio) {
     combinedSignal = PatternDirection.Bullish;
-  } else if (bearishCount > bullishCount * patternConfig.signals.combineBiasRatio) {
+  } else if (
+    bearishCount >
+    bullishCount * patternConfig.signals.combineBiasRatio
+  ) {
     combinedSignal = PatternDirection.Bearish;
   } else {
     combinedSignal = PatternDirection.Neutral;
@@ -550,7 +553,9 @@ function combinePatternAnalyses(
   for (const analysis of timeframeAnalyses) {
     if (analysis.dominantPattern) {
       const pattern = analysis.dominantPattern;
-      if (pattern.reliability > patternConfig.signals.reliabilityBoostThreshold) {
+      if (
+        pattern.reliability > patternConfig.signals.reliabilityBoostThreshold
+      ) {
         signalStrength += patternConfig.signals.recencyMediumBonus;
       }
 
@@ -563,7 +568,9 @@ function combinePatternAnalyses(
 
         if (recencyRatio > patternConfig.signals.recencyHighThreshold) {
           signalStrength += patternConfig.signals.recencyHighBonus;
-        } else if (recencyRatio > patternConfig.signals.recencyMediumThreshold) {
+        } else if (
+          recencyRatio > patternConfig.signals.recencyMediumThreshold
+        ) {
           signalStrength += patternConfig.signals.recencyMediumBonus;
         }
       }
@@ -1058,7 +1065,7 @@ async function exampleMultiTimeframeUsage(symbol: string) {
     const multiTimeframeResult = analyzeMultiTimeframePatterns(
       weeklyData,
       dailyData,
-      hourlyData,
+      hourlyData
     );
 
     formatAndPrintPatternAnalysis(multiTimeframeResult, symbol);

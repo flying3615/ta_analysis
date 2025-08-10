@@ -45,5 +45,3 @@ export function updateCandleConfig(partial: Partial<CandleConfig>) {
     risk: { ...candleConfig.risk, ...(partial.risk || {}) },
   };
 }
-
-

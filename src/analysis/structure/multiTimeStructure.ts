@@ -2,7 +2,9 @@ import { getStockDataForTimeframe } from '../../util/util.js';
 import { analyzeStructure } from './structureDetector.js';
 import type { MultiTimeframeStructureAnalysis } from './structureTypes.js';
 
-export async function runMultiTimeStructure(symbol: string): Promise<MultiTimeframeStructureAnalysis> {
+export async function runMultiTimeStructure(
+  symbol: string
+): Promise<MultiTimeframeStructureAnalysis> {
   const today = new Date();
   const startW = new Date();
   startW.setDate(today.getDate() - 365);
@@ -25,10 +27,9 @@ export async function runMultiTimeStructure(symbol: string): Promise<MultiTimefr
   const up = all.filter(r => r.trend === 'up').length;
   const down = all.filter(r => r.trend === 'down').length;
   const combinedTrend = up > down ? 'up' : down > up ? 'down' : 'sideways';
-  const consistency = up === 3 || down === 3 ? 'strong' : up + down >= 2 ? 'medium' : 'mixed';
+  const consistency =
+    up === 3 || down === 3 ? 'strong' : up + down >= 2 ? 'medium' : 'mixed';
   const combinedSummary = `多周期趋势: ${combinedTrend}, up=${up}, down=${down}`;
 
   return { symbol, results: all, combinedTrend, consistency, combinedSummary };
 }
-
-

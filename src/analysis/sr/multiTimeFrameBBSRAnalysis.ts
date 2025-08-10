@@ -9,8 +9,14 @@ const multiTimeBBSRAnalysis = (
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
 ): MultiTimeFrameBBSRAnalysisResult => {
-  const weeklyBBSRResult = checkBullBearNearSupportResistance(symbol, weeklyCandles);
-  const dailyBBSRResult = checkBullBearNearSupportResistance(symbol, dailyCandles);
+  const weeklyBBSRResult = checkBullBearNearSupportResistance(
+    symbol,
+    weeklyCandles
+  );
+  const dailyBBSRResult = checkBullBearNearSupportResistance(
+    symbol,
+    dailyCandles
+  );
 
   return { weeklyBBSRResult, dailyBBSRResult };
 };
@@ -31,4 +37,3 @@ export const main = async (symbol: string) => {
   formatAndPrintSrAnalysis(result, symbol);
   return result;
 };
-

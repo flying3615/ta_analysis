@@ -17,7 +17,8 @@ import { trendReversalConfig } from './trendReversalConfig.js';
 function hasTrendReversalSignal(
   hourlyData: Candle[],
   dailyData: Candle[],
-  signalThreshold: number = trendReversalConfig.strengthThreshold.defaultSignalThreshold
+  signalThreshold: number = trendReversalConfig.strengthThreshold
+    .defaultSignalThreshold
 ): {
   hasSignal: boolean;
   primarySignal?: TrendReversalSignal;

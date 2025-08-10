@@ -25,5 +25,3 @@ export interface RangeAnalysisResult {
   compressionScore: number; // 收缩强度 0-100
   breakout?: BreakoutAssessment;
 }
-
-

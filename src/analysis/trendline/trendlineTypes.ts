@@ -38,5 +38,3 @@ export interface TrendlineChannelAnalysisResult {
 }
 
 export type { Candle };
-
-

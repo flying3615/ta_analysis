@@ -53,6 +53,3 @@ export interface MultiTimeframeAnalysisResult {
 
   primaryTimeframe: 'weekly' | 'daily' | '1hour';
 }
-
-
-

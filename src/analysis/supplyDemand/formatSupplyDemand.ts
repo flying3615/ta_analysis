@@ -4,7 +4,9 @@ import { sdConfig } from './sdConfig.js';
 export function formatAndPrintSupplyDemand(result: SdAnalysisResult) {
   console.log(`\n===== ${result.symbol} 供需区 (${result.timeframe}) =====`);
   const pd = result.premiumDiscount;
-  console.log(`溢价/折价位置: ${(pd.position).toFixed(1)}% （区间: ${pd.basisLow.toFixed(2)} - ${pd.basisHigh.toFixed(2)}，现价: ${pd.currentPrice.toFixed(2)}）`);
+  console.log(
+    `溢价/折价位置: ${pd.position.toFixed(1)}% （区间: ${pd.basisLow.toFixed(2)} - ${pd.basisHigh.toFixed(2)}，现价: ${pd.currentPrice.toFixed(2)}）`
+  );
 
   // 一句话交易建议
   const suggestion = buildSuggestion(result);
@@ -46,8 +48,12 @@ function buildSuggestion(r: SdAnalysisResult): string | null {
   // 选择更近的区带作为主建议
   let chosen: Zone | undefined;
   let side: 'long' | 'short' | undefined;
-  const demandDist = nearestDemand ? Math.max(0, price - nearestDemand.high) : Number.POSITIVE_INFINITY;
-  const supplyDist = nearestSupply ? Math.max(0, nearestSupply.low - price) : Number.POSITIVE_INFINITY;
+  const demandDist = nearestDemand
+    ? Math.max(0, price - nearestDemand.high)
+    : Number.POSITIVE_INFINITY;
+  const supplyDist = nearestSupply
+    ? Math.max(0, nearestSupply.low - price)
+    : Number.POSITIVE_INFINITY;
 
   if (demandDist <= supplyDist) {
     chosen = nearestDemand;
@@ -59,7 +65,8 @@ function buildSuggestion(r: SdAnalysisResult): string | null {
   if (!chosen || !side) return null;
 
   // 入场/止损/目标
-  const entry = clamp(price, chosen.low, chosen.high) ?? mid(chosen.low, chosen.high);
+  const entry =
+    clamp(price, chosen.low, chosen.high) ?? mid(chosen.low, chosen.high);
   let stop: number;
   let target: number | undefined;
 
@@ -103,5 +110,3 @@ function computeRRShort(entry: number, stop: number, target: number) {
   const reward = Math.max(0, entry - target);
   return reward / risk;
 }
-
-

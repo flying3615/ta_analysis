@@ -21,5 +21,3 @@ export const sdConfig: SdConfig = {
 export function updateSdConfig(partial: Partial<SdConfig>) {
   Object.assign(sdConfig, partial);
 }
-
-
