@@ -1,4 +1,5 @@
 import { toEDTString } from '../util/util.js';
+import { calculateWeightedReward } from '../util/analysisUtils.js';
 import { IntegratedTradePlan } from '../types.js';
 
 // Common separator constants
@@ -213,19 +214,49 @@ function formatTradePlanOutput(
   );
 
   // 11.1 机器可解析摘要（单行JSON）
+  // 统一使用与风险管理相同的逻辑计算 RR，输出一致的数值
+  const entry = tradePlan.entryStrategy.idealEntryPrice;
+  const stopPrices = tradePlan.exitStrategy.stopLossLevels.map(l => l.price);
+  const stopUsed = (() => {
+    if (tradePlan.direction === 'long') {
+      const below = stopPrices.filter(p => p < entry);
+      return below.length > 0 ? Math.max(...below) : (stopPrices[0] ?? entry);
+    } else if (tradePlan.direction === 'short') {
+      const above = stopPrices.filter(p => p > entry);
+      return above.length > 0 ? Math.min(...above) : (stopPrices[0] ?? entry);
+    }
+    return stopPrices[0] ?? entry;
+  })();
+  const weightedReward = calculateWeightedReward(
+    tradePlan.direction as any,
+    entry,
+    tradePlan.exitStrategy.takeProfitLevels
+  );
+  const riskUsed = Math.max(1e-8, Math.abs(entry - stopUsed));
+  const rr = Math.max(0, weightedReward) / riskUsed;
+
   const jsonSummary = {
     symbol: tradePlan.symbol,
     direction: tradePlan.direction,
     confidence: Number(tradePlan.confidenceScore.toFixed(1)),
-    entry: Number(tradePlan.entryStrategy.idealEntryPrice.toFixed(4)),
-    stopLoss: tradePlan.exitStrategy.stopLossLevels[0]?.price ?? null,
-    takeProfit: tradePlan.exitStrategy.takeProfitLevels[0]?.price ?? null,
-    riskReward: Number(tradePlan.riskManagement.riskRewardRatio.toFixed(2)),
+    entry: Number(entry.toFixed(4)),
+    stopLossUsed: Number(stopUsed.toFixed(4)),
+    weightedTakeProfit: tradePlan.exitStrategy.takeProfitLevels.length
+      ? Number(
+          (
+            entry +
+            (tradePlan.direction === 'long' ? 1 : -1) * Math.max(0, weightedReward)
+          ).toFixed(4)
+        )
+      : null,
+    reward: Number(Math.max(0, weightedReward).toFixed(4)),
+    risk: Number(riskUsed.toFixed(4)),
+    riskReward: Number(rr.toFixed(2)), // 收益/风险
     votes: {
-      chip: tradePlan.chipAnalysisContribution,
-      pattern: tradePlan.patternAnalysisContribution,
-      volume: tradePlan.volumeAnalysisContribution,
-      bbsr: tradePlan.bbsrAnalysisContribution,
+      chip: Number(tradePlan.chipAnalysisContribution.toFixed(1)),
+      pattern: Number(tradePlan.patternAnalysisContribution.toFixed(1)),
+      volume: Number(tradePlan.volumeAnalysisContribution.toFixed(1)),
+      bbsr: Number(tradePlan.bbsrAnalysisContribution.toFixed(1)),
     },
     summaries: tradePlan.summaries,
   };

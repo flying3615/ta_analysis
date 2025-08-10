@@ -686,20 +686,31 @@ export function determineRiskManagement(
     Math.max(0.05, riskManagement.suggestionPosition)
   );
 
-  // 计算风险回报比
+  // 计算风险回报比（方向敏感，选择合理的止损与收益测度）
   if (
     exitStrategy.takeProfitLevels.length > 0 &&
     exitStrategy.stopLossLevels.length > 0
   ) {
-    const potentialReward = calculateWeightedReward(
+    const entry = entryStrategy.idealEntryPrice;
+    const stopPrices = exitStrategy.stopLossLevels.map(l => l.price);
+    let chosenStop = stopPrices[0];
+    if (direction === TradeDirection.Long) {
+      const below = stopPrices.filter(p => p < entry);
+      // 取最贴近入场价的下方止损（风险最小）
+      chosenStop = below.length > 0 ? Math.max(...below) : stopPrices.reduce((a, b) => (Math.abs(a - entry) < Math.abs(b - entry) ? a : b));
+    } else if (direction === TradeDirection.Short) {
+      const above = stopPrices.filter(p => p > entry);
+      // 取最贴近入场价的上方止损
+      chosenStop = above.length > 0 ? Math.min(...above) : stopPrices.reduce((a, b) => (Math.abs(a - entry) < Math.abs(b - entry) ? a : b));
+    }
+
+    const potentialRisk = Math.max(1e-8, Math.abs(entry - chosenStop));
+    const weightedReward = calculateWeightedReward(
       direction,
-      entryStrategy.idealEntryPrice,
+      entry,
       exitStrategy.takeProfitLevels
     );
-    const potentialRisk = Math.abs(
-      entryStrategy.idealEntryPrice - exitStrategy.stopLossLevels[0].price
-    );
-
+    const potentialReward = Math.max(0, weightedReward);
     riskManagement.riskRewardRatio = potentialReward / potentialRisk;
   }
 
