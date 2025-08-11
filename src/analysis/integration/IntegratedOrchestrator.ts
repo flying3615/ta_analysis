@@ -4,8 +4,8 @@
  */
 
 import type { IntegratedTradePlan } from '../../types.js';
-import { Candle, TradeDirection } from '../../types.js';
-import { generateUniqueId, getStockDataForTimeframe } from '../../util/util.js';
+import { Candle } from '../../types.js';
+import { generateUniqueId } from '../../util/util.js';
 
 // 分析模块导入
 import { multiTimeFrameChipDistAnalysis } from '../analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
@@ -29,7 +29,8 @@ import { createStructurePlugin } from './plugins/structurePlugin.js';
 import { createSupplyDemandPlugin } from './plugins/supplyDemandPlugin.js';
 import { createRangePlugin } from './plugins/rangePlugin.js';
 import { createTrendlinePlugin } from './plugins/trendlinePlugin.js';
-import { SimpleCache } from './CacheManager.js';
+import { DataProvider } from './DataProvider.js';
+import { NarrativeBuilder } from './NarrativeBuilder.js';
 
 import type {
   AnalysisError,
@@ -49,7 +50,8 @@ export class IntegratedOrchestrator {
   private signalAggregator: SignalAggregator;
   private keyLevelManager: KeyLevelManager;
   private strategyGenerator: StrategyGenerator;
-  private dataCache = new SimpleCache<Candle[]>(100);
+  private dataProvider = new DataProvider(100);
+  private narrative = new NarrativeBuilder();
 
   constructor(private config: IntegrationConfig = DEFAULT_INTEGRATION_CONFIG) {
     this.signalAggregator = new SignalAggregator(config);
@@ -107,7 +109,7 @@ export class IntegratedOrchestrator {
       // 获取数据
       const dataStartTime = Date.now();
       const { weeklyData, dailyData, hourlyData } =
-        await this.getMultiTimeframeData(symbol, finalConfig);
+        await this.dataProvider.getMultiTimeframeData(symbol, finalConfig);
       const dataEndTime = Date.now();
 
       // 执行各个分析模块
@@ -175,7 +177,7 @@ export class IntegratedOrchestrator {
             keyLevelManagement: keyLevelEndTime - keyLevelStartTime,
             strategyGeneration: strategyEndTime - strategyStartTime,
           },
-          cacheHitRate: this.calculateCacheHitRate(),
+          cacheHitRate: this.dataProvider.stats().hitRate,
         },
       };
 
@@ -273,80 +275,7 @@ export class IntegratedOrchestrator {
   /**
    * 获取多时间周期数据
    */
-  private async getMultiTimeframeData(
-    symbol: string,
-    config: IntegrationConfig
-  ): Promise<{
-    weeklyData: Candle[];
-    dailyData: Candle[];
-    hourlyData: Candle[];
-  }> {
-    const today = new Date();
-
-    // 计算开始日期
-    const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(
-      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
-    );
-
-    const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(
-      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
-    );
-
-    const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(
-      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
-    );
-
-    if (config.options.enableParallelAnalysis) {
-      // 并行获取数据
-      const [weeklyData, dailyData, hourlyData] = await Promise.all([
-        this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-        this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-        this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
-      ]);
-
-      return { weeklyData, dailyData, hourlyData };
-    } else {
-      // 串行获取数据
-      const weeklyData = await this.getCachedStockData(
-        symbol,
-        weeklyStartDate,
-        today,
-        'weekly'
-      );
-      const dailyData = await this.getCachedStockData(
-        symbol,
-        dailyStartDate,
-        today,
-        'daily'
-      );
-      const hourlyData = await this.getCachedStockData(
-        symbol,
-        hourlyStartDate,
-        today,
-        '1hour'
-      );
-
-      return { weeklyData, dailyData, hourlyData };
-    }
-  }
-
-  /**
-   * 带缓存的数据获取
-   */
-  private async getCachedStockData(
-    symbol: string,
-    startDate: Date,
-    endDate: Date,
-    timeframe: 'weekly' | 'daily' | '1hour'
-  ): Promise<Candle[]> {
-    const cacheKey = `${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    return this.dataCache.getOrFetch(cacheKey, async () => {
-      return await getStockDataForTimeframe(symbol, startDate, endDate, timeframe);
-    });
-  }
+  // 数据获取已下沉至 DataProvider
 
   /**
    * 执行所有分析模块
@@ -365,83 +294,18 @@ export class IntegratedOrchestrator {
     }
 
     try {
-      if (config.options.enableParallelAnalysis) {
-        // 并行执行分析
-        const [
-          chipAnalysis,
-          patternAnalysis,
-          bbsrAnalysis,
-          volatilityAnalysis,
-          structureAnalysis,
-          supplyDemandAnalysis,
-          rangeAnalysis,
-          trendlineAnalysis,
-        ] = await Promise.all([
-          // TODO multiTimeCandleAnalysis not used here??
-
-          this.executeWithFallback(
-            () =>
-              multiTimeFrameChipDistAnalysis(
-                symbol,
-                'daily',
-                ['weekly', 'daily', '1hour'],
-                { weekly: 0.3, daily: 0.5, '1hour': 0.2 },
-                weeklyData,
-                dailyData,
-                hourlyData
-              ),
-            'chip'
-          ),
-          this.executeWithFallback(
-            () =>
-              analyzeMultiTimeframePattern(weeklyData, dailyData, hourlyData),
-            'pattern'
-          ),
-          this.executeWithFallback(
-            () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
-            'bbsr'
-          ),
-          this.executeWithFallback(
-            () => analyzeVolumeVolatilityCombined(hourlyData),
-            'volatility'
-          ),
-          this.executeWithFallback(
-            () => analyzeMarketStructure(dailyData, 'daily'),
-            'structure'
-          ),
-          this.executeWithFallback(
-            () => analyzeSupplyDemandZone(symbol, dailyData, 'daily'),
-            'supplyDemand'
-          ),
-          this.executeWithFallback(
-            () => analyzeRange(symbol, dailyData, 'daily'),
-            'range'
-          ),
-          this.executeWithFallback(
-            () => analyzeTrendlinesAndChannels(symbol, dailyData, 'daily'),
-            'trendline'
-          ),
-        ]);
-
-        return {
-          symbol,
-          analyses: {
-            chip: chipAnalysis.data!,
-            pattern: patternAnalysis.data!,
-            volatility: volatilityAnalysis.data!,
-            bbsr: bbsrAnalysis.data!,
-            structure: structureAnalysis.data!,
-            supplyDemand: supplyDemandAnalysis.data!,
-            range: rangeAnalysis.data!,
-            trendline: trendlineAnalysis.data!,
-          },
-        };
-      } else {
-        // 串行执行分析
-        if (config.options.logLevel === 'verbose') {
-          console.log('正在执行筹码分布分析...');
-        }
-        const chipAnalysis = await this.executeWithFallback(
+      // 并行执行分析（仅保留并行逻辑）
+      const [
+        chipAnalysis,
+        patternAnalysis,
+        bbsrAnalysis,
+        volatilityAnalysis,
+        structureAnalysis,
+        supplyDemandAnalysis,
+        rangeAnalysis,
+        trendlineAnalysis,
+      ] = await Promise.all([
+        this.executeWithFallback(
           () =>
             multiTimeFrameChipDistAnalysis(
               symbol,
@@ -453,61 +317,50 @@ export class IntegratedOrchestrator {
               hourlyData
             ),
           'chip'
-        );
-
-        if (config.options.logLevel === 'verbose') {
-          console.log('正在执行形态分析...');
-        }
-        const patternAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeMultiTimeframePattern(weeklyData, dailyData, hourlyData),
           'pattern'
-        );
-
-        // ... 其他分析的串行执行逻辑
-        const bbsrAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
           'bbsr'
-        );
-
-        const volatilityAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeVolumeVolatilityCombined(hourlyData),
           'volatility'
-        );
-
-        const structureAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeMarketStructure(dailyData, 'daily'),
           'structure'
-        );
-
-        const supplyDemandAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeSupplyDemandZone(symbol, dailyData, 'daily'),
           'supplyDemand'
-        );
-
-        const rangeAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeRange(symbol, dailyData, 'daily'),
           'range'
-        );
-
-        const trendlineAnalysis = await this.executeWithFallback(
+        ),
+        this.executeWithFallback(
           () => analyzeTrendlinesAndChannels(symbol, dailyData, 'daily'),
           'trendline'
-        );
+        ),
+      ]);
 
-        return {
-          symbol,
-          analyses: {
-            chip: chipAnalysis.data!,
-            pattern: patternAnalysis.data!,
-            volatility: volatilityAnalysis.data!,
-            bbsr: bbsrAnalysis.data!,
-            structure: structureAnalysis.data!,
-            supplyDemand: supplyDemandAnalysis.data!,
-            range: rangeAnalysis.data!,
-            trendline: trendlineAnalysis.data!,
-          },
-        };
-      }
+      return {
+        symbol,
+        analyses: {
+          chip: chipAnalysis.data!,
+          pattern: patternAnalysis.data!,
+          volatility: volatilityAnalysis.data!,
+          bbsr: bbsrAnalysis.data!,
+          structure: structureAnalysis.data!,
+          supplyDemand: supplyDemandAnalysis.data!,
+          range: rangeAnalysis.data!,
+          trendline: trendlineAnalysis.data!,
+        },
+      };
     } catch (error) {
       throw new Error(
         `分析模块执行失败: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -635,21 +488,15 @@ export class IntegratedOrchestrator {
       bbsrAnalysis: analysisData.analyses.bbsr,
 
       // 新增字段
-      summary: this.generateSummary(signalResult, analysisData),
-      primaryRationale: this.generatePrimaryRationale(
-        signalResult,
-        analysisData
-      ),
-      secondaryRationale: this.generateSecondaryRationale(
-        signalResult,
-        analysisData
-      ),
+      summary: this.narrative.buildSummary(signalResult),
+      primaryRationale: this.narrative.buildPrimaryRationale(signalResult, analysisData.analyses),
+      secondaryRationale: this.narrative.buildSecondaryRationale(analysisData.analyses),
 
       primaryTimeframe: analysisData.analyses.chip?.primaryTimeframe ?? 'daily',
       timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
-      shortTermOutlook: this.buildShortTermOutlook(analysisData.analyses),
-      mediumTermOutlook: this.buildMediumTermOutlook(analysisData.analyses),
-      longTermOutlook: this.buildLongTermOutlook(analysisData.analyses),
+      shortTermOutlook: this.narrative.buildShortTermOutlook(analysisData.analyses),
+      mediumTermOutlook: this.narrative.buildMediumTermOutlook(analysisData.analyses),
+      longTermOutlook: this.narrative.buildLongTermOutlook(analysisData.analyses),
 
       trendReversalInfo: this.extractTrendReversalInfo(
         analysisData.analyses.pattern
@@ -664,7 +511,7 @@ export class IntegratedOrchestrator {
           analysisData.analyses.volatility.combinedAnalysisSummary || '',
       },
 
-      summaries: this.buildSummariesFromPlugins(analysisData, context),
+      summaries: this.narrative.buildSummariesFromPlugins(this.signalAggregator.getPlugins(), analysisData, context),
     };
   }
 
@@ -745,62 +592,6 @@ export class IntegratedOrchestrator {
     };
   }
 
-  /**
-   * 计算缓存命中率
-   */
-  private calculateCacheHitRate(): number {
-    const s = this.dataCache.stats();
-    return s.hitRate;
-  }
-
-  /**
-   * 生成摘要
-   */
-  private generateSummary(
-    signalResult: any,
-    analysisData: AnalysisInputData
-  ): string {
-    const dirText = signalResult.direction === TradeDirection.Long
-      ? '做多'
-      : signalResult.direction === TradeDirection.Short
-        ? '做空'
-        : '中性';
-    return `综合信号 ${dirText}｜强度:${signalResult.signalStrength}｜置信度:${signalResult.confidenceScore.toFixed(1)}%`;
-  }
-
-  /**
-   * 生成主要逻辑
-   */
-  private generatePrimaryRationale(
-    signalResult: any,
-    analysisData: AnalysisInputData
-  ): string {
-    const ws = signalResult.weightedScores as Record<string, number>;
-    const entries = Object.entries(ws).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-    const top = entries.slice(0, 3).map(([k]) => k).join('/');
-    const patternDir = (analysisData.analyses.pattern as any)?.combinedSignal ?? '-';
-    const chip = analysisData.analyses.chip;
-    return `主要由${top} 驱动；形态:${patternDir}；筹码买:${chip.combinedBuySignalStrength}/卖:${chip.combinedShortSignalStrength}`;
-  }
-
-  /**
-   * 生成次要逻辑
-   */
-  private generateSecondaryRationale(
-    _signalResult: any,
-    analysisData: AnalysisInputData
-  ): string {
-    const structure = analysisData.analyses.structure;
-    const sd: any = analysisData.analyses.supplyDemand;
-    const range: any = analysisData.analyses.range;
-    const tl: any = analysisData.analyses.trendline;
-    const parts: string[] = [];
-    if (structure?.trend) parts.push(`结构:${structure.trend}`);
-    if (sd?.premiumDiscount?.position != null) parts.push(`估值位:${Math.round(sd.premiumDiscount.position)}%`);
-    if (range?.breakout) parts.push(`区间突破:${range.breakout.direction}/质量${range.breakout.qualityScore}`);
-    if (tl?.breakoutRetest) parts.push(`趋势线突破回踩:${tl.breakoutRetest.direction}/质量${tl.breakoutRetest.qualityScore}`);
-    return parts.length ? parts.join('；') : '—';
-  }
 
   /**
    * 计算时间周期一致性
@@ -882,97 +673,9 @@ export class IntegratedOrchestrator {
     return { hasReversalSignal: false, description: '未检测到趋势反转信号' };
   }
 
-  /**
-   * 基于插件 summarize 生成各模块摘要（含回退）
-   */
-  private buildSummariesFromPlugins(
-    analysisData: AnalysisInputData,
-    context: IntegrationContext
-  ): IntegratedTradePlan['summaries'] {
-    const get = (id: string, fallback: () => string) => {
-      const plugin = this.signalAggregator.getPlugins().find(p => p.id === id);
-      if (plugin?.summarize) {
-        try { return plugin.summarize(analysisData, context); } catch {}
-      }
-      return fallback();
-    };
+  // 摘要与叙述构建已下沉到 NarrativeBuilder
 
-    return {
-      chipSummary: get('chip', () => {
-        const chip = analysisData.analyses.chip;
-        return `买入强度:${chip.combinedBuySignalStrength} 做空强度:${chip.combinedShortSignalStrength} 主周期:${chip.primaryTimeframe}`;
-      }),
-      patternSummary: get('pattern', () => {
-        const p = analysisData.analyses.pattern as any;
-        return `形态综合方向:${p.combinedSignal} 强度:${p.signalStrength?.toFixed?.(1) ?? p.signalStrength}`;
-      }),
-      bbsrSummary: get('bbsr', () => {
-        const b = analysisData.analyses.bbsr;
-        const d = b.dailyBBSRResult?.strength; const w = b.weeklyBBSRResult?.strength;
-        return `BBSR(日/周) 强度:${d ?? '-'} / ${w ?? '-'}`;
-      }),
-      vvSummary: get('volume', () => {
-        const vv: any = analysisData.analyses.volatility;
-        const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
-        const atrp = vv.volatilityAnalysis?.volatilityAnalysis?.atrPercent ?? 0;
-        const volConfirm = vv.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation ? '确认' : '未确认';
-        return `波动率:${regime} ATR%:${(atrp as any).toFixed?.(2) ?? atrp} 成交量确认:${volConfirm}`;
-      }),
-      structureSummary: get('structure', () => {
-        const s = analysisData.analyses.structure;
-        return `结构趋势:${s.trend} 关键位数:${s.keyLevels?.length ?? 0}`;
-      }),
-      supplyDemandSummary: get('supplyDemand', () => {
-        const sd: any = analysisData.analyses.supplyDemand;
-        const pos = sd.premiumDiscount?.position ?? 50;
-        const zones = sd.recentEffectiveZones?.length ?? 0;
-        return `供需位置:${(pos as any).toFixed?.(1) ?? pos} 有效区域:${zones}`;
-      }),
-      rangeSummary: get('range', () => {
-        const r: any = analysisData.analyses.range;
-        const comp = r.compressionScore; const br = r.breakout ? `${r.breakout.direction}/${r.breakout.qualityScore}` : '无突破';
-        return `压缩:${comp} 突破:${br}`;
-      }),
-      trendlineSummary: get('trendline', () => {
-        const tl: any = analysisData.analyses.trendline;
-        const slope = tl.channel?.slope ?? 0;
-        return tl.summary || `通道斜率:${(slope as any).toFixed?.(4) ?? slope}`;
-      }),
-    };
-  }
-
-  // === 展望构建 ===
-  private buildShortTermOutlook(
-    analyses: AnalysisInputData['analyses']
-  ): string {
-    const pattern = analyses.pattern;
-    const vv = analyses.volatility;
-    const tl = analyses.trendline;
-    const dir = pattern.combinedSignal;
-    const regime =
-      vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
-    const slope = tl.channel?.slope ?? 0;
-    return `短期(${dir})，波动率${regime}，通道斜率${slope.toFixed?.(3) ?? slope}`;
-  }
-
-  private buildMediumTermOutlook(
-    analyses: AnalysisInputData['analyses']
-  ): string {
-    const chip = analyses.chip;
-    const sd = analyses.supplyDemand;
-    const pos = sd.premiumDiscount?.position ?? 50;
-    return `中期(筹码买:${chip.combinedBuySignalStrength}/卖:${chip.combinedShortSignalStrength})，估值位置${pos.toFixed?.(1) ?? pos}`;
-  }
-
-  private buildLongTermOutlook(
-    analyses: AnalysisInputData['analyses']
-  ): string {
-    const structure = analyses.structure;
-    const range = analyses.range;
-    const trend = structure.trend;
-    const comp = range.compressionScore;
-    return `长期(${trend})，压缩度${comp}`;
-  }
+  // 展望构建已下沉到 NarrativeBuilder
 
   /**
    * 更新配置
@@ -987,24 +690,5 @@ export class IntegratedOrchestrator {
     this.registerBuiltInPlugins();
   }
 
-  /**
-   * 清理缓存
-   */
-  clearCache(): void {
-    this.dataCache.clear();
-  }
-
-  /**
-   * 获取缓存统计
-   */
-  getCacheStats() {
-    const s = this.dataCache.stats();
-    return {
-      totalEntries: s.totalEntries,
-      totalSize: s.totalSize,
-      hits: s.hits,
-      misses: s.misses,
-      hitRate: s.hitRate,
-    };
-  }
+  // 缓存统计如需对外暴露，可直接使用 this.dataCache.stats()
 }
