@@ -38,6 +38,16 @@ export interface DataTimeframes {
   };
 }
 
+export interface ConsistencyConfig {
+  timeframeWeights: {
+    weekly: number;
+    daily: number;
+    '1hour': number;
+  };
+  structureWeight: number;
+  trendlineWeight: number;
+}
+
 export interface IntegrationOptions {
   enableFallbackStrategy?: boolean;
   logLevel?: 'silent' | 'normal' | 'verbose';
@@ -50,6 +60,7 @@ export interface IntegrationConfig {
   weights: IntegrationWeights;
   thresholds: IntegrationThresholds;
   timeframes: DataTimeframes;
+  consistency: ConsistencyConfig;
   options: IntegrationOptions;
 }
 
@@ -86,6 +97,11 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
       lookbackDays: 60,
     },
   },
+  consistency: {
+    timeframeWeights: { weekly: 0.4, daily: 0.4, '1hour': 0.2 },
+    structureWeight: 0.2,
+    trendlineWeight: 0.2,
+  },
   options: {
     enableFallbackStrategy: true,
     logLevel: 'normal',
@@ -112,6 +128,14 @@ export function updateIntegrationConfig(
     timeframes: {
       ...DEFAULT_INTEGRATION_CONFIG.timeframes,
       ...updates.timeframes,
+    },
+    consistency: {
+      ...DEFAULT_INTEGRATION_CONFIG.consistency,
+      ...(updates.consistency as Partial<ConsistencyConfig>),
+      timeframeWeights: {
+        ...DEFAULT_INTEGRATION_CONFIG.consistency.timeframeWeights,
+        ...(updates.consistency?.timeframeWeights as Partial<ConsistencyConfig['timeframeWeights']>),
+      },
     },
     options: {
       ...DEFAULT_INTEGRATION_CONFIG.options,

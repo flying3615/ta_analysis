@@ -593,39 +593,43 @@ export class IntegratedOrchestrator {
   private calculateTimeframeConsistency(
     analysisData: AnalysisInputData
   ): string {
-    // 基于形态多时间框架一致性评估 + 结构/趋势线辅助
+    const cfg = this.config.consistency;
     const pattern: any = analysisData.analyses.pattern;
-    const directions = [] as number[]; // 1 多头, -1 空头
 
-    // 形态按各 timeframe 的综合信号
+    // 形态多周期方向按权重折算为分数（多头=1，空头=-1，缺省=0）
+    let patternScore = 0;
     const tfAnalyses = pattern?.timeframeAnalyses as
       | { timeframe: 'weekly' | 'daily' | '1hour'; patternSignal?: string }[]
       | undefined;
     if (Array.isArray(tfAnalyses)) {
       for (const tf of tfAnalyses) {
-        if (tf.patternSignal === 'bullish') directions.push(1);
-        else if (tf.patternSignal === 'bearish') directions.push(-1);
+        const w = cfg.timeframeWeights[tf.timeframe] ?? 0;
+        if (tf.patternSignal === 'bullish') patternScore += 1 * w;
+        else if (tf.patternSignal === 'bearish') patternScore += -1 * w;
       }
     }
 
-    // 结构趋势作为辅助
+    // 结构趋势辅助
     const structure = analysisData.analyses.structure;
-    if (structure?.trend === 'up') directions.push(1);
-    else if (structure?.trend === 'down') directions.push(-1);
+    if (structure?.trend === 'up') patternScore += 1 * (cfg.structureWeight ?? 0);
+    else if (structure?.trend === 'down') patternScore += -1 * (cfg.structureWeight ?? 0);
 
-    // 趋势线通道斜率辅助
+    // 趋势线斜率辅助
     const tl: any = analysisData.analyses.trendline;
-    if (tl?.channel?.slope > 0) directions.push(1);
-    else if (tl?.channel?.slope < 0) directions.push(-1);
+    if (tl?.channel?.slope > 0) patternScore += 1 * (cfg.trendlineWeight ?? 0);
+    else if (tl?.channel?.slope < 0) patternScore += -1 * (cfg.trendlineWeight ?? 0);
 
-    const nonNeutral = directions.length;
-    if (nonNeutral === 0) return '0%';
+    // 归一化到 0-100%，绝对值越接近1一致性越高
+    const maxPossible =
+      (cfg.timeframeWeights.weekly ?? 0) +
+      (cfg.timeframeWeights.daily ?? 0) +
+      (cfg.timeframeWeights['1hour'] ?? 0) +
+      (cfg.structureWeight ?? 0) +
+      (cfg.trendlineWeight ?? 0);
+    if (maxPossible <= 0) return '0%';
 
-    const bulls = directions.filter(d => d === 1).length;
-    const bears = directions.filter(d => d === -1).length;
-    const majority = Math.max(bulls, bears);
-    const percent = Math.round((majority / nonNeutral) * 100);
-    return `${percent}%`;
+    const ratio = Math.min(1, Math.abs(patternScore) / maxPossible);
+    return `${Math.round(ratio * 100)}%`;
   }
 
   /**

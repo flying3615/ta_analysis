@@ -109,9 +109,8 @@ export class SignalAggregator {
     for (const plugin of this.plugins) {
       try {
         const res = plugin.extract(input, context);
-        const weight = plugin.category === 'main'
-          ? (this.config.weights.plugins?.[plugin.id] ?? 0)
-          : (this.config.weights.plugins?.[plugin.id] ?? 0); // 统一按单独权重乘
+        // 插件均按独立配置权重处理，不参与主权重归一（开闭原则）
+        const weight = this.config.weights.plugins?.[plugin.id] ?? 0;
         const ws = this.calculateAdditionalScore(res, weight);
         pluginsTotalWeighted += ws;
         extraWeightedScores[plugin.id] = ws;
