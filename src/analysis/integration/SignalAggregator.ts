@@ -11,6 +11,7 @@ import type {
   DirectionConversionResult,
   ScoreCalculationResult,
   IntegrationContext,
+  AnalyzerPlugin,
 } from './IntegrationTypes.js';
 import type {
   IntegrationConfig,
@@ -18,7 +19,15 @@ import type {
 } from './IntegrationConfig.js';
 
 export class SignalAggregator {
+  // 可选插件列表：用于扩展更多分析器
+  private plugins: AnalyzerPlugin[] = [];
+
   constructor(private config: IntegrationConfig) {}
+
+  /** 注册插件（遵循开闭原则，无需改核心逻辑即可扩展） */
+  registerPlugin(plugin: AnalyzerPlugin): void {
+    this.plugins.push(plugin);
+  }
 
   /** 将数值限制在区间内，默认 [0,100] */
   private clamp(value: number, min: number = 0, max: number = 100): number {
@@ -88,7 +97,26 @@ export class SignalAggregator {
       normalizedWeights.trendline || 0
     );
 
-    // 计算最终分数
+    // 插件信号处理
+    const extraWeightedScores: Record<string, number> = {};
+    const extraContributions: Record<string, number> = {};
+    let pluginsTotalWeighted = 0;
+    for (const plugin of this.plugins) {
+      try {
+        const res = plugin.extract(input, context);
+        const weight = plugin.category === 'main'
+          ? (this.config.weights.plugins?.[plugin.id] ?? 0)
+          : (this.config.weights.plugins?.[plugin.id] ?? 0); // 统一按单独权重乘
+        const ws = this.calculateAdditionalScore(res, weight);
+        pluginsTotalWeighted += ws;
+        extraWeightedScores[plugin.id] = ws;
+        extraContributions[plugin.id] = Math.abs(weight === 0 ? 0 : ws / weight);
+      } catch {
+        // 忽略单插件错误，避免影响主流程
+      }
+    }
+
+    // 计算最终分数（主模块 + 附加模块 + 插件）
     const finalScore =
       chipWeighted.weightedScore +
       patternWeighted.weightedScore +
@@ -97,7 +125,8 @@ export class SignalAggregator {
       structureWeighted +
       supplyDemandWeighted +
       rangeWeighted +
-      trendlineWeighted;
+      trendlineWeighted +
+      pluginsTotalWeighted;
 
     // 确定方向
     const direction = this.determineDirection(finalScore);
@@ -132,6 +161,7 @@ export class SignalAggregator {
         range: rangeWeighted / (normalizedWeights.range || 1),
         trendline: trendlineWeighted / (normalizedWeights.trendline || 1),
       },
+      extraContributions,
       weightedScores: {
         chip: chipWeighted.weightedScore,
         pattern: patternWeighted.weightedScore,
@@ -142,6 +172,7 @@ export class SignalAggregator {
         range: rangeWeighted,
         trendline: trendlineWeighted,
       },
+      extraWeightedScores,
     };
   }
 

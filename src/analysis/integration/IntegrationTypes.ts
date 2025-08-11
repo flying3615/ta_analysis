@@ -53,6 +53,8 @@ export interface SignalAggregationResult {
     range?: number;
     trendline?: number;
   };
+  // 额外（插件）贡献与分数，按模块ID记录，便于扩展
+  extraContributions?: Record<string, number>;
   weightedScores: {
     chip: number;
     pattern: number;
@@ -63,6 +65,7 @@ export interface SignalAggregationResult {
     range?: number;
     trendline?: number;
   };
+  extraWeightedScores?: Record<string, number>;
 }
 
 /**
@@ -158,6 +161,18 @@ export interface DirectionConversionResult {
   direction: TradeDirection;
   confidence: number;
   source: string;
+}
+
+/**
+ * 分析插件接口：用于扩展新的分析模块而无需修改聚合器核心逻辑
+ * id: 模块唯一标识
+ * category: 'additional' 类别默认不参与主权重归一化
+ * extract: 提取方向与置信度
+ */
+export interface AnalyzerPlugin {
+  id: string;
+  category: 'additional' | 'main';
+  extract: (input: AnalysisInputData, context: IntegrationContext) => DirectionConversionResult;
 }
 
 /**

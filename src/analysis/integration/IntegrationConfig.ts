@@ -13,6 +13,8 @@ export interface IntegrationWeights {
   supplyDemand?: number;
   range?: number;
   trendline?: number;
+  // 插件权重：按插件ID配置，可选
+  plugins?: Record<string, number>;
 }
 
 export interface IntegrationThresholds {
@@ -62,6 +64,7 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
     supplyDemand: 0.1,
     range: 0.1,
     trendline: 0.1,
+    plugins: {},
   },
   thresholds: {
     scoreLong: 15,
