@@ -29,6 +29,12 @@ export function createBbsrPlugin(): AnalyzerPlugin {
       }
       return { direction: best.direction, confidence: best.score, source: 'bbsr' };
     },
+    summarize(input: AnalysisInputData): string {
+      const b = input.analyses.bbsr;
+      const daily = b.dailyBBSRResult?.strength;
+      const weekly = b.weeklyBBSRResult?.strength;
+      return `BBSR(日/周) 强度:${daily ?? '-'} / ${weekly ?? '-'}`;
+    },
   };
 }
 

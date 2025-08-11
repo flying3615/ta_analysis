@@ -19,6 +19,10 @@ export function createChipPlugin(): AnalyzerPlugin {
       else confidence = confidence * 0.5;
       return { direction, confidence: clamp(confidence), source: 'chip' };
     },
+    summarize(input: AnalysisInputData): string {
+      const chip = input.analyses.chip;
+      return `买入强度:${chip.combinedBuySignalStrength} 做空强度:${chip.combinedShortSignalStrength} 主周期:${chip.primaryTimeframe}`;
+    },
   };
 }
 

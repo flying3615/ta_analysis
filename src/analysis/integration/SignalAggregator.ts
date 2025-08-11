@@ -29,6 +29,11 @@ export class SignalAggregator {
     this.plugins.push(plugin);
   }
 
+  /** 获取已注册插件（用于外部如 orchestrator 获取 summarize 能力） */
+  getPlugins(): ReadonlyArray<AnalyzerPlugin> {
+    return this.plugins;
+  }
+
   /** 将数值限制在区间内，默认 [0,100] */
   private clamp(value: number, min: number = 0, max: number = 100): number {
     return Math.max(min, Math.min(max, value));

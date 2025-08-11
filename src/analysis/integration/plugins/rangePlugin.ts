@@ -22,6 +22,12 @@ export function createRangePlugin(): AnalyzerPlugin {
       }
       return { direction, confidence: clamp(confidence), source: 'range' };
     },
+    summarize(input: AnalysisInputData): string {
+      const r: any = input.analyses.range;
+      const comp = r.compressionScore;
+      const br = r.breakout ? `${r.breakout.direction}/${r.breakout.qualityScore}` : '无突破';
+      return `压缩:${comp} 突破:${br}`;
+    },
   };
 }
 

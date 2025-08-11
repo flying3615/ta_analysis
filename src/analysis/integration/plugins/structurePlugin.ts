@@ -22,6 +22,10 @@ export function createStructurePlugin(): AnalyzerPlugin {
       }
       return { direction, confidence: clamp(confidence), source: 'structure' };
     },
+    summarize(input: AnalysisInputData): string {
+      const s: any = input.analyses.structure;
+      return `结构趋势:${s.trend} 关键位数:${s.keyLevels?.length ?? 0}`;
+    },
   };
 }
 

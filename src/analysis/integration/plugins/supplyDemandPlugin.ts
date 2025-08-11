@@ -27,6 +27,12 @@ export function createSupplyDemandPlugin(): AnalyzerPlugin {
       }
       return { direction, confidence: clamp(confidence), source: 'supplyDemand' };
     },
+    summarize(input: AnalysisInputData): string {
+      const sd: any = input.analyses.supplyDemand;
+      const pos = sd.premiumDiscount?.position ?? 50;
+      const zones = sd.recentEffectiveZones?.length ?? 0;
+      return `供需位置:${typeof pos?.toFixed === 'function' ? pos.toFixed(1) : pos} 有效区域:${zones}`;
+    },
   };
 }
 

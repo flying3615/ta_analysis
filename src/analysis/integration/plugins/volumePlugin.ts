@@ -25,6 +25,13 @@ export function createVolumePlugin(): AnalyzerPlugin {
       }
       return { direction, confidence: clamp(confidence), source: 'volume' };
     },
+    summarize(input: AnalysisInputData): string {
+      const vv: any = input.analyses.volatility;
+      const regime = vv.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'low';
+      const atrp = vv.volatilityAnalysis?.volatilityAnalysis?.atrPercent ?? 0;
+      const volConfirm = vv.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation ? '确认' : '未确认';
+      return `波动率:${regime} ATR%:${typeof atrp?.toFixed === 'function' ? atrp.toFixed(2) : atrp} 成交量确认:${volConfirm}`;
+    },
   };
 }
 

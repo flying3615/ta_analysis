@@ -25,6 +25,10 @@ export function createPatternPlugin(): AnalyzerPlugin {
       let confidence = Math.abs(p.signalStrength ?? 0) + statusAdj;
       return { direction, confidence: clamp(confidence), source: 'pattern' };
     },
+    summarize(input: AnalysisInputData): string {
+      const pattern: any = input.analyses.pattern;
+      return `形态综合方向:${pattern.combinedSignal} 强度:${pattern.signalStrength?.toFixed?.(1) ?? pattern.signalStrength}`;
+    },
   };
 }
 

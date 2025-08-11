@@ -24,6 +24,11 @@ export function createTrendlinePlugin(): AnalyzerPlugin {
       }
       return { direction, confidence: clamp(confidence), source: 'trendline' };
     },
+    summarize(input: AnalysisInputData): string {
+      const tl: any = input.analyses.trendline;
+      const slope = tl.channel?.slope ?? 0;
+      return tl.summary || `通道斜率:${typeof slope?.toFixed === 'function' ? slope.toFixed(4) : slope}`;
+    },
   };
 }
 
