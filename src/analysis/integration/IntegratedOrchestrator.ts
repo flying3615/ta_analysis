@@ -4,7 +4,7 @@
  */
 
 import type { IntegratedTradePlan } from '../../types.js';
-import { Candle } from '../../types.js';
+import { Candle, TradeDirection } from '../../types.js';
 import { generateUniqueId, getStockDataForTimeframe } from '../../util/util.js';
 
 // 分析模块导入
@@ -54,7 +54,11 @@ export class IntegratedOrchestrator {
     this.signalAggregator = new SignalAggregator(config);
     this.keyLevelManager = new KeyLevelManager(config);
     this.strategyGenerator = new StrategyGenerator(config);
-    // 注册内置插件
+    this.registerBuiltInPlugins();
+  }
+
+  /** 统一注册内置插件，供构造与配置更新复用 */
+  private registerBuiltInPlugins(): void {
     this.signalAggregator.registerPlugin(createChipPlugin());
     this.signalAggregator.registerPlugin(createPatternPlugin());
     this.signalAggregator.registerPlugin(createVolumePlugin());
@@ -658,7 +662,7 @@ export class IntegratedOrchestrator {
         analysisData
       ),
 
-      primaryTimeframe: 'daily',
+      primaryTimeframe: analysisData.analyses.chip?.primaryTimeframe ?? 'daily',
       timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
       shortTermOutlook: this.buildShortTermOutlook(analysisData.analyses),
       mediumTermOutlook: this.buildMediumTermOutlook(analysisData.analyses),
@@ -788,13 +792,12 @@ export class IntegratedOrchestrator {
     signalResult: any,
     analysisData: AnalysisInputData
   ): string {
-    const direction =
-      signalResult.direction === 'long'
-        ? '做多'
-        : signalResult.direction === 'short'
-          ? '做空'
-          : '中性';
-    return `基于综合分析，建议${direction}，置信度${signalResult.confidenceScore.toFixed(1)}%`;
+    const dirText = signalResult.direction === TradeDirection.Long
+      ? '做多'
+      : signalResult.direction === TradeDirection.Short
+        ? '做空'
+        : '中性';
+    return `综合信号 ${dirText}｜强度:${signalResult.signalStrength}｜置信度:${signalResult.confidenceScore.toFixed(1)}%`;
   }
 
   /**
@@ -804,17 +807,31 @@ export class IntegratedOrchestrator {
     signalResult: any,
     analysisData: AnalysisInputData
   ): string {
-    return '综合各模块分析结果，形成主要交易逻辑';
+    const ws = signalResult.weightedScores as Record<string, number>;
+    const entries = Object.entries(ws).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+    const top = entries.slice(0, 3).map(([k]) => k).join('/');
+    const patternDir = (analysisData.analyses.pattern as any)?.combinedSignal ?? '-';
+    const chip = analysisData.analyses.chip;
+    return `主要由${top} 驱动；形态:${patternDir}；筹码买:${chip.combinedBuySignalStrength}/卖:${chip.combinedShortSignalStrength}`;
   }
 
   /**
    * 生成次要逻辑
    */
   private generateSecondaryRationale(
-    signalResult: any,
+    _signalResult: any,
     analysisData: AnalysisInputData
   ): string {
-    return '辅助分析因子支持主要判断';
+    const structure = analysisData.analyses.structure;
+    const sd: any = analysisData.analyses.supplyDemand;
+    const range: any = analysisData.analyses.range;
+    const tl: any = analysisData.analyses.trendline;
+    const parts: string[] = [];
+    if (structure?.trend) parts.push(`结构:${structure.trend}`);
+    if (sd?.premiumDiscount?.position != null) parts.push(`估值位:${Math.round(sd.premiumDiscount.position)}%`);
+    if (range?.breakout) parts.push(`区间突破:${range.breakout.direction}/质量${range.breakout.qualityScore}`);
+    if (tl?.breakoutRetest) parts.push(`趋势线突破回踩:${tl.breakoutRetest.direction}/质量${tl.breakoutRetest.qualityScore}`);
+    return parts.length ? parts.join('；') : '—';
   }
 
   /**
@@ -823,18 +840,78 @@ export class IntegratedOrchestrator {
   private calculateTimeframeConsistency(
     analysisData: AnalysisInputData
   ): string {
-    // 简化实现：返回字符串以符合 IntegratedTradePlan 类型定义
-    return '80%';
+    // 基于形态多时间框架一致性评估 + 结构/趋势线辅助
+    const pattern: any = analysisData.analyses.pattern;
+    const directions = [] as number[]; // 1 多头, -1 空头
+
+    // 形态按各 timeframe 的综合信号
+    const tfAnalyses = pattern?.timeframeAnalyses as
+      | { timeframe: 'weekly' | 'daily' | '1hour'; patternSignal?: string }[]
+      | undefined;
+    if (Array.isArray(tfAnalyses)) {
+      for (const tf of tfAnalyses) {
+        if (tf.patternSignal === 'bullish') directions.push(1);
+        else if (tf.patternSignal === 'bearish') directions.push(-1);
+      }
+    }
+
+    // 结构趋势作为辅助
+    const structure = analysisData.analyses.structure;
+    if (structure?.trend === 'up') directions.push(1);
+    else if (structure?.trend === 'down') directions.push(-1);
+
+    // 趋势线通道斜率辅助
+    const tl: any = analysisData.analyses.trendline;
+    if (tl?.channel?.slope > 0) directions.push(1);
+    else if (tl?.channel?.slope < 0) directions.push(-1);
+
+    const nonNeutral = directions.length;
+    if (nonNeutral === 0) return '0%';
+
+    const bulls = directions.filter(d => d === 1).length;
+    const bears = directions.filter(d => d === -1).length;
+    const majority = Math.max(bulls, bears);
+    const percent = Math.round((majority / nonNeutral) * 100);
+    return `${percent}%`;
   }
 
   /**
    * 提取趋势反转信息
    */
   private extractTrendReversalInfo(patternAnalysis: any): any {
-    return {
-      hasReversalSignal: false,
-      description: '未检测到趋势反转信号',
-    };
+    // 优先使用增强的趋势逆转信号（如存在）
+    const primary = patternAnalysis?.primaryReversalSignal;
+    const signals = patternAnalysis?.reversalSignals as any[] | undefined;
+
+    if (primary) {
+      const dir = primary.direction > 0 ? '看多' : primary.direction < 0 ? '看空' : '中性';
+      return {
+        hasReversalSignal: !!primary.isReversal,
+        description: `检测到${dir}逆转信号，强度${Math.round(primary.reversalStrength ?? 0)}，小周期: ${primary.smallTimeframe} 对 大周期: ${primary.largeTimeframe}`,
+        targets: primary.targets ?? undefined,
+      };
+    }
+
+    if (Array.isArray(signals) && signals.length > 0) {
+      const best = [...signals].sort((a, b) => (b.reversalStrength ?? 0) - (a.reversalStrength ?? 0))[0];
+      const dir = best.direction > 0 ? '看多' : best.direction < 0 ? '看空' : '中性';
+      return {
+        hasReversalSignal: !!best.isReversal,
+        description: `检测到${dir}逆转信号，强度${Math.round(best.reversalStrength ?? 0)}，小周期: ${best.smallTimeframe} 对 大周期: ${best.largeTimeframe}`,
+        targets: best.targets ?? undefined,
+      };
+    }
+
+    // 退化：根据综合形态方向给出提示
+    const combined = patternAnalysis?.combinedSignal;
+    if (combined === 'bullish' || combined === 'bearish') {
+      return {
+        hasReversalSignal: false,
+        description: `当前形态综合方向为${combined === 'bullish' ? '看多' : '看空'}，未形成明确的逆转模板`,
+      };
+    }
+
+    return { hasReversalSignal: false, description: '未检测到趋势反转信号' };
   }
 
   // === 各模块摘要构建 ===
@@ -945,6 +1022,7 @@ export class IntegratedOrchestrator {
     this.signalAggregator = new SignalAggregator(this.config);
     this.keyLevelManager = new KeyLevelManager(this.config);
     this.strategyGenerator = new StrategyGenerator(this.config);
+    this.registerBuiltInPlugins();
   }
 
   /**
