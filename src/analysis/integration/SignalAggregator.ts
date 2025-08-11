@@ -4,7 +4,7 @@
  */
 
 import { TradeDirection, SignalStrength } from '../../types.js';
-import { PatternDirection } from '../patterns/analyzeMultiTimeframePatterns.js';
+import { PatternDirection } from '../basic/patterns/analyzeMultiTimeframePatterns.js';
 import type {
   AnalysisInputData,
   SignalAggregationResult,
@@ -206,11 +206,30 @@ export class SignalAggregator {
   private extractVolumeSignal(
     volatilityAnalysis: AnalysisInputData['analyses']['volatility']
   ): DirectionConversionResult {
-    // 波动率分析主要影响置信度，不直接提供方向信号
-    const confidence = 50; // 默认置信度，因为波动率分析主要影响置信度调整
+    // 从分析数据中获取成交量分析结果
+    const volumeData = volatilityAnalysis.volumeAnalysis.volumeAnalysis;
+
+    let direction = TradeDirection.Neutral;
+    let confidence: number;
+
+    // 基于AD趋势确定方向
+    if (volumeData.adTrend === 'bullish') {
+      direction = TradeDirection.Long;
+    } else if (volumeData.adTrend === 'bearish') {
+      direction = TradeDirection.Short;
+    }
+
+    // 基于成交量力度确定置信度
+    if (volumeData.volumeForce) {
+      // 将volumeForce映射到0-100范围的置信度
+      confidence = Math.min(100, Math.max(0, volumeData.volumeForce));
+    } else {
+      // 如果没有volumeForce，使用中等置信度
+      confidence = 50;
+    }
 
     return {
-      direction: TradeDirection.Neutral,
+      direction,
       confidence,
       source: 'volume',
     };
@@ -511,7 +530,6 @@ export class SignalAggregator {
         baseConfidence = Math.min(100, baseConfidence * 1.2);
         break;
       case SignalStrength.Moderate:
-        baseConfidence = baseConfidence;
         break;
       case SignalStrength.Weak:
         baseConfidence = baseConfidence * 0.8;

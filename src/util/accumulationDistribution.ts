@@ -7,7 +7,7 @@ import {
   calculateSlope,
   calculateVolumeForce,
 } from './taUtil.js';
-import { PatternDirection } from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
+import { PatternDirection } from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 
 export interface AccumulationDistributionResult {
   adLine: number[]; // 积累分布线的值

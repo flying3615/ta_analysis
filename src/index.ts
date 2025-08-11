@@ -12,43 +12,45 @@ export {
   combinePatternAnalyses,
   analyzeMultiTimeframePatterns,
   formatAndPrintPatternAnalysis,
-} from './analysis/patterns/analyzeMultiTimeframePatterns.js';
+} from './analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 // 暴露形态分析配置，便于外部项目按需调整
 export {
   patternConfig,
   updatePatternConfig,
-} from './analysis/patterns/patternConfig.js';
+} from './analysis/basic/patterns/patternConfig.js';
 
 export {
   determineTrendDirection,
   detectTrendReversal,
   TrendReversalSignal,
   EnhancedPatternAnalysis,
-  multiTimeframePatternAnalysis,
-  printoutMultiTimeFramePatternAnalysis,
-} from './analysis/trendReversal/multiTimeFrameTrendReversal.js';
+  analyzeMultiTimeframePattern,
+} from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
 export {
   trendReversalConfig,
   updateTrendReversalConfig,
-} from './analysis/trendReversal/trendReversalConfig.js';
-export { formatAndPrintEnhancedPatternAnalysis } from './analysis/trendReversal/formatReport.js';
+} from './analysis/analyzer/trendReversal/trendReversalConfig.js';
+export { formatAndPrintEnhancedPatternAnalysis } from './analysis/analyzer/trendReversal/formatReport.js';
 
 export {
   hasTrendReversalSignal,
   checkStockForReversalSignal,
   batchCheckForReversalSignals,
   generateReversalReport,
-} from './analysis/trendReversal/trendReversalChecker.js';
+} from './analysis/analyzer/trendReversal/trendReversalChecker.js';
 
 export {
   MultiTimeframeAnalysisResult,
   TimeframeAnalysis,
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
-} from './analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
+} from './analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
 
 // 暴露筹码配置，便于外部项目调整阈值与权重
-export { chipConfig, updateChipConfig } from './analysis/chip/chipConfig.js';
+export {
+  chipConfig,
+  updateChipConfig,
+} from './analysis/analyzer/chip/chipConfig.js';
 
 export {
   executeIntegratedAnalysisV2,
@@ -60,12 +62,12 @@ export {
   calculateVolatilityAnalysis,
   formatVolatilityAnalysis,
   EnhancedVolatilityAnalysisResult,
-  executeEnhancedCombinedAnalysis,
-} from './analysis/volatility/volatilityAnalysis.js';
+  analyzeVolumeVolatilityCombined,
+} from './analysis/analyzer/volatility/volatilityAnalysis.js';
 export {
   volatilityConfig,
   updateVolatilityConfig,
-} from './analysis/volatility/volatilityConfig.js';
+} from './analysis/analyzer/volatility/volatilityConfig.js';
 
 // 新增的积累分布线分析导出
 export {
@@ -79,7 +81,7 @@ export {
   executeVolumeAnalysis,
   IntegratedVolumeAnalysisResult,
   IntegratedVolatilityAnalysisResult,
-} from './analysis/volatility/volumeVolatilityAnalysis.js';
+} from './analysis/analyzer/volatility/volumeVolatilityAnalysis.js';
 
 export { fetchChartData } from './image/chartImage.js';
 
@@ -94,13 +96,10 @@ export {
 export {
   candleConfig,
   updateCandleConfig,
-} from './analysis/candle/candleConfig.js';
+} from './analysis/basic/candle/candleConfig.js';
 // 暴露蜡烛图多时间框架分析入口与格式化
-export {
-  multiTimeCandleAnalysis,
-  main as runMultiTimeframeCandleAnalysis,
-} from './analysis/candle/multiTImeFrameCandleAnalysis.js';
-export { formatAndPrintCandleAnalysis } from './analysis/candle/formatCandleAnalysis.js';
+export { multiTimeCandleAnalysis } from './analysis/basic/candle/multiTImeFrameCandleAnalysis.js';
+export { formatAndPrintCandleAnalysis } from './analysis/basic/candle/formatCandleAnalysis.js';
 // 导出综合交易计划的格式化与机器摘要构建
 export {
   formatTradePlanOutput,
@@ -108,43 +107,43 @@ export {
 } from './analysis/FormatTradePlan.js';
 
 // 暴露BBSR（支撑阻力 + 近期多空）分析能力与配置
-export {
-  multiTimeBBSRAnalysis,
-  main as runBBSRAnalysis,
-} from './analysis/sr/multiTimeFrameBBSRAnalysis.js';
-export { formatAndPrintSrAnalysis } from './analysis/sr/formatSrAnalysis.js';
-export { srConfig, updateSrConfig } from './analysis/sr/srConfig.js';
+export { analyzeMultiTimeBBSR } from './analysis/analyzer/sr/multiTimeFrameBBSRAnalysis.js';
+export { formatAndPrintSrAnalysis } from './analysis/analyzer/sr/formatSrAnalysis.js';
+export { srConfig, updateSrConfig } from './analysis/analyzer/sr/srConfig.js';
 
 // Market Structure
-export { runMultiTimeStructure } from './analysis/structure/multiTimeStructure.js';
-export { formatAndPrintStructureResult } from './analysis/structure/formatStructure.js';
+export { runMultiTimeStructure } from './analysis/analyzer/structure/multiTimeStructure.js';
+export { formatAndPrintStructureResult } from './analysis/analyzer/structure/formatStructure.js';
 export {
   structureConfig,
   updateStructureConfig,
-} from './analysis/structure/structureConfig.js';
+} from './analysis/analyzer/structure/structureConfig.js';
 
 // Supply/Demand Zones
-export { analyzeSupplyDemand } from './analysis/supplyDemand/sdDetector.js';
-export { formatAndPrintSupplyDemand } from './analysis/supplyDemand/formatSupplyDemand.js';
-export { sdConfig, updateSdConfig } from './analysis/supplyDemand/sdConfig.js';
-export { multiTimeSupplyDemand } from './analysis/supplyDemand/multiTimeSupplyDemand.js';
+export { analyzeSupplyDemandZone } from './analysis/analyzer/supplyDemand/sdDetector.js';
+export { formatAndPrintSupplyDemand } from './analysis/analyzer/supplyDemand/formatSupplyDemand.js';
+export {
+  sdConfig,
+  updateSdConfig,
+} from './analysis/analyzer/supplyDemand/sdConfig.js';
+export { multiTimeSupplyDemand } from './analysis/analyzer/supplyDemand/multiTimeSupplyDemand.js';
 
 // Range & Breakout
-export { analyzeRange } from './analysis/range/rangeDetector.js';
-export { formatAndPrintRange } from './analysis/range/formatRange.js';
+export { analyzeRange } from './analysis/analyzer/range/rangeDetector.js';
+export { formatAndPrintRange } from './analysis/analyzer/range/formatRange.js';
 export {
   rangeConfig,
   updateRangeConfig,
-} from './analysis/range/rangeConfig.js';
+} from './analysis/analyzer/range/rangeConfig.js';
 
 // Trendlines & Channels
-export { analyzeTrendlinesAndChannels } from './analysis/trendline/trendlineDetector.js';
-export { formatAndPrintTrendlines } from './analysis/trendline/formatTrendline.js';
-export { multiTimeTrendlines } from './analysis/trendline/multiTimeTrendlines.js';
+export { analyzeTrendlinesAndChannels } from './analysis/analyzer/trendline/trendlineDetector.js';
+export { formatAndPrintTrendlines } from './analysis/analyzer/trendline/formatTrendline.js';
+export { multiTimeTrendlines } from './analysis/analyzer/trendline/multiTimeTrendlines.js';
 export {
   trendlineConfig,
   updateTrendlineConfig,
-} from './analysis/trendline/trendlineConfig.js';
+} from './analysis/analyzer/trendline/trendlineConfig.js';
 
 // === 新架构集成分析模块 ===
 // 集成配置管理

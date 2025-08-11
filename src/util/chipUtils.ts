@@ -1,4 +1,7 @@
-import { ChipDistribution, ChipPeak } from '../analysis/chip/chipTypes.js';
+import {
+  ChipDistribution,
+  ChipPeak,
+} from '../analysis/analyzer/chip/chipTypes.js';
 
 /**
  * 计算基尼系数 - 衡量分布不平等程度

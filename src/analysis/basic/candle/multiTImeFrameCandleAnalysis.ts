@@ -1,0 +1,122 @@
+import { generateTradeRecommendation } from './BullOrBearDetector.js';
+import { Candle } from '../../../types.js';
+import { computeRiskReward } from './candleUtils.js';
+
+/**
+ * 生成多个股票的交易计划，并以JSON格式返回
+ * @param symbol 股票代码数组
+ * @param dailyCandles
+ * @param weeklyCandles
+ * @returns 多股票交易计划JSON
+ */
+const multiTimeCandleAnalysis = async (
+  symbol: string,
+  dailyCandles: Candle[],
+  weeklyCandles: Candle[]
+): Promise<Record<string, any>> => {
+  console.log('生成交易计划...');
+
+  try {
+    console.log(`分析 ${symbol}...`);
+    const recommendation = await generateTradeRecommendation(
+      symbol,
+      dailyCandles,
+      weeklyCandles
+    );
+
+    // 计算潜在收益与风险（封装为工具函数）
+    let potentialProfit = 0;
+    let potentialLoss = 0;
+    let riskRewardRatio = 0;
+    let profitPercentage = 0;
+    let lossPercentage = 0;
+
+    if (
+      recommendation.hasSignal &&
+      recommendation.takeProfitPrice &&
+      recommendation.stopLossPrice
+    ) {
+      const rr = computeRiskReward({
+        direction:
+          recommendation.direction === 'bullish' ? 'bullish' : 'bearish',
+        currentPrice: recommendation.currentPrice,
+        stopLossPrice: recommendation.stopLossPrice,
+      });
+      potentialProfit = rr.potentialProfit;
+      potentialLoss = rr.potentialLoss;
+      riskRewardRatio = rr.riskRewardRatio;
+      profitPercentage = rr.profitPercentage;
+      lossPercentage = rr.lossPercentage;
+    }
+
+    // 格式化日线和周线形态数据
+    const dailyBullishDetails =
+      recommendation.dailySignals.bullishDetails?.map(pattern => ({
+        date: pattern.date.toISOString(),
+        patterns: pattern.patternNames,
+        strength: pattern.strength,
+        price: pattern.priceLevel,
+      })) || [];
+
+    const dailyBearishDetails =
+      recommendation.dailySignals.bearishDetails?.map(pattern => ({
+        date: pattern.date.toISOString(),
+        patterns: pattern.patternNames,
+        strength: pattern.strength,
+        price: pattern.priceLevel,
+      })) || [];
+
+    const weeklyBullishDetails =
+      recommendation.weeklySignals.bullishDetails?.map(pattern => ({
+        date: pattern.date.toISOString(),
+        patterns: pattern.patternNames,
+        strength: pattern.strength,
+        price: pattern.priceLevel,
+      })) || [];
+
+    const weeklyBearishDetails =
+      recommendation.weeklySignals.bearishDetails?.map(pattern => ({
+        date: pattern.date.toISOString(),
+        patterns: pattern.patternNames,
+        strength: pattern.strength,
+        price: pattern.priceLevel,
+      })) || [];
+
+    return {
+      symbol: recommendation.symbol,
+      currentPrice: recommendation.currentPrice,
+      hasSignal: recommendation.hasSignal,
+      direction: recommendation.direction,
+      signalStrength: parseFloat(recommendation.signalStrength.toFixed(2)),
+      entryPrice: recommendation.entryPrice,
+      stopLossPrice: recommendation.stopLossPrice,
+      targetPrice: recommendation.takeProfitPrice,
+      reasoning: recommendation.reasoning,
+      riskReward: {
+        potentialProfit: parseFloat(potentialProfit.toFixed(2)),
+        potentialLoss: parseFloat(potentialLoss.toFixed(2)),
+        profitPercentage: parseFloat(profitPercentage.toFixed(2)),
+        lossPercentage: parseFloat(lossPercentage.toFixed(2)),
+        riskRewardRatio: parseFloat(riskRewardRatio.toFixed(2)),
+      },
+      patterns: {
+        daily: {
+          bullish: dailyBullishDetails,
+          bearish: dailyBearishDetails,
+        },
+        weekly: {
+          bullish: weeklyBullishDetails,
+          bearish: weeklyBearishDetails,
+        },
+      },
+    };
+  } catch (error) {
+    console.error(`分析 ${symbol} 时出错:`, error);
+    return {
+      symbol,
+      error: `分析出错: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+};
+
+export { multiTimeCandleAnalysis };

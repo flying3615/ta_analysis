@@ -1,12 +1,12 @@
 import {
   ComprehensivePatternAnalysis,
   PatternDirection,
-} from '../analysis/patterns/analyzeMultiTimeframePatterns.js';
-import { MultiTimeframeAnalysisResult } from '../analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
+} from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
+import { MultiTimeframeAnalysisResult } from '../analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
 import {
   IntegratedVolatilityAnalysisResult,
   IntegratedVolumeAnalysisResult,
-} from '../analysis/volatility/volumeVolatilityAnalysis.js';
+} from '../analysis/analyzer/volatility/volumeVolatilityAnalysis.js';
 import {
   IntegratedTradePlan,
   KeyLevel,

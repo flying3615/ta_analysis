@@ -8,14 +8,14 @@ import { Candle } from '../../types.js';
 import { generateUniqueId, getStockDataForTimeframe } from '../../util/util.js';
 
 // 分析模块导入
-import { multiTimeFrameChipDistAnalysis } from '../chip/multiTimeFrameChipDistributionAnalysis.js';
-import { multiTimeframePatternAnalysis } from '../trendReversal/multiTimeFrameTrendReversal.js';
-import { multiTimeBBSRAnalysis } from '../sr/multiTimeFrameBBSRAnalysis.js';
-import { executeEnhancedCombinedAnalysis } from '../volatility/volatilityAnalysis.js';
-import { analyzeStructure } from '../structure/structureDetector.js';
-import { analyzeSupplyDemand } from '../supplyDemand/sdDetector.js';
-import { analyzeRange } from '../range/rangeDetector.js';
-import { analyzeTrendlinesAndChannels } from '../trendline/trendlineDetector.js';
+import { multiTimeFrameChipDistAnalysis } from '../analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
+import { analyzeMultiTimeframePattern } from '../analyzer/trendReversal/multiTimeFrameTrendReversal.js';
+import { analyzeMultiTimeBBSR } from '../analyzer/sr/multiTimeFrameBBSRAnalysis.js';
+import { analyzeVolumeVolatilityCombined } from '../analyzer/volatility/volatilityAnalysis.js';
+import { analyzeMarketStructure } from '../analyzer/structure/structureDetector.js';
+import { analyzeSupplyDemandZone } from '../analyzer/supplyDemand/sdDetector.js';
+import { analyzeRange } from '../analyzer/range/rangeDetector.js';
+import { analyzeTrendlinesAndChannels } from '../analyzer/trendline/trendlineDetector.js';
 
 // 集成模块导入
 import { SignalAggregator } from './SignalAggregator.js';
@@ -373,6 +373,8 @@ export class IntegratedOrchestrator {
           rangeAnalysis,
           trendlineAnalysis,
         ] = await Promise.all([
+          // TODO multiTimeCandleAnalysis not used here??
+
           this.executeWithFallback(
             () =>
               multiTimeFrameChipDistAnalysis(
@@ -388,23 +390,23 @@ export class IntegratedOrchestrator {
           ),
           this.executeWithFallback(
             () =>
-              multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
+              analyzeMultiTimeframePattern(weeklyData, dailyData, hourlyData),
             'pattern'
           ),
           this.executeWithFallback(
-            () => multiTimeBBSRAnalysis(symbol, dailyData, hourlyData),
+            () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
             'bbsr'
           ),
           this.executeWithFallback(
-            () => executeEnhancedCombinedAnalysis(hourlyData),
+            () => analyzeVolumeVolatilityCombined(hourlyData),
             'volatility'
           ),
           this.executeWithFallback(
-            () => analyzeStructure(dailyData, 'daily'),
+            () => analyzeMarketStructure(dailyData, 'daily'),
             'structure'
           ),
           this.executeWithFallback(
-            () => analyzeSupplyDemand(symbol, dailyData, 'daily'),
+            () => analyzeSupplyDemandZone(symbol, dailyData, 'daily'),
             'supplyDemand'
           ),
           this.executeWithFallback(
@@ -453,29 +455,28 @@ export class IntegratedOrchestrator {
           console.log('正在执行形态分析...');
         }
         const patternAnalysis = await this.executeWithFallback(
-          () =>
-            multiTimeframePatternAnalysis(weeklyData, dailyData, hourlyData),
+          () => analyzeMultiTimeframePattern(weeklyData, dailyData, hourlyData),
           'pattern'
         );
 
         // ... 其他分析的串行执行逻辑
         const bbsrAnalysis = await this.executeWithFallback(
-          () => multiTimeBBSRAnalysis(symbol, dailyData, hourlyData),
+          () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
           'bbsr'
         );
 
         const volatilityAnalysis = await this.executeWithFallback(
-          () => executeEnhancedCombinedAnalysis(hourlyData),
+          () => analyzeVolumeVolatilityCombined(hourlyData),
           'volatility'
         );
 
         const structureAnalysis = await this.executeWithFallback(
-          () => analyzeStructure(dailyData, 'daily'),
+          () => analyzeMarketStructure(dailyData, 'daily'),
           'structure'
         );
 
         const supplyDemandAnalysis = await this.executeWithFallback(
-          () => analyzeSupplyDemand(symbol, dailyData, 'daily'),
+          () => analyzeSupplyDemandZone(symbol, dailyData, 'daily'),
           'supplyDemand'
         );
 

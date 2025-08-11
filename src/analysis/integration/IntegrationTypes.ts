@@ -9,13 +9,13 @@ import type {
   SignalStrength,
   KeyLevel,
 } from '../../types.js';
-import type { MultiTimeframeAnalysisResult } from '../chip/chipMultiTypes.js';
-import type { ComprehensivePatternAnalysis } from '../patterns/analyzeMultiTimeframePatterns.js';
-import type { CombinedVVAnalysisResult } from '../volatility/volumeVolatilityAnalysis.js';
-import type { StructureResult } from '../structure/structureTypes.js';
-import type { SdAnalysisResult } from '../supplyDemand/sdTypes.js';
-import type { RangeAnalysisResult } from '../range/rangeTypes.js';
-import type { TrendlineChannelAnalysisResult } from '../trendline/trendlineTypes.js';
+import type { MultiTimeframeAnalysisResult } from '../analyzer/chip/chipMultiTypes.js';
+import type { ComprehensivePatternAnalysis } from '../basic/patterns/analyzeMultiTimeframePatterns.js';
+import type { CombinedVVAnalysisResult } from '../analyzer/volatility/volumeVolatilityAnalysis.js';
+import type { StructureResult } from '../analyzer/structure/structureTypes.js';
+import type { SdAnalysisResult } from '../analyzer/supplyDemand/sdTypes.js';
+import type { RangeAnalysisResult } from '../analyzer/range/rangeTypes.js';
+import type { TrendlineChannelAnalysisResult } from '../analyzer/trendline/trendlineTypes.js';
 import type { IntegrationConfig } from './IntegrationConfig.js';
 
 /**
