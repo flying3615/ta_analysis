@@ -1,0 +1,80 @@
+# Rule Name: analyzer-plugin-development
+
+描述: 新增分析器的开发与集成指南（遵循开闭原则，最小改动聚合核心）。
+
+## 必备知识
+- 插件接口: `AnalyzerPlugin` 定义于 `src/analysis/integration/IntegrationTypes.ts`
+- 聚合器: `src/analysis/integration/SignalAggregator.ts`（支持 `registerPlugin`）
+- 编排器: `src/analysis/integration/IntegratedOrchestrator.ts`
+- 配置: `src/analysis/integration/IntegrationConfig.ts`
+- 类型与共用: `src/types.ts`
+
+## 开发步骤
+1. 新建分析器核心
+- 在 `src/analysis/analyzer/<module>/` 实现核心检测逻辑（类型/配置/核心函数/可选 formatter）。
+- 复用编排器提供的 `weekly/daily/1hour` 数据；若需特殊时间窗口，可扩展 `IntegrationConfig.timeframes`。
+
+2. 实现插件适配器（强制）
+- 新建 `src/analysis/integration/plugins/<yourId>Plugin.ts`，实现 `AnalyzerPlugin`：
+```ts
+import type { AnalyzerPlugin, AnalysisInputData, DirectionConversionResult, IntegrationContext } from '../IntegrationTypes.js';
+import { TradeDirection } from '../../../types.js';
+const clamp = (v:number,min=0,max=100)=>Math.max(min,Math.min(max,v));
+export function createYourPlugin(): AnalyzerPlugin {
+  return {
+    id: 'yourId',
+    category: 'additional', // 或 'main'
+    extract(input: AnalysisInputData, _ctx: IntegrationContext): DirectionConversionResult {
+      // 读取你的 analyzer 结果 input.analyses.<module>
+      const direction = TradeDirection.Long; // or Short/Neutral
+      const confidence = clamp(72);
+      return { direction, confidence, source: 'yourId' };
+    },
+  };
+}
+```
+
+3. 注册插件
+- 在 `IntegratedOrchestrator` 构造函数中注册（或外部在实例后注册）：
+```ts
+import { createYourPlugin } from './plugins/yourIdPlugin.js';
+this.signalAggregator.registerPlugin(createYourPlugin());
+```
+- 仅插件模式：`updateIntegrationConfig({ options: { usePluginsOnly: true } })`
+
+4. 配置权重
+- 在 `IntegrationConfig.weights.plugins` 增加插件权重（不计入主 100% 权重）：
+```ts
+updateIntegrationConfig({
+  weights: { plugins: { yourId: 0.15 } }
+});
+```
+
+5. 键位合并（可选）
+- 若产出关键位，需在 `src/analysis/integration/KeyLevelManager.ts` 的 `extractAndMergeKeyLevels` 增加你的模块抽取逻辑。
+
+6. 摘要输出（可选）
+- 在 `src/analysis/integration/IntegratedOrchestrator.ts` 中，新增 `build<YourModule>Summary` 并加入 `tradePlan.summaries`，统一中文输出。
+
+7. 对外导出与 Runner（可选）
+- 在 `src/index.ts` 暴露 analyzer 与 config。
+- 新建 `scripts/run-mtf-<module>.mjs`，从 `dist/index.js` 导入，遵循中文输出规范与 runners-cli 规则。
+
+8. 构建与校验
+- 运行 `npm run build` 保证类型安全。
+- 运行 `scripts/run-mtf-integrated.mjs {SYMBOL}` 校验贡献度、方向、置信度是否合理。
+
+## 配置要点
+- 插件权重: `IntegrationConfig.weights.plugins`（按插件 id）
+- 插件开关: `IntegrationConfig.options.usePluginsOnly`（true 时仅用插件分数）
+- 主权重归一化: 仅对 `chip/pattern/volume/bbsr` 生效；`structure/supplyDemand/range/trendline` 与插件属于附加项。
+
+## 代码风格与类型
+- 统一使用 ESM 后缀 `.js` 导入。
+- 纯类型导入使用 `import type`。
+- 对数值计算中的 `Object.values(...)` 结果进行 `number[]` 断言或安全归约。
+- 中文输出与统一格式由各 formatter 或 orchestrator summaries 保持一致。
+
+## 最小改动原则
+- 新增分析器只需：新增 analyzer + 新增 plugin + 在 orchestrator 注册 + 权重配置。
+- 聚合核心与既有插件无需修改，满足开闭原则。
