@@ -29,6 +29,7 @@ import { createStructurePlugin } from './plugins/structurePlugin.js';
 import { createSupplyDemandPlugin } from './plugins/supplyDemandPlugin.js';
 import { createRangePlugin } from './plugins/rangePlugin.js';
 import { createTrendlinePlugin } from './plugins/trendlinePlugin.js';
+import { SimpleCache } from './CacheManager.js';
 
 import type {
   AnalysisError,
@@ -48,7 +49,7 @@ export class IntegratedOrchestrator {
   private signalAggregator: SignalAggregator;
   private keyLevelManager: KeyLevelManager;
   private strategyGenerator: StrategyGenerator;
-  private dataCache = new Map<string, Candle[]>();
+  private dataCache = new SimpleCache<Candle[]>(100);
 
   constructor(private config: IntegrationConfig = DEFAULT_INTEGRATION_CONFIG) {
     this.signalAggregator = new SignalAggregator(config);
@@ -342,27 +343,9 @@ export class IntegratedOrchestrator {
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
     const cacheKey = `${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-
-    if (this.dataCache.has(cacheKey)) {
-      return this.dataCache.get(cacheKey)!;
-    }
-
-    const data = await getStockDataForTimeframe(
-      symbol,
-      startDate,
-      endDate,
-      timeframe
-    );
-    this.dataCache.set(cacheKey, data);
-
-    // 清理过期缓存（保留最近100个条目）
-    if (this.dataCache.size > 100) {
-      const keys = Array.from(this.dataCache.keys());
-      const keysToDelete = keys.slice(0, keys.length - 100);
-      keysToDelete.forEach(key => this.dataCache.delete(key));
-    }
-
-    return data;
+    return this.dataCache.getOrFetch(cacheKey, async () => {
+      return await getStockDataForTimeframe(symbol, startDate, endDate, timeframe);
+    });
   }
 
   /**
@@ -766,8 +749,8 @@ export class IntegratedOrchestrator {
    * 计算缓存命中率
    */
   private calculateCacheHitRate(): number {
-    // 简化实现，实际应该跟踪命中和未命中次数
-    return this.dataCache.size > 0 ? 0.8 : 0;
+    const s = this.dataCache.stats();
+    return s.hitRate;
   }
 
   /**
@@ -1015,9 +998,13 @@ export class IntegratedOrchestrator {
    * 获取缓存统计
    */
   getCacheStats() {
+    const s = this.dataCache.stats();
     return {
-      totalEntries: this.dataCache.size,
-      totalSize: this.dataCache.size * 1000, // 估算
+      totalEntries: s.totalEntries,
+      totalSize: s.totalSize,
+      hits: s.hits,
+      misses: s.misses,
+      hitRate: s.hitRate,
     };
   }
 }
