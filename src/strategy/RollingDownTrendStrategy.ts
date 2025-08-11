@@ -1,4 +1,5 @@
 import { getStockDataForTimeframe } from '../util/util.js';
+import { globalLogger } from '../util/logger.js';
 
 interface ShortExpectedReturnParams {
   symbol: string; // 股票代码
@@ -18,7 +19,7 @@ interface ShortExpectedReturnParams {
  */
 async function simulatePricePath(symbol: string): Promise<number[]> {
   const today = new Date();
-  console.log('正在获取数据与分析筹码分布...');
+  globalLogger.log('正在获取数据与分析筹码分布...');
 
   const startDate = new Date();
   startDate.setDate(today.getDate() - 365); // 获取一年的数据
@@ -33,7 +34,7 @@ async function simulatePricePath(symbol: string): Promise<number[]> {
 
     return dailyData.map(c => c.close);
   } catch (error) {
-    console.error('获取股票数据失败:', error);
+    globalLogger.error('获取股票数据失败:', error);
     throw new Error(`获取${symbol}的股票数据失败`);
   }
 }
@@ -269,7 +270,7 @@ async function analyzeShortExpectedReturns(params: ShortExpectedReturnParams) {
       allResults: result,
     };
   } catch (error) {
-    console.error('分析失败:', error);
+    globalLogger.error('分析失败:', error);
     throw new Error('做空滚仓策略分析失败');
   }
 }
@@ -332,7 +333,7 @@ async function runShortExpectedReturnsAnalysis(
     const analysis = await analyzeShortExpectedReturns(params);
     return formatShortAnalysisResult(analysis);
   } catch (error) {
-    console.error('运行分析失败:', error);
+    globalLogger.error('运行分析失败:', error);
     return `分析失败: ${error.message}`;
   }
 }
@@ -402,7 +403,7 @@ async function compareShortVolatilityScenarios(
 
     return output;
   } catch (error) {
-    console.error('比较不同波动率场景失败:', error);
+    globalLogger.error('比较不同波动率场景失败:', error);
     return `比较失败: ${error.message}`;
   }
 }

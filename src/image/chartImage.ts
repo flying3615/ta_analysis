@@ -1,5 +1,6 @@
 import { ChartImg, TimeFrameConfig } from '../types.js';
 import axios from 'axios';
+import { globalLogger } from '../util/logger.js';
 import imageToBase64 from 'image-to-base64';
 
 export async function fetchChartData(
@@ -42,7 +43,7 @@ export async function fetchChartData(
         imageBase64,
       });
     } catch (error) {
-      console.error('Error fetching chart data:', error);
+      globalLogger.error('Error fetching chart data:', error);
     }
   }
 

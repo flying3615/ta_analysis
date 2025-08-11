@@ -1,4 +1,5 @@
 import { Candle, VolatilityAnalysisResult } from '../../../types.js';
+import { globalLogger } from '../../../util/logger.js';
 
 import {
   calculateAccumulationDistribution,
@@ -46,7 +47,7 @@ export function executeVolumeAnalysis(
       formattedVolumeAnalysis,
     };
   } catch (error) {
-    console.error('执行量价分析时出错:', error);
+    globalLogger.error('执行量价分析时出错:', error);
     throw error;
   }
 }

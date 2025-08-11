@@ -54,4 +54,16 @@ export function createLogger(level: LogLevel = 'normal', prefix?: string) {
   return new Logger({ level, prefix });
 }
 
+function readEnvLevel(): LogLevel {
+  const raw = (process.env.TA_LOG_LEVEL || process.env.LOG_LEVEL || '').toLowerCase();
+  if (raw === 'silent' || raw === 'normal' || raw === 'verbose') return raw;
+  return 'normal';
+}
+
+export const globalLogger = createLogger(readEnvLevel(), '[TA]');
+
+export function setGlobalLogLevel(level: LogLevel) {
+  globalLogger.setLevel(level);
+}
+
 

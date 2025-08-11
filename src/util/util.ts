@@ -7,6 +7,7 @@ import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
 // @ts-expect-error
 import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
 import { PatternStatus } from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
+import { globalLogger } from './logger.js';
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -165,7 +166,7 @@ export async function getStockData(
 
     return candles;
   } catch (error) {
-    console.error('获取股票数据时出错:', error);
+    globalLogger.error('获取股票数据时出错:', error);
     return [];
   }
 }
@@ -249,11 +250,11 @@ export async function getFullExchangeNameBySymbol(symbol: string) {
 
       return fullExchangeName; // 返回 fullExchangeName
     } else {
-      console.log(`Can't get ${symbol} full exchange name`);
+      globalLogger.log(`Can't get ${symbol} full exchange name`);
       return ''; // 返回 null 表示未找到
     }
   } catch (e) {
-    console.error(
+    globalLogger.error(
       `Error occurs when getting ${symbol} full exchange name`,
       e.message
     );

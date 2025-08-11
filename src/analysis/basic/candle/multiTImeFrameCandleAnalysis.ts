@@ -1,6 +1,7 @@
 import { generateTradeRecommendation } from './BullOrBearDetector.js';
 import { Candle } from '../../../types.js';
 import { computeRiskReward } from './candleUtils.js';
+import { globalLogger } from '../../../util/logger.js';
 
 /**
  * 生成多个股票的交易计划，并以JSON格式返回
@@ -14,10 +15,10 @@ const multiTimeCandleAnalysis = async (
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
 ): Promise<Record<string, any>> => {
-  console.log('生成交易计划...');
+  globalLogger.log('生成交易计划...');
 
   try {
-    console.log(`分析 ${symbol}...`);
+    globalLogger.log(`分析 ${symbol}...`);
     const recommendation = await generateTradeRecommendation(
       symbol,
       dailyCandles,
@@ -111,7 +112,7 @@ const multiTimeCandleAnalysis = async (
       },
     };
   } catch (error) {
-    console.error(`分析 ${symbol} 时出错:`, error);
+    globalLogger.error(`分析 ${symbol} 时出错:`, error);
     return {
       symbol,
       error: `分析出错: ${error instanceof Error ? error.message : String(error)}`,
