@@ -21,6 +21,14 @@ import { analyzeTrendlinesAndChannels } from '../analyzer/trendline/trendlineDet
 import { SignalAggregator } from './SignalAggregator.js';
 import { KeyLevelManager } from './KeyLevelManager.js';
 import { StrategyGenerator } from './StrategyGenerator.js';
+import { createChipPlugin } from './plugins/chipPlugin.js';
+import { createPatternPlugin } from './plugins/patternPlugin.js';
+import { createVolumePlugin } from './plugins/volumePlugin.js';
+import { createBbsrPlugin } from './plugins/bbsrPlugin.js';
+import { createStructurePlugin } from './plugins/structurePlugin.js';
+import { createSupplyDemandPlugin } from './plugins/supplyDemandPlugin.js';
+import { createRangePlugin } from './plugins/rangePlugin.js';
+import { createTrendlinePlugin } from './plugins/trendlinePlugin.js';
 
 import type {
   AnalysisError,
@@ -46,6 +54,15 @@ export class IntegratedOrchestrator {
     this.signalAggregator = new SignalAggregator(config);
     this.keyLevelManager = new KeyLevelManager(config);
     this.strategyGenerator = new StrategyGenerator(config);
+    // 注册内置插件
+    this.signalAggregator.registerPlugin(createChipPlugin());
+    this.signalAggregator.registerPlugin(createPatternPlugin());
+    this.signalAggregator.registerPlugin(createVolumePlugin());
+    this.signalAggregator.registerPlugin(createBbsrPlugin());
+    this.signalAggregator.registerPlugin(createStructurePlugin());
+    this.signalAggregator.registerPlugin(createSupplyDemandPlugin());
+    this.signalAggregator.registerPlugin(createRangePlugin());
+    this.signalAggregator.registerPlugin(createTrendlinePlugin());
   }
 
   /**

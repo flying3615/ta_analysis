@@ -43,6 +43,8 @@ export interface IntegrationOptions {
   enableFallbackStrategy?: boolean;
   logLevel?: 'silent' | 'normal' | 'verbose';
   outputFormat?: 'console' | 'json' | 'both';
+  // 若为 true，聚合器仅通过插件机制计算权重与方向（开闭原则更彻底）
+  usePluginsOnly?: boolean;
 }
 
 export interface IntegrationConfig {
@@ -90,6 +92,7 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
     enableFallbackStrategy: true,
     logLevel: 'normal',
     outputFormat: 'both',
+    usePluginsOnly: false,
   },
 };
 

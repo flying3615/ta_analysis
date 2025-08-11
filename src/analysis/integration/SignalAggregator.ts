@@ -43,7 +43,7 @@ export class SignalAggregator {
   ): SignalAggregationResult {
     const normalizedWeights = this.normalizeWeights(this.config.weights);
 
-    // 提取各模块的方向和分数（简化处理）
+    // 提取各模块的方向和分数
     const chipResult = this.extractChipSignal(input.analyses.chip);
     const patternResult = this.extractPatternSignal(input.analyses.pattern);
     const volumeResult = this.extractVolumeSignal(input.analyses.volatility);
@@ -117,16 +117,19 @@ export class SignalAggregator {
     }
 
     // 计算最终分数（主模块 + 附加模块 + 插件）
-    const finalScore =
-      chipWeighted.weightedScore +
-      patternWeighted.weightedScore +
-      volumeWeighted.weightedScore +
-      bbsrWeighted.weightedScore +
-      structureWeighted +
-      supplyDemandWeighted +
-      rangeWeighted +
-      trendlineWeighted +
-      pluginsTotalWeighted;
+    const finalScore = this.config.options.usePluginsOnly
+      ? pluginsTotalWeighted
+      : (
+          chipWeighted.weightedScore +
+          patternWeighted.weightedScore +
+          volumeWeighted.weightedScore +
+          bbsrWeighted.weightedScore +
+          structureWeighted +
+          supplyDemandWeighted +
+          rangeWeighted +
+          trendlineWeighted +
+          pluginsTotalWeighted
+        );
 
     // 确定方向
     const direction = this.determineDirection(finalScore);
