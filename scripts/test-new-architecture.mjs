@@ -34,7 +34,6 @@ async function testNewArchitecture() {
       },
       options: {
         logLevel: 'verbose',
-        enableParallelAnalysis: true,
       },
     });
     

@@ -6,6 +6,7 @@
 import type { IntegratedTradePlan } from '../../types.js';
 import { Candle } from '../../types.js';
 import { generateUniqueId } from '../../util/util.js';
+import { createLogger } from '../../util/logger.js';
 
 // 分析模块导入
 import { multiTimeFrameChipDistAnalysis } from '../analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
@@ -52,6 +53,7 @@ export class IntegratedOrchestrator {
   private strategyGenerator: StrategyGenerator;
   private dataProvider = new DataProvider(100);
   private narrative = new NarrativeBuilder();
+  private logger = createLogger('normal', '[Orchestrator]');
 
   constructor(private config: IntegrationConfig = DEFAULT_INTEGRATION_CONFIG) {
     this.signalAggregator = new SignalAggregator(config);
@@ -100,11 +102,8 @@ export class IntegratedOrchestrator {
     };
 
     try {
-      if (finalConfig.options.logLevel !== 'silent') {
-        console.log(
-          `======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`
-        );
-      }
+      this.logger.setLevel(finalConfig.options.logLevel ?? 'normal');
+      this.logger.log(`======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`);
 
       // 获取数据
       const dataStartTime = Date.now();
@@ -181,15 +180,11 @@ export class IntegratedOrchestrator {
         },
       };
 
-      if (finalConfig.options.logLevel !== 'silent') {
-        console.log(
-          `======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`
-        );
-      }
+      this.logger.log(`======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`);
 
       return result;
     } catch (error) {
-      console.error(`综合分析执行失败 (${symbol}):`, error);
+      this.logger.error(`综合分析执行失败 (${symbol}):`, error);
 
       // 创建错误结果
       return {
@@ -289,9 +284,8 @@ export class IntegratedOrchestrator {
   ): Promise<AnalysisInputData> {
     const config = context.config;
 
-    if (config.options.logLevel === 'verbose') {
-      console.log('正在执行各分析模块...');
-    }
+    this.logger.setLevel(config.options.logLevel ?? 'normal');
+    this.logger.verbose('正在执行各分析模块...');
 
     try {
       // 并行执行分析（仅保留并行逻辑）

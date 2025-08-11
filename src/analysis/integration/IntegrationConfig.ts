@@ -39,7 +39,6 @@ export interface DataTimeframes {
 }
 
 export interface IntegrationOptions {
-  enableParallelAnalysis?: boolean;
   enableFallbackStrategy?: boolean;
   logLevel?: 'silent' | 'normal' | 'verbose';
   outputFormat?: 'console' | 'json' | 'both';
@@ -88,7 +87,6 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
     },
   },
   options: {
-    enableParallelAnalysis: true,
     enableFallbackStrategy: true,
     logLevel: 'normal',
     outputFormat: 'both',

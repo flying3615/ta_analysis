@@ -133,10 +133,8 @@ performance: {
 
 ### 2. 并行处理
 ```typescript
-// 支持并行分析以提升性能
-if (config.options.enableParallelAnalysis) {
-  const [chipAnalysis, patternAnalysis, ...] = await Promise.all([...]);
-}
+// 并行分析为默认实现
+const [chipAnalysis, patternAnalysis, ...] = await Promise.all([...]);
 ```
 
 ### 3. 批量分析
@@ -173,7 +171,7 @@ const result = await executeIntegratedAnalysisV2('AAPL');
 // 2. 自定义配置
 const config = updateIntegrationConfig({
   weights: { chip: 0.3, pattern: 0.4, volume: 0.2, bbsr: 0.1 },
-  options: { enableParallelAnalysis: true, logLevel: 'verbose' }
+  options: { logLevel: 'verbose' }
 });
 const result = await executeIntegratedAnalysisV2('AAPL', config);
 
