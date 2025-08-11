@@ -20,6 +20,11 @@ import type {
 export class SignalAggregator {
   constructor(private config: IntegrationConfig) {}
 
+  /** 将数值限制在区间内，默认 [0,100] */
+  private clamp(value: number, min: number = 0, max: number = 100): number {
+    return Math.max(min, Math.min(max, value));
+  }
+
   /**
    * 汇总所有分析信号
    */
@@ -195,8 +200,33 @@ export class SignalAggregator {
     const direction = this.convertPatternDirection(
       patternAnalysis.combinedSignal
     );
-    const confidence = Math.abs(patternAnalysis.signalStrength || 0);
 
+    // 基于多周期主导形态状态微调
+    const timeframeWeights: Record<'weekly' | 'daily' | '1hour', number> = {
+      weekly: 0.4,
+      daily: 0.4,
+      '1hour': 0.2,
+    };
+
+    let statusAdjustment = 0;
+    const timeframeAnalyses = (patternAnalysis as any).timeframeAnalyses as
+      | { timeframe: 'weekly' | 'daily' | '1hour'; dominantPattern?: { status?: string } }[]
+      | undefined;
+
+    if (Array.isArray(timeframeAnalyses)) {
+      for (const tf of timeframeAnalyses) {
+        const weight = timeframeWeights[tf.timeframe] ?? 0.2;
+        const status = tf.dominantPattern?.status;
+        if (status === 'confirmed') statusAdjustment += 20 * weight;
+        else if (status === 'completed') statusAdjustment += 10 * weight;
+        else if (status === 'forming') statusAdjustment += -10 * weight;
+        else if (status === 'failed') statusAdjustment += -20 * weight;
+      }
+    }
+
+    let confidence = (Math.abs((patternAnalysis as any).signalStrength ?? 0) + statusAdjustment);
+    confidence = this.clamp(confidence);
+    
     return { direction, confidence, source: 'pattern' };
   }
 
@@ -207,32 +237,34 @@ export class SignalAggregator {
     volatilityAnalysis: AnalysisInputData['analyses']['volatility']
   ): DirectionConversionResult {
     // 从分析数据中获取成交量分析结果
-    const volumeData = volatilityAnalysis.volumeAnalysis.volumeAnalysis;
+    const v = volatilityAnalysis.volumeAnalysis.volumeAnalysis as any;
 
-    let direction = TradeDirection.Neutral;
-    let confidence: number;
+    let direction: TradeDirection = TradeDirection.Neutral;
 
-    // 基于AD趋势确定方向
-    if (volumeData.adTrend === 'bullish') {
+    // 基础方向来自 AD 趋势
+    if (v.adTrend === 'bullish') direction = TradeDirection.Long;
+    else if (v.adTrend === 'bearish') direction = TradeDirection.Short;
+
+    // 背离微调方向
+    if (v.divergence?.type === 'bullish' || v.divergence?.type === 'hidden_bullish') {
       direction = TradeDirection.Long;
-    } else if (volumeData.adTrend === 'bearish') {
+    } else if (v.divergence?.type === 'bearish' || v.divergence?.type === 'hidden_bearish') {
       direction = TradeDirection.Short;
     }
 
-    // 基于成交量力度确定置信度
-    if (volumeData.volumeForce) {
-      // 将volumeForce映射到0-100范围的置信度
-      confidence = Math.min(100, Math.max(0, volumeData.volumeForce));
-    } else {
-      // 如果没有volumeForce，使用中等置信度
-      confidence = 50;
+    // 置信度构成：量价确认 + 力度 + OBV 斜率 + 背离强度 + MFI 极值
+    let confidence = 50;
+    confidence += v.volumePriceConfirmation ? 15 : -10;
+    confidence += Math.min(25, Math.max(0, Math.abs(v.volumeForce ?? 0) * 0.5));
+    confidence += Math.min(15, Math.abs(v.obvSlope ?? 0) * 50);
+    confidence += Math.min(10, Math.max(0, v.divergence?.strength ?? 0) * 0.2);
+    if (typeof v.moneyFlowIndex === 'number') {
+      if (v.moneyFlowIndex > 80) confidence -= 5;
+      else if (v.moneyFlowIndex < 20) confidence += 5;
     }
+    confidence = this.clamp(confidence);
 
-    return {
-      direction,
-      confidence,
-      source: 'volume',
-    };
+    return { direction, confidence, source: 'volume' };
   }
 
   /**
@@ -241,26 +273,38 @@ export class SignalAggregator {
   private extractBBSRSignal(
     bbsrAnalysis: AnalysisInputData['analyses']['bbsr']
   ): DirectionConversionResult {
-    // 根据BBSR分析结果提取方向信号
-    let direction = TradeDirection.Neutral;
-    let confidence = 0;
+    const daily = (bbsrAnalysis as any).dailyBBSRResult;
+    const weekly = (bbsrAnalysis as any).weeklyBBSRResult;
+    const signals = [daily, weekly].filter(Boolean) as any[];
+    if (signals.length === 0) {
+      return { direction: TradeDirection.Neutral, confidence: 0, source: 'bbsr' };
+    }
 
-    // 检查日线和周线BBSR结果
-    const signals = [
-      bbsrAnalysis.dailyBBSRResult,
-      bbsrAnalysis.weeklyBBSRResult,
-    ].filter(Boolean);
+    let bestDirection: TradeDirection = TradeDirection.Neutral;
+    let bestScore = 0;
+    const now = Date.now();
 
-    for (const signal of signals) {
-      if (signal && signal.strength > confidence) {
-        // 简化处理：基于强度判断方向
-        direction =
-          signal.strength > 50 ? TradeDirection.Long : TradeDirection.Short;
-        confidence = signal.strength;
+    for (const s of signals) {
+      const pt = s.signal?.patternType;
+      const dir = pt === 'bullish' ? TradeDirection.Long : pt === 'bearish' ? TradeDirection.Short : TradeDirection.Neutral;
+
+      const proximityPct = Math.abs(s.currentPrice - s.SRLevel) / Math.max(1e-8, s.SRLevel) * 100;
+      const proximityScore = Math.max(0, 30 - proximityPct); // 靠近关键位更高
+      const days = Math.max(0, (now - new Date(s.signalDate).getTime()) / 86400000);
+      const recencyScore = Math.max(0, 20 - days * 2);
+
+      const score = this.clamp(0.6 * (s.strength ?? 0) + proximityScore + recencyScore);
+      if (score > bestScore) {
+        bestScore = score;
+        bestDirection = dir;
       }
     }
 
-    return { direction, confidence, source: 'bbsr' };
+    const d = daily?.signal?.patternType;
+    const w = weekly?.signal?.patternType;
+    if (d && w && d !== w) bestScore = Math.max(0, bestScore - 10);
+
+    return { direction: bestDirection, confidence: bestScore, source: 'bbsr' };
   }
 
   /**
@@ -272,26 +316,26 @@ export class SignalAggregator {
     let direction = TradeDirection.Neutral;
     let confidence = 50;
 
-    // 根据趋势方向确定信号
-    if (structureAnalysis.trend === 'up') {
-      direction = TradeDirection.Long;
-      confidence = 70;
-    } else if (structureAnalysis.trend === 'down') {
-      direction = TradeDirection.Short;
-      confidence = 70;
-    }
+    if (structureAnalysis.trend === 'up') { direction = TradeDirection.Long; confidence = 65; }
+    else if (structureAnalysis.trend === 'down') { direction = TradeDirection.Short; confidence = 65; }
 
-    // 如果有最近的结构事件，调整置信度
-    if (structureAnalysis.lastEvent) {
-      if (structureAnalysis.lastEvent.direction === 'bullish') {
-        direction = TradeDirection.Long;
-        confidence = Math.max(confidence, 75);
-      } else if (structureAnalysis.lastEvent.direction === 'bearish') {
-        direction = TradeDirection.Short;
-        confidence = Math.max(confidence, 75);
+    const evt = (structureAnalysis as any).lastEvent as { type?: string; direction?: 'bullish'|'bearish'|'neutral'; timeframe?: string } | undefined;
+    if (evt) {
+      if (evt.type === 'CHOCH') {
+        confidence += 25;
+        if (evt.direction === 'bullish') direction = TradeDirection.Long;
+        else if (evt.direction === 'bearish') direction = TradeDirection.Short;
+      } else if (evt.type === 'BOS') {
+        confidence += 15;
+        if (evt.direction === 'bullish') direction = TradeDirection.Long;
+        else if (evt.direction === 'bearish') direction = TradeDirection.Short;
+      } else {
+        confidence -= 10;
       }
+      if (evt.timeframe === 'daily') confidence += 5;
     }
 
+    confidence = this.clamp(confidence);
     return { direction, confidence, source: 'structure' };
   }
 
@@ -301,40 +345,26 @@ export class SignalAggregator {
   private extractSupplyDemandSignal(
     sdAnalysis: AnalysisInputData['analyses']['supplyDemand']
   ): DirectionConversionResult {
+    const current = sdAnalysis.premiumDiscount?.currentPrice ?? NaN;
+    const zones = sdAnalysis.recentEffectiveZones ?? [];
+
     let direction = TradeDirection.Neutral;
     let confidence = 50;
 
-    // 基于溢价/折价位置判断
-    const position = sdAnalysis.premiumDiscount?.position || 50;
-
-    if (position < 30) {
-      // 在折价区域，偏向做多
-      direction = TradeDirection.Long;
-      confidence = 60 + (30 - position); // 越靠近底部置信度越高
-    } else if (position > 70) {
-      // 在溢价区域，偏向做空
-      direction = TradeDirection.Short;
-      confidence = 60 + (position - 70); // 越靠近顶部置信度越高
+    const inZone = zones.find(z => current >= z.low && current <= z.high);
+    if (inZone) {
+      direction = inZone.type === 'demand' ? TradeDirection.Long : TradeDirection.Short;
+      confidence = inZone.status === 'fresh' ? 75 : 65;
+      const mid = (inZone.low + inZone.high) / 2;
+      const proxPct = Math.abs(current - mid) / Math.max(1e-8, mid) * 100;
+      confidence += Math.max(0, 10 - proxPct);
+    } else {
+      const position = sdAnalysis.premiumDiscount?.position ?? 50;
+      if (position < 30) { direction = TradeDirection.Long; confidence = 60 + (30 - position); }
+      else if (position > 70) { direction = TradeDirection.Short; confidence = 60 + (position - 70); }
     }
 
-    // 考虑有效供需区域
-    const freshZones =
-      sdAnalysis.recentEffectiveZones?.filter(
-        zone => zone.status === 'fresh'
-      ) || [];
-    if (freshZones.length > 0) {
-      const demandZones = freshZones.filter(zone => zone.type === 'demand');
-      const supplyZones = freshZones.filter(zone => zone.type === 'supply');
-
-      if (demandZones.length > supplyZones.length) {
-        direction = TradeDirection.Long;
-        confidence = Math.max(confidence, 65);
-      } else if (supplyZones.length > demandZones.length) {
-        direction = TradeDirection.Short;
-        confidence = Math.max(confidence, 65);
-      }
-    }
-
+    confidence = this.clamp(confidence);
     return { direction, confidence, source: 'supplyDemand' };
   }
 
@@ -347,28 +377,18 @@ export class SignalAggregator {
     let direction = TradeDirection.Neutral;
     let confidence = 50;
 
-    // 如果有突破信号
-    if (rangeAnalysis.breakout) {
-      if (rangeAnalysis.breakout.direction === 'up') {
-        direction = TradeDirection.Long;
-        confidence = rangeAnalysis.breakout.qualityScore || 60;
-      } else if (rangeAnalysis.breakout.direction === 'down') {
-        direction = TradeDirection.Short;
-        confidence = rangeAnalysis.breakout.qualityScore || 60;
-      }
-
-      // 如果有回踩确认，提高置信度
-      if (
-        rangeAnalysis.breakout.retested &&
-        rangeAnalysis.breakout.followThrough
-      ) {
-        confidence = Math.min(100, confidence + 15);
-      }
-    } else if (rangeAnalysis.compressionScore > 70) {
-      // 高压缩状态，等待突破，保持中性但提高潜在信号强度
-      confidence = 40; // 略降低置信度，表示等待状态
+    if ((rangeAnalysis as any).breakout) {
+      const br = (rangeAnalysis as any).breakout as any;
+      direction = br.direction === 'up' ? TradeDirection.Long : TradeDirection.Short;
+      confidence = br.qualityScore ?? 60;
+      if (br.volumeExpansion) confidence += 10;
+      if (br.followThrough) confidence += 10;
+      if (br.retested) confidence += 10;
+    } else if ((rangeAnalysis as any).compressionScore > 70) {
+      confidence = 35;
     }
 
+    confidence = this.clamp(confidence);
     return { direction, confidence, source: 'range' };
   }
 
@@ -378,36 +398,26 @@ export class SignalAggregator {
   private extractTrendlineSignal(
     trendlineAnalysis: AnalysisInputData['analyses']['trendline']
   ): DirectionConversionResult {
+    const tl = trendlineAnalysis as any;
     let direction = TradeDirection.Neutral;
     let confidence = 50;
 
-    // 基于通道斜率判断大趋势
-    if (trendlineAnalysis.channel) {
-      if (trendlineAnalysis.channel.slope > 0) {
-        direction = TradeDirection.Long;
-        confidence = 60;
-      } else if (trendlineAnalysis.channel.slope < 0) {
-        direction = TradeDirection.Short;
-        confidence = 60;
-      }
+    if (tl.channel) {
+      if (tl.channel.slope > 0) direction = TradeDirection.Long;
+      else if (tl.channel.slope < 0) direction = TradeDirection.Short;
+
+      confidence = 55 + Math.min(15, Math.abs(tl.channel.slope) * 1e4 * 0.5);
+      const touches = (tl.channel.touchesUpper ?? 0) + (tl.channel.touchesLower ?? 0);
+      confidence += Math.min(10, touches * 1.5);
     }
 
-    // 如果有突破回踩信号
-    if (trendlineAnalysis.breakoutRetest) {
-      if (trendlineAnalysis.breakoutRetest.direction === 'up') {
-        direction = TradeDirection.Long;
-        confidence = trendlineAnalysis.breakoutRetest.qualityScore || 65;
-      } else if (trendlineAnalysis.breakoutRetest.direction === 'down') {
-        direction = TradeDirection.Short;
-        confidence = trendlineAnalysis.breakoutRetest.qualityScore || 65;
-      }
-
-      // 如果已经回踩确认，大幅提高置信度
-      if (trendlineAnalysis.breakoutRetest.retested) {
-        confidence = Math.min(100, confidence + 20);
-      }
+    if (tl.breakoutRetest) {
+      direction = tl.breakoutRetest.direction === 'up' ? TradeDirection.Long : TradeDirection.Short;
+      confidence = Math.max(confidence, tl.breakoutRetest.qualityScore ?? 65);
+      if (tl.breakoutRetest.retested) confidence += 20;
     }
 
+    confidence = this.clamp(confidence);
     return { direction, confidence, source: 'trendline' };
   }
 
