@@ -114,7 +114,9 @@ export class SignalAggregator {
         const ws = this.calculateAdditionalScore(res, weight);
         pluginsTotalWeighted += ws;
         extraWeightedScores[plugin.id] = ws;
-        extraContributions[plugin.id] = Math.abs(weight === 0 ? 0 : ws / weight);
+        extraContributions[plugin.id] = Math.abs(
+          weight === 0 ? 0 : ws / weight
+        );
       } catch {
         // 忽略单插件错误，避免影响主流程
       }
@@ -123,17 +125,15 @@ export class SignalAggregator {
     // 计算最终分数（主模块 + 附加模块 + 插件）
     const finalScore = this.config.options.usePluginsOnly
       ? pluginsTotalWeighted
-      : (
-          chipWeighted.weightedScore +
-          patternWeighted.weightedScore +
-          volumeWeighted.weightedScore +
-          bbsrWeighted.weightedScore +
-          structureWeighted +
-          supplyDemandWeighted +
-          rangeWeighted +
-          trendlineWeighted +
-          pluginsTotalWeighted
-        );
+      : chipWeighted.weightedScore +
+        patternWeighted.weightedScore +
+        volumeWeighted.weightedScore +
+        bbsrWeighted.weightedScore +
+        structureWeighted +
+        supplyDemandWeighted +
+        rangeWeighted +
+        trendlineWeighted +
+        pluginsTotalWeighted;
 
     // 确定方向
     const direction = this.determineDirection(finalScore);
@@ -248,7 +248,10 @@ export class SignalAggregator {
 
     let statusAdjustment = 0;
     const timeframeAnalyses = (patternAnalysis as any).timeframeAnalyses as
-      | { timeframe: 'weekly' | 'daily' | '1hour'; dominantPattern?: { status?: string } }[]
+      | {
+          timeframe: 'weekly' | 'daily' | '1hour';
+          dominantPattern?: { status?: string };
+        }[]
       | undefined;
 
     if (Array.isArray(timeframeAnalyses)) {
@@ -262,9 +265,10 @@ export class SignalAggregator {
       }
     }
 
-    let confidence = (Math.abs((patternAnalysis as any).signalStrength ?? 0) + statusAdjustment);
+    let confidence =
+      Math.abs((patternAnalysis as any).signalStrength ?? 0) + statusAdjustment;
     confidence = this.clamp(confidence);
-    
+
     return { direction, confidence, source: 'pattern' };
   }
 
@@ -284,9 +288,15 @@ export class SignalAggregator {
     else if (v.adTrend === 'bearish') direction = TradeDirection.Short;
 
     // 背离微调方向
-    if (v.divergence?.type === 'bullish' || v.divergence?.type === 'hidden_bullish') {
+    if (
+      v.divergence?.type === 'bullish' ||
+      v.divergence?.type === 'hidden_bullish'
+    ) {
       direction = TradeDirection.Long;
-    } else if (v.divergence?.type === 'bearish' || v.divergence?.type === 'hidden_bearish') {
+    } else if (
+      v.divergence?.type === 'bearish' ||
+      v.divergence?.type === 'hidden_bearish'
+    ) {
       direction = TradeDirection.Short;
     }
 
@@ -315,7 +325,11 @@ export class SignalAggregator {
     const weekly = (bbsrAnalysis as any).weeklyBBSRResult;
     const signals = [daily, weekly].filter(Boolean) as any[];
     if (signals.length === 0) {
-      return { direction: TradeDirection.Neutral, confidence: 0, source: 'bbsr' };
+      return {
+        direction: TradeDirection.Neutral,
+        confidence: 0,
+        source: 'bbsr',
+      };
     }
 
     let bestDirection: TradeDirection = TradeDirection.Neutral;
@@ -324,14 +338,26 @@ export class SignalAggregator {
 
     for (const s of signals) {
       const pt = s.signal?.patternType;
-      const dir = pt === 'bullish' ? TradeDirection.Long : pt === 'bearish' ? TradeDirection.Short : TradeDirection.Neutral;
+      const dir =
+        pt === 'bullish'
+          ? TradeDirection.Long
+          : pt === 'bearish'
+            ? TradeDirection.Short
+            : TradeDirection.Neutral;
 
-      const proximityPct = Math.abs(s.currentPrice - s.SRLevel) / Math.max(1e-8, s.SRLevel) * 100;
+      const proximityPct =
+        (Math.abs(s.currentPrice - s.SRLevel) / Math.max(1e-8, s.SRLevel)) *
+        100;
       const proximityScore = Math.max(0, 30 - proximityPct); // 靠近关键位更高
-      const days = Math.max(0, (now - new Date(s.signalDate).getTime()) / 86400000);
+      const days = Math.max(
+        0,
+        (now - new Date(s.signalDate).getTime()) / 86400000
+      );
       const recencyScore = Math.max(0, 20 - days * 2);
 
-      const score = this.clamp(0.6 * (s.strength ?? 0) + proximityScore + recencyScore);
+      const score = this.clamp(
+        0.6 * (s.strength ?? 0) + proximityScore + recencyScore
+      );
       if (score > bestScore) {
         bestScore = score;
         bestDirection = dir;
@@ -354,10 +380,21 @@ export class SignalAggregator {
     let direction = TradeDirection.Neutral;
     let confidence = 50;
 
-    if (structureAnalysis.trend === 'up') { direction = TradeDirection.Long; confidence = 65; }
-    else if (structureAnalysis.trend === 'down') { direction = TradeDirection.Short; confidence = 65; }
+    if (structureAnalysis.trend === 'up') {
+      direction = TradeDirection.Long;
+      confidence = 65;
+    } else if (structureAnalysis.trend === 'down') {
+      direction = TradeDirection.Short;
+      confidence = 65;
+    }
 
-    const evt = (structureAnalysis as any).lastEvent as { type?: string; direction?: 'bullish'|'bearish'|'neutral'; timeframe?: string } | undefined;
+    const evt = (structureAnalysis as any).lastEvent as
+      | {
+          type?: string;
+          direction?: 'bullish' | 'bearish' | 'neutral';
+          timeframe?: string;
+        }
+      | undefined;
     if (evt) {
       if (evt.type === 'CHOCH') {
         confidence += 25;
@@ -391,15 +428,21 @@ export class SignalAggregator {
 
     const inZone = zones.find(z => current >= z.low && current <= z.high);
     if (inZone) {
-      direction = inZone.type === 'demand' ? TradeDirection.Long : TradeDirection.Short;
+      direction =
+        inZone.type === 'demand' ? TradeDirection.Long : TradeDirection.Short;
       confidence = inZone.status === 'fresh' ? 75 : 65;
       const mid = (inZone.low + inZone.high) / 2;
-      const proxPct = Math.abs(current - mid) / Math.max(1e-8, mid) * 100;
+      const proxPct = (Math.abs(current - mid) / Math.max(1e-8, mid)) * 100;
       confidence += Math.max(0, 10 - proxPct);
     } else {
       const position = sdAnalysis.premiumDiscount?.position ?? 50;
-      if (position < 30) { direction = TradeDirection.Long; confidence = 60 + (30 - position); }
-      else if (position > 70) { direction = TradeDirection.Short; confidence = 60 + (position - 70); }
+      if (position < 30) {
+        direction = TradeDirection.Long;
+        confidence = 60 + (30 - position);
+      } else if (position > 70) {
+        direction = TradeDirection.Short;
+        confidence = 60 + (position - 70);
+      }
     }
 
     confidence = this.clamp(confidence);
@@ -417,7 +460,8 @@ export class SignalAggregator {
 
     if ((rangeAnalysis as any).breakout) {
       const br = (rangeAnalysis as any).breakout as any;
-      direction = br.direction === 'up' ? TradeDirection.Long : TradeDirection.Short;
+      direction =
+        br.direction === 'up' ? TradeDirection.Long : TradeDirection.Short;
       confidence = br.qualityScore ?? 60;
       if (br.volumeExpansion) confidence += 10;
       if (br.followThrough) confidence += 10;
@@ -445,12 +489,16 @@ export class SignalAggregator {
       else if (tl.channel.slope < 0) direction = TradeDirection.Short;
 
       confidence = 55 + Math.min(15, Math.abs(tl.channel.slope) * 1e4 * 0.5);
-      const touches = (tl.channel.touchesUpper ?? 0) + (tl.channel.touchesLower ?? 0);
+      const touches =
+        (tl.channel.touchesUpper ?? 0) + (tl.channel.touchesLower ?? 0);
       confidence += Math.min(10, touches * 1.5);
     }
 
     if (tl.breakoutRetest) {
-      direction = tl.breakoutRetest.direction === 'up' ? TradeDirection.Long : TradeDirection.Short;
+      direction =
+        tl.breakoutRetest.direction === 'up'
+          ? TradeDirection.Long
+          : TradeDirection.Short;
       confidence = Math.max(confidence, tl.breakoutRetest.qualityScore ?? 65);
       if (tl.breakoutRetest.retested) confidence += 20;
     }

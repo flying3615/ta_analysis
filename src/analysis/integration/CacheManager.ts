@@ -74,10 +74,19 @@ export class SimpleCache<T> {
 
   stats(): CacheStats {
     const totalEntries = this.store.size;
-    const totalSize = Array.from(this.store.values()).reduce((acc, e) => acc + (e.size ?? 0), 0);
+    const totalSize = Array.from(this.store.values()).reduce(
+      (acc, e) => acc + (e.size ?? 0),
+      0
+    );
     const totalLookups = this.hits + this.misses;
     const hitRate = totalLookups > 0 ? this.hits / totalLookups : 0;
-    return { hits: this.hits, misses: this.misses, hitRate, totalEntries, totalSize };
+    return {
+      hits: this.hits,
+      misses: this.misses,
+      hitRate,
+      totalEntries,
+      totalSize,
+    };
   }
 
   private pruneToCapacity(): void {
@@ -85,9 +94,9 @@ export class SimpleCache<T> {
     // 删除最老的条目
     const entries = Array.from(this.store.entries());
     entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const toDelete = entries.slice(0, this.store.size - this.maxEntries).map(e => e[0]);
+    const toDelete = entries
+      .slice(0, this.store.size - this.maxEntries)
+      .map(e => e[0]);
     for (const k of toDelete) this.store.delete(k);
   }
 }
-
-

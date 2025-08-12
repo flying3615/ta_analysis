@@ -172,7 +172,10 @@ export interface DirectionConversionResult {
 export interface AnalyzerPlugin {
   id: string;
   category: 'additional' | 'main';
-  extract: (input: AnalysisInputData, context: IntegrationContext) => DirectionConversionResult;
+  extract: (
+    input: AnalysisInputData,
+    context: IntegrationContext
+  ) => DirectionConversionResult;
   summarize?: (input: AnalysisInputData, context: IntegrationContext) => string;
 }
 

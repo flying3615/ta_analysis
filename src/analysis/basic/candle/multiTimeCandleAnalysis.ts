@@ -1,7 +1,7 @@
-import { generateTradeRecommendation } from './BullOrBearDetector.js';
 import { Candle } from '../../../types.js';
-import { computeRiskReward } from './candleUtils.js';
 import { globalLogger } from '../../../util/logger.js';
+import { generateTradeRecommendation } from './BullOrBearDetector.js';
+import { computeRiskReward } from './candleUtils.js';
 
 /**
  * 生成多个股票的交易计划，并以JSON格式返回
@@ -10,7 +10,7 @@ import { globalLogger } from '../../../util/logger.js';
  * @param weeklyCandles
  * @returns 多股票交易计划JSON
  */
-const multiTimeCandleAnalysis = async (
+export const multiTimeCandleAnalysis = async (
   symbol: string,
   dailyCandles: Candle[],
   weeklyCandles: Candle[]
@@ -119,5 +119,3 @@ const multiTimeCandleAnalysis = async (
     };
   }
 };
-
-export { multiTimeCandleAnalysis };

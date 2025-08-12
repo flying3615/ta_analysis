@@ -103,7 +103,9 @@ export class IntegratedOrchestrator {
 
     try {
       this.logger.setLevel(finalConfig.options.logLevel ?? 'normal');
-      this.logger.log(`======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`);
+      this.logger.log(
+        `======== 开始执行 ${symbol} 综合分析 (${executionId}) ========`
+      );
 
       // 获取数据
       const dataStartTime = Date.now();
@@ -180,7 +182,9 @@ export class IntegratedOrchestrator {
         },
       };
 
-      this.logger.log(`======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`);
+      this.logger.log(
+        `======== ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`
+      );
 
       return result;
     } catch (error) {
@@ -483,14 +487,25 @@ export class IntegratedOrchestrator {
 
       // 新增字段
       summary: this.narrative.buildSummary(signalResult),
-      primaryRationale: this.narrative.buildPrimaryRationale(signalResult, analysisData.analyses),
-      secondaryRationale: this.narrative.buildSecondaryRationale(analysisData.analyses),
+      primaryRationale: this.narrative.buildPrimaryRationale(
+        signalResult,
+        analysisData.analyses
+      ),
+      secondaryRationale: this.narrative.buildSecondaryRationale(
+        analysisData.analyses
+      ),
 
       primaryTimeframe: analysisData.analyses.chip?.primaryTimeframe ?? 'daily',
       timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
-      shortTermOutlook: this.narrative.buildShortTermOutlook(analysisData.analyses),
-      mediumTermOutlook: this.narrative.buildMediumTermOutlook(analysisData.analyses),
-      longTermOutlook: this.narrative.buildLongTermOutlook(analysisData.analyses),
+      shortTermOutlook: this.narrative.buildShortTermOutlook(
+        analysisData.analyses
+      ),
+      mediumTermOutlook: this.narrative.buildMediumTermOutlook(
+        analysisData.analyses
+      ),
+      longTermOutlook: this.narrative.buildLongTermOutlook(
+        analysisData.analyses
+      ),
 
       trendReversalInfo: this.extractTrendReversalInfo(
         analysisData.analyses.pattern
@@ -505,7 +520,11 @@ export class IntegratedOrchestrator {
           analysisData.analyses.volatility.combinedAnalysisSummary || '',
       },
 
-      summaries: this.narrative.buildSummariesFromPlugins(this.signalAggregator.getPlugins(), analysisData, context),
+      summaries: this.narrative.buildSummariesFromPlugins(
+        this.signalAggregator.getPlugins(),
+        analysisData,
+        context
+      ),
     };
   }
 
@@ -586,7 +605,6 @@ export class IntegratedOrchestrator {
     };
   }
 
-
   /**
    * 计算时间周期一致性
    */
@@ -611,13 +629,16 @@ export class IntegratedOrchestrator {
 
     // 结构趋势辅助
     const structure = analysisData.analyses.structure;
-    if (structure?.trend === 'up') patternScore += 1 * (cfg.structureWeight ?? 0);
-    else if (structure?.trend === 'down') patternScore += -1 * (cfg.structureWeight ?? 0);
+    if (structure?.trend === 'up')
+      patternScore += 1 * (cfg.structureWeight ?? 0);
+    else if (structure?.trend === 'down')
+      patternScore += -1 * (cfg.structureWeight ?? 0);
 
     // 趋势线斜率辅助
     const tl: any = analysisData.analyses.trendline;
     if (tl?.channel?.slope > 0) patternScore += 1 * (cfg.trendlineWeight ?? 0);
-    else if (tl?.channel?.slope < 0) patternScore += -1 * (cfg.trendlineWeight ?? 0);
+    else if (tl?.channel?.slope < 0)
+      patternScore += -1 * (cfg.trendlineWeight ?? 0);
 
     // 归一化到 0-100%，绝对值越接近1一致性越高
     const maxPossible =
@@ -641,7 +662,12 @@ export class IntegratedOrchestrator {
     const signals = patternAnalysis?.reversalSignals as any[] | undefined;
 
     if (primary) {
-      const dir = primary.direction > 0 ? '看多' : primary.direction < 0 ? '看空' : '中性';
+      const dir =
+        primary.direction > 0
+          ? '看多'
+          : primary.direction < 0
+            ? '看空'
+            : '中性';
       return {
         hasReversalSignal: !!primary.isReversal,
         description: `检测到${dir}逆转信号，强度${Math.round(primary.reversalStrength ?? 0)}，小周期: ${primary.smallTimeframe} 对 大周期: ${primary.largeTimeframe}`,
@@ -650,8 +676,11 @@ export class IntegratedOrchestrator {
     }
 
     if (Array.isArray(signals) && signals.length > 0) {
-      const best = [...signals].sort((a, b) => (b.reversalStrength ?? 0) - (a.reversalStrength ?? 0))[0];
-      const dir = best.direction > 0 ? '看多' : best.direction < 0 ? '看空' : '中性';
+      const best = [...signals].sort(
+        (a, b) => (b.reversalStrength ?? 0) - (a.reversalStrength ?? 0)
+      )[0];
+      const dir =
+        best.direction > 0 ? '看多' : best.direction < 0 ? '看空' : '中性';
       return {
         hasReversalSignal: !!best.isReversal,
         description: `检测到${dir}逆转信号，强度${Math.round(best.reversalStrength ?? 0)}，小周期: ${best.smallTimeframe} 对 大周期: ${best.largeTimeframe}`,

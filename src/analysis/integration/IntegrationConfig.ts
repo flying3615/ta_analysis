@@ -134,7 +134,9 @@ export function updateIntegrationConfig(
       ...(updates.consistency as Partial<ConsistencyConfig>),
       timeframeWeights: {
         ...DEFAULT_INTEGRATION_CONFIG.consistency.timeframeWeights,
-        ...(updates.consistency?.timeframeWeights as Partial<ConsistencyConfig['timeframeWeights']>),
+        ...(updates.consistency?.timeframeWeights as Partial<
+          ConsistencyConfig['timeframeWeights']
+        >),
       },
     },
     options: {

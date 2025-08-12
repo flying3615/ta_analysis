@@ -98,7 +98,7 @@ export {
   updateCandleConfig,
 } from './analysis/basic/candle/candleConfig.js';
 // 暴露蜡烛图多时间框架分析入口与格式化
-export { multiTimeCandleAnalysis } from './analysis/basic/candle/multiTImeFrameCandleAnalysis.js';
+export { multiTimeCandleAnalysis } from './analysis/basic/candle/multiTimeCandleAnalysis.js';
 export { formatAndPrintCandleAnalysis } from './analysis/basic/candle/formatCandleAnalysis.js';
 // 导出综合交易计划的格式化与机器摘要构建
 export {
