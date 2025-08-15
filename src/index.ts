@@ -186,3 +186,10 @@ export { StrategyGenerator } from './analysis/integration/StrategyGenerator.js';
 
 // 集成编排器（主要入口）
 export { IntegratedOrchestrator } from './analysis/integration/IntegratedOrchestrator.js';
+
+export { fetchBatchHistorical, fetchBatchMultiTimeframe, fetchHistoricalCandles } from './data/DataLoader.js';
+export { runGridSearch, type ParamGrid, type StrategyFactory, formatMetricsPanel } from './analysis/backtest/GridSearch.js';
+export { Backtester } from './analysis/backtest/Backtester.js';
+export { TrendlineBreakoutStrategy } from './analysis/backtest/strategies/TrendlineBreakoutStrategy.js';
+export { IntegrationSignalStrategy } from './analysis/backtest/strategies/IntegrationSignalStrategy.js';
+export { RangeBreakoutStrategy } from './analysis/backtest/strategies/RangeBreakoutStrategy.js';
