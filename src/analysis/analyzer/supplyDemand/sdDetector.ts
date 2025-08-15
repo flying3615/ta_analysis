@@ -33,7 +33,7 @@ function detectBaseZones(data: Candle[], type: ZoneType): Zone[] {
         type,
         timeframe: 'daily',
         startIndex: i - sdConfig.baseWindow,
-        endIndex: i,
+        endIndex: i - 1,
         low,
         high,
         status: 'fresh',
@@ -47,7 +47,7 @@ function detectBaseZones(data: Candle[], type: ZoneType): Zone[] {
         type,
         timeframe: 'daily',
         startIndex: i - sdConfig.baseWindow,
-        endIndex: i,
+        endIndex: i - 1,
         low,
         high,
         status: 'fresh',
@@ -87,7 +87,8 @@ function computePremiumDiscount(data: Candle[]) {
   const basisLow = Math.min(...slice);
   const basisHigh = Math.max(...slice);
   const currentPrice = closes[closes.length - 1];
-  const position = ((currentPrice - basisLow) / (basisHigh - basisLow)) * 100;
+  const denom = Math.abs(basisHigh - basisLow) < 1e-8 ? 1e-8 : basisHigh - basisLow;
+  const position = ((currentPrice - basisLow) / denom) * 100;
   return { basisLow, basisHigh, currentPrice, position };
 }
 

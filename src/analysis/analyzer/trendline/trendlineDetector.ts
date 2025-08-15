@@ -144,7 +144,8 @@ function detectBreakoutRetest(
     trendlineConfig.scoreWeights.slope * (slopeScore / 100) +
       trendlineConfig.scoreWeights.retest * (retestScore / 100) +
       trendlineConfig.scoreWeights.touches *
-        ((ch.touchesUpper + ch.touchesLower) / 6)
+        ((ch.touchesUpper + ch.touchesLower) / 6) +
+      trendlineConfig.scoreWeights.follow * (widthScore / 100)
   );
 
   return {

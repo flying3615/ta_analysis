@@ -48,38 +48,57 @@ function assessBreakout(
   data: Candle[],
   box: RangeBox
 ): BreakoutAssessment | undefined {
-  const last = data[data.length - 1];
-  const brokeUp =
-    last.close > box.high * (1 + rangeConfig.breakoutThresholdPercent);
-  const brokeDown =
-    last.close < box.low * (1 - rangeConfig.breakoutThresholdPercent);
-  if (!brokeUp && !brokeDown) return;
-  const dir: 'up' | 'down' = brokeUp ? 'up' : 'down';
+  // 在区间末尾附近寻找首次有效突破点（最后 retestBars+followThroughBars 范围内）
+  const searchStart = Math.max(
+    box.endIndex + 1,
+    data.length - (rangeConfig.retestBars + rangeConfig.followThroughBars + 10)
+  );
+  let breakoutIndex: number | null = null;
+  let direction: 'up' | 'down' | null = null;
+
+  for (let i = searchStart; i < data.length; i++) {
+    const c = data[i];
+    const brokeUp = c.close > box.high * (1 + rangeConfig.breakoutThresholdPercent);
+    const brokeDown = c.close < box.low * (1 - rangeConfig.breakoutThresholdPercent);
+    if (brokeUp || brokeDown) {
+      breakoutIndex = i;
+      direction = brokeUp ? 'up' : 'down';
+      break;
+    }
+  }
+
+  if (breakoutIndex == null || direction == null) return;
 
   // 成交量扩张（相对区间均量）
   const window = data.slice(box.startIndex, box.endIndex + 1);
   const avgVol = window.reduce((s, c) => s + c.volume, 0) / window.length;
-  const volumeExpansion =
-    last.volume > avgVol * rangeConfig.volumeExpansionRatio;
+  const volDenom = Math.max(avgVol, 1e-8);
+  const volumeExpansion = data[breakoutIndex].volume > volDenom * rangeConfig.volumeExpansionRatio;
 
-  // 跟随：接下来的 N 根是否累计延续 >= 阈值
-  const follow = data.slice(-rangeConfig.followThroughBars);
-  const followThrough =
-    dir === 'up'
-      ? (follow[follow.length - 1].close - last.close) / last.close >=
-        rangeConfig.followThroughMinPercent
-      : (last.close - follow[follow.length - 1].close) / last.close >=
-        rangeConfig.followThroughMinPercent;
+  // 跟随：突破后接下来的 N 根是否累计延续 >= 阈值
+  const followEnd = Math.min(data.length, breakoutIndex + 1 + rangeConfig.followThroughBars);
+  const followSlice = data.slice(breakoutIndex + 1, followEnd);
+  let followThrough = false;
+  if (followSlice.length > 0) {
+    const lastFollowClose = followSlice[followSlice.length - 1].close;
+    const refClose = data[breakoutIndex].close;
+    if (direction === 'up') {
+      followThrough = (lastFollowClose - refClose) / Math.max(refClose, 1e-8) >= rangeConfig.followThroughMinPercent;
+    } else {
+      followThrough = (refClose - lastFollowClose) / Math.max(refClose, 1e-8) >= rangeConfig.followThroughMinPercent;
+    }
+  }
 
-  // 回测：N 根内是否回踩区间边界后反向
-  const future = data.slice(-rangeConfig.retestBars);
+  // 回测：突破后N根内是否回踩区间边界
+  const retestEnd = Math.min(data.length, breakoutIndex + 1 + rangeConfig.retestBars);
+  const retestSlice = data.slice(breakoutIndex + 1, retestEnd);
   let retested = false;
-  for (const c of future) {
-    if (dir === 'up' && c.low <= box.high) {
+  for (const c of retestSlice) {
+    if (direction === 'up' && c.low <= box.high) {
       retested = true;
       break;
     }
-    if (dir === 'down' && c.high >= box.low) {
+    if (direction === 'down' && c.high >= box.low) {
       retested = true;
       break;
     }
@@ -91,8 +110,8 @@ function assessBreakout(
   if (followThrough) score += 40;
   if (retested) score += 20;
   return {
-    direction: dir,
-    breakoutIndex: data.length - 1,
+    direction,
+    breakoutIndex,
     volumeExpansion,
     followThrough,
     retested,
