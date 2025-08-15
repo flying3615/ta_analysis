@@ -11,37 +11,41 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
   const atr = calculateATR(data, rangeConfig.atrPeriod);
   const maxWidth = atr * rangeConfig.rangeAtrMaxMultiplier;
   const start = Math.max(0, data.length - rangeConfig.lookback);
-  for (
-    let len = rangeConfig.lookback;
-    len >= rangeConfig.minBarsInRange;
-    len--
-  ) {
-    const i0 = data.length - len;
-    if (i0 < start) break;
-    const window = data.slice(i0, i0 + len);
-    const high = Math.max(...window.map(c => c.high));
-    const low = Math.min(...window.map(c => c.low));
-    if (high - low <= maxWidth) {
-      // 统计 NR4/NR7
-      const trueRanges = window.map((c, i) => c.high - c.low);
-      const nr4 = window.filter(
-        (_, i) =>
-          i >= 3 && trueRanges[i] < Math.min(...trueRanges.slice(i - 3, i))
-      ).length;
-      const nr7 = window.filter(
-        (_, i) =>
-          i >= 6 && trueRanges[i] < Math.min(...trueRanges.slice(i - 6, i))
-      ).length;
-      return {
-        startIndex: i0,
-        endIndex: i0 + len - 1,
-        high,
-        low,
-        nr4Count: nr4,
-        nr7Count: nr7,
-      };
+  const latestAllowedEnd = data.length - 2; // 留出至少1根用于突破判断
+
+  let best: RangeBox | undefined = undefined;
+
+  for (let i = start; i <= latestAllowedEnd - rangeConfig.minBarsInRange + 1; i++) {
+    for (
+      let end = i + rangeConfig.minBarsInRange - 1;
+      end <= latestAllowedEnd;
+      end++
+    ) {
+      const window = data.slice(i, end + 1);
+      const high = Math.max(...window.map(c => c.high));
+      const low = Math.min(...window.map(c => c.low));
+      if (high - low <= maxWidth) {
+        // 统计 NR4/NR7
+        const trueRanges = window.map(c => c.high - c.low);
+        const nr4 = window.filter((_, idx) => idx >= 3 && trueRanges[idx] < Math.min(...trueRanges.slice(idx - 3, idx))).length;
+        const nr7 = window.filter((_, idx) => idx >= 6 && trueRanges[idx] < Math.min(...trueRanges.slice(idx - 6, idx))).length;
+        const candidate: RangeBox = {
+          startIndex: i,
+          endIndex: end,
+          high,
+          low,
+          nr4Count: nr4,
+          nr7Count: nr7,
+        };
+        // 选择结束位置更靠后的区间作为最近区间
+        if (!best || candidate.endIndex > best.endIndex) {
+          best = candidate;
+        }
+      }
     }
   }
+
+  return best;
 }
 
 function assessBreakout(
