@@ -286,6 +286,7 @@ export function identifyTrend(prices: number[]): string {
 // 辅助函数 - 计算SMA
 export function calculateSMA(data: number[], period: number): number {
   const slice = data.slice(-period);
+  if (slice.length === 0) return 0;
   return slice.reduce((sum, price) => sum + price, 0) / slice.length;
 }
 
@@ -515,11 +516,12 @@ export function calculateReturns(prices: number[]): number[] {
  * 计算标准差
  */
 export function calculateStandardDeviation(data: number[]): number {
+  if (!data || data.length === 0) return 0;
   const mean = data.reduce((sum, value) => sum + value, 0) / data.length;
   const squaredDiffs = data.map(value => Math.pow(value - mean, 2));
   const variance =
     squaredDiffs.reduce((sum, value) => sum + value, 0) / data.length;
-  return Math.sqrt(variance);
+  return Math.sqrt(Math.max(variance, 0));
 }
 
 /**
@@ -543,6 +545,7 @@ export function calculateATR(data: Candle[], period: number): number {
   }
 
   // 计算ATR
+  if (trValues.length === 0) return 0;
   if (trValues.length < period) {
     return trValues.reduce((sum, tr) => sum + tr, 0) / trValues.length;
   }

@@ -113,9 +113,10 @@ function analyzeVolumeTrend(
     previousVolumes.reduce((sum, d) => sum + d.volume, 0) /
     previousVolumes.length;
 
-  // 计算成交量变化比例
+  // 计算成交量变化比例（防止除零）
+  const denomVol = Math.abs(previousAvgVolume) < 1e-8 ? 1e-8 : previousAvgVolume;
   const volumeChange =
-    ((recentAvgVolume - previousAvgVolume) / previousAvgVolume) * 100;
+    ((recentAvgVolume - previousAvgVolume) / denomVol) * 100;
 
   // 判断成交量趋势
   let volumeTrend = '';
@@ -252,7 +253,7 @@ function analyzeChipMigration(
         0
       ) / priceSeries.length
     ) /
-      avgPrice) *
+      (Math.abs(avgPrice) < 1e-8 ? 1e-8 : avgPrice)) *
     100;
 
   // 动态阈值：在高波动市场中使用更高的阈值
@@ -262,9 +263,10 @@ function analyzeChipMigration(
   // 计算筹码移动速度：考虑时间因素和市场波动性
   const timeNormalization = 30 / recentPeriod; // 标准化为30天周期
   const normalizedChange = Math.abs(priceChange) * timeNormalization;
+  const volDenom = Math.max(volatility * 0.1, 1e-8);
   const migrationSpeed = Math.min(
     100,
-    (normalizedChange / (volatility * 0.1)) * 10
+    (normalizedChange / volDenom) * 10
   );
 
   // 计算不同价格区间的筹码变化

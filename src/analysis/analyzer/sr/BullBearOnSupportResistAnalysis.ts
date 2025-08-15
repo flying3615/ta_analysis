@@ -96,6 +96,7 @@ function findPivotPoints(
  * @returns 是否在水平附近
  */
 function isNearLevel(price: number, level: number, threshold: number): boolean {
+  if (Math.abs(level) < 1e-8) return false;
   const diff = Math.abs(price - level) / level;
   return diff <= threshold;
 }

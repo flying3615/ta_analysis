@@ -45,7 +45,10 @@ function determineVolatilityRegime(
   atrPercent: number,
   bbWidth: number
 ): 'low' | 'medium' | 'high' | 'extreme' {
-  // 根据配置阈值判断
+  // 根据配置阈值判断：
+  // - low/medium 需同时满足 ATR% 与 布林带宽度上限
+  // - high 当任一指标低于 high 阈值（但未满足 medium）即归为 high
+  // - extreme 为更高波动状态（两项均超过 high 阈值）
   if (
     atrPercent < volatilityConfig.regime.low.atrPercentMax &&
     bbWidth < volatilityConfig.regime.low.bbWidthMax
@@ -112,8 +115,9 @@ function determineVolatilityTrend(
   const currentATR = recentATRs[recentATRs.length - 1];
   const fiveDaysAgoATR = recentATRs[recentATRs.length - 5] || recentATRs[0];
 
-  // 计算5天变化百分比
-  const fiveDayChange = ((currentATR - fiveDaysAgoATR) / fiveDaysAgoATR) * 100;
+  // 计算5天变化百分比（防止除零）
+  const denom = Math.abs(fiveDaysAgoATR) < 1e-8 ? 1e-8 : fiveDaysAgoATR;
+  const fiveDayChange = ((currentATR - fiveDaysAgoATR) / denom) * 100;
 
   // 根据波动率变化和布林带宽度判断趋势
   if (fiveDayChange > volatilityConfig.trend.fiveDayIncreaseFast) {
@@ -162,7 +166,7 @@ function calculateSharpeRatio(returns: number[]): number {
  * 计算平均价格范围
  */
 function calculateAverageRange(data: Candle[], groupSize: number): number {
-  if (data.length < groupSize) return 0;
+  if (data.length < groupSize || groupSize <= 0) return 0;
 
   let totalRangePercent = 0;
   let groupCount = 0;
@@ -172,7 +176,8 @@ function calculateAverageRange(data: Candle[], groupSize: number): number {
       const group = data.slice(i, i + groupSize);
       const highInGroup = Math.max(...group.map(c => c.high));
       const lowInGroup = Math.min(...group.map(c => c.low));
-      const rangePercent = ((highInGroup - lowInGroup) / lowInGroup) * 100;
+      const denom = Math.abs(lowInGroup) < 1e-8 ? 1e-8 : lowInGroup;
+      const rangePercent = ((highInGroup - lowInGroup) / denom) * 100;
 
       totalRangePercent += rangePercent;
       groupCount++;
@@ -217,7 +222,7 @@ export function calculateVolatilityAnalysis(
   const returns = calculateReturns(closes);
   const recentReturns = returns.slice(-lookbackPeriod);
   const historicalVolatility =
-    calculateStandardDeviation(recentReturns) * Math.sqrt(252); // 年化
+    (calculateStandardDeviation(recentReturns) || 0) * Math.sqrt(252); // 年化
 
   // 2. 计算布林带宽度 (相对于价格的百分比)
   const sma20 = calculateSMA(closes, volatilityConfig.periods.smaShort);
@@ -226,11 +231,14 @@ export function calculateVolatilityAnalysis(
   );
   const upperBand = sma20 + stdDev * 2;
   const lowerBand = sma20 - stdDev * 2;
-  const bollingerBandWidth = ((upperBand - lowerBand) / sma20) * 100;
+  const denomBB = Math.abs(sma20) < 1e-8 ? 1e-8 : sma20;
+  const bollingerBandWidth = ((upperBand - lowerBand) / denomBB) * 100;
 
   // 3. 计算平均真实范围 (ATR)
   const atr = calculateATR(data, volatilityConfig.periods.atr);
-  const atrPercent = (atr / closes[closes.length - 1]) * 100;
+  const lastClose = closes[closes.length - 1];
+  const denomClose = Math.abs(lastClose) < 1e-8 ? 1e-8 : lastClose;
+  const atrPercent = (atr / denomClose) * 100;
 
   // 4. 判断波动率状态
   const volatilityRegime = determineVolatilityRegime(
@@ -240,8 +248,8 @@ export function calculateVolatilityAnalysis(
 
   // 5. 波动率趋势判断
   const atrValues = calculateATRSeries(data, volatilityConfig.periods.atr);
-  const isVolatilityIncreasing =
-    atrValues[atrValues.length - 1] > atrValues[atrValues.length - 5];
+  const prevIdx = Math.max(0, atrValues.length - 5);
+  const isVolatilityIncreasing = atrValues[atrValues.length - 1] > atrValues[prevIdx];
 
   // 6. 计算波动率百分位
   const longTermATRs = calculateATRSeries(data, volatilityConfig.periods.atr);
@@ -350,8 +358,8 @@ export function calculateEnhancedVolatilityAnalysis(
  * 计算价格相对于历史高低点和均线的位置
  *
  * 注意：
- * relativeToYearHigh - 表示价格在52周区间中的位置百分比（0=低点，100=高点）
- * relativeToYearLow - 表示价格距离52周低点的距离百分比（越小表示越接近低点）
+ * relativeToHigh - 表示价格在52周区间中的位置百分比（0=低点，100=高点）
+ * relativeToLow - 表示距离低点的百分比（越大表示越接近低点）
  */
 function calculatePricePosition(
   data: Candle[]
@@ -360,25 +368,24 @@ function calculatePricePosition(
   const currentPrice = closes[closes.length - 1];
 
   // 计算52周（约250个交易日）高低点
-  const yearData = data.slice(-Math.min(250, data.length));
+  const yearData = data.slice(-Math.min(volatilityConfig.pricePosition.yearDays, data.length));
   const yearHigh = Math.max(...yearData.map(d => d.high));
   const yearLow = Math.min(...yearData.map(d => d.low));
 
-  // 计算区间中的相对位置百分比（0=低点，100=高点）
-  const positionInRange =
-    ((currentPrice - yearLow) / (yearHigh - yearLow)) * 100;
+  // 计算区间中的相对位置百分比（0=低点，100=高点），防止除零
+  const denom = Math.abs(yearHigh - yearLow) < 1e-8 ? 1e-8 : yearHigh - yearLow;
+  const positionInRange = ((currentPrice - yearLow) / denom) * 100;
 
-  // 为保持与现有代码兼容性，维持原变量名但更新计算逻辑
-  // relativeToYearHigh实际表示在区间中的位置百分比
+  // 语义修正：relativeToHigh 表示区间位置（越大越靠近高点）；relativeToLow 表示距离低点的百分比（越大越靠近低点）
   const relativeToYearHigh = positionInRange;
-  // relativeToYearLow实际表示距离低点的百分比距离，接近0表示接近低点
   const relativeToYearLow = 100 - positionInRange;
 
   // 计算长期均线（如果有足够数据）
   let relativeTo200MA = 0;
-  if (data.length >= 200) {
-    const ma200 = calculateSMA(closes, 200);
-    relativeTo200MA = ((currentPrice - ma200) / ma200) * 100;
+  if (data.length >= volatilityConfig.periods.smaLong) {
+    const ma200 = calculateSMA(closes, volatilityConfig.periods.smaLong);
+    const denomMA = Math.abs(ma200) < 1e-8 ? 1e-8 : ma200;
+    relativeTo200MA = ((currentPrice - ma200) / denomMA) * 100;
   }
 
   return {
@@ -415,16 +422,21 @@ function analyzeVolatilityTransition(
   // 如果波动率状态不同，则识别为过渡期
   if (previousAnalysis.volatilityRegime !== currentAnalysis.volatilityRegime) {
     // 计算过渡强度
-    let transitionStrength = 0;
-
-    // 通过ATR变化百分比来估计过渡强度
+    // 通过ATR变化百分比来估计过渡强度，防止除零
+    const denom =
+      Math.abs(previousAnalysis.atrPercent) < 1e-8
+        ? 1e-8
+        : previousAnalysis.atrPercent;
     const atrChange =
       (Math.abs(currentAnalysis.atrPercent - previousAnalysis.atrPercent) /
-        previousAnalysis.atrPercent) *
+        denom) *
       100;
 
     // 将变化映射到0-100的范围
-    transitionStrength = Math.min(100, atrChange * 5);
+    const transitionStrength = Math.min(
+      100,
+      atrChange * volatilityConfig.transition.atrChangeToStrengthFactor
+    );
 
     return {
       isTransitioning: true,
@@ -453,8 +465,8 @@ function detectBottomSignals(
 
   // 1. 检查价格是否处于历史低位
   const pricePosition = calculatePricePosition(data);
-  if (pricePosition.relativeToLow > 80) {
-    signalStrength += 20; // 价格接近年度低点
+  if (pricePosition.relativeToLow > volatilityConfig.bottomSignal.nearYearLowPercent) {
+    signalStrength += volatilityConfig.bottomSignal.weights.nearLow; // 价格接近年度低点
   }
 
   // 2. 检查波动率特征
@@ -464,42 +476,51 @@ function detectBottomSignals(
     baseAnalysis.volatilityRegime === 'extreme'
   ) {
     if (!baseAnalysis.isVolatilityIncreasing) {
-      signalStrength += 15; // 高波动率开始下降
+      signalStrength += volatilityConfig.bottomSignal.weights.highVolFalling; // 高波动率开始下降
     }
   }
 
   // 3. 检查布林带宽度
   // 布林带收缩后开始扩张可能预示趋势反转
-  if (baseAnalysis.bollingerBandWidth < 3.5) {
-    signalStrength += 10; // 布林带收缩，可能即将爆发行情
+  if (baseAnalysis.bollingerBandWidth < volatilityConfig.bottomSignal.bbSqueezeForBottom) {
+    signalStrength += volatilityConfig.bottomSignal.weights.bbSqueeze; // 布林带收缩
   }
 
   // 4. 通过短期价格走势判断是否企稳
-  const recentCloses = closes.slice(-10);
-  const previousCloses = closes.slice(-20, -10);
+  const recentCloses = closes.slice(-volatilityConfig.bottomSignal.recentSlice);
+  const previousCloses = closes.slice(
+    -volatilityConfig.bottomSignal.recentSlice - volatilityConfig.bottomSignal.previousSlice,
+    -volatilityConfig.bottomSignal.recentSlice
+  );
 
   const previousTrend = calculateSimpleTrend(previousCloses);
   const recentTrend = calculateSimpleTrend(recentCloses);
 
   // 前期下跌，近期企稳或上涨
-  if (previousTrend < -0.05 && recentTrend >= -0.01) {
-    signalStrength += 20;
+  if (
+    previousTrend < volatilityConfig.bottomSignal.previousTrendThreshold &&
+    recentTrend >= volatilityConfig.bottomSignal.recentTrendThreshold
+  ) {
+    signalStrength += volatilityConfig.bottomSignal.weights.stabilize;
   }
 
   // 5. 检查成交量特征
-  const recentVolumes = volumes.slice(-10);
-  const previousVolumes = volumes.slice(-20, -10);
+  const recentVolumes = volumes.slice(-volatilityConfig.bottomSignal.recentSlice);
+  const previousVolumes = volumes.slice(
+    -volatilityConfig.bottomSignal.recentSlice - volatilityConfig.bottomSignal.previousSlice,
+    -volatilityConfig.bottomSignal.recentSlice
+  );
 
   const avgRecentVolume = calculateAverageVolume(recentVolumes);
   const avgPreviousVolume = calculateAverageVolume(previousVolumes);
 
   // 成交量放大通常是底部特征之一
-  if (avgRecentVolume > avgPreviousVolume * 1.3) {
-    signalStrength += 15; // 近期成交量放大
+  if (avgRecentVolume > avgPreviousVolume * volatilityConfig.bottomSignal.volumeIncreaseFactor) {
+    signalStrength += volatilityConfig.bottomSignal.weights.volumeIncrease; // 近期成交量放大
   }
 
   // 是否可能为底部反转
-  const potentialBottomReversal = signalStrength > 50;
+  const potentialBottomReversal = signalStrength > volatilityConfig.bottomSignal.bottomStrongThreshold;
 
   return {
     potentialBottomReversal,
