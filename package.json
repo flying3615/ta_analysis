@@ -15,7 +15,8 @@
     "lint:fix": "npm run lint -- --fix",
     "publish:patch": "npm version patch",
     "publish:minor": "npm version minor",
-    "publish:major": "npm version major"
+    "publish:major": "npm version major",
+    "run:crypto": "node scripts/run-crypto.mjs"
   },
   "keywords": [
     "stock",
@@ -38,20 +39,13 @@
   "devDependencies": {
     "@types/image-to-base64": "^2.1.2",
     "@types/lodash": "^4.17.16",
+    "@vitest/coverage-v8": "^2.0.5",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vitest": "^2.0.5",
-    "@vitest/coverage-v8": "^2.0.5"
+    "vitest": "^2.0.5"
   },
   "author": "gabriel3615",
   "license": "MIT",
-  "peerDependencies": {
-    "tmai-api": ">=0.0.1"
-  },
-  "peerDependenciesMeta": {
-    "tmai-api": {
-      "optional": true
-    }
-  }
+  
 }

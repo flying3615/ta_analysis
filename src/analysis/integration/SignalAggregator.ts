@@ -278,16 +278,14 @@ export class SignalAggregator {
   private extractVolumeSignal(
     volatilityAnalysis: AnalysisInputData['analyses']['volatility']
   ): DirectionConversionResult {
-    // 从分析数据中获取成交量分析结果
-    const v = volatilityAnalysis.volumeAnalysis.volumeAnalysis as any;
+    const vRoot: any = volatilityAnalysis || {};
+    const v = vRoot.volumeAnalysis?.volumeAnalysis || {};
 
     let direction: TradeDirection = TradeDirection.Neutral;
 
-    // 基础方向来自 AD 趋势
     if (v.adTrend === 'bullish') direction = TradeDirection.Long;
     else if (v.adTrend === 'bearish') direction = TradeDirection.Short;
 
-    // 背离微调方向
     if (
       v.divergence?.type === 'bullish' ||
       v.divergence?.type === 'hidden_bullish'
@@ -300,7 +298,6 @@ export class SignalAggregator {
       direction = TradeDirection.Short;
     }
 
-    // 置信度构成：量价确认 + 力度 + OBV 斜率 + 背离强度 + MFI 极值
     let confidence = 50;
     confidence += v.volumePriceConfirmation ? 15 : -10;
     confidence += Math.min(25, Math.max(0, Math.abs(v.volumeForce ?? 0) * 0.5));
@@ -635,8 +632,9 @@ export class SignalAggregator {
     }
 
     // 根据波动率调整置信度（恢复原有逻辑）
-    const volatilityScore =
-      this.calculateVolatilitySignalStrength(volatilityAnalysis);
+    const volatilityScore = this.calculateVolatilitySignalStrength(
+      volatilityAnalysis
+    );
     const volatilityMultiplier = 0.5 + (volatilityScore / 100) * 0.5; // 0.5 - 1.0
 
     return Math.min(100, Math.max(0, baseConfidence * volatilityMultiplier));
@@ -648,19 +646,17 @@ export class SignalAggregator {
   private calculateVolatilitySignalStrength(
     volatilityAnalysis: AnalysisInputData['analyses']['volatility']
   ): number {
-    // 提取波动率分析数据（修正结构）
-    const volAnalysis =
-      volatilityAnalysis.volatilityAnalysis.volatilityAnalysis;
-    const volPriceConfirmation =
-      volatilityAnalysis.volumeAnalysis.volumeAnalysis;
+    const vRoot: any = volatilityAnalysis || {};
+    const volAnalysis = vRoot.volatilityAnalysis?.volatilityAnalysis || {};
+    const volPriceConfirmation = vRoot.volumeAnalysis?.volumeAnalysis || {};
 
     // 计算波动率强度（基于ATR百分比和布林带宽度）- 修正原有计算
     const volatilityStrength = Math.min(
       100,
       Math.max(
         0,
-        volAnalysis.atrPercent * 20 + // ATR百分比贡献
-          volAnalysis.bollingerBandWidth * 5 // 布林带宽度贡献
+        (volAnalysis.atrPercent ?? 0) * 20 + // ATR百分比贡献
+          (volAnalysis.bollingerBandWidth ?? 0) * 5 // 布林带宽度贡献
       )
     );
 
@@ -681,7 +677,7 @@ export class SignalAggregator {
       }
 
       // 极高波动率时的额外调整
-      if (volAnalysis.atrPercent > 3.5) {
+      if ((volAnalysis.atrPercent ?? 0) > 3.5) {
         // 极高波动率通常意味着趋势加速或即将反转
         const extremeVolatilityAdjustment = volAnalysis.isVolatilityIncreasing
           ? 15

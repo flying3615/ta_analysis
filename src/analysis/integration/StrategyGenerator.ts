@@ -44,7 +44,7 @@ export class StrategyGenerator {
       entryStrategy.idealEntryPrice,
       input.analyses.chip,
       input.analyses.pattern,
-      input.analyses.volatility.volatilityAnalysis
+      (input.analyses as any)?.volatility?.volatilityAnalysis
     );
 
     const riskManagement = determineRiskManagement(
@@ -53,7 +53,7 @@ export class StrategyGenerator {
       exitStrategy,
       input.signalResult.confidenceScore,
       input.signalResult.signalStrength,
-      input.analyses.volatility.volatilityAnalysis
+      (input.analyses as any)?.volatility?.volatilityAnalysis
     );
 
     // 生成增强的信号和条件
@@ -110,9 +110,7 @@ export class StrategyGenerator {
     }
 
     // 波动率确认
-    const volatilityRegime =
-      analyses.volatility.volatilityAnalysis.volatilityAnalysis
-        .volatilityRegime;
+    const volatilityRegime = (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'unknown';
     if (volatilityRegime === 'high' || volatilityRegime === 'extreme') {
       confirmationSignals.push({
         type: 'volatility',
@@ -223,9 +221,7 @@ export class StrategyGenerator {
     }
 
     // 波动率状态
-    const volatilityRegime =
-      analyses.volatility.volatilityAnalysis.volatilityAnalysis
-        .volatilityRegime;
+    const volatilityRegime = (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'unknown';
     const atrPercent =
       analyses.volatility.volatilityAnalysis.volatilityAnalysis.atrPercent;
     observations.push(
@@ -299,8 +295,7 @@ export class StrategyGenerator {
     }
 
     // 成交量确认警告
-    const volumeConfirmation =
-      analyses.volatility.volumeAnalysis.volumeAnalysis.volumePriceConfirmation;
+    const volumeConfirmation = (analyses as any)?.volatility?.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation;
     if (!volumeConfirmation) {
       warnings.push('成交量未能确认价格走势，信号可靠性降低');
     }

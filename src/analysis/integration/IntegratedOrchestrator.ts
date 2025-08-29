@@ -253,6 +253,26 @@ export class IntegratedOrchestrator {
         await this.dataProvider.getMultiTimeframeCryptoData(symbol, finalConfig, apiKey);
       const dataEndTime = Date.now();
 
+      // 打印数据预览（数量与首尾蜡烛）
+      const fmt = (c: Candle | undefined) =>
+        c
+          ? `${c.timestamp.toISOString()} O:${c.open} H:${c.high} L:${c.low} C:${c.close} V:${c.volume}`
+          : 'N/A';
+      const head = (arr: Candle[]) => (arr && arr.length > 0 ? arr[0] : undefined);
+      const tail = (arr: Candle[]) => (arr && arr.length > 0 ? arr[arr.length - 1] : undefined);
+      this.logger.log(
+        `数据加载完成 -> weekly:${weeklyData.length}, daily:${dailyData.length}, hourly:${hourlyData.length}`
+      );
+      this.logger.log(
+        `weekly[首/尾]: ${fmt(head(weeklyData))} | ${fmt(tail(weeklyData))}`
+      );
+      this.logger.log(
+        `daily[首/尾]:  ${fmt(head(dailyData))} | ${fmt(tail(dailyData))}`
+      );
+      this.logger.log(
+        `hourly[首/尾]: ${fmt(head(hourlyData))} | ${fmt(tail(hourlyData))}`
+      );
+
       // 执行各个分析模块
       const analysisStartTime = Date.now();
       const analysisData = await this.executeAllAnalyses(
