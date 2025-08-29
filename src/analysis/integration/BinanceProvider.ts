@@ -10,6 +10,23 @@ function mapInterval(interval: Interval): string {
   return '1w';
 }
 
+function intervalMs(interval: Interval): number {
+  if (interval === '1h') return 60 * 60 * 1000;
+  if (interval === '1d') return 24 * 60 * 60 * 1000;
+  return 7 * 24 * 60 * 60 * 1000;
+}
+
+function normalizeSpotSymbol(input: string): string {
+  if (!input) return input;
+  const s = String(input).trim().toUpperCase();
+  if (s.includes('-') || s.includes('/')) {
+    const [base, rawQuote] = s.split(/[-\/]/);
+    const quote = rawQuote === 'USD' ? 'USDT' : rawQuote;
+    return `${base}${quote}`;
+  }
+  return s;
+}
+
 export class BinanceProvider {
   private baseUrl = 'https://api.binance.com';
 
@@ -19,26 +36,56 @@ export class BinanceProvider {
     startTime: Date,
     endTime: Date
   ): Promise<Candle[]> {
-    const params = new URLSearchParams({
-      symbol,
-      interval: mapInterval(interval),
-      startTime: String(startTime.getTime()),
-      endTime: String(endTime.getTime()),
-      limit: '1000',
-    });
-    const url = `${this.baseUrl}/api/v3/klines?${params.toString()}`;
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const arr: any[] = await res.json();
-    return arr.map(row => ({
-      symbol,
-      open: Number(row[1]),
-      high: Number(row[2]),
-      low: Number(row[3]),
-      close: Number(row[4]),
-      volume: Number(row[5]),
-      timestamp: new Date(row[0]),
-    } satisfies Candle));
+    const normSymbol = normalizeSpotSymbol(symbol);
+    const iv = mapInterval(interval);
+    const step = intervalMs(interval);
+    const limit = 1000; // Binance max
+    const result: Candle[] = [];
+
+    let from = startTime.getTime();
+    const end = endTime.getTime();
+
+    while (from < end) {
+      const params = new URLSearchParams({
+        symbol: normSymbol,
+        interval: iv,
+        startTime: String(from),
+        endTime: String(end),
+        limit: String(limit),
+      });
+      const url = `${this.baseUrl}/api/v3/klines?${params.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) break;
+      const arr: any[] = await res.json();
+      if (!Array.isArray(arr) || arr.length === 0) break;
+
+      for (const row of arr) {
+        const openTime = Number(row[0]);
+        if (openTime >= from && openTime <= end) {
+          result.push({
+            symbol: normSymbol,
+            open: Number(row[1]),
+            high: Number(row[2]),
+            low: Number(row[3]),
+            close: Number(row[4]),
+            volume: Number(row[5]),
+            timestamp: new Date(openTime),
+          } as Candle);
+        }
+      }
+
+      const last = Number(arr[arr.length - 1]?.[0]);
+      const next = Math.max(from + step, last + step);
+      if (next <= from) break; // safety
+      from = next;
+
+      // 小等待以避免突发速率（通常无需）
+      if (arr.length >= limit) await new Promise(r => setTimeout(r, 100));
+    }
+
+    // 排序保证升序
+    result.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    return result;
   }
 }
 
