@@ -54,6 +54,7 @@ export {
 
 export {
   executeIntegratedAnalysisV2,
+  executeIntegratedCryptoAnalysisV2,
   executeBatchAnalysis,
 } from './analysis/IntegratedAnalysis.js';
 

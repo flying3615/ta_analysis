@@ -4,7 +4,7 @@
  */
 
 import type { IntegratedTradePlan } from '../../types.js';
-import { Candle } from '../../types.js';
+import type { Candle } from '../../types.js';
 import { generateUniqueId } from '../../util/util.js';
 import { createLogger } from '../../util/logger.js';
 

@@ -45,5 +45,13 @@
     "@vitest/coverage-v8": "^2.0.5"
   },
   "author": "gabriel3615",
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "tmai-api": ">=0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "tmai-api": {
+      "optional": true
+    }
+  }
 }
