@@ -16,7 +16,8 @@
     "publish:patch": "npm version patch",
     "publish:minor": "npm version minor",
     "publish:major": "npm version major",
-    "run:crypto": "node scripts/run-crypto.mjs"
+    "run:crypto": "node scripts/run-crypto.mjs",
+    "run:binance": "node scripts/run-binance-spot.mjs"
   },
   "keywords": [
     "stock",
@@ -46,6 +47,5 @@
     "vitest": "^2.0.5"
   },
   "author": "gabriel3615",
-  "license": "MIT",
-  
+  "license": "MIT"
 }

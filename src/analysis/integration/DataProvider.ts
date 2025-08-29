@@ -2,9 +2,11 @@ import type { Candle } from '../../types.js';
 import type { IntegrationConfig } from './IntegrationConfig.js';
 import { getStockDataForTimeframe } from '../../util/util.js';
 import { SimpleCache } from './CacheManager.js';
+import { BinanceProvider } from './BinanceProvider.js';
 
 export class DataProvider {
   private cache: SimpleCache<Candle[]>;
+  private binance = new BinanceProvider();
 
   constructor(maxCacheEntries: number = 100) {
     this.cache = new SimpleCache<Candle[]>(maxCacheEntries);
@@ -35,13 +37,33 @@ export class DataProvider {
       hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
     );
 
+    // 使用 BinanceProvider 拉取历史K线，满足 lookback 需求
     const [weeklyData, dailyData, hourlyData] = await Promise.all([
-      this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-      this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-      this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
+      this.getCachedBinanceData(symbol, weeklyStartDate, today, 'weekly'),
+      this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily'),
+      this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour'),
     ]);
 
     return { weeklyData, dailyData, hourlyData };
+  }
+
+  private async getCachedBinanceData(
+    symbol: string,
+    startDate: Date,
+    endDate: Date,
+    timeframe: 'weekly' | 'daily' | '1hour'
+  ): Promise<Candle[]> {
+    const cacheKey = `binance_${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
+    return this.cache.getOrFetch(cacheKey, async () => {
+      if (timeframe === 'weekly') {
+        const daily = await this.binance.getKlines(symbol, '1d', startDate, endDate);
+        return this.aggregateDailyToWeekly(daily);
+      }
+      if (timeframe === 'daily') {
+        return await this.binance.getKlines(symbol, '1d', startDate, endDate);
+      }
+      return await this.binance.getKlines(symbol, '1h', startDate, endDate);
+    });
   }
 
   /**
