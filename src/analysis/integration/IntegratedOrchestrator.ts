@@ -216,6 +216,138 @@ export class IntegratedOrchestrator {
   }
 
   /**
+   * 执行单个加密货币的综合分析（使用 tmai-api 获取OHLCV）
+   * 外部应用通过 apiKey 参数传入凭证；遵循 IntegrationConfig.timeframes 的 lookbackDays
+   */
+  async executeIntegratedCryptoAnalysis(
+    symbol: string,
+    apiKey: string,
+    customConfig?: Partial<IntegrationConfig>
+  ): Promise<IntegratedAnalysisResult> {
+    const startTime = Date.now();
+    const executionId = generateUniqueId();
+
+    // 合并配置
+    const finalConfig = customConfig ? { ...this.config, ...customConfig } : this.config;
+
+    // 创建执行上下文
+    const context: IntegrationContext = {
+      symbol,
+      timestamp: new Date(),
+      config: finalConfig,
+      executionId,
+      metadata: {
+        version: '2.0.0',
+        orchestratorType: 'enhanced',
+        dataSource: 'crypto',
+      },
+    };
+
+    try {
+      this.logger.setLevel(finalConfig.options.logLevel ?? 'normal');
+      this.logger.log(`======== 开始执行(加密货币) ${symbol} 综合分析 (${executionId}) ========`);
+
+      // 获取加密数据（遵循 lookbackDays）
+      const dataStartTime = Date.now();
+      const { weeklyData, dailyData, hourlyData } =
+        await this.dataProvider.getMultiTimeframeCryptoData(symbol, finalConfig, apiKey);
+      const dataEndTime = Date.now();
+
+      // 执行各个分析模块
+      const analysisStartTime = Date.now();
+      const analysisData = await this.executeAllAnalyses(
+        symbol,
+        weeklyData,
+        dailyData,
+        hourlyData,
+        context
+      );
+      const analysisEndTime = Date.now();
+
+      // 信号汇总
+      const signalStartTime = Date.now();
+      const signalResult = this.signalAggregator.aggregateSignals(analysisData, context);
+      const signalEndTime = Date.now();
+
+      // 关键位管理
+      const keyLevelStartTime = Date.now();
+      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(analysisData, context);
+      const keyLevelEndTime = Date.now();
+
+      // 策略生成
+      const strategyStartTime = Date.now();
+      const strategyInput = {
+        symbol,
+        currentPrice: analysisData.analyses.chip.currentPrice,
+        signalResult,
+        keyLevels: keyLevelResult.mergedLevels,
+        analyses: analysisData.analyses,
+        config: finalConfig,
+      };
+      const strategyResult = this.strategyGenerator.generateStrategy(strategyInput);
+      const strategyEndTime = Date.now();
+
+      // 构建最终交易计划
+      const tradePlan = this.buildTradePlan(
+        symbol,
+        analysisData,
+        signalResult,
+        keyLevelResult,
+        strategyResult,
+        context
+      );
+
+      const totalEndTime = Date.now();
+
+      const result: IntegratedAnalysisResult = {
+        tradePlan,
+        context,
+        performance: {
+          totalExecutionTime: totalEndTime - startTime,
+          moduleExecutionTimes: {
+            dataFetching: dataEndTime - dataStartTime,
+            analysis: analysisEndTime - analysisStartTime,
+            signalAggregation: signalEndTime - signalStartTime,
+            keyLevelManagement: keyLevelEndTime - keyLevelStartTime,
+            strategyGeneration: strategyEndTime - strategyStartTime,
+          },
+          cacheHitRate: this.dataProvider.stats().hitRate,
+        },
+      };
+
+      this.logger.log(
+        `======== (加密货币) ${symbol} 综合分析完成，耗时: ${result.performance.totalExecutionTime}ms ========`
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(`(加密货币) 综合分析执行失败 (${symbol}):`, error);
+
+      // 创建错误结果
+      return {
+        tradePlan: this.createFallbackTradePlan(symbol, context),
+        context,
+        performance: {
+          totalExecutionTime: Date.now() - startTime,
+          moduleExecutionTimes: {},
+        },
+        diagnostics: {
+          warnings: [],
+          errors: [
+            {
+              code: 'CRYPTO_EXECUTION_FAILED',
+              message: error instanceof Error ? error.message : 'Unknown error',
+              module: 'orchestrator',
+              details: error,
+              recoverable: false,
+            },
+          ],
+          fallbacksUsed: ['fallback-trade-plan'],
+        },
+      };
+    }
+  }
+  /**
    * 批量执行分析
    */
   async executeBatchAnalysis(
