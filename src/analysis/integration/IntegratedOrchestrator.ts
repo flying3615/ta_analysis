@@ -30,7 +30,7 @@ import { createStructurePlugin } from './plugins/structurePlugin.js';
 import { createSupplyDemandPlugin } from './plugins/supplyDemandPlugin.js';
 import { createRangePlugin } from './plugins/rangePlugin.js';
 import { createTrendlinePlugin } from './plugins/trendlinePlugin.js';
-import { DataProvider } from './DataProvider.js';
+import { DataProvider } from '../../data/DataProvider.js';
 import { NarrativeBuilder } from './NarrativeBuilder.js';
 
 import type {
@@ -189,29 +189,7 @@ export class IntegratedOrchestrator {
       return result;
     } catch (error) {
       this.logger.error(`综合分析执行失败 (${symbol}):`, error);
-
-      // 创建错误结果
-      return {
-        tradePlan: this.createFallbackTradePlan(symbol, context),
-        context,
-        performance: {
-          totalExecutionTime: Date.now() - startTime,
-          moduleExecutionTimes: {},
-        },
-        diagnostics: {
-          warnings: [],
-          errors: [
-            {
-              code: 'EXECUTION_FAILED',
-              message: error instanceof Error ? error.message : 'Unknown error',
-              module: 'orchestrator',
-              details: error,
-              recoverable: false,
-            },
-          ],
-          fallbacksUsed: ['fallback-trade-plan'],
-        },
-      };
+      throw error;
     }
   }
 
@@ -228,7 +206,9 @@ export class IntegratedOrchestrator {
     const executionId = generateUniqueId();
 
     // 合并配置
-    const finalConfig = customConfig ? { ...this.config, ...customConfig } : this.config;
+    const finalConfig = customConfig
+      ? { ...this.config, ...customConfig }
+      : this.config;
 
     // 创建执行上下文
     const context: IntegrationContext = {
@@ -245,33 +225,18 @@ export class IntegratedOrchestrator {
 
     try {
       this.logger.setLevel(finalConfig.options.logLevel ?? 'normal');
-      this.logger.log(`======== 开始执行(加密货币) ${symbol} 综合分析 (${executionId}) ========`);
+      this.logger.log(
+        `======== 开始执行(加密货币) ${symbol} 综合分析 (${executionId}) ========`
+      );
 
       // 获取加密数据（遵循 lookbackDays）
       const dataStartTime = Date.now();
       const { weeklyData, dailyData, hourlyData } =
-        await this.dataProvider.getMultiTimeframeCryptoData(symbol, finalConfig, apiKey);
+        await this.dataProvider.getMultiTimeframeCryptoData(
+          symbol,
+          finalConfig
+        );
       const dataEndTime = Date.now();
-
-      // 打印数据预览（数量与首尾蜡烛）
-      const fmt = (c: Candle | undefined) =>
-        c
-          ? `${c.timestamp.toISOString()} O:${c.open} H:${c.high} L:${c.low} C:${c.close} V:${c.volume}`
-          : 'N/A';
-      const head = (arr: Candle[]) => (arr && arr.length > 0 ? arr[0] : undefined);
-      const tail = (arr: Candle[]) => (arr && arr.length > 0 ? arr[arr.length - 1] : undefined);
-      this.logger.log(
-        `数据加载完成 -> weekly:${weeklyData.length}, daily:${dailyData.length}, hourly:${hourlyData.length}`
-      );
-      this.logger.log(
-        `weekly[首/尾]: ${fmt(head(weeklyData))} | ${fmt(tail(weeklyData))}`
-      );
-      this.logger.log(
-        `daily[首/尾]:  ${fmt(head(dailyData))} | ${fmt(tail(dailyData))}`
-      );
-      this.logger.log(
-        `hourly[首/尾]: ${fmt(head(hourlyData))} | ${fmt(tail(hourlyData))}`
-      );
 
       // 执行各个分析模块
       const analysisStartTime = Date.now();
@@ -286,12 +251,18 @@ export class IntegratedOrchestrator {
 
       // 信号汇总
       const signalStartTime = Date.now();
-      const signalResult = this.signalAggregator.aggregateSignals(analysisData, context);
+      const signalResult = this.signalAggregator.aggregateSignals(
+        analysisData,
+        context
+      );
       const signalEndTime = Date.now();
 
       // 关键位管理
       const keyLevelStartTime = Date.now();
-      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(analysisData, context);
+      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
+        analysisData,
+        context
+      );
       const keyLevelEndTime = Date.now();
 
       // 策略生成
@@ -304,7 +275,8 @@ export class IntegratedOrchestrator {
         analyses: analysisData.analyses,
         config: finalConfig,
       };
-      const strategyResult = this.strategyGenerator.generateStrategy(strategyInput);
+      const strategyResult =
+        this.strategyGenerator.generateStrategy(strategyInput);
       const strategyEndTime = Date.now();
 
       // 构建最终交易计划
@@ -342,29 +314,7 @@ export class IntegratedOrchestrator {
       return result;
     } catch (error) {
       this.logger.error(`(加密货币) 综合分析执行失败 (${symbol}):`, error);
-
-      // 创建错误结果
-      return {
-        tradePlan: this.createFallbackTradePlan(symbol, context),
-        context,
-        performance: {
-          totalExecutionTime: Date.now() - startTime,
-          moduleExecutionTimes: {},
-        },
-        diagnostics: {
-          warnings: [],
-          errors: [
-            {
-              code: 'CRYPTO_EXECUTION_FAILED',
-              message: error instanceof Error ? error.message : 'Unknown error',
-              module: 'orchestrator',
-              details: error,
-              recoverable: false,
-            },
-          ],
-          fallbacksUsed: ['fallback-trade-plan'],
-        },
-      };
+      throw error;
     }
   }
   /**

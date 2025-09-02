@@ -64,7 +64,9 @@ export class NarrativeBuilder {
       if (plugin?.summarize) {
         try {
           return plugin.summarize(analysisData, context);
-        } catch {}
+        } catch {
+          return 'Error in summarize()';
+        }
       }
       return fallback();
     };

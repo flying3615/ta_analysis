@@ -27,7 +27,11 @@ export async function executeIntegratedCryptoAnalysisV2(
   config?: Partial<IntegrationConfig>
 ) {
   const orchestrator = new IntegratedOrchestrator();
-  const result = await orchestrator.executeIntegratedCryptoAnalysis(symbol, apiKey, config);
+  const result = await orchestrator.executeIntegratedCryptoAnalysis(
+    symbol,
+    apiKey,
+    config
+  );
   return result.tradePlan;
 }
 

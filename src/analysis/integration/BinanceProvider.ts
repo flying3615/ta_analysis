@@ -20,7 +20,7 @@ function normalizeSpotSymbol(input: string): string {
   if (!input) return input;
   const s = String(input).trim().toUpperCase();
   if (s.includes('-') || s.includes('/')) {
-    const [base, rawQuote] = s.split(/[-\/]/);
+    const [base, rawQuote] = s.split(/[-/]/);
     const quote = rawQuote === 'USD' ? 'USDT' : rawQuote;
     return `${base}${quote}`;
   }
@@ -88,5 +88,3 @@ export class BinanceProvider {
     return result;
   }
 }
-
-

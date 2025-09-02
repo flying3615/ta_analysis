@@ -87,7 +87,8 @@ function computePremiumDiscount(data: Candle[]) {
   const basisLow = Math.min(...slice);
   const basisHigh = Math.max(...slice);
   const currentPrice = closes[closes.length - 1];
-  const denom = Math.abs(basisHigh - basisLow) < 1e-8 ? 1e-8 : basisHigh - basisLow;
+  const denom =
+    Math.abs(basisHigh - basisLow) < 1e-8 ? 1e-8 : basisHigh - basisLow;
   const position = ((currentPrice - basisLow) / denom) * 100;
   return { basisLow, basisHigh, currentPrice, position };
 }

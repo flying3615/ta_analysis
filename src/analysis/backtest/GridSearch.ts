@@ -1,5 +1,9 @@
 import type { Candle } from '../../types.js';
-import { Backtester, type BacktestResult, type Strategy } from './Backtester.js';
+import {
+  Backtester,
+  type BacktestResult,
+  type Strategy,
+} from './Backtester.js';
 
 export type ParamGrid = Record<string, number[] | string[] | boolean[]>;
 
@@ -29,15 +33,18 @@ export interface GridSearchOutput {
 }
 
 function cartesianProduct<T>(arrays: T[][]): T[][] {
-  return arrays.reduce<T[][]>((acc, arr) => {
-    const next: T[][] = [];
-    for (const a of acc) {
-      for (const b of arr) {
-        next.push([...a, b]);
+  return arrays.reduce<T[][]>(
+    (acc, arr) => {
+      const next: T[][] = [];
+      for (const a of acc) {
+        for (const b of arr) {
+          next.push([...a, b]);
+        }
       }
-    }
-    return next;
-  }, [[]]);
+      return next;
+    },
+    [[]]
+  );
 }
 
 function buildParamCombos(grid: ParamGrid): Record<string, any>[] {
@@ -74,10 +81,14 @@ export async function runGridSearch(
     ? runs.reduce((a, b) => (a.result.totalPnL > b.result.totalPnL ? a : b))
     : null;
   const bestBySharpe = runs.length
-    ? runs.reduce((a, b) => (a.result.metrics.sharpe > b.result.metrics.sharpe ? a : b))
+    ? runs.reduce((a, b) =>
+        a.result.metrics.sharpe > b.result.metrics.sharpe ? a : b
+      )
     : null;
   const bestByMaxDrawdown = runs.length
-    ? runs.reduce((a, b) => (a.result.metrics.maxDrawdown < b.result.metrics.maxDrawdown ? a : b))
+    ? runs.reduce((a, b) =>
+        a.result.metrics.maxDrawdown < b.result.metrics.maxDrawdown ? a : b
+      )
     : null;
 
   return { runs, summary: { bestByTotalPnL, bestBySharpe, bestByMaxDrawdown } };

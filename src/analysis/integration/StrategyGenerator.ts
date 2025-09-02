@@ -110,7 +110,9 @@ export class StrategyGenerator {
     }
 
     // 波动率确认
-    const volatilityRegime = (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'unknown';
+    const volatilityRegime =
+      (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
+        ?.volatilityRegime ?? 'unknown';
     if (volatilityRegime === 'high' || volatilityRegime === 'extreme') {
       confirmationSignals.push({
         type: 'volatility',
@@ -221,7 +223,9 @@ export class StrategyGenerator {
     }
 
     // 波动率状态
-    const volatilityRegime = (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis?.volatilityRegime ?? 'unknown';
+    const volatilityRegime =
+      (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
+        ?.volatilityRegime ?? 'unknown';
     const atrPercent =
       analyses.volatility.volatilityAnalysis.volatilityAnalysis.atrPercent;
     observations.push(
@@ -295,7 +299,8 @@ export class StrategyGenerator {
     }
 
     // 成交量确认警告
-    const volumeConfirmation = (analyses as any)?.volatility?.volumeAnalysis?.volumeAnalysis?.volumePriceConfirmation;
+    const volumeConfirmation = (analyses as any)?.volatility?.volumeAnalysis
+      ?.volumeAnalysis?.volumePriceConfirmation;
     if (!volumeConfirmation) {
       warnings.push('成交量未能确认价格走势，信号可靠性降低');
     }

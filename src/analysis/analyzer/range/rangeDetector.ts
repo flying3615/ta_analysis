@@ -15,7 +15,11 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
 
   let best: RangeBox | undefined = undefined;
 
-  for (let i = start; i <= latestAllowedEnd - rangeConfig.minBarsInRange + 1; i++) {
+  for (
+    let i = start;
+    i <= latestAllowedEnd - rangeConfig.minBarsInRange + 1;
+    i++
+  ) {
     for (
       let end = i + rangeConfig.minBarsInRange - 1;
       end <= latestAllowedEnd;
@@ -27,8 +31,16 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
       if (high - low <= maxWidth) {
         // 统计 NR4/NR7
         const trueRanges = window.map(c => c.high - c.low);
-        const nr4 = window.filter((_, idx) => idx >= 3 && trueRanges[idx] < Math.min(...trueRanges.slice(idx - 3, idx))).length;
-        const nr7 = window.filter((_, idx) => idx >= 6 && trueRanges[idx] < Math.min(...trueRanges.slice(idx - 6, idx))).length;
+        const nr4 = window.filter(
+          (_, idx) =>
+            idx >= 3 &&
+            trueRanges[idx] < Math.min(...trueRanges.slice(idx - 3, idx))
+        ).length;
+        const nr7 = window.filter(
+          (_, idx) =>
+            idx >= 6 &&
+            trueRanges[idx] < Math.min(...trueRanges.slice(idx - 6, idx))
+        ).length;
         const candidate: RangeBox = {
           startIndex: i,
           endIndex: end,
@@ -62,8 +74,10 @@ function assessBreakout(
 
   for (let i = searchStart; i < data.length; i++) {
     const c = data[i];
-    const brokeUp = c.close > box.high * (1 + rangeConfig.breakoutThresholdPercent);
-    const brokeDown = c.close < box.low * (1 - rangeConfig.breakoutThresholdPercent);
+    const brokeUp =
+      c.close > box.high * (1 + rangeConfig.breakoutThresholdPercent);
+    const brokeDown =
+      c.close < box.low * (1 - rangeConfig.breakoutThresholdPercent);
     if (brokeUp || brokeDown) {
       breakoutIndex = i;
       direction = brokeUp ? 'up' : 'down';
@@ -77,24 +91,35 @@ function assessBreakout(
   const window = data.slice(box.startIndex, box.endIndex + 1);
   const avgVol = window.reduce((s, c) => s + c.volume, 0) / window.length;
   const volDenom = Math.max(avgVol, 1e-8);
-  const volumeExpansion = data[breakoutIndex].volume > volDenom * rangeConfig.volumeExpansionRatio;
+  const volumeExpansion =
+    data[breakoutIndex].volume > volDenom * rangeConfig.volumeExpansionRatio;
 
   // 跟随：突破后接下来的 N 根是否累计延续 >= 阈值
-  const followEnd = Math.min(data.length, breakoutIndex + 1 + rangeConfig.followThroughBars);
+  const followEnd = Math.min(
+    data.length,
+    breakoutIndex + 1 + rangeConfig.followThroughBars
+  );
   const followSlice = data.slice(breakoutIndex + 1, followEnd);
   let followThrough = false;
   if (followSlice.length > 0) {
     const lastFollowClose = followSlice[followSlice.length - 1].close;
     const refClose = data[breakoutIndex].close;
     if (direction === 'up') {
-      followThrough = (lastFollowClose - refClose) / Math.max(refClose, 1e-8) >= rangeConfig.followThroughMinPercent;
+      followThrough =
+        (lastFollowClose - refClose) / Math.max(refClose, 1e-8) >=
+        rangeConfig.followThroughMinPercent;
     } else {
-      followThrough = (refClose - lastFollowClose) / Math.max(refClose, 1e-8) >= rangeConfig.followThroughMinPercent;
+      followThrough =
+        (refClose - lastFollowClose) / Math.max(refClose, 1e-8) >=
+        rangeConfig.followThroughMinPercent;
     }
   }
 
   // 回测：突破后N根内是否回踩区间边界
-  const retestEnd = Math.min(data.length, breakoutIndex + 1 + rangeConfig.retestBars);
+  const retestEnd = Math.min(
+    data.length,
+    breakoutIndex + 1 + rangeConfig.retestBars
+  );
   const retestSlice = data.slice(breakoutIndex + 1, retestEnd);
   let retested = false;
   for (const c of retestSlice) {

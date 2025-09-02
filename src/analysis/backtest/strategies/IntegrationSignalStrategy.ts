@@ -32,10 +32,15 @@ export function IntegrationSignalStrategy(
       // Heuristic: derive direction from price momentum of last N candles until integrated API supports offline.
       const last = window[window.length - 1];
       const first = window[0];
-      const priceChange = (last.close - first.close) / Math.max(1e-8, first.close);
+      const priceChange =
+        (last.close - first.close) / Math.max(1e-8, first.close);
 
       if (Math.abs(priceChange) < 0.02) {
-        return { timestamp: history[i].timestamp, direction: 'flat', reason: 'Neutral momentum' };
+        return {
+          timestamp: history[i].timestamp,
+          direction: 'flat',
+          reason: 'Neutral momentum',
+        };
       }
 
       return {

@@ -1,8 +1,8 @@
-import type { Candle } from '../../types.js';
-import type { IntegrationConfig } from './IntegrationConfig.js';
-import { getStockDataForTimeframe } from '../../util/util.js';
-import { SimpleCache } from './CacheManager.js';
-import { BinanceProvider } from './BinanceProvider.js';
+import type { Candle } from '../types.js';
+import type { IntegrationConfig } from '../analysis/integration/IntegrationConfig.js';
+import { getStockDataForTimeframe } from '../util/util.js';
+import { SimpleCache } from '../analysis/integration/CacheManager.js';
+import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
 
 export class DataProvider {
   private cache: SimpleCache<Candle[]>;
@@ -37,12 +37,27 @@ export class DataProvider {
       hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
     );
 
-    // 使用 BinanceProvider 拉取历史K线，满足 lookback 需求
-    const [weeklyData, dailyData, hourlyData] = await Promise.all([
-      this.getCachedBinanceData(symbol, weeklyStartDate, today, 'weekly'),
-      this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily'),
-      this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour'),
-    ]);
+    let weeklyData: Candle[] = [];
+    let dailyData: Candle[] = [];
+    let hourlyData: Candle[] = [];
+
+    if (
+      symbol.endsWith('USDT') ||
+      symbol.endsWith('BUSD') ||
+      symbol.endsWith('USD')
+    ) {
+      [weeklyData, dailyData, hourlyData] = await Promise.all([
+        this.getCachedBinanceData(symbol, weeklyStartDate, today, 'weekly'),
+        this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily'),
+        this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour'),
+      ]);
+    } else {
+      [weeklyData, dailyData, hourlyData] = await Promise.all([
+        this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
+        this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
+        this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
+      ]);
+    }
 
     return { weeklyData, dailyData, hourlyData };
   }
@@ -56,7 +71,12 @@ export class DataProvider {
     const cacheKey = `binance_${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
     return this.cache.getOrFetch(cacheKey, async () => {
       if (timeframe === 'weekly') {
-        const daily = await this.binance.getKlines(symbol, '1d', startDate, endDate);
+        const daily = await this.binance.getKlines(
+          symbol,
+          '1d',
+          startDate,
+          endDate
+        );
         return this.aggregateDailyToWeekly(daily);
       }
       if (timeframe === 'daily') {
@@ -72,8 +92,7 @@ export class DataProvider {
    */
   async getMultiTimeframeCryptoData(
     symbol: string,
-    config: IntegrationConfig,
-    apiKey: string
+    config: IntegrationConfig
   ): Promise<{
     weeklyData: Candle[];
     dailyData: Candle[];
@@ -113,14 +132,14 @@ export class DataProvider {
 
     // Group by ISO week (year-week)
     const weekKey = (d: Date) => {
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const date = new Date(
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
+      );
       // ISO week calculation
       // Thursday in current week decides the year
       date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
       const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-      const weekNo = Math.ceil(
-        ((+date - +yearStart) / 86400000 + 1) / 7
-      );
+      const weekNo = Math.ceil(((+date - +yearStart) / 86400000 + 1) / 7);
       return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
     };
 

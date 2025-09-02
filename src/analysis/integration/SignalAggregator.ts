@@ -632,9 +632,8 @@ export class SignalAggregator {
     }
 
     // 根据波动率调整置信度（恢复原有逻辑）
-    const volatilityScore = this.calculateVolatilitySignalStrength(
-      volatilityAnalysis
-    );
+    const volatilityScore =
+      this.calculateVolatilitySignalStrength(volatilityAnalysis);
     const volatilityMultiplier = 0.5 + (volatilityScore / 100) * 0.5; // 0.5 - 1.0
 
     return Math.min(100, Math.max(0, baseConfidence * volatilityMultiplier));

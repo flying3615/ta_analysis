@@ -249,7 +249,8 @@ export function calculateVolatilityAnalysis(
   // 5. 波动率趋势判断
   const atrValues = calculateATRSeries(data, volatilityConfig.periods.atr);
   const prevIdx = Math.max(0, atrValues.length - 5);
-  const isVolatilityIncreasing = atrValues[atrValues.length - 1] > atrValues[prevIdx];
+  const isVolatilityIncreasing =
+    atrValues[atrValues.length - 1] > atrValues[prevIdx];
 
   // 6. 计算波动率百分位
   const longTermATRs = calculateATRSeries(data, volatilityConfig.periods.atr);
@@ -368,7 +369,9 @@ function calculatePricePosition(
   const currentPrice = closes[closes.length - 1];
 
   // 计算52周（约250个交易日）高低点
-  const yearData = data.slice(-Math.min(volatilityConfig.pricePosition.yearDays, data.length));
+  const yearData = data.slice(
+    -Math.min(volatilityConfig.pricePosition.yearDays, data.length)
+  );
   const yearHigh = Math.max(...yearData.map(d => d.high));
   const yearLow = Math.min(...yearData.map(d => d.low));
 
@@ -465,7 +468,10 @@ function detectBottomSignals(
 
   // 1. 检查价格是否处于历史低位
   const pricePosition = calculatePricePosition(data);
-  if (pricePosition.relativeToLow > volatilityConfig.bottomSignal.nearYearLowPercent) {
+  if (
+    pricePosition.relativeToLow >
+    volatilityConfig.bottomSignal.nearYearLowPercent
+  ) {
     signalStrength += volatilityConfig.bottomSignal.weights.nearLow; // 价格接近年度低点
   }
 
@@ -482,14 +488,18 @@ function detectBottomSignals(
 
   // 3. 检查布林带宽度
   // 布林带收缩后开始扩张可能预示趋势反转
-  if (baseAnalysis.bollingerBandWidth < volatilityConfig.bottomSignal.bbSqueezeForBottom) {
+  if (
+    baseAnalysis.bollingerBandWidth <
+    volatilityConfig.bottomSignal.bbSqueezeForBottom
+  ) {
     signalStrength += volatilityConfig.bottomSignal.weights.bbSqueeze; // 布林带收缩
   }
 
   // 4. 通过短期价格走势判断是否企稳
   const recentCloses = closes.slice(-volatilityConfig.bottomSignal.recentSlice);
   const previousCloses = closes.slice(
-    -volatilityConfig.bottomSignal.recentSlice - volatilityConfig.bottomSignal.previousSlice,
+    -volatilityConfig.bottomSignal.recentSlice -
+      volatilityConfig.bottomSignal.previousSlice,
     -volatilityConfig.bottomSignal.recentSlice
   );
 
@@ -505,9 +515,12 @@ function detectBottomSignals(
   }
 
   // 5. 检查成交量特征
-  const recentVolumes = volumes.slice(-volatilityConfig.bottomSignal.recentSlice);
+  const recentVolumes = volumes.slice(
+    -volatilityConfig.bottomSignal.recentSlice
+  );
   const previousVolumes = volumes.slice(
-    -volatilityConfig.bottomSignal.recentSlice - volatilityConfig.bottomSignal.previousSlice,
+    -volatilityConfig.bottomSignal.recentSlice -
+      volatilityConfig.bottomSignal.previousSlice,
     -volatilityConfig.bottomSignal.recentSlice
   );
 
@@ -515,12 +528,16 @@ function detectBottomSignals(
   const avgPreviousVolume = calculateAverageVolume(previousVolumes);
 
   // 成交量放大通常是底部特征之一
-  if (avgRecentVolume > avgPreviousVolume * volatilityConfig.bottomSignal.volumeIncreaseFactor) {
+  if (
+    avgRecentVolume >
+    avgPreviousVolume * volatilityConfig.bottomSignal.volumeIncreaseFactor
+  ) {
     signalStrength += volatilityConfig.bottomSignal.weights.volumeIncrease; // 近期成交量放大
   }
 
   // 是否可能为底部反转
-  const potentialBottomReversal = signalStrength > volatilityConfig.bottomSignal.bottomStrongThreshold;
+  const potentialBottomReversal =
+    signalStrength > volatilityConfig.bottomSignal.bottomStrongThreshold;
 
   return {
     potentialBottomReversal,
