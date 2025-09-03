@@ -26,6 +26,7 @@ export {
   detectTrendReversal,
   TrendReversalSignal,
   EnhancedPatternAnalysis,
+  enhancePatternWithTrendReversal,
   analyzeMultiTimeframePattern,
 } from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
 export {
