@@ -12,7 +12,10 @@ export function TrendlineBreakoutStrategy(
       if (i < 80) return null;
       const window = history.slice(Math.max(0, i - 200), i + 1);
       const res = analyzeTrendlinesAndChannels(symbol, window, timeframe);
-      if (res.breakoutRetest && res.breakoutRetest.retested) {
+      if (
+        res.breakoutRetest &&
+        (res.breakoutRetest.retested || res.breakoutRetest.qualityScore > 70)
+      ) {
         return {
           timestamp: history[i].timestamp,
           direction: res.breakoutRetest.direction === 'up' ? 'long' : 'short',

@@ -16,7 +16,7 @@ export const rangeConfig: RangeConfig = {
   minBarsInRange: 8,
   rangeAtrMaxMultiplier: 1.2,
   breakoutThresholdPercent: 0.003, // 0.3%
-  volumeExpansionRatio: 1.4,
+  volumeExpansionRatio: 1.2,
   followThroughBars: 3,
   followThroughMinPercent: 0.006, // 0.6%
   retestBars: 5,

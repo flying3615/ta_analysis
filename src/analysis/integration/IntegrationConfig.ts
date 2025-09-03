@@ -91,7 +91,7 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
       lookbackDays: 365,
     },
     daily: {
-      lookbackDays: 90,
+      lookbackDays: 365,
     },
     hourly: {
       lookbackDays: 60,

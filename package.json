@@ -41,6 +41,7 @@
     "@types/image-to-base64": "^2.1.2",
     "@types/lodash": "^4.17.16",
     "@vitest/coverage-v8": "^2.0.5",
+    "@rollup/rollup-win32-x64-msvc": "^4.50.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",

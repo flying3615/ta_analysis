@@ -55,7 +55,7 @@ export class IntegratedOrchestrator {
   private narrative = new NarrativeBuilder();
   private logger = createLogger('normal', '[Orchestrator]');
 
-  constructor(private config: IntegrationConfig = DEFAULT_INTEGRATION_CONFIG) {
+  constructor(private config = DEFAULT_INTEGRATION_CONFIG) {
     this.signalAggregator = new SignalAggregator(config);
     this.keyLevelManager = new KeyLevelManager(config);
     this.strategyGenerator = new StrategyGenerator(config);
@@ -194,12 +194,10 @@ export class IntegratedOrchestrator {
   }
 
   /**
-   * 执行单个加密货币的综合分析（使用 tmai-api 获取OHLCV）
-   * 外部应用通过 apiKey 参数传入凭证；遵循 IntegrationConfig.timeframes 的 lookbackDays
+   * 执行单个加密货币的综合分析
    */
   async executeIntegratedCryptoAnalysis(
     symbol: string,
-    apiKey: string,
     customConfig?: Partial<IntegrationConfig>
   ): Promise<IntegratedAnalysisResult> {
     const startTime = Date.now();
@@ -317,6 +315,111 @@ export class IntegratedOrchestrator {
       throw error;
     }
   }
+
+  /**
+   * 执行离线综合分析，用于回测
+   * @param symbol - 股票代码
+   * @param dailyData - 日线数据
+   * @param weeklyData - 周线数据
+   * @param hourlyData - 小时线数据
+   * @param customConfig - 自定义配置
+   */
+  async executeOfflineAnalysis(
+    symbol: string,
+    dailyData: Candle[],
+    weeklyData: Candle[],
+    hourlyData: Candle[],
+    customConfig?: Partial<IntegrationConfig>
+  ): Promise<IntegratedAnalysisResult> {
+    const startTime = Date.now();
+    const executionId = generateUniqueId();
+
+    const finalConfig = customConfig
+      ? { ...this.config, ...customConfig }
+      : this.config;
+
+    const context: IntegrationContext = {
+      symbol,
+      timestamp: new Date(),
+      config: finalConfig,
+      executionId,
+      metadata: {
+        version: '2.0.0',
+        orchestratorType: 'offline',
+      },
+    };
+
+    try {
+      this.logger.setLevel(finalConfig.options.logLevel ?? 'silent');
+
+      const analysisStartTime = Date.now();
+      const analysisData = await this.executeAllAnalyses(
+        symbol,
+        weeklyData,
+        dailyData,
+        hourlyData,
+        context
+      );
+      const analysisEndTime = Date.now();
+
+      const signalStartTime = Date.now();
+      const signalResult = this.signalAggregator.aggregateSignals(
+        analysisData,
+        context
+      );
+      const signalEndTime = Date.now();
+
+      const keyLevelStartTime = Date.now();
+      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
+        analysisData,
+        context
+      );
+      const keyLevelEndTime = Date.now();
+
+      const strategyStartTime = Date.now();
+      const strategyInput = {
+        symbol,
+        currentPrice: analysisData.analyses.chip.currentPrice,
+        signalResult,
+        keyLevels: keyLevelResult.mergedLevels,
+        analyses: analysisData.analyses,
+        config: finalConfig,
+      };
+      const strategyResult =
+        this.strategyGenerator.generateStrategy(strategyInput);
+      const strategyEndTime = Date.now();
+
+      const tradePlan = this.buildTradePlan(
+        symbol,
+        analysisData,
+        signalResult,
+        keyLevelResult,
+        strategyResult,
+        context
+      );
+
+      const totalEndTime = Date.now();
+
+      return {
+        tradePlan,
+        context,
+        performance: {
+          totalExecutionTime: totalEndTime - startTime,
+          moduleExecutionTimes: {
+            dataFetching: 0, // No data fetching in offline mode
+            analysis: analysisEndTime - analysisStartTime,
+            signalAggregation: signalEndTime - signalStartTime,
+            keyLevelManagement: keyLevelEndTime - keyLevelStartTime,
+            strategyGeneration: strategyEndTime - strategyStartTime,
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.error(`离线分析执行失败 (${symbol}):`, error);
+      throw error;
+    }
+  }
+
   /**
    * 批量执行分析
    */
@@ -372,11 +475,6 @@ export class IntegratedOrchestrator {
       errors,
     };
   }
-
-  /**
-   * 获取多时间周期数据
-   */
-  // 数据获取已下沉至 DataProvider
 
   /**
    * 执行所有分析模块

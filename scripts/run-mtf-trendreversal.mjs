@@ -25,13 +25,22 @@ async function main() {
   ]);
 
   const base = analyzeMultiTimeframePatterns(weeklyData, dailyData, hourlyData);
-  const enhanced = enhancePatternWithTrendReversal(base, weeklyData, dailyData, hourlyData);
-  formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, weeklyData, dailyData, hourlyData);
+  const enhanced = enhancePatternWithTrendReversal(
+    base,
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
+  formatAndPrintEnhancedPatternAnalysis(
+    enhanced,
+    symbol,
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
 }
 
 main().catch(err => {
   console.error('run-mtf-trendreversal failed:', err);
   process.exit(1);
 });
-
-

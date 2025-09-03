@@ -65,15 +65,15 @@ export async function runGridSearch(
   candles: Candle[],
   grid: ParamGrid,
   strategyFactory: StrategyFactory,
-  backtestCfg?: GridSearchConfig
+  backtesterInstance?: Backtester // Allow passing a pre-configured backtester
 ): Promise<GridSearchOutput> {
-  const combos = buildParamCombos(grid);
-  const tester = new Backtester(backtestCfg);
-
+  const paramCombos = buildParamCombos(grid);
   const runs: GridSearchResultItem[] = [];
-  for (const params of combos) {
+
+  for (const params of paramCombos) {
     const strategy = strategyFactory(params);
-    const result = tester.run(candles, strategy);
+    const backtester = backtesterInstance ?? new Backtester(); // Use provided instance or create a default one
+    const result = await backtester.run(candles, strategy);
     runs.push({ params, result });
   }
 
