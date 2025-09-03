@@ -1,18 +1,17 @@
 import { runGridSearch, formatMetricsPanel } from './GridSearch.js';
-import { RangeBreakoutStrategy } from './strategies/RangeBreakoutStrategy.js';
 import { DataProvider } from '../../data/DataProvider.js';
 import { DEFAULT_INTEGRATION_CONFIG } from '../integration/IntegrationConfig.js';
 import { Backtester } from './Backtester.js';
 import type { Candle } from '../../types.js';
-import { IntegrationSignalStrategy } from './strategies/IntegrationSignalStrategy.js';
 import { TrendlineBreakoutStrategy } from './strategies/TrendlineBreakoutStrategy.js';
+import { RangeBreakoutStrategy } from './strategies/RangeBreakoutStrategy.js';
 
 /**
  * This script demonstrates how to use the GridSearch functionality to find
  * optimal parameters for a given backtesting strategy.
  */
 async function main() {
-  const symbol = 'NVDA'; // Example stock for backtesting
+  const symbol = 'MSTR'; // Example stock for backtesting
   const timeframe = 'daily';
 
   // 1. Fetch historical data for the backtest
@@ -41,8 +40,8 @@ async function main() {
   // This function takes a set of parameters and returns a strategy instance.
   const strategyFactory = (params: Record<string, any>) => {
     // return IntegrationSignalStrategy(symbol, timeframe, params);
-    return TrendlineBreakoutStrategy(symbol, timeframe);
-    // return RangeBreakoutStrategy(symbol, timeframe, params);
+    // return TrendlineBreakoutStrategy(symbol, timeframe);
+    return RangeBreakoutStrategy(symbol, timeframe, params);
   };
 
   // 4. Configure the Backtester with exit parameters
@@ -94,11 +93,15 @@ async function main() {
       console.log(formatMetricsPanel(run));
       // If trades exist for this run, print them
       if (run.result.trades.length > 0) {
-          console.log('  └─ Trades:');
-          run.result.trades.forEach(trade => {
-              const entryDate = new Date(candles[trade.entryIdx].timestamp).toLocaleDateString();
-              console.log(`    - Date: ${entryDate}, Direction: ${trade.direction}, Entry: ${trade.entryPrice.toFixed(2)}, Exit: ${trade.exitPrice.toFixed(2)}, PnL: ${trade.pnl.toFixed(2)}`);
-          });
+        console.log('  └─ Trades:');
+        run.result.trades.forEach(trade => {
+          const entryDate = new Date(
+            candles[trade.entryIdx].timestamp
+          ).toLocaleDateString();
+          console.log(
+            `    - Date: ${entryDate}, Direction: ${trade.direction}, Entry: ${trade.entryPrice.toFixed(2)}, Exit: ${trade.exitPrice.toFixed(2)}, PnL: ${trade.pnl.toFixed(2)}`
+          );
+        });
       }
     });
 }
