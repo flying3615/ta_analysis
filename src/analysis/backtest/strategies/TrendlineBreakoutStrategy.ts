@@ -1,4 +1,25 @@
-import { Candle } from '../../../types.js';
+/**
+ * 策略: TrendlineBreakout 趋势线/通道自适应
+ * 来源: analyzer/trendline/trendlineDetector
+ * 核心流程:
+ * - 在窗口内拟合支撑/阻力，构建通道(上/下/中线)，并检测突破-回踩质量；
+ * - 结合价格在通道中的相对位置、动量与成交量，生成做多/做空信号；
+ * - 设置冷静期与“避免与强动量作对”的降噪逻辑，减少频繁反向信号。
+ *
+ * 入场(示例):
+ * - 上升通道: 接近下轨且具备上行动量 -> 做多；顶部过充且无强动量且出现向上突破回踩 -> 反转做空
+ * - 下降通道: 接近上轨且具备下行动量 -> 做空；底部过充且无强动量且出现向下突破回踩 -> 反转做多
+ * - 水平通道: 底部配合阳线或放量 -> 做多；顶部配合阴线或放量 -> 做空
+ *
+ * 降噪:
+ * - 强动量与信号方向相反时，弱化或取消信号；
+ * - 与上一信号方向相反且间隔过短，且强度不足时，过滤。
+ *
+ * 出场与风控: 由 Backtester 管理（止损/止盈/追踪止损、滑点/手续费），仓位按 positionSizing。
+ * 前视说明: 仅使用 history[0..i] 判定，在 i+1 开盘成交。
+ */
+import type { Candle } from '../../../types.js';
+import { backtestStrategiesConfig } from '../strategyConfig.js';
 import { analyzeTrendlinesAndChannels } from '../../analyzer/trendline/trendlineDetector.js';
 import type { Strategy, Signal } from '../Backtester.js';
 
@@ -8,7 +29,7 @@ export function TrendlineBreakoutStrategy(
 ): Strategy {
   // 追踪先前的信号，用于减少信号频率和避免连续相反信号
   let lastSignalIndex = -1;
-  let lastSignalDirection: 'long' | 'short' | 'flat';
+  let lastSignalDirection: 'long' | 'short' | 'flat' | undefined = undefined;
 
   // 追踪趋势强度
   let trendStrengthCount = 0;
@@ -16,10 +37,11 @@ export function TrendlineBreakoutStrategy(
   return {
     name: 'TrendlineAdaptiveStrategy',
     generateSignal(history: Candle[], i: number): Signal | null {
-      if (i < 80) return null;
+      const cfg = backtestStrategiesConfig.trendline;
+      if (i < cfg.minLookbackBars) return null;
 
-      // 避免频繁信号，至少间隔5个K线
-      if (i - lastSignalIndex < 5) return null;
+      // 避免频繁信号
+      if (i - lastSignalIndex < cfg.coolDownMinGap) return null;
 
       const window = history.slice(Math.max(0, i - 200), i + 1);
       const res = analyzeTrendlinesAndChannels(symbol, window, timeframe);
@@ -52,26 +74,26 @@ export function TrendlineBreakoutStrategy(
 
       // 获取通道斜率和方向
       const channelSlope = res.channel.slope;
-      const isRisingChannel = channelSlope > 0.0002; // 更陡峭的上升通道要求
-      const isFallingChannel = channelSlope < -0.0002; // 更陡峭的下降通道要求
+      const isRisingChannel = channelSlope > cfg.risingChannelSlopeMin;
+      const isFallingChannel = channelSlope < cfg.fallingChannelSlopeMax;
 
       // 计算动量指标 - 使用收盘价的20日变化率
-      const momentumPeriod = 20;
+      const momentumPeriod = cfg.momentumPeriod;
       const momentumIndex = Math.max(0, i - momentumPeriod);
       const priceChange =
         (candle.close - history[momentumIndex].close) /
         history[momentumIndex].close;
-      const strongUpMomentum = priceChange > 0.1; // 10%以上的20日涨幅视为强动量
-      const strongDownMomentum = priceChange < -0.1; // 10%以上的20日跌幅视为强动量
+      const strongUpMomentum = priceChange > cfg.momentumUpThreshold;
+      const strongDownMomentum = priceChange < cfg.momentumDownThreshold;
 
       // 计算交易量趋势
-      const volPeriod = 10;
+      const volPeriod = cfg.volumePeriod;
       let avgVol = 0;
       for (let j = i - volPeriod + 1; j <= i; j++) {
         if (j >= 0) avgVol += history[j].volume;
       }
       avgVol /= volPeriod;
-      const highVolume = candle.volume > avgVol * 1.5;
+      const highVolume = candle.volume > avgVol * cfg.highVolumeFactor;
 
       // 强势趋势确认 - 连续的价格方向
       if (prevCandle && candle.close > prevCandle.close) {
@@ -82,8 +104,8 @@ export function TrendlineBreakoutStrategy(
           trendStrengthCount < 0 ? trendStrengthCount - 1 : -1;
       }
 
-      const isStrongUptrend = trendStrengthCount >= 5; // 至少5根连续上涨K线
-      const isStrongDowntrend = trendStrengthCount <= -5; // 至少5根连续下跌K线
+      const isStrongUptrend = trendStrengthCount >= cfg.trendStrengthConsecutive;
+      const isStrongDowntrend = trendStrengthCount <= -cfg.trendStrengthConsecutive;
 
       let signal: Signal | null = null;
 
@@ -162,7 +184,7 @@ export function TrendlineBreakoutStrategy(
           (strongDownMomentum && signal.direction === 'long')
         ) {
           // 不与强动量作对
-          if (Math.abs(priceChange) > 0.15) {
+          if (Math.abs(priceChange) > cfg.strongMomentumCancelAbs) {
             // 15%以上的超强动量
             signal = null; // 取消信号
           } else {
@@ -210,10 +232,10 @@ export function TrendlineBreakoutStrategy(
         signal &&
         lastSignalDirection &&
         signal.direction !== lastSignalDirection &&
-        i - lastSignalIndex < 15
+        i - lastSignalIndex < cfg.reverseMinGap
       ) {
         // 如果信号不够强，就取消它
-        if (signal.strength < 80) {
+        if (signal.strength < cfg.reverseSignalStrengthMin) {
           signal = null;
         } else {
           signal.reason += ' (方向反转:高置信度)';

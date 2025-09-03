@@ -202,3 +202,8 @@ export { IntegrationSignalStrategy } from './analysis/backtest/strategies/Integr
 export { RangeBreakoutStrategy } from './analysis/backtest/strategies/RangeBreakoutStrategy.js';
 
 export { DataProvider } from './data/DataProvider.js';
+// Backtest strategies centralized config
+export {
+  backtestStrategiesConfig,
+  updateBacktestStrategiesConfig,
+} from './analysis/backtest/strategyConfig.js';

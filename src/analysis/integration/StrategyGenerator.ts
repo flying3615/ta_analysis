@@ -227,7 +227,8 @@ export class StrategyGenerator {
       (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
         ?.volatilityRegime ?? 'unknown';
     const atrPercent =
-      analyses.volatility.volatilityAnalysis.volatilityAnalysis.atrPercent;
+      (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
+        ?.atrPercent ?? 0;
     observations.push(
       `波动率状态: ${volatilityRegime}, ATR百分比: ${atrPercent.toFixed(2)}%`
     );
@@ -274,8 +275,8 @@ export class StrategyGenerator {
 
     // 波动率警告
     const volatilityRegime =
-      analyses.volatility.volatilityAnalysis.volatilityAnalysis
-        .volatilityRegime;
+      (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
+        ?.volatilityRegime;
     if (volatilityRegime === 'extreme') {
       warnings.push('市场处于极高波动率状态，风险极大，建议大幅降低仓位');
     } else if (volatilityRegime === 'high') {

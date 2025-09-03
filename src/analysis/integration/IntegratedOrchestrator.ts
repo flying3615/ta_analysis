@@ -525,7 +525,10 @@ export class IntegratedOrchestrator {
           'bbsr'
         ),
         this.executeWithFallback(
-          () => analyzeVolumeVolatilityCombined(hourlyData),
+          () =>
+            analyzeVolumeVolatilityCombined(
+              (hourlyData?.length ?? 0) >= 20 ? hourlyData : dailyData
+            ),
           'volatility'
         ),
         this.executeWithFallback(
@@ -630,6 +633,43 @@ export class IntegratedOrchestrator {
           combinedSignal: 'neutral',
           signalStrength: 0,
           reversalSignals: [],
+        };
+      case 'volatility':
+        return {
+          volumeAnalysis: {
+            volumeAnalysis: {
+              adLine: [],
+              adSlope: 0,
+              adTrend: 'neutral',
+              divergence: { type: 'none', strength: 0, description: 'fallback' },
+              volumeForce: 0,
+              moneyFlowIndex: 0,
+              chaikinOscillator: 0,
+              obv: [],
+              obvSlope: 0,
+              volumePriceConfirmation: false,
+              summary: 'fallback',
+            },
+            formattedVolumeAnalysis: 'fallback',
+          },
+          volumeAnalysisReason: 'fallback',
+          volatilityAnalysis: {
+            volatilityAnalysis: {
+              historicalVolatility: 0,
+              bollingerBandWidth: 0,
+              atr: 0,
+              atrPercent: 0,
+              volatilityRegime: 'medium',
+              isVolatilityIncreasing: false,
+              volatilityPercentile: 0,
+              volatilityTrend: 'stable',
+              recentRanges: { daily: 0, weekly: 0, monthly: 0 },
+              riskMetrics: { maxDrawdown: 0, downsideDeviation: 0 },
+            },
+            formattedVolatilityAnalysis: 'fallback',
+          },
+          volatilityAnalysisReason: 'fallback',
+          combinedAnalysisSummary: 'fallback',
         };
       // ... 其他模块的降级数据
       default:

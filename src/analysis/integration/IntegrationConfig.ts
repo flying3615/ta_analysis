@@ -67,14 +67,14 @@ export interface IntegrationConfig {
 // 默认配置
 export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
   weights: {
-    chip: 0.25,
-    pattern: 0.35,
-    volume: 0.25,
-    bbsr: 0.15,
+    chip: 0.1,
+    pattern: 0.5,
+    volume: 0.2,
+    bbsr: 0.1,
     // 附加权重
-    structure: 0.1,
+    structure: 0.3,
     supplyDemand: 0.1,
-    range: 0.1,
+    range: 0.2,
     trendline: 0.1,
     plugins: {},
   },
