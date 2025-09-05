@@ -1,5 +1,5 @@
-import { runMultiTimeStructure } from '../dist/index.js';
-import { formatAndPrintStructureResult } from '../dist/index.js';
+import { runMultiTimeStructure } from '../analysis/analyzer/structure/multiTimeStructure.js';
+import { formatAndPrintStructureResult } from '../analysis/analyzer/structure/formatStructure.js';
 
 const symbol = process.argv[2] || 'COIN';
 
@@ -13,5 +13,3 @@ main().catch(err => {
   console.error('run-mtf-structure failed:', err);
   process.exit(1);
 });
-
-

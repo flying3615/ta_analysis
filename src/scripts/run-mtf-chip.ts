@@ -1,8 +1,8 @@
-import { getStockDataForTimeframe } from '../dist/util/util.js';
+import { getStockDataForTimeframe } from '../util/util.js';
 import {
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
-} from '../dist/analysis/chip/multiTimeFrameChipDistributionAnalysis.js';
+} from '../analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
 
 const symbol = process.argv[2] || 'COIN';
 const today = new Date();
@@ -53,5 +53,3 @@ main().catch(err => {
   console.error('run-mtf-chip failed:', err);
   process.exit(1);
 });
-
-

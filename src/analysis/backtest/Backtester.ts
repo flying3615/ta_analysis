@@ -15,7 +15,10 @@ export interface Signal {
 export interface Strategy {
   name: string;
   // Given slice of candles up to index i (inclusive), return signal for next bar
-  generateSignal: (history: Candle[], i: number) => Signal | null;
+  generateSignal: (
+    history: Candle[],
+    i: number
+  ) => Promise<Signal | null> | Signal | null;
 }
 
 export interface BacktestConfig {
@@ -25,6 +28,11 @@ export interface BacktestConfig {
   commissionPerTrade: number; // fixed commission
   slippageBps: number; // basis points of price on entry/exit
   allowShort: boolean;
+  exitParams?: {
+    takeProfitPercent?: number;
+    stopLossPercent?: number;
+    trailingStopPercent?: number;
+  };
 }
 
 export interface Trade {
@@ -87,33 +95,100 @@ export class Backtester {
     };
   }
 
-  run(candles: Candle[], strategy: Strategy): BacktestResult {
+  async run(candles: Candle[], strategy: Strategy): Promise<BacktestResult> {
     let cash = this.config.initialCapital;
     let positionQty = 0;
     let positionSide: 'long' | 'short' | null = null;
     let entryPrice = 0;
+    let peakOrTroughPrice = 0; // For trailing stop
     const trades: Trade[] = [];
     const equity: number[] = [];
     const stepReturns: number[] = [];
 
     for (let i = 50; i < candles.length - 1; i++) {
-      const signal = strategy.generateSignal(candles.slice(0, i + 1), i);
+      const signal = await strategy.generateSignal(candles.slice(0, i + 1), i);
       const nextOpen = candles[i + 1].open;
       const slip = nextOpen * (this.config.slippageBps / 10000);
-      // Update equity
-      const mark = positionSide
+      const portfolioValue = positionSide
         ? positionSide === 'long'
-          ? (candles[i].close - entryPrice) * positionQty
-          : (entryPrice - candles[i].close) * positionQty
+          ? positionQty * candles[i].close // 多头持仓市值
+          : positionQty * (2 * entryPrice - candles[i].close) // 空头持仓市值（简化）
         : 0;
-      equity.push(cash + mark);
-      stepReturns.push(
-        equity.length > 1
-          ? (equity[equity.length - 1] - equity[equity.length - 2]) /
-              equity[equity.length - 2]
-          : 0
-      );
+      const currentEquity = cash + portfolioValue;
+      equity.push(currentEquity);
 
+      const lastEquity =
+        equity.length > 1
+          ? equity[equity.length - 2]
+          : this.config.initialCapital;
+      const dailyReturn = (currentEquity - lastEquity) / lastEquity;
+      stepReturns.push(dailyReturn);
+
+      // 1. 出场逻辑 (Exit Logic)
+      // ----------------------------------------------------------------
+      if (positionSide) {
+        const currentPrice = candles[i].close;
+        const pnlRatio =
+          positionSide === 'long'
+            ? (currentPrice - entryPrice) / entryPrice
+            : (entryPrice - currentPrice) / entryPrice;
+
+        const tp = this.config.exitParams?.takeProfitPercent;
+        const sl = this.config.exitParams?.stopLossPercent;
+        const ts = this.config.exitParams?.trailingStopPercent;
+
+        let shouldExit = false;
+
+        // 固定止盈/止损
+        if (tp && pnlRatio >= tp / 100) shouldExit = true;
+        if (sl && pnlRatio <= -sl / 100) shouldExit = true;
+
+        // 追踪止损逻辑
+        if (ts && !shouldExit) {
+          if (positionSide === 'long') {
+            peakOrTroughPrice = Math.max(peakOrTroughPrice, candles[i].high);
+            const trailingStopLevel = peakOrTroughPrice * (1 - ts / 100);
+            if (candles[i].low <= trailingStopLevel) {
+              shouldExit = true;
+            }
+          } else {
+            // short
+            peakOrTroughPrice = Math.min(peakOrTroughPrice, candles[i].low);
+            const trailingStopLevel = peakOrTroughPrice * (1 + ts / 100);
+            if (candles[i].high >= trailingStopLevel) {
+              shouldExit = true;
+            }
+          }
+        }
+
+        // 来自策略的平仓信号
+        if (signal && signal.direction === 'flat') shouldExit = true;
+
+        if (shouldExit) {
+          const exitPrice = nextOpen - (positionSide === 'long' ? slip : -slip);
+          const pnl =
+            positionSide === 'long'
+              ? (exitPrice - entryPrice) * positionQty
+              : (entryPrice - exitPrice) * positionQty;
+          cash += pnl - this.config.commissionPerTrade;
+          trades.push({
+            entryIdx:
+              trades.length > 0 ? trades[trades.length - 1].exitIdx : 50, // Approximate
+            exitIdx: i + 1,
+            direction: positionSide,
+            entryPrice,
+            exitPrice,
+            qty: positionQty,
+            pnl,
+          });
+          positionQty = 0;
+          positionSide = null;
+          peakOrTroughPrice = 0; // Reset trailing stop tracker
+          continue; // Exit processed, skip to next candle
+        }
+      }
+
+      // 如果没有信号，则跳过入场逻辑
       if (!signal) continue;
 
       // exit logic
@@ -146,6 +221,7 @@ export class Backtester {
           positionQty = qty;
           positionSide = 'long';
           entryPrice = entry;
+          peakOrTroughPrice = entry; // Initialize for trailing stop
           cash -= this.config.commissionPerTrade;
         } else if (signal.direction === 'short' && this.config.allowShort) {
           const entry = nextOpen - slip;
@@ -153,9 +229,40 @@ export class Backtester {
           positionQty = qty;
           positionSide = 'short';
           entryPrice = entry;
+          peakOrTroughPrice = entry; // Initialize for trailing stop
           cash -= this.config.commissionPerTrade;
         }
       }
+    }
+
+    // 在回测结束时，清算所有未平仓头寸
+    if (positionSide) {
+      const lastPrice = candles[candles.length - 1].close;
+      const slip = lastPrice * (this.config.slippageBps / 10000);
+      const exitPrice = lastPrice - (positionSide === 'long' ? slip : -slip);
+      const pnl =
+        positionSide === 'long'
+          ? (exitPrice - entryPrice) * positionQty
+          : (entryPrice - exitPrice) * positionQty;
+
+      cash += pnl - this.config.commissionPerTrade;
+
+      trades.push({
+        entryIdx: trades.length > 0 ? trades[trades.length - 1].exitIdx : 50, // Approximate entry index
+        exitIdx: candles.length - 1,
+        direction: positionSide,
+        entryPrice,
+        exitPrice,
+        qty: positionQty,
+        pnl,
+      });
+
+      // 更新最终权益
+      const finalEquity = cash;
+      equity.push(finalEquity);
+
+      positionQty = 0;
+      positionSide = null;
     }
 
     // final equity mark

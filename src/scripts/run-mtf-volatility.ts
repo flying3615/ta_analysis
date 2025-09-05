@@ -1,4 +1,7 @@
-import { getStockDataForTimeframe, executeEnhancedCombinedAnalysis } from '../dist/index.js';
+import {
+  getStockDataForTimeframe,
+  analyzeVolumeVolatilityCombined,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'COIN';
 
@@ -16,7 +19,7 @@ async function main() {
     '1hour'
   );
 
-  const result = executeEnhancedCombinedAnalysis(hourlyData);
+  const result = analyzeVolumeVolatilityCombined(hourlyData);
   console.log(result.volatilityAnalysisReason);
   console.log(result.volumeAnalysisReason);
   console.log(result.combinedAnalysisSummary);
@@ -26,5 +29,3 @@ main().catch(err => {
   console.error('run-mtf-volatility failed:', err);
   process.exit(1);
 });
-
-

@@ -1,4 +1,8 @@
-import { analyzeRange, formatAndPrintRange, getStockDataForTimeframe } from '../dist/index.js';
+import {
+  analyzeRange,
+  formatAndPrintRange,
+  getStockDataForTimeframe,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'TSLA';
 
@@ -10,13 +14,11 @@ async function main() {
   const startHourly = new Date(today);
   startHourly.setDate(startHourly.getDate() - 45);
 
-  // 并发获取数据
   const [daily, hourly] = await Promise.all([
     getStockDataForTimeframe(symbol, startDaily, today, 'daily'),
     getStockDataForTimeframe(symbol, startHourly, today, '1hour'),
   ]);
 
-  // 分析并输出
   const dailyResult = analyzeRange(symbol, daily, 'daily');
   const hourlyResult = analyzeRange(symbol, hourly, '1hour');
 
@@ -28,5 +30,3 @@ main().catch(err => {
   console.error('run-mtf-range failed:', err);
   process.exit(1);
 });
-
-

@@ -4,8 +4,8 @@ import { globalLogger } from '../../../util/logger.js';
 import {
   calculateAccumulationDistribution,
   formatAccumulationDistributionAnalysis,
-  AccumulationDistributionResult,
 } from '../../../util/accumulationDistribution.js';
+import type { AccumulationDistributionResult } from '../../../util/accumulationDistribution.js';
 
 export interface IntegratedVolumeAnalysisResult {
   volumeAnalysis: AccumulationDistributionResult;

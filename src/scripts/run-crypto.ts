@@ -1,9 +1,9 @@
 // ESM runner for integrated crypto analysis
-import { executeIntegratedCryptoAnalysisV2 } from '../dist/index.js';
 import {
+  executeIntegratedCryptoAnalysisV2,
   buildMachineReadableSummary,
   formatTradePlanOutput,
-} from '../dist/index.js';
+} from '../index.js';
 
 const symbol = process.env.SYMBOL || 'BTC-USD';
 

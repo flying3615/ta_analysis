@@ -5,15 +5,17 @@ export {
   PatternType,
   PatternStatus,
   PatternDirection,
+  analyzeAllPatterns,
+  combinePatternAnalyses,
+  analyzeMultiTimeframePatterns,
+  formatAndPrintPatternAnalysis,
+} from './analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
+export type {
   PeakValley,
   PatternComponent,
   PatternAnalysisResult,
   AnalyzeMultiTimeframePatterns,
   ComprehensivePatternAnalysis,
-  analyzeAllPatterns,
-  combinePatternAnalyses,
-  analyzeMultiTimeframePatterns,
-  formatAndPrintPatternAnalysis,
 } from './analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 // 暴露形态分析配置，便于外部项目按需调整
 export {
@@ -24,9 +26,12 @@ export {
 export {
   determineTrendDirection,
   detectTrendReversal,
+  enhancePatternWithTrendReversal,
+  analyzeMultiTimeframePattern,
+} from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
+export type {
   TrendReversalSignal,
   EnhancedPatternAnalysis,
-  analyzeMultiTimeframePattern,
 } from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
 export {
   trendReversalConfig,
@@ -42,10 +47,12 @@ export {
 } from './analysis/analyzer/trendReversal/trendReversalChecker.js';
 
 export {
-  MultiTimeframeAnalysisResult,
-  TimeframeAnalysis,
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
+} from './analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
+export type {
+  MultiTimeframeAnalysisResult,
+  TimeframeAnalysis,
 } from './analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
 
 // 暴露筹码配置，便于外部项目调整阈值与权重
@@ -64,9 +71,9 @@ export {
 export {
   calculateVolatilityAnalysis,
   formatVolatilityAnalysis,
-  EnhancedVolatilityAnalysisResult,
   analyzeVolumeVolatilityCombined,
 } from './analysis/analyzer/volatility/volatilityAnalysis.js';
+export type { EnhancedVolatilityAnalysisResult } from './analysis/analyzer/volatility/volatilityAnalysis.js';
 export {
   volatilityConfig,
   updateVolatilityConfig,
@@ -76,12 +83,12 @@ export {
 export {
   calculateAccumulationDistribution,
   formatAccumulationDistributionAnalysis,
-  AccumulationDistributionResult,
 } from './util/accumulationDistribution.js';
+export type { AccumulationDistributionResult } from './util/accumulationDistribution.js';
 
 // 新增的综合波动率和量价分析导出
-export {
-  executeVolumeAnalysis,
+export { executeVolumeAnalysis } from './analysis/analyzer/volatility/volumeVolatilityAnalysis.js';
+export type {
   IntegratedVolumeAnalysisResult,
   IntegratedVolatilityAnalysisResult,
 } from './analysis/analyzer/volatility/volumeVolatilityAnalysis.js';
@@ -202,3 +209,8 @@ export { IntegrationSignalStrategy } from './analysis/backtest/strategies/Integr
 export { RangeBreakoutStrategy } from './analysis/backtest/strategies/RangeBreakoutStrategy.js';
 
 export { DataProvider } from './data/DataProvider.js';
+// Backtest strategies centralized config
+export {
+  backtestStrategiesConfig,
+  updateBacktestStrategiesConfig,
+} from './analysis/backtest/strategyConfig.js';

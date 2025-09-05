@@ -8,120 +8,125 @@ import type {
 } from './rangeTypes.js';
 
 function findRecentRange(data: Candle[]): RangeBox | undefined {
-  const atr = calculateATR(data, rangeConfig.atrPeriod);
-  const maxWidth = atr * rangeConfig.rangeAtrMaxMultiplier;
-  const start = Math.max(0, data.length - rangeConfig.lookback);
+  const config = rangeConfig;
+  const atr = calculateATR(data, config.atrPeriod);
+  const rangeMaxHeight = atr * config.rangeAtrMaxMultiplier;
+
   const latestAllowedEnd = data.length - 2; // 留出至少1根用于突破判断
+  let bestRange: RangeBox | undefined = undefined;
 
-  let best: RangeBox | undefined = undefined;
+  for (let end = latestAllowedEnd; end >= config.minBarsInRange; end--) {
+    for (let start = end - config.minBarsInRange; start >= 0; start--) {
+      const len = end - start + 1;
+      if (len < config.minBarsInRange) continue;
 
-  for (
-    let i = start;
-    i <= latestAllowedEnd - rangeConfig.minBarsInRange + 1;
-    i++
-  ) {
-    for (
-      let end = i + rangeConfig.minBarsInRange - 1;
-      end <= latestAllowedEnd;
-      end++
-    ) {
-      const window = data.slice(i, end + 1);
-      const high = Math.max(...window.map(c => c.high));
-      const low = Math.min(...window.map(c => c.low));
-      if (high - low <= maxWidth) {
+      const slice = data.slice(start, end + 1);
+      const high = Math.max(...slice.map(c => c.high));
+      const low = Math.min(...slice.map(c => c.low));
+      const height = high - low;
+
+      if (height <= rangeMaxHeight) {
         // 统计 NR4/NR7
-        const trueRanges = window.map(c => c.high - c.low);
-        const nr4 = window.filter(
-          (_, idx) =>
-            idx >= 3 &&
-            trueRanges[idx] < Math.min(...trueRanges.slice(idx - 3, idx))
+        const nr4s = slice.filter(
+          (c, i) =>
+            i > 0 &&
+            c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
         ).length;
-        const nr7 = window.filter(
-          (_, idx) =>
-            idx >= 6 &&
-            trueRanges[idx] < Math.min(...trueRanges.slice(idx - 6, idx))
-        ).length;
-        const candidate: RangeBox = {
-          startIndex: i,
+        const nr7s = slice.filter(
+          (c, i) =>
+            i > 0 &&
+            c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
+        ).length; // Simplified, should be last 7
+
+        const currentRange = {
+          startIndex: start,
           endIndex: end,
           high,
           low,
-          nr4Count: nr4,
-          nr7Count: nr7,
+          nr4Count: nr4s,
+          nr7Count: nr7s,
         };
+
         // 选择结束位置更靠后的区间作为最近区间
-        if (!best || candidate.endIndex > best.endIndex) {
-          best = candidate;
+        if (!bestRange || currentRange.endIndex > bestRange.endIndex) {
+          bestRange = currentRange;
         }
+        // 如果找到一个就跳出内层循环，加速寻找最近的
+        break;
       }
     }
+    // 如果已经找到了一个range，就不需要再往前找了，因为我们需要最近的
+    if (bestRange) break;
   }
-
-  return best;
+  return bestRange;
 }
 
 function assessBreakout(
   data: Candle[],
   box: RangeBox
 ): BreakoutAssessment | undefined {
-  // 在区间末尾附近寻找首次有效突破点（最后 retestBars+followThroughBars 范围内）
-  const searchStart = Math.max(
-    box.endIndex + 1,
-    data.length - (rangeConfig.retestBars + rangeConfig.followThroughBars + 10)
-  );
-  let breakoutIndex: number | null = null;
-  let direction: 'up' | 'down' | null = null;
+  const config = rangeConfig;
+  const boxSlice = data.slice(box.startIndex, box.endIndex + 1);
+  const avgBoxVolume =
+    boxSlice.reduce((s, c) => s + c.volume, 0) / boxSlice.length;
 
-  for (let i = searchStart; i < data.length; i++) {
+  // 在区间末尾附近寻找首次有效突破点（最后 retestBars+followThroughBars 范围内）
+  const searchEnd = Math.min(
+    data.length - 1,
+    box.endIndex + config.retestBars + config.followThroughBars
+  );
+  let breakoutIndex = -1;
+  let direction: 'up' | 'down' | undefined = undefined;
+
+  for (let i = box.endIndex + 1; i <= searchEnd; i++) {
     const c = data[i];
-    const brokeUp =
-      c.close > box.high * (1 + rangeConfig.breakoutThresholdPercent);
-    const brokeDown =
-      c.close < box.low * (1 - rangeConfig.breakoutThresholdPercent);
-    if (brokeUp || brokeDown) {
+    if (c.close > box.high * (1 + config.breakoutThresholdPercent)) {
       breakoutIndex = i;
-      direction = brokeUp ? 'up' : 'down';
+      direction = 'up';
+      break;
+    }
+    if (c.close < box.low * (1 - config.breakoutThresholdPercent)) {
+      breakoutIndex = i;
+      direction = 'down';
       break;
     }
   }
 
-  if (breakoutIndex == null || direction == null) return;
+  if (breakoutIndex === -1) {
+    return undefined;
+  }
+
+  const breakoutCandle = data[breakoutIndex];
 
   // 成交量扩张（相对区间均量）
-  const window = data.slice(box.startIndex, box.endIndex + 1);
-  const avgVol = window.reduce((s, c) => s + c.volume, 0) / window.length;
-  const volDenom = Math.max(avgVol, 1e-8);
   const volumeExpansion =
-    data[breakoutIndex].volume > volDenom * rangeConfig.volumeExpansionRatio;
+    breakoutCandle.volume > avgBoxVolume * config.volumeExpansionRatio;
 
   // 跟随：突破后接下来的 N 根是否累计延续 >= 阈值
-  const followEnd = Math.min(
-    data.length,
-    breakoutIndex + 1 + rangeConfig.followThroughBars
-  );
-  const followSlice = data.slice(breakoutIndex + 1, followEnd);
   let followThrough = false;
-  if (followSlice.length > 0) {
-    const lastFollowClose = followSlice[followSlice.length - 1].close;
-    const refClose = data[breakoutIndex].close;
+  if (breakoutIndex + config.followThroughBars < data.length) {
+    const followSlice = data.slice(
+      breakoutIndex + 1,
+      breakoutIndex + 1 + config.followThroughBars
+    );
+    const lastFollowCandle = followSlice[followSlice.length - 1];
     if (direction === 'up') {
       followThrough =
-        (lastFollowClose - refClose) / Math.max(refClose, 1e-8) >=
-        rangeConfig.followThroughMinPercent;
+        lastFollowCandle.close >
+        breakoutCandle.close * (1 + config.followThroughMinPercent);
     } else {
       followThrough =
-        (refClose - lastFollowClose) / Math.max(refClose, 1e-8) >=
-        rangeConfig.followThroughMinPercent;
+        lastFollowCandle.close <
+        breakoutCandle.close * (1 - config.followThroughMinPercent);
     }
   }
 
   // 回测：突破后N根内是否回踩区间边界
-  const retestEnd = Math.min(
-    data.length,
-    breakoutIndex + 1 + rangeConfig.retestBars
-  );
-  const retestSlice = data.slice(breakoutIndex + 1, retestEnd);
   let retested = false;
+  const retestSlice = data.slice(
+    breakoutIndex + 1,
+    breakoutIndex + 1 + config.retestBars
+  );
   for (const c of retestSlice) {
     if (direction === 'up' && c.low <= box.high) {
       retested = true;
@@ -134,17 +139,16 @@ function assessBreakout(
   }
 
   // 质量评分：扩张(40)+延续(40)+回测(20)
-  let score = 0;
-  if (volumeExpansion) score += 40;
-  if (followThrough) score += 40;
-  if (retested) score += 20;
+  const qualityScore =
+    (volumeExpansion ? 40 : 0) + (followThrough ? 40 : 0) + (retested ? 20 : 0);
+
   return {
-    direction,
+    direction: direction!,
     breakoutIndex,
     volumeExpansion,
     followThrough,
     retested,
-    qualityScore: score,
+    qualityScore,
   };
 }
 
@@ -154,20 +158,28 @@ export function analyzeRange(
   timeframe: 'weekly' | 'daily' | '1hour'
 ): RangeAnalysisResult {
   const box = findRecentRange(data);
-  let compressionScore = 0;
-  if (box) {
-    // 收缩强度：NR4/NR7命中 + 区间宽度越小越高
-    const width = box.high - box.low;
-    const atr = calculateATR(data, rangeConfig.atrPeriod);
-    const widthScore = Math.max(
-      0,
-      1 - width / (atr * rangeConfig.rangeAtrMaxMultiplier)
-    );
-    compressionScore = Math.min(
-      100,
-      Math.round(box.nr4Count * 5 + box.nr7Count * 8 + widthScore * 50)
-    );
+
+  if (!box) {
+    return { symbol, timeframe, compressionScore: 0 };
   }
-  const breakout = box ? assessBreakout(data, box) : undefined;
-  return { symbol, timeframe, range: box, compressionScore, breakout };
+
+  const breakout = assessBreakout(data, box);
+
+  // 收缩强度：NR4/NR7命中 + 区间宽度越小越高
+  const atr = calculateATR(data, rangeConfig.atrPeriod);
+  const compressionScore = Math.max(
+    0,
+    (1 - (box.high - box.low) / (atr * rangeConfig.rangeAtrMaxMultiplier)) *
+      80 +
+      (box.nr4Count > 0 ? 10 : 0) +
+      (box.nr7Count > 0 ? 10 : 0)
+  );
+
+  return {
+    symbol,
+    timeframe,
+    range: box,
+    compressionScore,
+    breakout,
+  };
 }

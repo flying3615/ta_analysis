@@ -90,6 +90,50 @@ function buildChannelFromSupport(
   };
 }
 
+function buildChannelFromResistance(
+  data: Candle[],
+  resistance: FittedLine
+): Channel | undefined {
+  const start = resistance.startIndex,
+    end = resistance.endIndex;
+  // 以阻力线平移到最低点构建下边界
+  let maxDelta = -Infinity;
+  for (let i = start; i <= end; i++) {
+    const base = resistance.slope * i + resistance.intercept;
+    maxDelta = Math.max(maxDelta, base - data[i].low);
+  }
+  const lower = {
+    ...resistance,
+    kind: 'support' as const,
+    intercept: resistance.intercept - maxDelta,
+  };
+  const mid = {
+    slope: resistance.slope,
+    intercept: resistance.intercept - maxDelta / 2,
+    startIndex: start,
+    endIndex: end,
+    touches: 0,
+    kind: 'mid' as const,
+  };
+  const width = maxDelta;
+  return {
+    upper: resistance,
+    lower,
+    mid,
+    width,
+    slope: mid.slope,
+    touchesUpper: resistance.touches,
+    touchesLower: countTouches(
+      data,
+      lower,
+      'support',
+      trendlineConfig.priceTolerancePercent,
+      start,
+      end
+    ),
+  };
+}
+
 function detectBreakoutRetest(
   data: Candle[],
   ch: Channel
@@ -202,10 +246,29 @@ export function analyzeTrendlinesAndChannels(
         }
       : undefined;
 
-  // 简化：优先从支撑线构建平行通道
-  let channel: Channel | undefined = undefined;
+  // 分别从支撑线和阻力线独立构建通道
+  let channelFromSupport: Channel | undefined = undefined;
+  let channelFromResistance: Channel | undefined = undefined;
   if (fittedSupport) {
-    channel = buildChannelFromSupport(data, fittedSupport);
+    channelFromSupport = buildChannelFromSupport(data, fittedSupport);
+  }
+  if (fittedResistance) {
+    channelFromResistance = buildChannelFromResistance(data, fittedResistance);
+  }
+
+  // 选择质量更好的通道（触达数优先），如都无则为undefined
+  let channel: Channel | undefined = undefined;
+  if (channelFromSupport && channelFromResistance) {
+    const supportTouches =
+      channelFromSupport.touchesUpper + channelFromSupport.touchesLower;
+    const resistanceTouches =
+      channelFromResistance.touchesUpper + channelFromResistance.touchesLower;
+    channel =
+      supportTouches >= resistanceTouches
+        ? channelFromSupport
+        : channelFromResistance;
+  } else {
+    channel = channelFromSupport || channelFromResistance;
   }
 
   const breakoutRetest = channel

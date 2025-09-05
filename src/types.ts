@@ -1,5 +1,5 @@
-import { TrendReversalSignal } from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
-import { PatternDirection } from './analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
+import type { TrendReversalSignal } from './analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
+import type { PatternDirection } from './analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 
 export type Position = {
   quantity: number;

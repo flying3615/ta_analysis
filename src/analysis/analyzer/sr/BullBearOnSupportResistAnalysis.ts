@@ -111,7 +111,6 @@ function detectSupportResistance(
   }
 ): SupportResistanceResult {
   if (candles.length < config.leftBars + config.rightBars + 1) {
-    console.warn('数据不足以计算支撑阻力位');
     return {
       symbol,
       dynamicSupport: null,

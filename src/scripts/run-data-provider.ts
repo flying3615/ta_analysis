@@ -1,4 +1,5 @@
-import { DataProvider } from '../dist/index.js';
+import { DataProvider } from '../index.js';
+import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
 
 async function main() {
   const today = new Date();
@@ -6,10 +7,9 @@ async function main() {
   startDateHourly.setDate(today.getDate() - 60);
 
   const dataProvider = new DataProvider();
+  const binance = new BinanceProvider();
 
   const getCachedStockData = dataProvider.getCachedStockData.bind(dataProvider);
-  const getCachedBinanceData =
-    dataProvider.getCachedBinanceData.bind(dataProvider);
 
   const hourlyCOINData = await getCachedStockData(
     'COIN',
@@ -18,11 +18,11 @@ async function main() {
     '1hour'
   );
 
-  const hourlyBTCData = await getCachedBinanceData(
+  const hourlyBTCData = await binance.getKlines(
     'BTC-USD',
+    '1h',
     startDateHourly,
-    today,
-    '1hour'
+    today
   );
 
   console.log(hourlyCOINData);

@@ -1,9 +1,7 @@
-import {
-  analyzeMultiTimeframePatterns,
-  enhancePatternWithTrendReversal,
-  formatAndPrintEnhancedPatternAnalysis,
-  getStockDataForTimeframe,
-} from '../dist/index.js';
+import { analyzeMultiTimeframePatterns } from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
+import { enhancePatternWithTrendReversal } from '../analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.js';
+import { formatAndPrintEnhancedPatternAnalysis } from '../analysis/analyzer/trendReversal/formatReport.js';
+import { getStockDataForTimeframe } from '../util/util.js';
 
 const symbol = process.argv[2] || 'COIN';
 
@@ -25,13 +23,21 @@ async function main() {
   ]);
 
   const base = analyzeMultiTimeframePatterns(weeklyData, dailyData, hourlyData);
-  const enhanced = enhancePatternWithTrendReversal(base, weeklyData, dailyData, hourlyData);
-  formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, weeklyData, dailyData, hourlyData);
+  const enhanced = enhancePatternWithTrendReversal(
+    base,
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
+  formatAndPrintEnhancedPatternAnalysis(
+    enhanced,
+    symbol,
+    hourlyData,
+    dailyData
+  );
 }
 
 main().catch(err => {
   console.error('run-mtf-trendreversal failed:', err);
   process.exit(1);
 });
-
-

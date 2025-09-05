@@ -6,7 +6,7 @@ import {
   calculateSMA,
   calculateStandardDeviation,
 } from '../../../util/taUtil.js';
-import { AccumulationDistributionResult } from '../../../util/accumulationDistribution.js';
+import type { AccumulationDistributionResult } from '../../../util/accumulationDistribution.js';
 import { volatilityConfig } from './volatilityConfig.js';
 import {
   CombinedVVAnalysisResult,
