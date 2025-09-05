@@ -4,7 +4,7 @@ import {
   buildMachineReadableSummary,
 } from '../index.js';
 
-const symbol = process.argv[2] || 'COIN';
+const symbol = process.argv[2] || 'MSTR';
 
 async function main() {
   console.log(`\n======== ${symbol} - 综合整合分析 ========`);
