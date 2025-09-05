@@ -13,5 +13,3 @@ main().catch(err => {
   console.error('run-mtf-structure failed:', err);
   process.exit(1);
 });
-
-

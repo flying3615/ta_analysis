@@ -274,9 +274,8 @@ export class StrategyGenerator {
     }
 
     // 波动率警告
-    const volatilityRegime =
-      (analyses as any)?.volatility?.volatilityAnalysis?.volatilityAnalysis
-        ?.volatilityRegime;
+    const volatilityRegime = (analyses as any)?.volatility?.volatilityAnalysis
+      ?.volatilityAnalysis?.volatilityRegime;
     if (volatilityRegime === 'extreme') {
       warnings.push('市场处于极高波动率状态，风险极大，建议大幅降低仓位');
     } else if (volatilityRegime === 'high') {

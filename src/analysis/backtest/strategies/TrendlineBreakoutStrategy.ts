@@ -104,8 +104,10 @@ export function TrendlineBreakoutStrategy(
           trendStrengthCount < 0 ? trendStrengthCount - 1 : -1;
       }
 
-      const isStrongUptrend = trendStrengthCount >= cfg.trendStrengthConsecutive;
-      const isStrongDowntrend = trendStrengthCount <= -cfg.trendStrengthConsecutive;
+      const isStrongUptrend =
+        trendStrengthCount >= cfg.trendStrengthConsecutive;
+      const isStrongDowntrend =
+        trendStrengthCount <= -cfg.trendStrengthConsecutive;
 
       let signal: Signal | null = null;
 

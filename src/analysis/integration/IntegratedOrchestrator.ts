@@ -641,7 +641,11 @@ export class IntegratedOrchestrator {
               adLine: [],
               adSlope: 0,
               adTrend: 'neutral',
-              divergence: { type: 'none', strength: 0, description: 'fallback' },
+              divergence: {
+                type: 'none',
+                strength: 0,
+                description: 'fallback',
+              },
               volumeForce: 0,
               moneyFlowIndex: 0,
               chaikinOscillator: 0,

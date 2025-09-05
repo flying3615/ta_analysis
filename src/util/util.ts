@@ -270,9 +270,7 @@ export function aggregateDailyToWeekly(daily: Candle[]): Candle[] {
 
   // Group by ISO week (year-week)
   const weekKey = (d: Date) => {
-    const date = new Date(
-      Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
-    );
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     // ISO week calculation
     // Thursday in current week decides the year
     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));

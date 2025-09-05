@@ -6,8 +6,10 @@ const symbol = process.argv[2] || 'COIN';
 
 async function main() {
   const today = new Date();
-  const startD = new Date(today); startD.setDate(today.getDate() - 120);
-  const startW = new Date(today); startW.setDate(today.getDate() - 365);
+  const startD = new Date(today);
+  startD.setDate(today.getDate() - 120);
+  const startW = new Date(today);
+  startW.setDate(today.getDate() - 365);
 
   const [daily, weekly] = await Promise.all([
     getStockDataForTimeframe(symbol, startD, today, 'daily'),
@@ -22,5 +24,3 @@ main().catch(err => {
   console.error('run-mtf-candle failed:', err);
   process.exit(1);
 });
-
-

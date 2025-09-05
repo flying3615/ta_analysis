@@ -74,8 +74,13 @@ export function IntegrationSignalStrategy(
         const filterCfg = backtestStrategiesConfig.integrationFilter;
         // 冷静期：限制最近 N 根内的重复信号（以生成信号的索引记忆，集成在闭包）
         // 由于本策略无 lastSignalIndex 状态，改为用最近N根内共现判断即可。
-        if (filterCfg.requireRangeConfirm || filterCfg.requireStructureConfirm) {
-          const recentWindow = dailyData.slice(-Math.max(200, filterCfg.confirmWithinBars + 50));
+        if (
+          filterCfg.requireRangeConfirm ||
+          filterCfg.requireStructureConfirm
+        ) {
+          const recentWindow = dailyData.slice(
+            -Math.max(200, filterCfg.confirmWithinBars + 50)
+          );
           let rangeOk = true;
           let structureOk = true;
 
@@ -84,9 +89,15 @@ export function IntegrationSignalStrategy(
             if (rg.breakout) {
               const wantUp = direction === 'long';
               const breakoutUp = rg.breakout.direction === 'up';
-              const dirMatch = (wantUp && breakoutUp) || (!wantUp && !breakoutUp);
-              const within = recentWindow.length - 1 - rg.breakout.breakoutIndex <= filterCfg.confirmWithinBars;
-              rangeOk = dirMatch && within && (rg.breakout.qualityScore ?? 0) >= filterCfg.rangeMinQuality;
+              const dirMatch =
+                (wantUp && breakoutUp) || (!wantUp && !breakoutUp);
+              const within =
+                recentWindow.length - 1 - rg.breakout.breakoutIndex <=
+                filterCfg.confirmWithinBars;
+              rangeOk =
+                dirMatch &&
+                within &&
+                (rg.breakout.qualityScore ?? 0) >= filterCfg.rangeMinQuality;
             } else {
               rangeOk = false;
             }
@@ -96,13 +107,17 @@ export function IntegrationSignalStrategy(
             const st = analyzeMarketStructure(recentWindow, 'daily');
             if (
               st.lastEvent &&
-              (st.lastEvent.direction === 'bullish' || st.lastEvent.direction === 'bearish') &&
-              (filterCfg.structureEventType === 'any' || st.lastEvent.type === filterCfg.structureEventType)
+              (st.lastEvent.direction === 'bullish' ||
+                st.lastEvent.direction === 'bearish') &&
+              (filterCfg.structureEventType === 'any' ||
+                st.lastEvent.type === filterCfg.structureEventType)
             ) {
               const wantUp = direction === 'long';
               const evtUp = st.lastEvent.direction === 'bullish';
               const evtMatch = (wantUp && evtUp) || (!wantUp && !evtUp);
-              const within = recentWindow.length - 1 - st.lastEvent.index <= filterCfg.confirmWithinBars;
+              const within =
+                recentWindow.length - 1 - st.lastEvent.index <=
+                filterCfg.confirmWithinBars;
               structureOk = evtMatch && within;
             } else {
               structureOk = false;

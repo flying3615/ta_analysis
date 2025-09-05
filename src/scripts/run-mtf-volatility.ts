@@ -1,4 +1,7 @@
-import { getStockDataForTimeframe, analyzeVolumeVolatilityCombined } from '../index.js';
+import {
+  getStockDataForTimeframe,
+  analyzeVolumeVolatilityCombined,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'COIN';
 
@@ -26,5 +29,3 @@ main().catch(err => {
   console.error('run-mtf-volatility failed:', err);
   process.exit(1);
 });
-
-

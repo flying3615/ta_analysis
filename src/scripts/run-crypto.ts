@@ -9,7 +9,9 @@ const symbol = process.env.SYMBOL || 'BTC-USD';
 
 (async () => {
   try {
-    console.log(`[run-crypto] Running integrated crypto analysis for ${symbol}...`);
+    console.log(
+      `[run-crypto] Running integrated crypto analysis for ${symbol}...`
+    );
     const plan = await executeIntegratedCryptoAnalysisV2(symbol);
     const formattedOutput = formatTradePlanOutput(plan);
     console.log(formattedOutput);
@@ -19,5 +21,3 @@ const symbol = process.env.SYMBOL || 'BTC-USD';
     process.exit(1);
   }
 })();
-
-

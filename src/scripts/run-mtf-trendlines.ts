@@ -1,4 +1,8 @@
-import { getStockDataForTimeframe, multiTimeTrendlines, formatAndPrintTrendlines } from '../index.js';
+import {
+  getStockDataForTimeframe,
+  multiTimeTrendlines,
+  formatAndPrintTrendlines,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'TSLA';
 
@@ -25,5 +29,3 @@ main().catch(err => {
   console.error('run-mtf-trendlines failed:', err);
   process.exit(1);
 });
-
-

@@ -1,7 +1,6 @@
 import {
   getStockDataForTimeframe,
   analyzeMultiTimeframePatterns,
-  formatAndPrintPatternAnalysis,
   multiTimeFrameChipDistAnalysis,
   formatAndPrintChipAnalysis,
   multiTimeCandleAnalysis,
@@ -13,7 +12,7 @@ import {
   analyzeVolumeVolatilityCombined,
 } from '../index.js';
 
-const symbol = process.argv[2] || 'COIN';
+const symbol = process.argv[2] || 'MSTR';
 
 async function main() {
   const today = new Date();
@@ -43,13 +42,17 @@ async function main() {
   formatAndPrintChipAnalysis(chipResult, symbol);
 
   console.log(`\n======== ${symbol} - 蜡烛形态分析 ========`);
-  const candlePlan = await multiTimeCandleAnalysis(symbol, dailyData, weeklyData);
+  const candlePlan = await multiTimeCandleAnalysis(
+    symbol,
+    dailyData,
+    weeklyData
+  );
   formatAndPrintCandleAnalysis(candlePlan as any, symbol);
 
   const patternResult = analyzeMultiTimeframePatterns(
     weeklyData,
     dailyData,
-    hourlyData,
+    hourlyData
   );
 
   console.log(`\n======== ${symbol} - 支撑/阻力(BBSR) 分析 ========`);
@@ -57,8 +60,18 @@ async function main() {
   formatAndPrintSrAnalysis(bbsrResult, symbol);
 
   console.log(`\n======== ${symbol} - 趋势逆转(小时→日线) 分析 ========`);
-  const enhanced = enhancePatternWithTrendReversal(patternResult, weeklyData, dailyData, hourlyData);
-  formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, hourlyData, dailyData);
+  const enhanced = enhancePatternWithTrendReversal(
+    patternResult,
+    weeklyData,
+    dailyData,
+    hourlyData
+  );
+  formatAndPrintEnhancedPatternAnalysis(
+    enhanced,
+    symbol,
+    hourlyData,
+    dailyData
+  );
 
   console.log(`\n======== ${symbol} - 波动率/量能 分析 ========`);
   const vv = analyzeVolumeVolatilityCombined(hourlyData);
@@ -71,5 +84,3 @@ main().catch(err => {
   console.error('run-mtf-all failed:', err);
   process.exit(1);
 });
-
-

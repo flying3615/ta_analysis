@@ -1,4 +1,8 @@
-import { executeIntegratedAnalysisV2, formatTradePlanOutput, buildMachineReadableSummary } from '../index.js';
+import {
+  executeIntegratedAnalysisV2,
+  formatTradePlanOutput,
+  buildMachineReadableSummary,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'COIN';
 
@@ -14,5 +18,3 @@ main().catch(err => {
   console.error('run-mtf-integrated failed:', err);
   process.exit(1);
 });
-
-

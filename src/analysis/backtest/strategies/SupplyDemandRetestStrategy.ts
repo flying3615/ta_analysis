@@ -37,8 +37,10 @@ export function SupplyDemandRetestStrategy(
   params: SupplyDemandParams = {}
 ): Strategy {
   const {
-    minZoneWidthPercent = backtestStrategiesConfig.supplyDemandRetest.minZoneWidthPercent,
-    allowFreshEntry = backtestStrategiesConfig.supplyDemandRetest.allowFreshEntry,
+    minZoneWidthPercent = backtestStrategiesConfig.supplyDemandRetest
+      .minZoneWidthPercent,
+    allowFreshEntry = backtestStrategiesConfig.supplyDemandRetest
+      .allowFreshEntry,
     requireTested = backtestStrategiesConfig.supplyDemandRetest.requireTested,
     coolDownBars = backtestStrategiesConfig.supplyDemandRetest.coolDownBars,
   } = params;
@@ -57,7 +59,9 @@ export function SupplyDemandRetestStrategy(
 
       const current = window[window.length - 1].close;
       const candidate = res.recentEffectiveZones
-        .filter(z => (z.high - z.low) / Math.max(1e-8, z.low) >= minZoneWidthPercent)
+        .filter(
+          z => (z.high - z.low) / Math.max(1e-8, z.low) >= minZoneWidthPercent
+        )
         .slice(-1)[0];
 
       if (!candidate) return null;
@@ -107,5 +111,3 @@ export function SupplyDemandRetestStrategy(
     },
   };
 }
-
-

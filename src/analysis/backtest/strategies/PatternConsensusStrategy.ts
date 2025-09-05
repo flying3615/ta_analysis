@@ -45,8 +45,10 @@ export function PatternConsensusStrategy(
   params: PatternConsensusParams = {}
 ): Strategy {
   const {
-    minSignalStrength = backtestStrategiesConfig.patternConsensus.minSignalStrength,
-    requireAllAligned = backtestStrategiesConfig.patternConsensus.requireAllAligned,
+    minSignalStrength = backtestStrategiesConfig.patternConsensus
+      .minSignalStrength,
+    requireAllAligned = backtestStrategiesConfig.patternConsensus
+      .requireAllAligned,
     coolDownBars = backtestStrategiesConfig.patternConsensus.coolDownBars,
     lookback = backtestStrategiesConfig.patternConsensus.lookback,
   } = params;
@@ -81,11 +83,8 @@ export function PatternConsensusStrategy(
       // 小时数据缺失时传空数组，内部不会报错
       const hourlyData: Candle[] = [];
 
-      const analysis: ComprehensivePatternAnalysis = analyzeMultiTimeframePatterns(
-        weeklyData,
-        dailyData,
-        hourlyData
-      );
+      const analysis: ComprehensivePatternAnalysis =
+        analyzeMultiTimeframePatterns(weeklyData, dailyData, hourlyData);
 
       if (analysis.signalStrength < minSignalStrength) return null;
 
@@ -95,13 +94,19 @@ export function PatternConsensusStrategy(
       const hourlySig = tfa.find(a => a.timeframe === '1hour')?.patternSignal;
 
       const allAligned =
-        weeklySig && dailySig && hourlySig && weeklySig === dailySig && dailySig === hourlySig;
+        weeklySig &&
+        dailySig &&
+        hourlySig &&
+        weeklySig === dailySig &&
+        dailySig === hourlySig;
 
       if (requireAllAligned && !allAligned) return null;
 
       let direction: 'long' | 'short' | 'flat' = 'flat';
-      if (analysis.combinedSignal === PatternDirection.Bullish) direction = 'long';
-      else if (analysis.combinedSignal === PatternDirection.Bearish) direction = 'short';
+      if (analysis.combinedSignal === PatternDirection.Bullish)
+        direction = 'long';
+      else if (analysis.combinedSignal === PatternDirection.Bearish)
+        direction = 'short';
 
       if (direction === 'flat') return null;
 
@@ -128,5 +133,3 @@ export function PatternConsensusStrategy(
     },
   };
 }
-
-

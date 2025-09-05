@@ -1,6 +1,9 @@
 import type { Candle } from '../types.js';
 import type { IntegrationConfig } from '../analysis/integration/IntegrationConfig.js';
-import { aggregateDailyToWeekly, getStockDataForTimeframe } from '../util/util.js';
+import {
+  aggregateDailyToWeekly,
+  getStockDataForTimeframe,
+} from '../util/util.js';
 import { SimpleCache } from '../analysis/integration/CacheManager.js';
 import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
 
@@ -123,8 +126,6 @@ export class DataProvider {
 
     return { weeklyData, dailyData, hourlyData };
   }
-
-  
 
   async getCachedStockData(
     symbol: string,

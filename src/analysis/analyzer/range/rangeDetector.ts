@@ -29,11 +29,13 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
         // 统计 NR4/NR7
         const nr4s = slice.filter(
           (c, i) =>
-            i > 0 && c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
+            i > 0 &&
+            c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
         ).length;
         const nr7s = slice.filter(
           (c, i) =>
-            i > 0 && c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
+            i > 0 &&
+            c.high - c.low < data[start + i - 1].high - data[start + i - 1].low
         ).length; // Simplified, should be last 7
 
         const currentRange = {
@@ -167,7 +169,8 @@ export function analyzeRange(
   const atr = calculateATR(data, rangeConfig.atrPeriod);
   const compressionScore = Math.max(
     0,
-    (1 - (box.high - box.low) / (atr * rangeConfig.rangeAtrMaxMultiplier)) * 80 +
+    (1 - (box.high - box.low) / (atr * rangeConfig.rangeAtrMaxMultiplier)) *
+      80 +
       (box.nr4Count > 0 ? 10 : 0) +
       (box.nr7Count > 0 ? 10 : 0)
   );

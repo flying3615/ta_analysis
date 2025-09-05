@@ -53,5 +53,3 @@ main().catch(err => {
   console.error('run-mtf-chip failed:', err);
   process.exit(1);
 });
-
-

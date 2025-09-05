@@ -29,12 +29,15 @@ async function main() {
     dailyData,
     hourlyData
   );
-  formatAndPrintEnhancedPatternAnalysis(enhanced, symbol, hourlyData, dailyData);
+  formatAndPrintEnhancedPatternAnalysis(
+    enhanced,
+    symbol,
+    hourlyData,
+    dailyData
+  );
 }
 
 main().catch(err => {
   console.error('run-mtf-trendreversal failed:', err);
   process.exit(1);
 });
-
-

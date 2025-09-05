@@ -1,6 +1,14 @@
-import { runGridSearch, formatMetricsPanel, type ParamGrid, type StrategyFactory } from './GridSearch.js';
+import {
+  runGridSearch,
+  formatMetricsPanel,
+  type ParamGrid,
+  type StrategyFactory,
+} from './GridSearch.js';
 import { DataProvider } from '../../data/DataProvider.js';
-import { DEFAULT_INTEGRATION_CONFIG, updateIntegrationConfig } from '../integration/IntegrationConfig.js';
+import {
+  DEFAULT_INTEGRATION_CONFIG,
+  updateIntegrationConfig,
+} from '../integration/IntegrationConfig.js';
 import { Backtester } from './Backtester.js';
 import type { Candle } from '../../types.js';
 import { TrendlineBreakoutStrategy } from './strategies/TrendlineBreakoutStrategy.js';
@@ -46,7 +54,11 @@ async function main() {
   });
 
   // 3. Define multiple strategies and their parameter grids
-  const strategies: { name: string; grid: ParamGrid; factory: StrategyFactory }[] = [
+  const strategies: {
+    name: string;
+    grid: ParamGrid;
+    factory: StrategyFactory;
+  }[] = [
     {
       name: 'RangeBreakout',
       grid: {

@@ -18,7 +18,12 @@ async function main() {
     '1hour'
   );
 
-  const hourlyBTCData = await binance.getKlines('BTC-USD', '1h', startDateHourly, today);
+  const hourlyBTCData = await binance.getKlines(
+    'BTC-USD',
+    '1h',
+    startDateHourly,
+    today
+  );
 
   console.log(hourlyCOINData);
   console.log(hourlyBTCData);
@@ -28,5 +33,3 @@ main().catch(err => {
   console.error('run-data-provider failed:', err);
   process.exit(1);
 });
-
-

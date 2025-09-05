@@ -1,4 +1,8 @@
-import { analyzeRange, formatAndPrintRange, getStockDataForTimeframe } from '../index.js';
+import {
+  analyzeRange,
+  formatAndPrintRange,
+  getStockDataForTimeframe,
+} from '../index.js';
 
 const symbol = process.argv[2] || 'TSLA';
 
@@ -26,5 +30,3 @@ main().catch(err => {
   console.error('run-mtf-range failed:', err);
   process.exit(1);
 });
-
-
