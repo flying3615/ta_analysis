@@ -13,7 +13,7 @@ jobs:
       issues: write
     steps:
       - name: Check for stale issues
-        uses: actions/stale@v9
+        uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: 'This issue has been automatically closed due to inactivity. If you still need help, please feel free to reopen it.'
