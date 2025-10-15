@@ -1,5 +1,5 @@
 import { Candle } from '../../../types.js';
-import { getStockDataForTimeframe, toEDTString } from '../../../util/util.js';
+import { toEDTString } from '../../../util/util.js';
 import { patternConfig } from './patternConfig.js';
 
 import _ from 'lodash';
@@ -165,20 +165,46 @@ function detectPeaksAndValleys(
     return result;
   }
 
-  for (let i = windowSize; i < data.length - windowSize; i++) {
+  // 计算价格波动率，用于动态调整窗口大小
+  const priceChanges = [];
+  for (let i = 1; i < data.length; i++) {
+    priceChanges.push(
+      Math.abs(data[i].close - data[i - 1].close) / data[i - 1].close
+    );
+  }
+  const avgVolatility =
+    priceChanges.reduce((sum, change) => sum + change, 0) / priceChanges.length;
+
+  // 根据波动率动态调整窗口大小
+  const dynamicWindowSize =
+    avgVolatility > 0.03
+      ? Math.max(3, windowSize - 1)
+      : avgVolatility < 0.01
+        ? Math.min(data.length / 4, windowSize + 2)
+        : windowSize;
+
+  // 计算最小显著变化百分比，用于过滤噪声
+  const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
+  const minSignificantChange = avgPrice * 0.005; // 0.5%的最小变化
+
+  // 第一阶段：检测所有可能的峰谷点
+  const potentialPeaksValleys: PeakValley[] = [];
+
+  // 使用滑动窗口检测峰谷，但允许边界检测
+  for (let i = dynamicWindowSize; i < data.length - dynamicWindowSize; i++) {
     const current = data[i];
     let isPeak = true;
     let isValley = true;
 
     // 检查是否是峰
-    for (let j = i - windowSize; j < i; j++) {
+    for (let j = i - dynamicWindowSize; j < i; j++) {
       if (data[j].high >= current.high) {
         isPeak = false;
         break;
       }
     }
 
-    for (let j = i + 1; j <= i + windowSize; j++) {
+    for (let j = i + 1; j <= i + dynamicWindowSize; j++) {
       if (data[j].high >= current.high) {
         isPeak = false;
         break;
@@ -186,14 +212,14 @@ function detectPeaksAndValleys(
     }
 
     // 检查是否是谷
-    for (let j = i - windowSize; j < i; j++) {
+    for (let j = i - dynamicWindowSize; j < i; j++) {
       if (data[j].low <= current.low) {
         isValley = false;
         break;
       }
     }
 
-    for (let j = i + 1; j <= i + windowSize; j++) {
+    for (let j = i + 1; j <= i + dynamicWindowSize; j++) {
       if (data[j].low <= current.low) {
         isValley = false;
         break;
@@ -201,14 +227,14 @@ function detectPeaksAndValleys(
     }
 
     if (isPeak) {
-      result.push({
+      potentialPeaksValleys.push({
         index: i,
         price: current.high,
         date: current.timestamp,
         type: 'peak',
       });
     } else if (isValley) {
-      result.push({
+      potentialPeaksValleys.push({
         index: i,
         price: current.low,
         date: current.timestamp,
@@ -217,12 +243,63 @@ function detectPeaksAndValleys(
     }
   }
 
+  // 第二阶段：过滤噪声和过近的峰谷点
+  const filteredPeaksValleys: PeakValley[] = [];
+
+  // 按时间顺序排序
+  potentialPeaksValleys.sort((a, b) => a.index - b.index);
+
+  for (let i = 0; i < potentialPeaksValleys.length; i++) {
+    const current = potentialPeaksValleys[i];
+
+    // 检查与最近已添加峰谷的距离
+    let tooClose = false;
+    for (const existing of filteredPeaksValleys) {
+      const distance = Math.abs(current.index - existing.index);
+      const priceDiff = Math.abs(current.price - existing.price);
+
+      // 如果时间距离太近或价格变化不显著，则跳过
+      if (distance < dynamicWindowSize && priceDiff < minSignificantChange) {
+        tooClose = true;
+        break;
+      }
+    }
+
+    if (!tooClose) {
+      filteredPeaksValleys.push(current);
+    }
+  }
+
+  // 第三阶段：确保峰谷交替出现
+  const alternatingPeaksValleys: PeakValley[] = [];
+  if (filteredPeaksValleys.length > 0) {
+    alternatingPeaksValleys.push(filteredPeaksValleys[0]);
+
+    for (let i = 1; i < filteredPeaksValleys.length; i++) {
+      const current = filteredPeaksValleys[i];
+      const last = alternatingPeaksValleys[alternatingPeaksValleys.length - 1];
+
+      // 确保峰谷交替
+      if (current.type !== last.type) {
+        alternatingPeaksValleys.push(current);
+      } else {
+        // 如果类型相同，保留更显著的点
+        const lastSignificance = calculatePointSignificance(data, last);
+        const currentSignificance = calculatePointSignificance(data, current);
+
+        if (currentSignificance > lastSignificance) {
+          alternatingPeaksValleys[alternatingPeaksValleys.length - 1] = current;
+        }
+      }
+    }
+  }
+
   // 当启用最近数据强调时，对峰谷点按照与当前时间的接近程度进行排序
-  if (recentEmphasis && result.length > 0) {
+  if (recentEmphasis && alternatingPeaksValleys.length > 0) {
     const lastIndex = data.length - 1;
 
     // 对每个峰谷点的重要性进行加权
-    for (const point of result) {
+    for (const point of alternatingPeaksValleys) {
       // 计算与最后一个K线的距离
       const distance = lastIndex - point.index;
 
@@ -233,10 +310,43 @@ function detectPeaksAndValleys(
     }
 
     // 按照新的重要性属性排序
-    result.sort((a, b) => (b as any).importance - (a as any).importance);
+    alternatingPeaksValleys.sort(
+      (a, b) => (b as any).importance - (a as any).importance
+    );
   }
 
-  return result;
+  return alternatingPeaksValleys;
+}
+
+/**
+ * 计算峰谷点的显著性，用于过滤和比较
+ */
+function calculatePointSignificance(data: Candle[], point: PeakValley): number {
+  const windowSize = 5;
+  const startIndex = Math.max(0, point.index - windowSize);
+  const endIndex = Math.min(data.length - 1, point.index + windowSize);
+
+  let significance = 0;
+
+  if (point.type === 'peak') {
+    // 对于峰点，计算比周围高点的突出程度
+    for (let i = startIndex; i <= endIndex; i++) {
+      if (i !== point.index) {
+        significance += Math.max(0, point.price - data[i].high);
+      }
+    }
+  } else {
+    // 对于谷点，计算比周围低点的突出程度
+    for (let i = startIndex; i <= endIndex; i++) {
+      if (i !== point.index) {
+        significance += Math.max(0, data[i].low - point.price);
+      }
+    }
+  }
+
+  // 标准化显著性
+  const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
+  return significance / (windowSize * avgPrice);
 }
 
 /**

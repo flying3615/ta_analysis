@@ -12,7 +12,7 @@ import {
   analyzeVolumeVolatilityCombined,
 } from '../index.js';
 
-const symbol = process.argv[2] || 'MSTR';
+const symbol = process.argv[2] || 'BMNR';
 
 async function main() {
   const today = new Date();

@@ -6,6 +6,14 @@ import {
   PatternType,
   PeakValley,
 } from './analyzeMultiTimeframePatterns.js';
+import {
+  arePricesSimilar,
+  isPatternHeightSignificant,
+  isPatternDurationValid,
+  isValidBreakout,
+  isPatternFailed,
+  patternConfig,
+} from './patternConfig.js';
 
 /**
  * 这里以双顶/双底形态为例，其他形态检测函数类似修改
@@ -35,10 +43,11 @@ export function findDoubleTopsAndBottoms(
     const firstPeak = peaks[i];
 
     // 检查两个峰是否接近同一高度
-    const heightDiff =
-      Math.abs(firstPeak.price - secondPeak.price) / firstPeak.price;
-
-    if (heightDiff < 0.05 && secondPeak.index - firstPeak.index > 5) {
+    if (
+      arePricesSimilar(firstPeak.price, secondPeak.price) &&
+      secondPeak.index - firstPeak.index >
+        patternConfig.validation.minPatternDuration
+    ) {
       // 寻找中间的谷
       const middleValleys = valleys.filter(
         v => v.index > firstPeak.index && v.index < secondPeak.index
@@ -71,15 +80,46 @@ export function findDoubleTopsAndBottoms(
         let status = PatternStatus.Forming;
 
         if (secondPeak.index < data.length - 1) {
-          status =
-            currentPrice < neckline
-              ? PatternStatus.Confirmed
-              : PatternStatus.Completed;
+          // 检查是否为有效突破
+          if (currentPrice < neckline) {
+            // 向下突破颈线，检查是否为有效突破
+            const breakoutIndex = data.length - 1;
+            if (isValidBreakout(data, breakoutIndex, neckline, false)) {
+              status = PatternStatus.Confirmed;
+            } else {
+              status = PatternStatus.Completed;
+            }
+          } else {
+            status = PatternStatus.Completed;
+          }
+
+          // 检查形态是否失败
+          if (
+            status === PatternStatus.Confirmed &&
+            isPatternFailed(data, secondPeak.index, neckline, false)
+          ) {
+            status = PatternStatus.Failed;
+          }
         }
 
         // 计算形态高度
         const patternHeight =
           (firstPeak.price + secondPeak.price) / 2 - neckline;
+
+        // 检查形态高度是否足够显著
+        const avgPrice =
+          data.reduce((sum, d) => sum + d.close, 0) / data.length;
+        if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+          // 形态高度不够显著，跳过此形态
+          continue;
+        }
+
+        // 检查形态持续时间是否合理
+        const duration = secondPeak.index - firstPeak.index;
+        if (!isPatternDurationValid(duration)) {
+          // 形态持续时间不合理，跳过此形态
+          continue;
+        }
 
         // 价格目标
         const priceTarget = neckline - patternHeight;
@@ -150,10 +190,11 @@ export function findDoubleTopsAndBottoms(
     const firstValley = valleys[i];
 
     // 检查两个谷是否接近同一低点
-    const depthDiff =
-      Math.abs(firstValley.price - secondValley.price) / firstValley.price;
-
-    if (depthDiff < 0.05 && secondValley.index - firstValley.index > 5) {
+    if (
+      arePricesSimilar(firstValley.price, secondValley.price) &&
+      secondValley.index - firstValley.index >
+        patternConfig.validation.minPatternDuration
+    ) {
       // 寻找中间的峰
       const middlePeaks = peaks.filter(
         p => p.index > firstValley.index && p.index < secondValley.index
@@ -186,15 +227,46 @@ export function findDoubleTopsAndBottoms(
         let status = PatternStatus.Forming;
 
         if (secondValley.index < data.length - 1) {
-          status =
-            currentPrice > neckline
-              ? PatternStatus.Confirmed
-              : PatternStatus.Completed;
+          // 检查是否为有效突破
+          if (currentPrice > neckline) {
+            // 向上突破颈线，检查是否为有效突破
+            const breakoutIndex = data.length - 1;
+            if (isValidBreakout(data, breakoutIndex, neckline, true)) {
+              status = PatternStatus.Confirmed;
+            } else {
+              status = PatternStatus.Completed;
+            }
+          } else {
+            status = PatternStatus.Completed;
+          }
+
+          // 检查形态是否失败
+          if (
+            status === PatternStatus.Confirmed &&
+            isPatternFailed(data, secondValley.index, neckline, true)
+          ) {
+            status = PatternStatus.Failed;
+          }
         }
 
         // 计算形态高度
         const patternHeight =
           neckline - (firstValley.price + secondValley.price) / 2;
+
+        // 检查形态高度是否足够显著
+        const avgPrice =
+          data.reduce((sum, d) => sum + d.close, 0) / data.length;
+        if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+          // 形态高度不够显著，跳过此形态
+          continue;
+        }
+
+        // 检查形态持续时间是否合理
+        const duration = secondValley.index - firstValley.index;
+        if (!isPatternDurationValid(duration)) {
+          // 形态持续时间不合理，跳过此形态
+          continue;
+        }
 
         // 价格目标
         const priceTarget = neckline + patternHeight;

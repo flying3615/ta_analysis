@@ -7,9 +7,21 @@ import {
   PeakValley,
 } from './analyzeMultiTimeframePatterns.js';
 import { getStatusDescription } from '../../../util/util.js';
+import {
+  arePricesSimilar,
+  isPatternHeightSignificant,
+  isPatternDurationValid,
+  isValidBreakout,
+  isPatternFailed,
+  isPriceNearTrendline,
+  calculateStandardReliability,
+  analyzeVolumePatternQuality,
+  calculateBreakoutStrength,
+  ReliabilityFactors,
+} from './patternConfig.js';
 
 // 新增：三角形形态无效的原因枚举
-export enum InvalidPatternReason {
+enum InvalidPatternReason {
   None = 'none',
   PriceCrossesTrendlines = 'price_crosses_trendlines',
   TooFlat = 'too_flat',
@@ -81,10 +93,10 @@ export function findTriangles(
   if (peaks.length >= 2 && valleys.length >= 2) {
     // 检查是否存在水平的高点
     const laterPeaks = peaks.slice(-2);
-    const isHorizontalHighs =
-      Math.abs(laterPeaks[1].price - laterPeaks[0].price) /
-        laterPeaks[0].price <
-      0.03;
+    const isHorizontalHighs = arePricesSimilar(
+      laterPeaks[1].price,
+      laterPeaks[0].price
+    );
 
     // 检查是否存在上升的低点
     const isAscendingLows =
@@ -126,16 +138,52 @@ export function findTriangles(
 
       if (currentIndex > endIndex) {
         if (currentPrice > resistanceLevel) {
-          status = PatternStatus.Confirmed; // 已突破上方
+          // 向上突破阻力线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, resistanceLevel, true)) {
+            status = PatternStatus.Confirmed; // 已确认突破上方
+          } else {
+            status = PatternStatus.Completed; // 突破但未确认
+          }
         } else if (currentPrice < projectedSupport) {
-          status = PatternStatus.Failed; // 向下突破（失败）
+          // 向下突破支撑线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+            status = PatternStatus.Failed; // 向下突破（失败）
+          } else {
+            status = PatternStatus.Completed; // 突破但未确认
+          }
         } else {
           status = PatternStatus.Completed; // 形成但未突破
+        }
+
+        // 检查形态是否失败
+        if (
+          status === PatternStatus.Confirmed &&
+          isPatternFailed(data, endIndex, resistanceLevel, true)
+        ) {
+          status = PatternStatus.Failed;
         }
       }
 
       // 计算形态高度
       const patternHeight = resistanceLevel - support1.price;
+
+      // 计算平均价格和持续时间（只计算一次）
+      const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
+      const duration = endIndex - startIndex;
+
+      // 检查形态高度是否足够显著
+      if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+        // 形态高度不够显著，跳过此形态
+        return patterns;
+      }
+
+      // 检查形态持续时间是否合理
+      if (!isPatternDurationValid(duration)) {
+        // 形态持续时间不合理，跳过此形态
+        return patterns;
+      }
 
       // 新增：检测形态是否无效
       const isInvalid = checkTriangleInvalid(
@@ -162,16 +210,50 @@ export function findTriangles(
       // 计算价格目标（向上突破的目标）
       const priceTarget = resistanceLevel + patternHeight;
 
-      // 计算可靠性分数
-      const reliability = calculateTriangleReliability(
+      // 计算收敛接近度
+      const convergenceProximity = proximityToConvergence;
+
+      // 计算突破强度
+      let breakoutStrength = 0;
+      if (status === PatternStatus.Confirmed) {
+        breakoutStrength = calculateBreakoutStrength(
+          data,
+          data.length - 1,
+          resistanceLevel,
+          true
+        );
+      }
+
+      // 计算新近度
+      const recencyDistance = data.length - 1 - endIndex;
+      const recency = Math.exp(-0.03 * recencyDistance);
+
+      // 分析成交量模式
+      const volumePatternQuality = analyzeVolumePatternQuality(
         data,
         startIndex,
         endIndex,
-        patternHeight,
-        proximityToConvergence,
-        status === PatternStatus.Confirmed,
-        PatternType.AscendingTriangle
+        'continuation'
       );
+
+      // 构建可靠性因素
+      const reliabilityFactors: ReliabilityFactors = {
+        patternHeight,
+        avgPrice,
+        duration,
+        trendlineTouches: 4, // 三角形通常有4个触点
+        expectedTouches: 4,
+        volumeConfirmation: status === PatternStatus.Confirmed,
+        volumePattern: volumePatternQuality,
+        breakoutConfirmed: status === PatternStatus.Confirmed,
+        breakoutStrength,
+        recency,
+        specificFactors: {
+          convergenceProximity: convergenceProximity,
+        },
+      };
+
+      const reliability = calculateStandardReliability(reliabilityFactors);
 
       patterns.push({
         patternType: PatternType.AscendingTriangle,
@@ -214,10 +296,10 @@ export function findTriangles(
 
     // 检查是否存在水平的低点
     const laterValleys = valleys.slice(-2);
-    const isHorizontalLows =
-      Math.abs(laterValleys[1].price - laterValleys[0].price) /
-        laterValleys[0].price <
-      0.03;
+    const isHorizontalLows = arePricesSimilar(
+      laterValleys[1].price,
+      laterValleys[0].price
+    );
 
     if (isDescendingHighs && isHorizontalLows) {
       // 计算下降三角形的支撑线（水平线）
@@ -258,16 +340,50 @@ export function findTriangles(
 
       if (currentIndex > endIndex) {
         if (currentPrice < supportLevel) {
-          status = PatternStatus.Confirmed; // 已突破下方
+          // 向下突破支撑线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, supportLevel, false)) {
+            status = PatternStatus.Confirmed; // 已确认突破下方
+          } else {
+            status = PatternStatus.Completed; // 突破但未确认
+          }
         } else if (currentPrice > projectedResistance) {
-          status = PatternStatus.Failed; // 向上突破（失败）
+          // 向上突破阻力线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+            status = PatternStatus.Failed; // 向上突破（失败）
+          } else {
+            status = PatternStatus.Completed; // 突破但未确认
+          }
         } else {
           status = PatternStatus.Completed; // 形成但未突破
+        }
+
+        // 检查形态是否失败
+        if (
+          status === PatternStatus.Confirmed &&
+          isPatternFailed(data, endIndex, supportLevel, false)
+        ) {
+          status = PatternStatus.Failed;
         }
       }
 
       // 计算形态高度
       const patternHeight = resistance1.price - supportLevel;
+
+      // 检查形态高度是否足够显著
+      const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
+      if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+        // 形态高度不够显著，跳过此形态
+        return patterns;
+      }
+
+      // 检查形态持续时间是否合理
+      const duration = endIndex - startIndex;
+      if (!isPatternDurationValid(duration)) {
+        // 形态持续时间不合理，跳过此形态
+        return patterns;
+      }
 
       // 新增：检测形态是否无效
       const isInvalid = checkTriangleInvalid(
@@ -294,16 +410,50 @@ export function findTriangles(
       // 计算价格目标（向下突破的目标）
       const priceTarget = supportLevel - patternHeight;
 
-      // 计算可靠性分数
-      const reliability = calculateTriangleReliability(
+      // 计算收敛接近度
+      const convergenceProximity = proximityToConvergence;
+
+      // 计算突破强度
+      let breakoutStrength = 0;
+      if (status === PatternStatus.Confirmed) {
+        breakoutStrength = calculateBreakoutStrength(
+          data,
+          data.length - 1,
+          supportLevel,
+          false
+        );
+      }
+
+      // 计算新近度
+      const recencyDistance = data.length - 1 - endIndex;
+      const recency = Math.exp(-0.03 * recencyDistance);
+
+      // 分析成交量模式
+      const volumePatternQuality = analyzeVolumePatternQuality(
         data,
         startIndex,
         endIndex,
-        patternHeight,
-        proximityToConvergence,
-        status === PatternStatus.Confirmed,
-        PatternType.DescendingTriangle
+        'continuation'
       );
+
+      // 构建可靠性因素
+      const reliabilityFactors: ReliabilityFactors = {
+        patternHeight,
+        avgPrice,
+        duration,
+        trendlineTouches: 4, // 三角形通常有4个触点
+        expectedTouches: 4,
+        volumeConfirmation: status === PatternStatus.Confirmed,
+        volumePattern: volumePatternQuality,
+        breakoutConfirmed: status === PatternStatus.Confirmed,
+        breakoutStrength,
+        recency,
+        specificFactors: {
+          convergenceProximity: convergenceProximity,
+        },
+      };
+
+      const reliability = calculateStandardReliability(reliabilityFactors);
 
       patterns.push({
         patternType: PatternType.DescendingTriangle,
@@ -399,18 +549,59 @@ export function findTriangles(
 
       if (currentIndex > endIndex) {
         if (currentPrice > projectedResistance) {
-          status = PatternStatus.Confirmed;
-          breakoutDirection = PatternDirection.Bullish;
+          // 向上突破阻力线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+            status = PatternStatus.Confirmed;
+            breakoutDirection = PatternDirection.Bullish;
+          } else {
+            status = PatternStatus.Completed;
+          }
         } else if (currentPrice < projectedSupport) {
-          status = PatternStatus.Confirmed;
-          breakoutDirection = PatternDirection.Bearish;
+          // 向下突破支撑线，检查是否为有效突破
+          const breakoutIndex = data.length - 1;
+          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+            status = PatternStatus.Confirmed;
+            breakoutDirection = PatternDirection.Bearish;
+          } else {
+            status = PatternStatus.Completed;
+          }
         } else {
           status = PatternStatus.Completed;
+        }
+
+        // 检查形态是否失败
+        if (status === PatternStatus.Confirmed) {
+          if (
+            breakoutDirection === PatternDirection.Bullish &&
+            isPatternFailed(data, endIndex, projectedResistance, true)
+          ) {
+            status = PatternStatus.Failed;
+          } else if (
+            breakoutDirection === PatternDirection.Bearish &&
+            isPatternFailed(data, endIndex, projectedSupport, false)
+          ) {
+            status = PatternStatus.Failed;
+          }
         }
       }
 
       // 计算形态高度
       const patternHeight = resistance1.price - support1.price;
+
+      // 检查形态高度是否足够显著
+      const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
+      if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+        // 形态高度不够显著，跳过此形态
+        return patterns;
+      }
+
+      // 检查形态持续时间是否合理
+      const duration = endIndex - startIndex;
+      if (!isPatternDurationValid(duration)) {
+        // 形态持续时间不合理，跳过此形态
+        return patterns;
+      }
 
       // 新增：检测形态是否无效
       const isInvalid = checkTriangleInvalid(
@@ -442,16 +633,55 @@ export function findTriangles(
         priceTarget = projectedSupport - patternHeight;
       }
 
-      // 计算可靠性分数
-      const reliability = calculateTriangleReliability(
+      // 计算收敛接近度
+      const convergenceProximity = proximityToConvergence;
+
+      // 计算突破强度
+      let breakoutStrength = 0;
+      if (status === PatternStatus.Confirmed) {
+        const breakoutLevel =
+          breakoutDirection === PatternDirection.Bullish
+            ? projectedResistance
+            : projectedSupport;
+        const isUpward = breakoutDirection === PatternDirection.Bullish;
+        breakoutStrength = calculateBreakoutStrength(
+          data,
+          data.length - 1,
+          breakoutLevel,
+          isUpward
+        );
+      }
+
+      // 计算新近度
+      const recencyDistance = data.length - 1 - endIndex;
+      const recency = Math.exp(-0.03 * recencyDistance);
+
+      // 分析成交量模式
+      const volumePatternQuality = analyzeVolumePatternQuality(
         data,
         startIndex,
         endIndex,
-        patternHeight,
-        proximityToConvergence,
-        status === PatternStatus.Confirmed,
-        PatternType.SymmetricalTriangle
+        'continuation'
       );
+
+      // 构建可靠性因素
+      const reliabilityFactors: ReliabilityFactors = {
+        patternHeight,
+        avgPrice,
+        duration,
+        trendlineTouches: 4, // 三角形通常有4个触点
+        expectedTouches: 4,
+        volumeConfirmation: status === PatternStatus.Confirmed,
+        volumePattern: volumePatternQuality,
+        breakoutConfirmed: status === PatternStatus.Confirmed,
+        breakoutStrength,
+        recency,
+        specificFactors: {
+          convergenceProximity: convergenceProximity,
+        },
+      };
+
+      const reliability = calculateStandardReliability(reliabilityFactors);
 
       patterns.push({
         patternType: PatternType.SymmetricalTriangle,
@@ -499,70 +729,6 @@ export function findTriangles(
 }
 
 /**
- * 加权计算形态可靠性，考虑时间因素
- * 这里以三角形形态为例
- */
-function calculateTriangleReliability(
-  data: Candle[],
-  startIndex: number,
-  endIndex: number,
-  patternHeight: number,
-  proximityToConvergence: number,
-  isBreakoutConfirmed: boolean,
-  patternType: PatternType
-): number {
-  let score = 50; // 初始可靠性分数
-
-  // 1. 形态持续时间（通常越长越好）
-  const duration = endIndex - startIndex;
-  if (duration > 20) score += 15;
-  else if (duration > 10) score += 10;
-  else score += 5;
-
-  // 2. 形态高度（相对于价格的百分比）
-  const avgPrice =
-    data.slice(startIndex, endIndex + 1).reduce((sum, d) => sum + d.close, 0) /
-    (endIndex - startIndex + 1);
-  const heightRatio = patternHeight / avgPrice;
-
-  if (heightRatio > 0.05)
-    score += 10; // 形态高度超过5%
-  else if (heightRatio > 0.02) score += 5; // 形态高度超过2%
-
-  // 3. 收敛点的接近程度
-  score += proximityToConvergence * 15;
-
-  // 4. 确认突破
-  if (isBreakoutConfirmed) score += 15;
-
-  // 5. 形态中的触摸点数量
-  // 简化处理，假设至少有4个触点
-  score += 5;
-
-  // 6. 根据形态类型的不同特性评分
-  if (patternType === PatternType.AscendingTriangle) {
-    // 检查上升三角形的方向是否符合大趋势
-    score += 5;
-  } else if (patternType === PatternType.DescendingTriangle) {
-    // 检查下降三角形的方向是否符合大趋势
-    score += 5;
-  }
-
-  // 7. 新增：形态的最近程度评分
-  // 计算形态结束点与数据末尾的距离
-  const recencyDistance = data.length - 1 - endIndex;
-
-  // 根据形态的近期性加分，距离越近分数越高
-  // 最近的形态额外加分，使用衰减函数
-  // 远期形态，根据距离衰减
-  const decayFactor = Math.exp(-0.03 * (recencyDistance - 30));
-  score += 5 * decayFactor;
-
-  // 最后确保分数在0-100范围内
-  return Math.max(0, Math.min(100, score));
-}
-
-/**
  * 分析三角形形态的成交量特征
  */
 function analyzeTriangleVolume(
@@ -571,38 +737,52 @@ function analyzeTriangleVolume(
   endIndex: number,
   status: PatternStatus
 ): string {
-  const volumes = data.slice(startIndex, endIndex + 1).map(d => d.volume);
-  const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
-
-  // 检查成交量趋势
-  let volumeTrend = 0;
-  for (let i = 1; i < volumes.length; i++) {
-    volumeTrend += volumes[i] > volumes[i - 1] ? 1 : -1;
-  }
+  // 使用标准化的成交量分析
+  const volumePatternQuality = analyzeVolumePatternQuality(
+    data,
+    startIndex,
+    endIndex,
+    'continuation'
+  );
 
   // 检查突破时的成交量
   let breakoutVolume = 0;
-  if (status === PatternStatus.Confirmed && endIndex + 1 < data.length) {
-    breakoutVolume = data[endIndex + 1].volume;
+  let avgVolume = 0;
+  if (startIndex <= endIndex) {
+    const volumes = data.slice(startIndex, endIndex + 1).map(d => d.volume);
+    avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+
+    if (status === PatternStatus.Confirmed && endIndex + 1 < data.length) {
+      breakoutVolume = data[endIndex + 1].volume;
+    }
   }
 
-  if (volumeTrend < 0) {
-    // 成交量收缩是三角形形态的理想情况
-    if (
-      status === PatternStatus.Confirmed &&
-      breakoutVolume > avgVolume * 1.5
-    ) {
-      return '理想的成交量模式：形态期间成交量收缩，突破时成交量明显放大';
-    } else if (status === PatternStatus.Confirmed) {
-      return '良好的成交量模式：形态期间成交量收缩，但突破时成交量增幅不明显';
-    } else {
-      return '形态期间成交量收缩，等待突破时的成交量确认';
-    }
-  } else if (volumeTrend > 0) {
-    // 成交量扩大不是三角形的理想情况
-    return '非理想的成交量模式：形态期间成交量未收缩，降低形态可靠性';
-  } else {
-    return '成交量模式中性，无明显趋势';
+  // 根据成交量质量提供描述
+  switch (volumePatternQuality) {
+    case 'ideal':
+      if (
+        status === PatternStatus.Confirmed &&
+        breakoutVolume > avgVolume * 1.5
+      ) {
+        return '理想的成交量模式：形态期间成交量收缩，突破时成交量明显放大';
+      } else {
+        return '理想的成交量模式：形态期间成交量收缩';
+      }
+    case 'good':
+      if (
+        status === PatternStatus.Confirmed &&
+        breakoutVolume > avgVolume * 1.2
+      ) {
+        return '良好的成交量模式：形态期间成交量收缩，突破时成交量放大';
+      } else {
+        return '良好的成交量模式：形态期间成交量基本收缩';
+      }
+    case 'acceptable':
+      return '可接受的成交量模式：成交量变化不明显';
+    case 'poor':
+      return '非理想的成交量模式：形态期间成交量未收缩，降低形态可靠性';
+    default:
+      return '成交量模式中性，无明显趋势';
   }
 }
 
@@ -669,12 +849,12 @@ function checkTriangleInvalid(
     const lowPrice = data[i].low;
 
     // 如果高价接近阻力线，计为一次触碰
-    if (Math.abs(highPrice - topTrendLine) / topTrendLine < 0.005) {
+    if (isPriceNearTrendline(highPrice, topTrendLine)) {
       topTouches++;
     }
 
     // 如果低价接近支撑线，计为一次触碰
-    if (Math.abs(lowPrice - bottomTrendLine) / bottomTrendLine < 0.005) {
+    if (isPriceNearTrendline(lowPrice, bottomTrendLine)) {
       bottomTouches++;
     }
   }

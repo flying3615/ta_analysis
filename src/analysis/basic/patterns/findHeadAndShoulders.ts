@@ -6,6 +6,17 @@ import {
   PatternType,
   PeakValley,
 } from './analyzeMultiTimeframePatterns.js';
+import {
+  arePricesSimilar,
+  isPatternHeightSignificant,
+  isPatternDurationValid,
+  isValidBreakout,
+  isPatternFailed,
+  calculateStandardReliability,
+  analyzeVolumePatternQuality,
+  calculateBreakoutStrength,
+  ReliabilityFactors,
+} from './patternConfig.js';
 
 /**
  * 寻找头肩顶/头肩底形态
@@ -42,8 +53,7 @@ export function findHeadAndShoulders(
     if (
       head.price > leftShoulder.price &&
       head.price > rightShoulder.price &&
-      Math.abs(leftShoulder.price - rightShoulder.price) / leftShoulder.price <
-        0.1 // 两肩大致相等
+      arePricesSimilar(leftShoulder.price, rightShoulder.price) // 使用统一的价格相似度检查
     ) {
       // 寻找颈线的两个谷
       const necklineValleys = valleys.filter(
@@ -71,26 +81,112 @@ export function findHeadAndShoulders(
         // 确定形态状态
         let status = PatternStatus.Forming;
         if (rightShoulder.index < data.length - 1) {
-          status =
-            currentPrice < projectedNeckline
-              ? PatternStatus.Confirmed
-              : PatternStatus.Completed;
-        }
+          // 检查是否为有效突破
+          if (currentPrice < projectedNeckline) {
+            // 向下突破颈线，检查是否为有效突破
+            const breakoutIndex = data.length - 1;
+            if (
+              isValidBreakout(data, breakoutIndex, projectedNeckline, false)
+            ) {
+              status = PatternStatus.Confirmed;
+            } else {
+              status = PatternStatus.Completed;
+            }
+          } else {
+            status = PatternStatus.Completed;
+          }
 
-        // 计算可靠性分数
-        const reliability = calculateHSReliability(
-          leftShoulder,
-          head,
-          rightShoulder,
-          leftNeck,
-          rightNeck,
-          data,
-          false
-        );
+          // 检查形态是否失败
+          if (
+            status === PatternStatus.Confirmed &&
+            isPatternFailed(data, rightShoulder.index, projectedNeckline, false)
+          ) {
+            status = PatternStatus.Failed;
+          }
+        }
 
         // 形态高度 (头部到颈线的距离)
         const patternHeight =
           head.price - (leftNeck.price + rightNeck.price) / 2;
+
+        // 检查形态高度是否足够显著
+        const avgPrice =
+          data.reduce((sum, d) => sum + d.close, 0) / data.length;
+        if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+          // 形态高度不够显著，跳过此形态
+          continue;
+        }
+
+        // 检查形态持续时间是否合理
+        const duration = rightShoulder.index - leftShoulder.index;
+        if (!isPatternDurationValid(duration)) {
+          // 形态持续时间不合理，跳过此形态
+          continue;
+        }
+
+        // 计算标准化可靠性分数
+        // 计算对称性
+        const leftToHeadDuration = head.index - leftShoulder.index;
+        const headToRightDuration = rightShoulder.index - head.index;
+        const symmetryRatio =
+          Math.min(leftToHeadDuration, headToRightDuration) /
+          Math.max(leftToHeadDuration, headToRightDuration);
+
+        // 计算头部突出程度
+        const shoulderAvgHeight =
+          (leftShoulder.price + rightShoulder.price) / 2;
+        const headProminence =
+          (head.price - shoulderAvgHeight) / shoulderAvgHeight;
+
+        // 计算颈线斜率（理想情况下应该接近水平）
+        const necklineSlopeAbs = Math.abs(
+          (rightNeck.price - leftNeck.price) /
+            (rightNeck.index - leftNeck.index)
+        );
+        const normalizedSlope = necklineSlopeAbs / avgPrice;
+        const necklineScore = Math.max(0, 1 - normalizedSlope * 100); // 转换为0-1评分
+
+        // 分析成交量模式
+        const volumePatternQuality = analyzeVolumePatternQuality(
+          data,
+          leftShoulder.index,
+          rightShoulder.index,
+          'reversal'
+        );
+
+        // 计算突破强度
+        let breakoutStrength = 0;
+        if (status === PatternStatus.Confirmed) {
+          breakoutStrength = calculateBreakoutStrength(
+            data,
+            data.length - 1,
+            projectedNeckline,
+            false
+          );
+        }
+
+        // 计算新近度
+        const recencyDistance = data.length - 1 - rightShoulder.index;
+        const recency = Math.exp(-0.03 * recencyDistance);
+
+        // 构建可靠性因素
+        const reliabilityFactors: ReliabilityFactors = {
+          patternHeight,
+          avgPrice,
+          duration,
+          symmetry: symmetryRatio,
+          volumeConfirmation: status === PatternStatus.Confirmed,
+          volumePattern: volumePatternQuality,
+          breakoutConfirmed: status === PatternStatus.Confirmed,
+          breakoutStrength,
+          recency,
+          specificFactors: {
+            headProminence: Math.min(headProminence * 10, 1), // 标准化到0-1
+            necklineSlope: necklineScore,
+          },
+        };
+
+        const reliability = calculateStandardReliability(reliabilityFactors);
 
         // 价格目标 (颈线下方的头部高度)
         const priceTarget = necklineAtEnd - patternHeight;
@@ -142,8 +238,7 @@ export function findHeadAndShoulders(
     if (
       head.price < leftShoulder.price &&
       head.price < rightShoulder.price &&
-      Math.abs(leftShoulder.price - rightShoulder.price) / leftShoulder.price <
-        0.1 // 两肩大致相等
+      arePricesSimilar(leftShoulder.price, rightShoulder.price) // 使用统一的价格相似度检查
     ) {
       // 寻找颈线的两个峰
       const necklinePeaks = peaks.filter(
@@ -171,26 +266,110 @@ export function findHeadAndShoulders(
         // 确定形态状态
         let status = PatternStatus.Forming;
         if (rightShoulder.index < data.length - 1) {
-          status =
-            currentPrice > projectedNeckline
-              ? PatternStatus.Confirmed
-              : PatternStatus.Completed;
-        }
+          // 检查是否为有效突破
+          if (currentPrice > projectedNeckline) {
+            // 向上突破颈线，检查是否为有效突破
+            const breakoutIndex = data.length - 1;
+            if (isValidBreakout(data, breakoutIndex, projectedNeckline, true)) {
+              status = PatternStatus.Confirmed;
+            } else {
+              status = PatternStatus.Completed;
+            }
+          } else {
+            status = PatternStatus.Completed;
+          }
 
-        // 计算可靠性分数
-        const reliability = calculateHSReliability(
-          leftShoulder,
-          head,
-          rightShoulder,
-          leftNeck,
-          rightNeck,
-          data,
-          true
-        );
+          // 检查形态是否失败
+          if (
+            status === PatternStatus.Confirmed &&
+            isPatternFailed(data, rightShoulder.index, projectedNeckline, true)
+          ) {
+            status = PatternStatus.Failed;
+          }
+        }
 
         // 形态高度 (颈线到头部的距离)
         const patternHeight =
           (leftNeck.price + rightNeck.price) / 2 - head.price;
+
+        // 检查形态高度是否足够显著
+        const avgPrice =
+          data.reduce((sum, d) => sum + d.close, 0) / data.length;
+        if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
+          // 形态高度不够显著，跳过此形态
+          continue;
+        }
+
+        // 检查形态持续时间是否合理
+        const duration = rightShoulder.index - leftShoulder.index;
+        if (!isPatternDurationValid(duration)) {
+          // 形态持续时间不合理，跳过此形态
+          continue;
+        }
+
+        // 计算标准化可靠性分数
+        // 计算对称性
+        const leftToHeadDuration = head.index - leftShoulder.index;
+        const headToRightDuration = rightShoulder.index - head.index;
+        const symmetryRatio =
+          Math.min(leftToHeadDuration, headToRightDuration) /
+          Math.max(leftToHeadDuration, headToRightDuration);
+
+        // 计算头部突出程度
+        const shoulderAvgHeight =
+          (leftShoulder.price + rightShoulder.price) / 2;
+        const headProminence =
+          (shoulderAvgHeight - head.price) / shoulderAvgHeight;
+
+        // 计算颈线斜率（理想情况下应该接近水平）
+        const necklineSlopeAbs = Math.abs(
+          (rightNeck.price - leftNeck.price) /
+            (rightNeck.index - leftNeck.index)
+        );
+        const normalizedSlope = necklineSlopeAbs / avgPrice;
+        const necklineScore = Math.max(0, 1 - normalizedSlope * 100); // 转换为0-1评分
+
+        // 分析成交量模式
+        const volumePatternQuality = analyzeVolumePatternQuality(
+          data,
+          leftShoulder.index,
+          rightShoulder.index,
+          'reversal'
+        );
+
+        // 计算突破强度
+        let breakoutStrength = 0;
+        if (status === PatternStatus.Confirmed) {
+          breakoutStrength = calculateBreakoutStrength(
+            data,
+            data.length - 1,
+            projectedNeckline,
+            true
+          );
+        }
+
+        // 计算新近度
+        const recencyDistance = data.length - 1 - rightShoulder.index;
+        const recency = Math.exp(-0.03 * recencyDistance);
+
+        // 构建可靠性因素
+        const reliabilityFactors: ReliabilityFactors = {
+          patternHeight,
+          avgPrice,
+          duration,
+          symmetry: symmetryRatio,
+          volumeConfirmation: status === PatternStatus.Confirmed,
+          volumePattern: volumePatternQuality,
+          breakoutConfirmed: status === PatternStatus.Confirmed,
+          breakoutStrength,
+          recency,
+          specificFactors: {
+            headProminence: Math.min(headProminence * 10, 1), // 标准化到0-1
+            necklineSlope: necklineScore,
+          },
+        };
+
+        const reliability = calculateStandardReliability(reliabilityFactors);
 
         // 价格目标 (颈线上方的头部高度)
         const priceTarget = necklineAtEnd + patternHeight;
@@ -233,74 +412,6 @@ export function findHeadAndShoulders(
   }
 
   return patterns;
-}
-
-/**
- * 计算头肩顶/底形态的可靠性
- */
-function calculateHSReliability(
-  leftShoulder: PeakValley,
-  head: PeakValley,
-  rightShoulder: PeakValley,
-  leftNeck: PeakValley,
-  rightNeck: PeakValley,
-  data: Candle[],
-  isInverse: boolean
-): number {
-  let score = 50; // 初始可靠性分数
-
-  // 1. 肩部对称性
-  const shoulderPriceDiff = Math.abs(leftShoulder.price - rightShoulder.price);
-  const shoulderSymmetry =
-    1 - shoulderPriceDiff / ((leftShoulder.price + rightShoulder.price) / 2);
-  score += shoulderSymmetry * 15; // 最多加15分
-
-  // 2. 时间间隔对称性
-  const leftToHeadDuration = head.index - leftShoulder.index;
-  const headToRightDuration = rightShoulder.index - head.index;
-  const timingRatio =
-    Math.min(leftToHeadDuration, headToRightDuration) /
-    Math.max(leftToHeadDuration, headToRightDuration);
-  score += timingRatio * 10; // 最多加10分
-
-  // 3. 头部突出明显程度
-  const shoulderAvgHeight = (leftShoulder.price + rightShoulder.price) / 2;
-  const headProminence = isInverse
-    ? (shoulderAvgHeight - head.price) / shoulderAvgHeight
-    : (head.price - shoulderAvgHeight) / shoulderAvgHeight;
-
-  if (headProminence > 0.05)
-    score += 15; // 头部突出明显
-  else if (headProminence > 0.02)
-    score += 10; // 头部适中突出
-  else score += 5; // 头部不够突出
-
-  // 4. 颈线斜率（理想情况下应该接近水平）
-  const necklineSlope = Math.abs(
-    (rightNeck.price - leftNeck.price) / (rightNeck.index - leftNeck.index)
-  );
-  const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
-  const normalizedSlope = necklineSlope / avgPrice;
-
-  if (normalizedSlope < 0.001)
-    score += 10; // 颈线几乎水平
-  else if (normalizedSlope < 0.003) score += 5; // 颈线略微倾斜
-
-  // 5. 成交量情况
-  // 这里只做一个简化检查，实际可以更复杂
-  const headVolume = data[head.index].volume;
-  const avgVolume =
-    data
-      .slice(leftShoulder.index, rightShoulder.index)
-      .reduce((sum, d) => sum + d.volume, 0) /
-    (rightShoulder.index - leftShoulder.index);
-
-  if (headVolume > avgVolume * 1.3)
-    score += 10; // 头部成交量较大
-  else if (headVolume > avgVolume) score += 5; // 头部成交量一般
-
-  // 最后确保分数在0-100范围内
-  return Math.max(0, Math.min(100, score));
 }
 
 /**
