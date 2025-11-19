@@ -2,7 +2,7 @@ import { multiTimeSupplyDemand } from '../analysis/analyzer/supplyDemand/multiTi
 import { formatAndPrintSupplyDemand } from '../analysis/analyzer/supplyDemand/formatSupplyDemand.js';
 import { getStockDataForTimeframe } from '../util/util.js';
 
-const symbol = process.argv[2] || 'COIN';
+const symbol = process.argv[2] || 'NVDA';
 
 async function main() {
   console.log(`\n======== ${symbol} - 供需区/订单块 分析 ========`);

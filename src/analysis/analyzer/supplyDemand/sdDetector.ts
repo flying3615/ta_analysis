@@ -8,45 +8,43 @@ import type {
   ZoneType,
 } from './sdTypes.js';
 
-function detectBaseZones(data: Candle[], type: ZoneType): Zone[] {
+function detectBaseZones(
+  data: Candle[],
+  type: ZoneType,
+  timeframe: 'weekly' | 'daily' | '1hour'
+): Zone[] {
   const zones: Zone[] = [];
+  const config = sdConfig;
   const atr = calculateATR(data, 14);
-  const baseMaxRange = atr * sdConfig.baseRangeAtrMultiplier;
+  const baseMaxRange = atr * config.baseRangeAtrMultiplier;
 
-  for (
-    let i = sdConfig.baseWindow;
-    i < data.length - sdConfig.impulseWindow;
-    i++
-  ) {
-    const window = data.slice(i - sdConfig.baseWindow, i);
+  for (let i = config.baseWindow; i < data.length - config.impulseWindow; i++) {
+    const window = data.slice(i - config.baseWindow, i);
     const high = Math.max(...window.map(c => c.high));
     const low = Math.min(...window.map(c => c.low));
     const range = high - low;
     if (range <= 0 || range > baseMaxRange) continue;
 
     // 检查后续是否有对应方向的推进
-    const next = data.slice(i, i + sdConfig.impulseWindow);
+    const next = data.slice(i, i + config.impulseWindow);
     const nextMoveUp = next[next.length - 1].close - next[0].open;
 
-    if (type === 'demand' && nextMoveUp > atr * sdConfig.impulseAtrMultiplier) {
+    if (type === 'demand' && nextMoveUp > atr * config.impulseAtrMultiplier) {
       zones.push({
         type,
-        timeframe: 'daily',
-        startIndex: i - sdConfig.baseWindow,
+        timeframe,
+        startIndex: i - config.baseWindow,
         endIndex: i - 1,
         low,
         high,
         status: 'fresh',
       });
     }
-    if (
-      type === 'supply' &&
-      nextMoveUp < -atr * sdConfig.impulseAtrMultiplier
-    ) {
+    if (type === 'supply' && nextMoveUp < -atr * config.impulseAtrMultiplier) {
       zones.push({
         type,
-        timeframe: 'daily',
-        startIndex: i - sdConfig.baseWindow,
+        timeframe,
+        startIndex: i - config.baseWindow,
         endIndex: i - 1,
         low,
         high,
@@ -98,11 +96,11 @@ export function analyzeSupplyDemandZone(
   data: Candle[],
   timeframe: 'weekly' | 'daily' | '1hour'
 ): SdAnalysisResult {
-  // 简化：以 daily 规则识别；后续可按 timeframe 调整参数
-  const demandZones = detectBaseZones(data, 'demand');
-  const supplyZones = detectBaseZones(data, 'supply');
+  const config = sdConfig;
+  const demandZones = detectBaseZones(data, 'demand', timeframe);
+  const supplyZones = detectBaseZones(data, 'supply', timeframe);
   const zones = updateZoneStatus(data, [...demandZones, ...supplyZones]).filter(
-    z => (z.high - z.low) / z.low >= sdConfig.minZoneWidthPercent
+    z => (z.high - z.low) / z.low >= config.minZoneWidthPercent
   );
 
   const recentEffectiveZones = zones
