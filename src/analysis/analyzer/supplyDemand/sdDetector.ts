@@ -8,6 +8,8 @@ import type {
   ZoneType,
 } from './sdTypes.js';
 
+export type { SdAnalysisResult };
+
 function detectBaseZones(
   data: Candle[],
   type: ZoneType,

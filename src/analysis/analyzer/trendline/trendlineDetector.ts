@@ -7,6 +7,9 @@ import type {
   BreakoutRetest,
   TrendlineChannelAnalysisResult,
 } from './trendlineTypes.js';
+import type { PivotPoint } from '../sr/srDetector.js';
+
+export type { TrendlineChannelAnalysisResult };
 
 function fitLine(points: Array<{ x: number; y: number }>): {
   slope: number;
@@ -204,16 +207,33 @@ function detectBreakoutRetest(
 export function analyzeTrendlinesAndChannels(
   symbol: string,
   data: Candle[],
-  timeframe: 'weekly' | 'daily' | '1hour'
+  timeframe: 'weekly' | 'daily' | '1hour',
+  pivots?: PivotPoint[]
 ): TrendlineChannelAnalysisResult {
   const n = data.length;
   const start = Math.max(0, n - trendlineConfig.maxLookbackBars);
   const pointsSupport: Array<{ x: number; y: number }> = [];
   const pointsResistance: Array<{ x: number; y: number }> = [];
-  for (let i = start; i < n; i++) {
-    pointsSupport.push({ x: i, y: data[i].low });
-    pointsResistance.push({ x: i, y: data[i].high });
+
+  if (pivots && pivots.length > 0) {
+    // 优先使用传入的摆动点
+    for (const pivot of pivots) {
+      if (pivot.index >= start) {
+        if (pivot.type === 'low') {
+          pointsSupport.push({ x: pivot.index, y: pivot.price });
+        } else {
+          pointsResistance.push({ x: pivot.index, y: pivot.price });
+        }
+      }
+    }
+  } else {
+    // 如果没有传入摆动点，则使用旧方法
+    for (let i = start; i < n; i++) {
+      pointsSupport.push({ x: i, y: data[i].low });
+      pointsResistance.push({ x: i, y: data[i].high });
+    }
   }
+
   const sup = fitLine(pointsSupport);
   const res = fitLine(pointsResistance);
   const tol = trendlineConfig.priceTolerancePercent;
