@@ -7,6 +7,13 @@ import {
 import { SimpleCache } from '../analysis/integration/CacheManager.js';
 import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
 
+// 定义一个更灵活的返回类型
+export type MultiTimeframeDataResult = {
+  weeklyData?: Candle[];
+  dailyData?: Candle[];
+  hourlyData?: Candle[];
+};
+
 export class DataProvider {
   private cache: SimpleCache<Candle[]>;
   private binance = new BinanceProvider();
@@ -18,51 +25,60 @@ export class DataProvider {
   async getMultiTimeframeData(
     symbol: string,
     config: IntegrationConfig
-  ): Promise<{
-    weeklyData: Candle[];
-    dailyData: Candle[];
-    hourlyData: Candle[];
-  }> {
+  ): Promise<MultiTimeframeDataResult> {
     const today = new Date();
+    const result: MultiTimeframeDataResult = {};
+    const fetchPromises: Promise<void>[] = [];
 
-    const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(
-      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
-    );
-
-    const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(
-      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
-    );
-
-    const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(
-      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
-    );
-
-    let weeklyData: Candle[] = [];
-    let dailyData: Candle[] = [];
-    let hourlyData: Candle[] = [];
-
-    if (
+    const isCrypto =
       symbol.endsWith('USDT') ||
       symbol.endsWith('BUSD') ||
-      symbol.endsWith('USD')
-    ) {
-      [weeklyData, dailyData, hourlyData] = await Promise.all([
-        this.getCachedBinanceData(symbol, weeklyStartDate, today, 'weekly'),
-        this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily'),
-        this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour'),
-      ]);
-    } else {
-      [weeklyData, dailyData, hourlyData] = await Promise.all([
-        this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-        this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-        this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
-      ]);
+      symbol.endsWith('USD');
+    const dataFetcher = isCrypto
+      ? this.getCachedBinanceData.bind(this)
+      : this.getCachedStockData.bind(this);
+
+    // 仅当配置中存在 weekly 时才获取周线数据
+    if (config.timeframes.weekly) {
+      const weeklyStartDate = new Date(today);
+      weeklyStartDate.setDate(
+        weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
+      );
+      fetchPromises.push(
+        dataFetcher(symbol, weeklyStartDate, today, 'weekly').then(data => {
+          result.weeklyData = data;
+        })
+      );
     }
 
-    return { weeklyData, dailyData, hourlyData };
+    // 仅当配置中存在 daily 时才获取日线数据
+    if (config.timeframes.daily) {
+      const dailyStartDate = new Date(today);
+      dailyStartDate.setDate(
+        dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
+      );
+      fetchPromises.push(
+        dataFetcher(symbol, dailyStartDate, today, 'daily').then(data => {
+          result.dailyData = data;
+        })
+      );
+    }
+
+    // 仅当配置中存在 hourly 时才获取小时线数据
+    if (config.timeframes.hourly) {
+      const hourlyStartDate = new Date(today);
+      hourlyStartDate.setDate(
+        hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
+      );
+      fetchPromises.push(
+        dataFetcher(symbol, hourlyStartDate, today, '1hour').then(data => {
+          result.hourlyData = data;
+        })
+      );
+    }
+
+    await Promise.all(fetchPromises);
+    return result;
   }
 
   private async getCachedBinanceData(
@@ -91,40 +107,65 @@ export class DataProvider {
 
   /**
    * 获取加密货币多周期数据（使用与股票相同的数据提供方，如 Yahoo）
-   * 外部仍可传入 apiKey，但此实现不再依赖 tmai-api。
    */
   async getMultiTimeframeCryptoData(
     symbol: string,
     config: IntegrationConfig
-  ): Promise<{
-    weeklyData: Candle[];
-    dailyData: Candle[];
-    hourlyData: Candle[];
-  }> {
+  ): Promise<MultiTimeframeDataResult> {
     const today = new Date();
+    const result: MultiTimeframeDataResult = {};
+    const fetchPromises: Promise<void>[] = [];
 
-    const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(
-      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
-    );
+    // 仅当配置中存在 weekly 时才获取周线数据
+    if (config.timeframes.weekly) {
+      const weeklyStartDate = new Date(today);
+      weeklyStartDate.setDate(
+        weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
+      );
+      fetchPromises.push(
+        this.getCachedBinanceData(
+          symbol,
+          weeklyStartDate,
+          today,
+          'weekly'
+        ).then(data => {
+          result.weeklyData = data;
+        })
+      );
+    }
 
-    const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(
-      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
-    );
+    // 仅当配置中存在 daily 时才获取日线数据
+    if (config.timeframes.daily) {
+      const dailyStartDate = new Date(today);
+      dailyStartDate.setDate(
+        dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
+      );
+      fetchPromises.push(
+        this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily').then(
+          data => {
+            result.dailyData = data;
+          }
+        )
+      );
+    }
 
-    const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(
-      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
-    );
+    // 仅当配置中存在 hourly 时才获取小时线数据
+    if (config.timeframes.hourly) {
+      const hourlyStartDate = new Date(today);
+      hourlyStartDate.setDate(
+        hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
+      );
+      fetchPromises.push(
+        this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour').then(
+          data => {
+            result.hourlyData = data;
+          }
+        )
+      );
+    }
 
-    const [weeklyData, dailyData, hourlyData] = await Promise.all([
-      this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-      this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-      this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
-    ]);
-
-    return { weeklyData, dailyData, hourlyData };
+    await Promise.all(fetchPromises);
+    return result;
   }
 
   async getCachedStockData(
