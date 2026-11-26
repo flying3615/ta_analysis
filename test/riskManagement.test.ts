@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { determineRiskManagement } from '../src/util/analysisUtils.js';
 import { RiskLevel, SignalStrength, TradeDirection } from '../src/types.js';
 
-function sizeFor(regime: 'high' | 'extreme' | 'normal') {
+function planFor(
+  regime: 'high' | 'extreme' | 'normal',
+  strength: SignalStrength = SignalStrength.Strong
+) {
   const entryStrategy = {
     idealEntryPrice: 100,
     entryType: 'immediate',
@@ -20,10 +23,13 @@ function sizeFor(regime: 'high' | 'extreme' | 'normal') {
     entryStrategy,
     exitStrategy,
     100, // confidence 100 → 系数 1.0
-    SignalStrength.Strong,
+    strength,
     volatility
-  ).suggestionPosition;
+  );
 }
+
+const sizeFor = (regime: 'high' | 'extreme' | 'normal') =>
+  planFor(regime).suggestionPosition;
 
 describe('determineRiskManagement position sizing', () => {
   it('uses the signal-strength base size in a normal regime', () => {
@@ -36,5 +42,19 @@ describe('determineRiskManagement position sizing', () => {
 
   it('cuts the size by 20% in a high-volatility regime', () => {
     expect(sizeFor('high')).toBeCloseTo(0.16, 8);
+  });
+});
+
+describe('determineRiskManagement max loss', () => {
+  it('allows 1% loss for a small (10%) position', () => {
+    const plan = planFor('normal', SignalStrength.Weak);
+    expect(plan.suggestionPosition).toBeCloseTo(0.1, 8);
+    expect(plan.maxLoss).toBe('账户总资金的1.0%');
+  });
+
+  it('allows 2% loss for a larger (20%) position', () => {
+    const plan = planFor('normal', SignalStrength.Strong);
+    expect(plan.suggestionPosition).toBeCloseTo(0.2, 8);
+    expect(plan.maxLoss).toBe('账户总资金的2.0%');
   });
 });

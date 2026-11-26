@@ -725,8 +725,9 @@ export function determineRiskManagement(
   }
 
   // 设置最大损失
+  // 仓位已被限制在 [5%, 30%]；不超过 10% 视为小仓位
   const maxLossPercentage =
-    1 - riskManagement.suggestionPosition > 0.95
+    riskManagement.suggestionPosition <= 0.1
       ? 1.0 // 如果仓位很小，风险较低
       : 2.0; // 如果仓位较大，可接受更高风险
 
