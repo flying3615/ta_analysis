@@ -140,7 +140,10 @@ async function main() {
     console.log('Parameter Grid:');
     console.log(s.grid);
 
-    const result = await runGridSearch(candles, s.grid, s.factory, backtester);
+    // 前 70% 调参，后 30% 做样本外验证
+    const result = await runGridSearch(candles, s.grid, s.factory, backtester, {
+      testRatio: 0.3,
+    });
     console.log(`Completed. Total runs: ${result.runs.length}`);
 
     // Print bests
@@ -157,7 +160,14 @@ async function main() {
       console.log(formatMetricsPanel(result.summary.bestByMaxDrawdown));
     }
 
-    const bestSharpeRun = result.summary.bestBySharpe ?? null;
+    const oos = result.summary.outOfSample?.bySharpe;
+    if (oos) {
+      console.log('\n=> Best-by-Sharpe params, out of sample');
+      console.log(formatMetricsPanel(oos));
+    }
+
+    // 跨策略汇总使用样本外结果，避免按调参数据排名
+    const bestSharpeRun = oos ?? result.summary.bestBySharpe ?? null;
     if (bestSharpeRun) {
       summaryRows.push({
         strategy: s.name,
@@ -170,7 +180,9 @@ async function main() {
   }
 
   // 4. Cross-strategy summary
-  console.log('\n===== Cross-Strategy Summary (sorted by Sharpe) =====');
+  console.log(
+    '\n===== Cross-Strategy Summary (out-of-sample, sorted by Sharpe) ====='
+  );
   summaryRows
     .sort((a, b) => b.bestSharpe - a.bestSharpe)
     .forEach(r => {
