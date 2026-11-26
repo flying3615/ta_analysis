@@ -67,3 +67,37 @@ describe('range breakout assessment', () => {
     expect(typeof res.breakout.retested).toBe('boolean');
   });
 });
+
+describe('range breakout recency', () => {
+  /** 在突破之后追加 n 根稳定上涨的K线（振幅较大，不会形成新的窄幅区间） */
+  function withTrendAfter(n: number): Candle[] {
+    const data = makeRangeBreakoutData();
+    let t = data[data.length - 1].timestamp.getTime();
+    let p = data[data.length - 1].close;
+    for (let i = 0; i < n; i++) {
+      t += 86400000;
+      p += 1;
+      data.push({
+        symbol: 'R',
+        open: p - 0.8,
+        high: p + 0.2,
+        low: p - 1,
+        close: p,
+        volume: 1500,
+        timestamp: new Date(t),
+      });
+    }
+    return data;
+  }
+
+  it('reports how many bars ago a fresh breakout happened', () => {
+    const data = makeRangeBreakoutData();
+    const res = analyzeRange('R', data, 'daily');
+    expect(res.breakout?.barsSinceBreakout).toBe(data.length - 1 - 30);
+  });
+
+  it('ignores a breakout older than maxBreakoutAgeBars', () => {
+    const res = analyzeRange('R', withTrendAfter(40), 'daily');
+    expect(res.breakout).toBeUndefined();
+  });
+});

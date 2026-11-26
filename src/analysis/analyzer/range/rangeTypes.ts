@@ -12,6 +12,7 @@ export interface RangeBox {
 export interface BreakoutAssessment {
   direction: 'up' | 'down';
   breakoutIndex: number;
+  barsSinceBreakout: number; // 突破K线距最后一根K线的根数
   volumeExpansion: boolean;
   followThrough: boolean;
   retested: boolean;
