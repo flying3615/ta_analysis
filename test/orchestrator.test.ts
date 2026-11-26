@@ -151,5 +151,8 @@ describe('trade plan analysis breakdown', () => {
     expect(text).toContain('形态分析: 33%');
     expect(text).toContain('结构分析:');
     expect(text).toContain('趋势线分析:');
+    // 得分带方向，例如 "看多 92.2/100" / "看空 65.0/100" / "中性"
+    expect(text).toMatch(/形态分析: 33% \(((看多|看空) \d+\.\d\/100|中性)\)/);
+    expect(text).not.toMatch(/得分:-/);
   });
 });

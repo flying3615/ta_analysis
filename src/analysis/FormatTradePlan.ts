@@ -5,6 +5,13 @@ import {
 } from '../util/analysisUtils.js';
 import { IntegratedTradePlan } from '../types.js';
 
+/** 模块得分的展示：符号表示方向，例如 "看空 65.0/100" */
+function formatModuleScore(score: number): string {
+  if (score > 0) return `看多 ${score.toFixed(1)}/100`;
+  if (score < 0) return `看空 ${(-score).toFixed(1)}/100`;
+  return '中性';
+}
+
 /**
  * 构建机器可解析摘要（单行 JSON 字符串）
  */
@@ -331,7 +338,7 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
       .filter(([, weight]) => weight !== undefined)
       .map(
         ([name, weight, score]) =>
-          `${name}: ${((weight ?? 0) * 100).toFixed(0)}% (得分:${(score ?? 0).toFixed(1)}/100)\n`
+          `${name}: ${((weight ?? 0) * 100).toFixed(0)}% (${formatModuleScore(score ?? 0)})\n`
       )
       .join('')
   );

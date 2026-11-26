@@ -175,3 +175,22 @@ describe('default weights', () => {
     expect(res.direction).toBe('neutral');
   });
 });
+
+describe('module contributions', () => {
+  it('carry the direction as a sign for base and additional modules alike', () => {
+    const input = inputWithStructure({ trend: 'down' });
+    // 筹码明显看空：做空强度 90，买入强度 10
+    input.analyses.chip = {
+      combinedBuySignalStrength: 10,
+      combinedShortSignalStrength: 90,
+    };
+
+    const res = new SignalAggregator(
+      DEFAULT_INTEGRATION_CONFIG
+    ).aggregateSignals(input, context);
+
+    expect(res.contributions.chip).toBeCloseTo(-90, 6);
+    expect(res.contributions.structure).toBeCloseTo(-65, 6);
+    expect(res.contributions.pattern).toBe(0); // 中性
+  });
+});

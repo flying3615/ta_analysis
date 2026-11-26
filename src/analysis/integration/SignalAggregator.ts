@@ -169,11 +169,10 @@ export class SignalAggregator {
         pattern: patternWeighted.contribution,
         volume: volumeWeighted.contribution,
         bbsr: bbsrWeighted.contribution,
-        structure: structureWeighted / (normalizedWeights.structure || 1),
-        supplyDemand:
-          supplyDemandWeighted / (normalizedWeights.supplyDemand || 1),
-        range: rangeWeighted / (normalizedWeights.range || 1),
-        trendline: trendlineWeighted / (normalizedWeights.trendline || 1),
+        structure: this.signedScore(structureResult),
+        supplyDemand: this.signedScore(supplyDemandResult),
+        range: this.signedScore(rangeResult),
+        trendline: this.signedScore(trendlineResult),
       },
       extraContributions,
       ...(Object.keys(pluginErrors).length > 0 ? { pluginErrors } : {}),
@@ -508,7 +507,8 @@ export class SignalAggregator {
 
     const rawScore = signal.confidence;
     const weightedScore = rawScore * weight * directionMultiplier;
-    const contribution = Math.abs(weightedScore) / weight;
+    // 模块自身得分：正数看多，负数看空，0 为中性（与权重无关，避免权重为 0 时 0/0）
+    const contribution = rawScore * directionMultiplier;
 
     return {
       rawScore,
@@ -517,6 +517,13 @@ export class SignalAggregator {
       contribution,
       source: signal.source,
     };
+  }
+
+  /** 模块自身得分：置信度带上方向符号（看多为正，看空为负，中性为 0） */
+  private signedScore(signal: DirectionConversionResult): number {
+    if (signal.direction === TradeDirection.Long) return signal.confidence;
+    if (signal.direction === TradeDirection.Short) return -signal.confidence;
+    return 0;
   }
 
   /**

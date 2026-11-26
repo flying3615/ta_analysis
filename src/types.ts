@@ -254,14 +254,14 @@ export interface IntegratedTradePlan {
   rangeAnalysisWeight?: number;
   trendlineAnalysisWeight?: number;
 
-  chipAnalysisContribution: number; // 0-100
-  patternAnalysisContribution: number; // 0-100
-  volumeAnalysisContribution: number; // 0-100
-  bbsrAnalysisContribution: number; // 0-100
-  structureAnalysisContribution?: number; // 0-100
-  supplyDemandAnalysisContribution?: number; // 0-100
-  rangeAnalysisContribution?: number; // 0-100
-  trendlineAnalysisContribution?: number; // 0-100
+  chipAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  patternAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  volumeAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  bbsrAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  structureAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  supplyDemandAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  rangeAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  trendlineAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
 
   // 总体分析描述
   summary: string;
