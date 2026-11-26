@@ -110,40 +110,43 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
   },
 };
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !(value instanceof Date)
+  );
+}
+
+function deepMerge<T>(base: T, updates: unknown): T {
+  if (!isPlainObject(base) || !isPlainObject(updates)) {
+    return (updates === undefined ? base : updates) as T;
+  }
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) continue;
+    out[key] = deepMerge(out[key], value);
+  }
+  return out as T;
+}
+
+/**
+ * 把部分配置深度合并到基础配置上。
+ * 未提供的字段（包括嵌套字段）保留基础配置的值，数组整体替换。
+ */
+export function mergeIntegrationConfig(
+  base: IntegrationConfig,
+  updates?: Partial<IntegrationConfig>
+): IntegrationConfig {
+  return updates ? deepMerge(base, updates) : base;
+}
+
 // 配置更新函数
 export function updateIntegrationConfig(
   updates: Partial<IntegrationConfig>
 ): IntegrationConfig {
-  return {
-    ...DEFAULT_INTEGRATION_CONFIG,
-    ...updates,
-    weights: {
-      ...DEFAULT_INTEGRATION_CONFIG.weights,
-      ...updates.weights,
-    },
-    thresholds: {
-      ...DEFAULT_INTEGRATION_CONFIG.thresholds,
-      ...updates.thresholds,
-    },
-    timeframes: {
-      ...DEFAULT_INTEGRATION_CONFIG.timeframes,
-      ...updates.timeframes,
-    },
-    consistency: {
-      ...DEFAULT_INTEGRATION_CONFIG.consistency,
-      ...(updates.consistency as Partial<ConsistencyConfig>),
-      timeframeWeights: {
-        ...DEFAULT_INTEGRATION_CONFIG.consistency.timeframeWeights,
-        ...(updates.consistency?.timeframeWeights as Partial<
-          ConsistencyConfig['timeframeWeights']
-        >),
-      },
-    },
-    options: {
-      ...DEFAULT_INTEGRATION_CONFIG.options,
-      ...updates.options,
-    },
-  };
+  return mergeIntegrationConfig(DEFAULT_INTEGRATION_CONFIG, updates);
 }
 
 // 权重归一化函数

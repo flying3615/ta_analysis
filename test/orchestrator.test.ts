@@ -44,6 +44,61 @@ describe('IntegratedOrchestrator offline analysis', () => {
   });
 });
 
+describe('IntegratedOrchestrator config handling', () => {
+  const daily = makeDaily(260);
+  const weekly = aggregateDailyToWeekly(daily);
+
+  it('keeps the other weights after a partial updateConfig', async () => {
+    const orchestrator = new IntegratedOrchestrator();
+    orchestrator.updateConfig({ weights: { chip: 1 } } as any);
+
+    const res = await orchestrator.executeOfflineAnalysis(
+      'T',
+      daily,
+      weekly,
+      []
+    );
+
+    expect(Number.isFinite(res.tradePlan.confidenceScore)).toBe(true);
+  });
+
+  it('scores with the thresholds passed in customConfig', async () => {
+    const orchestrator = new IntegratedOrchestrator();
+    const baseline = await orchestrator.executeOfflineAnalysis(
+      'T',
+      daily,
+      weekly,
+      []
+    );
+    // 前提：默认配置下这组数据给出方向性信号
+    expect(baseline.tradePlan.direction).not.toBe('neutral');
+
+    const res = await orchestrator.executeOfflineAnalysis(
+      'T',
+      daily,
+      weekly,
+      [],
+      {
+        thresholds: { scoreLong: 1e9, scoreShort: -1e9 },
+      } as any
+    );
+
+    expect(res.tradePlan.direction).toBe('neutral');
+  });
+});
+
+describe('IntegratedOrchestrator per-call options', () => {
+  it('rethrows module errors when customConfig disables the fallback', async () => {
+    const orchestrator = new IntegratedOrchestrator();
+
+    await expect(
+      orchestrator.executeOfflineAnalysis('T', [], [], [], {
+        options: { enableFallbackStrategy: false },
+      } as any)
+    ).rejects.toThrow();
+  });
+});
+
 describe('multiTimeFrameChipDistAnalysis', () => {
   it('skips a timeframe that has no candles', () => {
     const daily = makeDaily(260);
