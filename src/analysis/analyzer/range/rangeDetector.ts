@@ -176,13 +176,16 @@ export function analyzeRange(
 
   // 收缩强度：NR4/NR7命中 + 区间宽度越小越高
   const atr = calculateATR(data, rangeConfig.atrPeriod);
-  const compressionScore = Math.max(
+  const rawCompression = Math.max(
     0,
     (1 - (box.high - box.low) / (atr * rangeConfig.rangeAtrMaxMultiplier)) *
       80 +
       (box.nr4Count > 0 ? 10 : 0) +
       (box.nr7Count > 0 ? 10 : 0)
   );
+
+  // 评分保留 1 位小数，便于直接展示
+  const compressionScore = Math.round(rawCompression * 10) / 10;
 
   return {
     symbol,

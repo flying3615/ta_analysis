@@ -101,3 +101,13 @@ describe('range breakout recency', () => {
     expect(res.breakout).toBeUndefined();
   });
 });
+
+describe('range compression score', () => {
+  it('is rounded to one decimal place', () => {
+    const res = analyzeRange('R', makeRangeBreakoutData(), 'daily');
+    expect(res.compressionScore).toBeGreaterThan(0);
+    expect(Math.round(res.compressionScore * 10) / 10).toBe(
+      res.compressionScore
+    );
+  });
+});
