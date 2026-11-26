@@ -3,13 +3,13 @@
 本模块用于从不同时间周期（周/日/小时）评估筹码集中度、获利/套牢筹码比例、筹码峰迁移与成交量趋势，输出多周期合成的方向建议与关键价位。
 
 #### 目录与核心文件
-- `src/analysis/chip/chipTypes.ts`: 类型定义（`ChipDistribution`, `ChipPeak`, `ChipAnalysisResult`）
-- `src/analysis/chip/chipConfig.ts`: 配置与 `updateChipConfig`
-- `src/analysis/chip/chipSignals.ts`: 买入/做空信号打分与建议构建
-- `src/analysis/chip/combineTimeframes.ts`: 多周期合成、关键位判定
-- `src/analysis/chip/formatChipAnalysis.ts` 与 `chipFormat.ts`: 输出格式化
-- `src/analysis/chip/chipDistributionAnalysis.ts`: 单周期核心计算
-- `src/analysis/chip/multiTimeFrameChipDistributionAnalysis.ts`: 多周期编排入口
+- `src/analysis/analyzer/chip/chipTypes.ts`: 类型定义（`ChipDistribution`, `ChipPeak`, `ChipAnalysisResult`）
+- `src/analysis/analyzer/chip/chipConfig.ts`: 配置与 `updateChipConfig`
+- `src/analysis/analyzer/chip/chipSignals.ts`: 买入/做空信号打分与建议构建
+- `src/analysis/analyzer/chip/combineTimeframes.ts`: 多周期合成、关键位判定
+- `src/analysis/analyzer/chip/formatChipAnalysis.ts` 与 `chipFormat.ts`: 输出格式化
+- `src/analysis/analyzer/chip/chipDistributionAnalysis.ts`: 单周期核心计算
+- `src/analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.ts`: 多周期编排入口
 
 #### 输入/输出
 - 输入：`weekly/daily/1hour` 蜡烛数组、时间周期权重、主周期

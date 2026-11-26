@@ -3,9 +3,9 @@
 检测最近震荡区间、统计 NR4/NR7、评估突破方向与质量（扩量/延续/回测）。
 
 #### 目录与核心文件
-- `src/analysis/range/rangeConfig.ts`、`rangeTypes.ts`
-- `src/analysis/range/rangeDetector.ts`: 区间检测与突破质量评估
-- `src/analysis/range/formatRange.ts`: 输出格式化
+- `src/analysis/analyzer/range/rangeConfig.ts`、`rangeTypes.ts`
+- `src/analysis/analyzer/range/rangeDetector.ts`: 区间检测与突破质量评估
+- `src/analysis/analyzer/range/formatRange.ts`: 输出格式化
 
 #### 输入/输出
 - 输入：日/小时蜡烛

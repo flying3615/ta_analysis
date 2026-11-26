@@ -3,11 +3,11 @@
 自动拟合支撑/阻力趋势线，构造平行通道，检测“突破+回踩确认”，输出通道斜率/宽度与入场提示。
 
 #### 目录与核心文件
-- `src/analysis/trendline/trendlineConfig.ts`：参数配置与 `updateTrendlineConfig`
-- `src/analysis/trendline/trendlineTypes.ts`：类型定义
-- `src/analysis/trendline/trendlineDetector.ts`：最小二乘拟合、通道构造、突破+回踩检测
-- `src/analysis/trendline/multiTimeTrendlines.ts`：多周期编排
-- `src/analysis/trendline/formatTrendline.ts`：格式化输出
+- `src/analysis/analyzer/trendline/trendlineConfig.ts`：参数配置与 `updateTrendlineConfig`
+- `src/analysis/analyzer/trendline/trendlineTypes.ts`：类型定义
+- `src/analysis/analyzer/trendline/trendlineDetector.ts`：最小二乘拟合、通道构造、突破+回踩检测
+- `src/analysis/analyzer/trendline/multiTimeTrendlines.ts`：多周期编排
+- `src/analysis/analyzer/trendline/formatTrendline.ts`：格式化输出
 
 #### 输入/输出
 - 输入：日/小时蜡烛
