@@ -156,10 +156,9 @@ export const checkBullOrBearRecently = (
 
   const { bullishPatterns, bearishPatterns } = detectBullOrBear(candles);
 
-  // 计算日期范围
-  const today = new Date();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(today.getDate() - daysBefore);
+  // 以最后一根K线的时间为"今天"，这样历史数据和回测也能得到结果
+  const today = candles[candles.length - 1].timestamp;
+  const cutoffDate = new Date(today.getTime() - daysBefore * 86400000);
 
   // 筛选出符合条件的模式
   const recentBullishPatterns = bullishPatterns.filter(

@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../src/types.js';
-import { detectBullOrBear } from '../src/analysis/basic/candle/BullOrBearDetector.js';
+import {
+  checkBullOrBearRecently,
+  detectBullOrBear,
+} from '../src/analysis/basic/candle/BullOrBearDetector.js';
 
 const t0 = new Date('2024-01-01T00:00:00Z').getTime();
 
@@ -48,5 +51,34 @@ describe('detectBullOrBear', () => {
   it('finds three white soldiers on the latest bars', () => {
     const candles = withThreeWhiteSoldiers();
     expect(names(candles, candles.length - 1)).toContain('三只白兵');
+  });
+});
+
+describe('checkBullOrBearRecently', () => {
+  it('measures "recent" from the last candle, not the wall clock', () => {
+    // K线日期在 2024 年，与运行测试的日期无关
+    const candles = withThreeWhiteSoldiers();
+    const last = candles[candles.length - 1].timestamp.getTime();
+
+    const res = checkBullOrBearRecently(candles, 5, 0);
+
+    expect(res.bullishPatternsDetails.map(p => p.date.getTime())).toContain(
+      last
+    );
+  });
+
+  it('drops patterns older than the look-back window', () => {
+    const candles = withThreeWhiteSoldiers();
+    const last = candles[candles.length - 1].timestamp.getTime();
+    const cutoff = last - 5 * 86400000;
+
+    const res = checkBullOrBearRecently(candles, 5, 0);
+
+    for (const p of [
+      ...res.bullishPatternsDetails,
+      ...res.bearishPatternsDetails,
+    ]) {
+      expect(p.date.getTime()).toBeGreaterThanOrEqual(cutoff);
+    }
   });
 });
