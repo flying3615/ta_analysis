@@ -80,11 +80,8 @@ function calculateStrategyReturns(
   for (let day = 1; day < pricePath.length; day++) {
     const currentPrice = pricePath[day];
 
-    // 检查是否触发止损
-    if (
-      currentPrice <= initialPrice * (1 - stopLossPercent) &&
-      currentShares > 0
-    ) {
+    // 检查是否触发止损：基于当前持仓的平均成本（动态止损）
+    if (currentShares > 0 && currentPrice <= avgCost * (1 - stopLossPercent)) {
       // 执行清仓
       const sellValue = currentShares * currentPrice;
 
@@ -120,14 +117,14 @@ function calculateStrategyReturns(
 
     // 如果未买入状态，检查是否满足买入条件
     if (!hasBought) {
-      // 止损之后再次买入信号为当前股价为上次股价的110%时
-
+      // 止损之后：不再低吸，只等价格回升到止损价的 110% 时整仓买回
       let reBuyAfterStopLoss = false;
       if (hasStopLoss) {
+        const stopLossPrice = pricePath[lastStopLossDay];
+        if (currentPrice < stopLossPrice * 1.1) continue;
         hasStopLoss = false;
         tradingPosition = initialShares;
-        const stopLossPrice = pricePath[lastStopLossDay];
-        reBuyAfterStopLoss = currentPrice >= stopLossPrice * 1.1;
+        reBuyAfterStopLoss = true;
       }
 
       // 价格下跌达到触发条件
@@ -180,7 +177,9 @@ function calculateStrategyReturns(
         totalInvestment =
           totalInvestment * ((currentShares - tradingPosition) / currentShares);
         currentShares -= tradingPosition;
-        avgCost = totalInvestment / currentShares;
+        // 全部卖出后没有持仓成本（避免 0/0 = NaN）
+        avgCost = currentShares > 0 ? totalInvestment / currentShares : 0;
+        if (currentShares === 0) totalInvestment = 0;
 
         // 计算单次循环利润
         const cycleProfitLoss =

@@ -27,3 +27,36 @@ describe('RollingUp calculateStrategyReturns', () => {
     expect(res.initialInvestment).toBeCloseTo(13000, 8);
   });
 });
+
+describe('RollingUp stop-loss handling', () => {
+  const p = {
+    ...params,
+    downPercent: 0.03,
+    upPercent: 0.05,
+    stopLossPercent: 0.2,
+  };
+
+  it('does not dip-buy and get stopped out again while price keeps falling after a stop', () => {
+    // 第 1 天跌破 80 止损；之后继续下跌
+    const res = calculateStrategyReturns([100, 79, 75, 70, 66, 62, 58], p);
+
+    expect(res.stopLossCount).toBe(1);
+    expect(res.trades.filter(t => t.type === 'buy')).toHaveLength(0);
+  });
+
+  it('re-buys once price recovers 10% above the stop price, even days later', () => {
+    // 止损在 79，之后先跌到 75，几天后回升到 88（≥ 79 × 1.1）
+    const res = calculateStrategyReturns([100, 79, 75, 76, 80, 88, 88], p);
+
+    expect(res.trades.map(t => t.type)).toEqual(['stopLoss', 'reBuy']);
+  });
+
+  it('keeps the average cost a number after the whole position is sold', () => {
+    // 止损 → 回补全部 → 上涨 5% 全部卖出
+    const res = calculateStrategyReturns([100, 79, 88, 93], p);
+
+    expect(res.finalShares).toBe(0);
+    expect(res.finalAvgCost).toBe(0);
+    for (const t of res.trades) expect(Number.isNaN(t.newAvgCost)).toBe(false);
+  });
+});
