@@ -82,3 +82,37 @@ describe('checkBullOrBearRecently', () => {
     }
   });
 });
+
+describe('downside tasuki gap', () => {
+  /** 两根阴线向下跳空，第三根阳线收在缺口内、没有回补缺口 */
+  function tasukiGap(): Candle[] {
+    const bars: Ohlc[] = [];
+    for (let i = 0; i < 6; i++) {
+      const o = 120 - i;
+      bars.push([o, o + 0.3, o - 1.3, o - 1]);
+    }
+    bars.push([110, 110.2, 106.8, 107]); // 阴线 1
+    bars.push([105, 105.2, 101.8, 102]); // 跳空向下的阴线 2（高点 105.2 < 低点 106.8）
+    bars.push([103, 106, 102.8, 105.5]); // 阳线：开在阴线 2 实体内，收在缺口内（< 107）
+    return bars.map(([open, high, low, close], i) => ({
+      symbol: 'T',
+      open,
+      high,
+      low,
+      close,
+      volume: 1000,
+      timestamp: new Date(t0 + i * 86400000),
+    }));
+  }
+
+  it('is reported as a bearish continuation pattern, not a bullish one', () => {
+    const candles = tasukiGap();
+    const last = candles[candles.length - 1].timestamp.getTime();
+    const res = detectBullOrBear(candles);
+    const at = (list: typeof res.bullishPatterns) =>
+      list.filter(p => p.date.getTime() === last).flatMap(p => p.patternNames);
+
+    expect(at(res.bearishPatterns)).toContain('下降跳空并列线');
+    expect(at(res.bullishPatterns)).not.toContain('下降跳空缺口');
+  });
+});

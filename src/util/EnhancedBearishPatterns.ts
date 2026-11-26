@@ -6,6 +6,7 @@ import {
   bearishharamicross,
   bearishinvertedhammerstick,
   bearishmarubozu,
+  downsidetasukigap,
   eveningdojistar,
   eveningstar,
   hangingman,
@@ -31,6 +32,8 @@ const bearishPatterns = [
   shootingstar,
   shootingstarunconfirmed,
   tweezertop,
+  // 下降跳空并列线是看跌延续形态（technicalindicators 库把它归在看涨列表中）
+  downsidetasukigap,
 ];
 
 const patternNameZhMap = [
@@ -51,6 +54,7 @@ const patternNameZhMap = [
   { name: '流星', pattern: shootingstar },
   { name: '未确认流星', pattern: shootingstarunconfirmed },
   { name: '镊子顶', pattern: tweezertop },
+  { name: '下降跳空并列线', pattern: downsidetasukigap },
 ];
 
 export default class EnhancedBearishPatterns {

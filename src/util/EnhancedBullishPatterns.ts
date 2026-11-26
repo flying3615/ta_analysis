@@ -6,7 +6,6 @@ import {
   bullishharamicross,
   bullishinvertedhammerstick,
   bullishmarubozu,
-  downsidetasukigap,
   hammerpattern,
   hammerpatternunconfirmed,
   morningdojistar,
@@ -18,7 +17,6 @@ import {
 
 const bullishPatterns = [
   bullishengulfingpattern,
-  downsidetasukigap,
   bullishharami,
   bullishharamicross,
   morningdojistar,
@@ -35,7 +33,6 @@ const bullishPatterns = [
 
 const patternNameZhMap = [
   { name: '看涨吞没', pattern: bullishengulfingpattern },
-  { name: '下降跳空缺口', pattern: downsidetasukigap },
   { name: '看涨孕线', pattern: bullishharami },
   { name: '看涨十字星', pattern: bullishharamicross },
   { name: '晨星十字星', pattern: morningdojistar },
