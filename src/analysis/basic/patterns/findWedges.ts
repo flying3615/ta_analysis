@@ -9,6 +9,25 @@ import {
 import { getStatusDescription } from '../../../util/util.js';
 
 /**
+ * 计算上沿线与下沿线的交点（K线下标）。
+ * 上沿：price = upper.price + upperSlope × (x − upper.index)
+ * 下沿：price = lower.price + lowerSlope × (x − lower.index)
+ * 两线平行时返回上沿起点下标。
+ */
+export function lineConvergenceIndex(
+  upper: { index: number; price: number },
+  upperSlope: number,
+  lower: { index: number; price: number },
+  lowerSlope: number
+): number {
+  if (upperSlope === lowerSlope) return upper.index;
+  const distance =
+    (upper.price - lower.price + lowerSlope * (lower.index - upper.index)) /
+    (lowerSlope - upperSlope);
+  return upper.index + distance;
+}
+
+/**
  * 寻找楔形形态
  */
 export function findWedges(
@@ -70,17 +89,12 @@ export function findWedges(
         valleySlope * (currentIndex - lowerBoundary1.index);
 
       // 计算收敛点
-      let convergenceIndex = upperBoundary1.index;
-
-      if (peakSlope !== valleySlope) {
-        const interceptDiff =
-          lowerBoundary1.price -
-          upperBoundary1.price -
-          (lowerBoundary1.index - upperBoundary1.index) *
-            (valleySlope - peakSlope);
-        convergenceIndex =
-          upperBoundary1.index + interceptDiff / (valleySlope - peakSlope);
-      }
+      const convergenceIndex = lineConvergenceIndex(
+        upperBoundary1,
+        peakSlope,
+        lowerBoundary1,
+        valleySlope
+      );
 
       // 计算当前是否接近收敛点
       const proximityToConvergence =
@@ -243,17 +257,12 @@ export function findWedges(
         valleySlope * (currentIndex - lowerBoundary1.index);
 
       // 计算收敛点
-      let convergenceIndex = upperBoundary1.index;
-
-      if (peakSlope !== valleySlope) {
-        const interceptDiff =
-          lowerBoundary1.price -
-          upperBoundary1.price -
-          (lowerBoundary1.index - upperBoundary1.index) *
-            (valleySlope - peakSlope);
-        convergenceIndex =
-          upperBoundary1.index + interceptDiff / (valleySlope - peakSlope);
-      }
+      const convergenceIndex = lineConvergenceIndex(
+        upperBoundary1,
+        peakSlope,
+        lowerBoundary1,
+        valleySlope
+      );
 
       // 计算当前是否接近收敛点
       const proximityToConvergence =
