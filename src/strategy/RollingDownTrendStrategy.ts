@@ -163,15 +163,16 @@ function calculateShortStrategyReturns(
     else {
       // 价格下跌达到触发条件
       if (currentPrice <= lastShortPrice * (1 - downPercent)) {
-        // 执行平仓
-        const coverValue = tradingPosition * currentPrice;
+        // 只回补本轮加空的那一份，且不超过当前持仓
+        const coverShares = Math.min(tradingPosition, currentShortShares);
+        const coverValue = coverShares * currentPrice;
         const coverFee = feePerTrade;
 
         cashBalance -= coverValue + coverFee;
         totalFees += coverFee;
 
         // 更新持仓和成本（保持平均做空价格不变，因为我们是按比例平仓）
-        currentShortShares -= tradingPosition;
+        currentShortShares -= coverShares;
 
         // 修复: 仅当所有持仓都平仓时重置avgShortPrice
         if (currentShortShares <= 0) {
@@ -181,14 +182,14 @@ function calculateShortStrategyReturns(
 
         // 计算单次循环利润
         const cycleProfitLoss =
-          tradingPosition * lastShortPrice - coverValue - feePerTrade * 2;
+          coverShares * lastShortPrice - coverValue - feePerTrade * 2;
 
         // 记录交易
         const coverTrade = {
           day,
           type: 'cover',
           price: currentPrice,
-          shares: tradingPosition,
+          shares: coverShares,
           value: coverValue,
           fee: coverFee,
           newShortShares: currentShortShares,
@@ -197,10 +198,8 @@ function calculateShortStrategyReturns(
         };
         trades.push(coverTrade);
 
-        // 更新状态
-        if (currentShortShares === 0) {
-          hasShorted = false;
-        }
+        // 本轮滚动仓位已回补，等待下一次上涨再加空
+        hasShorted = false;
         lastTradeDay = day;
       }
     }
