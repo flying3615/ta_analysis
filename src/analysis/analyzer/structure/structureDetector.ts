@@ -41,25 +41,50 @@ interface PivotPoint {
   price: number;
 }
 
-/** 把拐点数组整理成按时间排序的高点、低点序列（合并相邻的等价平台） */
+/**
+ * 把拐点数组整理成按时间排序、高低交替的高点和低点序列：
+ * - 与上一个反向拐点的距离小于 minSwingDistancePercent 的拐点视为噪音，丢弃
+ * - 连续两个同向拐点只保留更极端的一个（更高的高点 / 更低的低点）
+ */
 function collectPivotPoints(pivots: {
   highs: (number | null)[];
   lows: (number | null)[];
 }): { highs: PivotPoint[]; lows: PivotPoint[] } {
-  const { rightBars } = structureConfig.pivot;
-  const collect = (values: (number | null)[]): PivotPoint[] => {
-    const out: PivotPoint[] = [];
-    values.forEach((price, index) => {
-      if (price == null) return;
-      const prev = out[out.length - 1];
-      if (prev && index - prev.index <= rightBars && prev.price === price) {
-        return; // 同一个平台上的重复拐点
-      }
-      out.push({ index, price });
-    });
-    return out;
+  const minMove = structureConfig.thresholds.minSwingDistancePercent;
+  const kept: (PivotPoint & { type: 'high' | 'low' })[] = [];
+
+  const consider = (type: 'high' | 'low', index: number, price: number) => {
+    const last = kept[kept.length - 1];
+    if (!last) {
+      kept.push({ type, index, price });
+      return;
+    }
+    if (last.type === type) {
+      const moreExtreme =
+        type === 'high' ? price > last.price : price < last.price;
+      if (moreExtreme) kept[kept.length - 1] = { type, index, price };
+      return;
+    }
+    if (Math.abs(price - last.price) / last.price >= minMove) {
+      kept.push({ type, index, price });
+    }
   };
-  return { highs: collect(pivots.highs), lows: collect(pivots.lows) };
+
+  for (let i = 0; i < pivots.highs.length; i++) {
+    const h = pivots.highs[i];
+    const l = pivots.lows[i];
+    if (h != null) consider('high', i, h);
+    if (l != null) consider('low', i, l);
+  }
+
+  const strip = ({ index, price }: PivotPoint): PivotPoint => ({
+    index,
+    price,
+  });
+  return {
+    highs: kept.filter(p => p.type === 'high').map(strip),
+    lows: kept.filter(p => p.type === 'low').map(strip),
+  };
 }
 
 /** 最近两个高点和两个低点同时抬高为上升，同时降低为下降，否则为震荡 */

@@ -78,4 +78,18 @@ describe('analyzeMarketStructure', () => {
     expect(lastLow).toBeGreaterThan(prevLow);
     expect(lastHigh).toBeGreaterThan(lastLow);
   });
+
+  it('ignores wiggles smaller than minSwingDistancePercent', () => {
+    const closes = zigzag(8, 8, 4);
+    let p = closes[closes.length - 1];
+    for (let i = 0; i < 8; i++) closes.push((p += 1)); // 新高
+    for (let i = 0; i < 4; i++) closes.push((p -= 0.08)); // 约 0.25% 的小回落
+    for (let i = 0; i < 4; i++) closes.push((p += 0.05)); // 更小的反弹
+    for (let i = 0; i < 4; i++) closes.push((p -= 0.05));
+
+    const res = analyzeMarketStructure(toCandles(closes), 'daily');
+
+    expect(res.trend).toBe('up');
+    expect(res.lastEvent?.type).not.toBe('EqualHighs');
+  });
 });
