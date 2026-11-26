@@ -180,7 +180,7 @@ function detectPeaksAndValleys(
     avgVolatility > 0.03
       ? Math.max(3, windowSize - 1)
       : avgVolatility < 0.01
-        ? Math.min(data.length / 4, windowSize + 2)
+        ? Math.min(Math.floor(data.length / 4), windowSize + 2)
         : windowSize;
 
   // 计算最小显著变化百分比，用于过滤噪声
