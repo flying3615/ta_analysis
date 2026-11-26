@@ -391,15 +391,13 @@ export function calculateCumulativeDistribution(
 }
 
 /**
- * 计算多空比率 - 新增
- * 根据筹码分布计算多空比，用于判断市场情绪
- * 0-1: 极度看空 - 高价筹码占绝对优势，下跌风险极高
- * 1-3: 强势看空 - 高价筹码明显占优，下跌趋势强劲
- * 3-4: 偏空 - 高价筹码略占优势，市场偏向下行
- * 4-6: 中性 - 多空力量基本平衡，市场处于震荡整理
- * 6-7: 偏多 - 低价筹码略占优势，市场偏向上行
- * 7-9: 强势看多 - 低价筹码明显占优，上涨趋势强劲
- * 9-10: 极度看多 - 低价筹码占绝对优势，强势上涨概率高
+ * 计算多空比率
+ * 多空比 = 加权低价筹码 / 加权高价筹码，取值范围 [0, 10]，1 表示多空平衡。
+ * 与 chipConfig 中的阈值对应：
+ * - > strongBullRatio(3): 强势看多
+ * - > moderateBullRatio(1.5): 偏多
+ * - < slightBearRatio(1): 偏空
+ * - < strongBearRatio(0.5): 强势看空
  */
 export function calculateBullBearRatio(
   chipDistribution: ChipDistribution[],
@@ -448,7 +446,7 @@ export function calculateBullBearRatio(
     )
     .reduce((sum, item) => sum + item.percentage, 0);
 
-  // 计算最终的多空比率 (规范化到0-10的范围)
+  // 计算最终的多空比率
   const adjustedBullChips = bullChips + neutralChips * neutralWeight;
   const adjustedBearChips = bearChips + neutralChips * (1 - neutralWeight);
 
@@ -456,9 +454,9 @@ export function calculateBullBearRatio(
   if (adjustedBearChips === 0) return 10.0; // 极度看多，设置上限
   if (adjustedBullChips === 0) return 0.0; // 极度看空，设置下限
 
-  // 将比率映射到0-10的范围
+  // 直接使用原始比率，与配置阈值的语义一致，上限为 10
   const rawRatio = adjustedBullChips / adjustedBearChips;
-  return Math.min(10, (rawRatio * 5) / (1 + rawRatio * 4));
+  return Math.min(10, rawRatio);
 }
 
 /**
