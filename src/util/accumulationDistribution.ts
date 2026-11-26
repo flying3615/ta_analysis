@@ -156,14 +156,15 @@ function detectDivergence(
     return { type: 'none', strength: 0, description: '数据不足以检测背离' };
   }
 
-  const prices = data.map(d => d.close);
-  const recentPrices = prices.slice(-lookbackPeriod);
+  const recentPrices = data.slice(-lookbackPeriod).map(d => d.close);
   const recentAD = adLine.slice(-lookbackPeriod);
+  const windowVolume = data
+    .slice(-lookbackPeriod)
+    .reduce((sum, d) => sum + d.volume, 0);
 
-  // 找出近期价格的高点和低点
+  // 找出近期价格的高点和低点（下标在窗口内）
   const priceHighs: number[] = [];
   const priceLows: number[] = [];
-
   for (let i = 1; i < recentPrices.length - 1; i++) {
     if (
       recentPrices[i] > recentPrices[i - 1] &&
@@ -179,119 +180,82 @@ function detectDivergence(
     }
   }
 
-  // 找出同期内AD线的高点和低点
-  const adHighs: number[] = [];
-  const adLows: number[] = [];
+  // 背离强度：价格变化百分比与 A/D 变化（占窗口成交量的百分比）之差
+  const strengthOf = (prev: number, last: number): number => {
+    const priceChange =
+      ((recentPrices[last] - recentPrices[prev]) / recentPrices[prev]) * 100;
+    const adChange =
+      windowVolume > 0
+        ? ((recentAD[last] - recentAD[prev]) / windowVolume) * 100
+        : 0;
+    return Math.min(100, Math.abs(adChange - priceChange));
+  };
 
-  for (let i = 1; i < recentAD.length - 1; i++) {
-    if (recentAD[i] > recentAD[i - 1] && recentAD[i] > recentAD[i + 1]) {
-      adHighs.push(i);
-    }
-    if (recentAD[i] < recentAD[i - 1] && recentAD[i] < recentAD[i + 1]) {
-      adLows.push(i);
-    }
-  }
+  // 在价格拐点的同一根K线上比较 A/D，保证时间对齐
+  if (priceLows.length >= 2) {
+    const prev = priceLows[priceLows.length - 2];
+    const last = priceLows[priceLows.length - 1];
+    const lowerPriceLow = recentPrices[last] < recentPrices[prev];
+    const higherAD = recentAD[last] > recentAD[prev];
 
-  // 检测常规看涨背离：价格创新低但AD线不创新低
-  if (priceLows.length >= 2 && adLows.length >= 2) {
-    const lastPriceLow = priceLows[priceLows.length - 1];
-    const prevPriceLow = priceLows[priceLows.length - 2];
-    const lastAdLow = adLows[adLows.length - 1];
-    const prevAdLow = adLows[adLows.length - 2];
-
-    if (
-      recentPrices[lastPriceLow] < recentPrices[prevPriceLow] &&
-      recentAD[lastAdLow] > recentAD[prevAdLow]
-    ) {
-      // 计算背离强度
-      const priceChange =
-        ((recentPrices[lastPriceLow] - recentPrices[prevPriceLow]) /
-          recentPrices[prevPriceLow]) *
-        100;
-      const adChange =
-        ((recentAD[lastAdLow] - recentAD[prevAdLow]) /
-          Math.abs(recentAD[prevAdLow])) *
-        100;
-      const strength = Math.min(100, Math.abs(adChange - priceChange));
-
+    // 常规看涨背离：价格创新低但 A/D 没有创新低
+    if (lowerPriceLow && higherAD) {
       return {
         type: 'bullish',
-        strength,
+        strength: strengthOf(prev, last),
         description:
           '检测到看涨背离：价格创新低但积累分布线未创新低，可能指示底部形成',
       };
     }
   }
 
-  // 检测常规看跌背离：价格创新高但AD线不创新高
-  if (priceHighs.length >= 2 && adHighs.length >= 2) {
-    const lastPriceHigh = priceHighs[priceHighs.length - 1];
-    const prevPriceHigh = priceHighs[priceHighs.length - 2];
-    const lastAdHigh = adHighs[adHighs.length - 1];
-    const prevAdHigh = adHighs[adHighs.length - 2];
+  if (priceHighs.length >= 2) {
+    const prev = priceHighs[priceHighs.length - 2];
+    const last = priceHighs[priceHighs.length - 1];
+    const higherPriceHigh = recentPrices[last] > recentPrices[prev];
+    const lowerAD = recentAD[last] < recentAD[prev];
 
-    if (
-      recentPrices[lastPriceHigh] > recentPrices[prevPriceHigh] &&
-      recentAD[lastAdHigh] < recentAD[prevAdHigh]
-    ) {
-      // 计算背离强度
-      const priceChange =
-        ((recentPrices[lastPriceHigh] - recentPrices[prevPriceHigh]) /
-          recentPrices[prevPriceHigh]) *
-        100;
-      const adChange =
-        ((recentAD[lastAdHigh] - recentAD[prevAdHigh]) /
-          Math.abs(recentAD[prevAdHigh])) *
-        100;
-      const strength = Math.min(100, Math.abs(adChange - priceChange));
-
+    // 常规看跌背离：价格创新高但 A/D 没有创新高
+    if (higherPriceHigh && lowerAD) {
       return {
         type: 'bearish',
-        strength,
+        strength: strengthOf(prev, last),
         description:
           '检测到看跌背离：价格创新高但积累分布线未创新高，可能指示顶部形成',
       };
     }
   }
 
-  // 检测隐藏看涨背离：价格不创新低但AD线创新低
-  if (priceLows.length >= 2 && adLows.length >= 2) {
-    const lastPriceLow = priceLows[priceLows.length - 1];
-    const prevPriceLow = priceLows[priceLows.length - 2];
-    const lastAdLow = adLows[adLows.length - 1];
-    const prevAdLow = adLows[adLows.length - 2];
+  if (priceLows.length >= 2) {
+    const prev = priceLows[priceLows.length - 2];
+    const last = priceLows[priceLows.length - 1];
 
+    // 隐藏看涨背离：价格没有创新低但 A/D 创新低
     if (
-      recentPrices[lastPriceLow] > recentPrices[prevPriceLow] &&
-      recentAD[lastAdLow] < recentAD[prevAdLow]
+      recentPrices[last] > recentPrices[prev] &&
+      recentAD[last] < recentAD[prev]
     ) {
-      const strength = 70; // 隐藏背离通常强度较低
-
       return {
         type: 'hidden_bullish',
-        strength,
+        strength: 70, // 隐藏背离通常强度较低
         description:
           '检测到隐藏看涨背离：价格未创新低但积累分布线创新低，可能指示上升趋势将继续',
       };
     }
   }
 
-  // 检测隐藏看跌背离：价格不创新高但AD线创新高
-  if (priceHighs.length >= 2 && adHighs.length >= 2) {
-    const lastPriceHigh = priceHighs[priceHighs.length - 1];
-    const prevPriceHigh = priceHighs[priceHighs.length - 2];
-    const lastAdHigh = adHighs[adHighs.length - 1];
-    const prevAdHigh = adHighs[adHighs.length - 2];
+  if (priceHighs.length >= 2) {
+    const prev = priceHighs[priceHighs.length - 2];
+    const last = priceHighs[priceHighs.length - 1];
 
+    // 隐藏看跌背离：价格没有创新高但 A/D 创新高
     if (
-      recentPrices[lastPriceHigh] < recentPrices[prevPriceHigh] &&
-      recentAD[lastAdHigh] > recentAD[prevAdHigh]
+      recentPrices[last] < recentPrices[prev] &&
+      recentAD[last] > recentAD[prev]
     ) {
-      const strength = 70; // 隐藏背离通常强度较低
-
       return {
         type: 'hidden_bearish',
-        strength,
+        strength: 70, // 隐藏背离通常强度较低
         description:
           '检测到隐藏看跌背离：价格未创新高但积累分布线创新高，可能指示下降趋势将继续',
       };
@@ -327,11 +291,8 @@ function checkVolumePriceConfirmation(
   const volumeData = recentData.map(d => d.volume);
   const volumeSlope = calculateSlope(volumeData);
 
-  // 确定是否协同确认
-  return (
-    (priceChange > 1 && volumeSlope > 0) ||
-    (priceChange < -1 && volumeSlope < 0)
-  );
+  // 无论上涨还是下跌，成交量放大才是对趋势的确认
+  return Math.abs(priceChange) > 1 && volumeSlope > 0;
 }
 
 /**
