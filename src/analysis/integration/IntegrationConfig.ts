@@ -8,7 +8,7 @@ export interface IntegrationWeights {
   pattern: number;
   volume: number;
   bbsr: number;
-  // 附加权重（不计入100%基础权重）
+  // 附加模块权重（与基础模块一起归一化）
   structure?: number;
   supplyDemand?: number;
   range?: number;
@@ -153,24 +153,30 @@ export function updateIntegrationConfig(
 export function normalizeWeights(
   weights: IntegrationWeights
 ): IntegrationWeights {
-  const totalWeight =
-    weights.chip + weights.pattern + weights.volume + weights.bbsr;
+  // 8 个内置模块一起归一化（合计为 1），使最终分数保持在 ±100 以内。
+  // 插件权重（plugins）单独配置，不参与归一化。
+  const parts = {
+    chip: weights.chip,
+    pattern: weights.pattern,
+    volume: weights.volume,
+    bbsr: weights.bbsr,
+    structure: weights.structure || 0,
+    supplyDemand: weights.supplyDemand || 0,
+    range: weights.range || 0,
+    trendline: weights.trendline || 0,
+  };
+  const totalWeight = Object.values(parts).reduce((s, w) => s + w, 0);
 
   if (totalWeight === 0) {
     throw new Error('权重总和不能为0');
   }
 
-  return {
-    chip: weights.chip / totalWeight,
-    pattern: weights.pattern / totalWeight,
-    volume: weights.volume / totalWeight,
-    bbsr: weights.bbsr / totalWeight,
-    // 附加权重保持不变
-    structure: weights.structure,
-    supplyDemand: weights.supplyDemand,
-    range: weights.range,
-    trendline: weights.trendline,
-  };
+  const normalized = { ...weights };
+  for (const [key, value] of Object.entries(parts)) {
+    (normalized as unknown as Record<string, number>)[key] =
+      value / totalWeight;
+  }
+  return normalized;
 }
 
 // 验证配置函数

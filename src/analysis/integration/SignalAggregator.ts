@@ -13,9 +13,9 @@ import type {
   IntegrationContext,
   AnalyzerPlugin,
 } from './IntegrationTypes.js';
-import type {
-  IntegrationConfig,
-  IntegrationWeights,
+import {
+  normalizeWeights,
+  type IntegrationConfig,
 } from './IntegrationConfig.js';
 
 export class SignalAggregator {
@@ -46,7 +46,7 @@ export class SignalAggregator {
     input: AnalysisInputData,
     context: IntegrationContext
   ): SignalAggregationResult {
-    const normalizedWeights = this.normalizeWeights(this.config.weights);
+    const normalizedWeights = normalizeWeights(this.config.weights);
 
     // 提取各模块的方向和分数
     const chipResult = this.extractChipSignal(input.analyses.chip);
@@ -84,7 +84,7 @@ export class SignalAggregator {
       normalizedWeights.bbsr
     );
 
-    // 附加权重（不计入基础100%）
+    // 附加模块（与基础模块一起归一化）
     const structureWeighted = this.calculateAdditionalScore(
       structureResult,
       normalizedWeights.structure || 0
@@ -180,26 +180,6 @@ export class SignalAggregator {
         trendline: trendlineWeighted,
       },
       extraWeightedScores,
-    };
-  }
-
-  /**
-   * 权重归一化
-   */
-  private normalizeWeights(weights: IntegrationWeights): IntegrationWeights {
-    const totalWeight =
-      weights.chip + weights.pattern + weights.volume + weights.bbsr;
-
-    return {
-      chip: weights.chip / totalWeight,
-      pattern: weights.pattern / totalWeight,
-      volume: weights.volume / totalWeight,
-      bbsr: weights.bbsr / totalWeight,
-      // 附加权重保持不变
-      structure: weights.structure,
-      supplyDemand: weights.supplyDemand,
-      range: weights.range,
-      trendline: weights.trendline,
     };
   }
 
@@ -532,7 +512,7 @@ export class SignalAggregator {
   }
 
   /**
-   * 计算附加分数（不计入主要权重）
+   * 计算附加模块分数（权重已与基础模块一起归一化）
    */
   private calculateAdditionalScore(
     signal: DirectionConversionResult,
