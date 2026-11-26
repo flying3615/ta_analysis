@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../src/types.js';
+// 先导入 analyzeMultiTimeframePatterns：它与各检测器循环导入，
+// 先导入检测器会让 vitest 中的 PATTERN_DETECTORS 拿到未初始化的函数
+import {
+  analyzeAllPatterns,
+  PatternStatus,
+  PatternType,
+} from '../src/analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 import { findSellingClimax } from '../src/analysis/basic/patterns/findSellingClimax.js';
+import { patternConfig } from '../src/analysis/basic/patterns/patternConfig.js';
 
 const t0 = Date.parse('2024-01-01T00:00:00Z');
 
@@ -53,5 +61,33 @@ describe('climax significance', () => {
     expect(climax).toBeDefined();
     const range = (96.7 - 90) / 90;
     expect(climax.significance).toBeCloseTo(climax.reliability * range, 6);
+  });
+});
+
+describe('timeframe match factor', () => {
+  it('scales reliability but not significance a second time', () => {
+    const data = sellingClimaxData();
+    const [raw] = findSellingClimax(data, [], 30);
+
+    // 1 小时周期对短期形态的匹配系数是 1.3
+    const res = analyzeAllPatterns(data, '1hour');
+    const adjusted = res.patterns.find(
+      p => p.patternType === PatternType.SellingClimax
+    );
+    expect(adjusted).toBeDefined();
+
+    const distance = data.length - 1 - adjusted!.component.endIndex;
+    let expected =
+      raw.significance *
+      Math.exp(-patternConfig.weights.patternDistanceDecay * distance);
+    if (adjusted!.status === PatternStatus.Confirmed) {
+      expected *= patternConfig.weights.confirmedBoost;
+    }
+
+    expect(adjusted!.reliability).toBeCloseTo(
+      Math.min(100, raw.reliability * 1.3),
+      6
+    );
+    expect(adjusted!.significance).toBeCloseTo(expected, 6);
   });
 });

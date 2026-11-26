@@ -448,13 +448,13 @@ function analyzeAllPatterns(
       timeframe
     );
 
-    // 调整形态的可靠性和重要性
+    // 匹配系数只调整可靠性；排序用 可靠性 × 重要性，
+    // 如果重要性也乘一次，系数就被计算了两次（相当于平方）
     pattern.reliability = Math.min(
       100,
       pattern.reliability * timeframeMatchFactor
     );
-    pattern.significance =
-      pattern.significance * distanceFactor * timeframeMatchFactor;
+    pattern.significance = pattern.significance * distanceFactor;
 
     // 为已确认突破的形态和正在形成的形态调整权重
     if (pattern.status === PatternStatus.Confirmed) {
