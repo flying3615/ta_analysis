@@ -49,3 +49,15 @@ describe('pattern recency bonus', () => {
     expect(fresh.signalStrength - old.signalStrength).toBe(10);
   });
 });
+
+describe('pattern description', () => {
+  it('does not throw when a pattern has more key dates than key prices', () => {
+    const a = analysisWithPatternEndingAt(98);
+    a.dominantPattern.keyDates = [new Date(0), new Date(86400000)];
+    a.dominantPattern.keyPrices = [100];
+
+    const res = combinePatternAnalyses([a]);
+
+    expect(res.description).toContain('100.00');
+  });
+});

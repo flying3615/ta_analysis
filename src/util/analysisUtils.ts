@@ -306,8 +306,10 @@ export function determineExitStrategy(
           tfa.dominantPattern.direction === PatternDirection.Bullish
       )
       .map(tfa => tfa.dominantPattern?.priceTarget)
-      .filter(price => price && price > entryPrice)
-      .sort((a, b) => (a || 0) - (b || 0));
+      .filter(
+        (price): price is number => price !== undefined && price > entryPrice
+      )
+      .sort((a, b) => a - b);
 
     // 组合阻力位和目标价位
     const takeProfitCandidates = [
@@ -401,8 +403,11 @@ export function determineExitStrategy(
           tfa.dominantPattern.direction === PatternDirection.Bearish
       )
       .map(tfa => tfa.dominantPattern?.priceTarget)
-      .filter(price => price && price < entryPrice)
-      .sort((a, b) => (b || 0) - (a || 0));
+      .filter(
+        (price): price is number =>
+          price !== undefined && price > 0 && price < entryPrice
+      )
+      .sort((a, b) => b - a);
 
     // 组合支撑位和目标价位
     const takeProfitCandidates = [

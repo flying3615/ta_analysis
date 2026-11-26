@@ -460,6 +460,15 @@ export function calculateBullBearRatio(
   return Math.min(10, rawRatio);
 }
 
+/** 关键价位候选：筹码分布中的一个价位及其局部密度 */
+interface DensityCandidate {
+  price: number;
+  weight: number;
+  percentage: number;
+  isStrong: boolean;
+  localDensity: number; // 价格 ±1% 窗口内的筹码占比之和
+}
+
 /**
  * 识别可能的关键价格水平
  * 通过筹码分布识别关键支撑和阻力位
@@ -500,70 +509,50 @@ export function identifyKeyPriceLevels(
   // 按价格排序（用于后续聚类）
   const sortedByPrice = [...chipDistribution].sort((a, b) => a.price - b.price);
 
-  // 使用动态阈值筛选候选支撑位和阻力位
-  let candidateSupports = sortedByWeight
-    .filter(
-      item => item.price < currentPrice && item.percentage > moderateThreshold
-    )
-    .map(item => ({
-      price: item.price,
-      weight: item.weight,
-      percentage: item.percentage,
-      isStrong: item.percentage > strongThreshold,
-    }));
-
-  let candidateResistances = sortedByWeight
-    .filter(
-      item => item.price > currentPrice && item.percentage > moderateThreshold
-    )
-    .map(item => ({
-      price: item.price,
-      weight: item.weight,
-      percentage: item.percentage,
-      isStrong: item.percentage > strongThreshold,
-    }));
-
   // 计算局部密度：检查每个候选点周围的筹码累计
-  const calculateLocalDensity = candidate => {
+  const withLocalDensity = (item: ChipDistribution): DensityCandidate => {
     // 定义价格窗口（基于当前价格的一定百分比）
     const windowSize = currentPrice * 0.01; // 1%的价格窗口
 
-    // 找到窗口内的所有点
-    const nearbyPoints = sortedByPrice.filter(
-      item => Math.abs(item.price - candidate.price) <= windowSize
-    );
-
-    // 计算窗口内的总权重
-    const localDensity = nearbyPoints.reduce(
-      (sum, item) => sum + item.percentage,
-      0
-    );
+    // 找到窗口内的所有点，计算总权重
+    const localDensity = sortedByPrice
+      .filter(other => Math.abs(other.price - item.price) <= windowSize)
+      .reduce((sum, other) => sum + other.percentage, 0);
 
     return {
-      ...candidate,
+      price: item.price,
+      weight: item.weight,
+      percentage: item.percentage,
+      isStrong: item.percentage > strongThreshold,
       localDensity,
     };
   };
 
-  // 计算局部密度
-  candidateSupports = candidateSupports.map(calculateLocalDensity);
-  candidateResistances = candidateResistances.map(calculateLocalDensity);
-
-  // 按局部密度重新排序
-  candidateSupports.sort(
-    (a, b) => (b as any).localDensity - (a as any).localDensity
-  );
-  candidateResistances.sort(
-    (a, b) => (b as any).localDensity - (a as any).localDensity
-  );
+  // 使用动态阈值筛选候选支撑位和阻力位，并按局部密度从高到低排序
+  const byDensity = (a: DensityCandidate, b: DensityCandidate) =>
+    b.localDensity - a.localDensity;
+  const candidateSupports = sortedByWeight
+    .filter(
+      item => item.price < currentPrice && item.percentage > moderateThreshold
+    )
+    .map(withLocalDensity)
+    .sort(byDensity);
+  const candidateResistances = sortedByWeight
+    .filter(
+      item => item.price > currentPrice && item.percentage > moderateThreshold
+    )
+    .map(withLocalDensity)
+    .sort(byDensity);
 
   // 合并相近的价格水平：先按价格排序，相邻价位才能正确分组
-  const mergeNearbyLevels = densitySorted => {
+  const mergeNearbyLevels = (
+    densitySorted: DensityCandidate[]
+  ): DensityCandidate[] => {
     if (densitySorted.length <= 1) return densitySorted;
 
     const levels = [...densitySorted].sort((a, b) => a.price - b.price);
-    const mergedLevels = [];
-    let currentGroup = [levels[0]];
+    const mergedLevels: DensityCandidate[] = [];
+    let currentGroup: DensityCandidate[] = [levels[0]];
 
     for (let i = 1; i < levels.length; i++) {
       const lastLevel = currentGroup[currentGroup.length - 1];
