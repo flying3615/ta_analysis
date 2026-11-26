@@ -528,33 +528,11 @@ export function calculateStandardDeviation(data: number[]): number {
 }
 
 /**
- * 计算最近的ATR值
+ * 计算最近的ATR值（Wilder 平滑，与 calculateATRSeries 的最后一个值一致）
  */
 export function calculateATR(data: Candle[], period: number): number {
-  const trValues: number[] = [];
-
-  // 计算真实范围值
-  for (let i = 1; i < data.length; i++) {
-    const high = data[i].high;
-    const low = data[i].low;
-    const prevClose = data[i - 1].close;
-
-    const tr1 = high - low;
-    const tr2 = Math.abs(high - prevClose);
-    const tr3 = Math.abs(low - prevClose);
-
-    const tr = Math.max(tr1, tr2, tr3);
-    trValues.push(tr);
-  }
-
-  // 计算ATR
-  if (trValues.length === 0) return 0;
-  if (trValues.length < period) {
-    return trValues.reduce((sum, tr) => sum + tr, 0) / trValues.length;
-  }
-
-  const recentTRs = trValues.slice(-period);
-  return recentTRs.reduce((sum, tr) => sum + tr, 0) / period;
+  const series = calculateATRSeries(data, period);
+  return series.length > 0 ? series[series.length - 1] : 0;
 }
 
 /**
@@ -577,6 +555,8 @@ export function calculateATRSeries(data: Candle[], period: number): number[] {
     const tr = Math.max(tr1, tr2, tr3);
     trValues.push(tr);
   }
+
+  if (trValues.length === 0) return atrValues;
 
   // 计算初始ATR
   if (trValues.length < period) {
