@@ -5,7 +5,11 @@ import {
   getStockDataForTimeframe,
 } from '../util/util.js';
 import { SimpleCache } from '../analysis/integration/CacheManager.js';
-import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
+import {
+  BinanceProvider,
+  normalizeSpotSymbol,
+  toBinanceSymbol,
+} from '../analysis/integration/BinanceProvider.js';
 import { globalLogger } from '../util/logger.js';
 
 type Timeframe = 'weekly' | 'daily' | '1hour';
@@ -57,13 +61,11 @@ export class DataProvider {
     symbol: string,
     config: IntegrationConfig
   ): Promise<MultiTimeframeCandles> {
-    const useBinance =
-      symbol.endsWith('USDT') ||
-      symbol.endsWith('BUSD') ||
-      symbol.endsWith('USD');
+    // 加密货币交易对统一走 Binance（代码先规范化为 BTCUSDT 这样的形式），其他走 Yahoo
+    const binanceSymbol = toBinanceSymbol(symbol);
     return this.fetchTimeframes(symbol, config, (start, end, tf) =>
-      useBinance
-        ? this.getCachedBinanceData(symbol, start, end, tf)
+      binanceSymbol
+        ? this.getCachedBinanceData(binanceSymbol, start, end, tf)
         : this.getCachedStockData(symbol, start, end, tf)
     );
   }
@@ -147,15 +149,17 @@ export class DataProvider {
   }
 
   /**
-   * 获取加密货币多周期数据（使用与股票相同的数据提供方，如 Yahoo）
-   * 外部仍可传入 apiKey，但此实现不再依赖 tmai-api。
+   * 获取加密货币多周期数据（Binance 现货）。
+   * 代码会规范化为 Binance 形式：BTC-USD / BTCUSD → BTCUSDT，ETH/EUR → ETHEUR。
    */
   async getMultiTimeframeCryptoData(
     symbol: string,
     config: IntegrationConfig
   ): Promise<MultiTimeframeCandles> {
+    const binanceSymbol =
+      toBinanceSymbol(symbol) ?? normalizeSpotSymbol(symbol);
     return this.fetchTimeframes(symbol, config, (start, end, tf) =>
-      this.getCachedStockData(symbol, start, end, tf)
+      this.getCachedBinanceData(binanceSymbol, start, end, tf)
     );
   }
 

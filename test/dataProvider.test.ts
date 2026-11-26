@@ -7,6 +7,7 @@ vi.mock('../src/util/util.js', async importOriginal => {
 
 import { getStockDataForTimeframe } from '../src/util/util.js';
 import { DataProvider } from '../src/data/DataProvider.js';
+import { BinanceProvider } from '../src/analysis/integration/BinanceProvider.js';
 import { DEFAULT_INTEGRATION_CONFIG } from '../src/analysis/integration/IntegrationConfig.js';
 
 const fetchMock = vi.mocked(getStockDataForTimeframe);
@@ -103,5 +104,53 @@ describe('DataProvider.getMultiTimeframeData', () => {
     await expect(
       new DataProvider().getMultiTimeframeData('T', config)
     ).rejects.toThrow(/daily unavailable/);
+  });
+});
+
+describe('DataProvider symbol routing', () => {
+  const config = DEFAULT_INTEGRATION_CONFIG;
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue([]);
+    vi.restoreAllMocks();
+  });
+
+  const spyKlines = () =>
+    vi.spyOn(BinanceProvider.prototype, 'getKlines').mockResolvedValue([]);
+
+  it.each(['BTC-USD', 'BTCUSD', 'BTCUSDT', 'btc/usdt'])(
+    'sends crypto symbol %s to Binance as BTCUSDT',
+    async symbol => {
+      const klines = spyKlines();
+
+      await new DataProvider().getMultiTimeframeData(symbol, config);
+
+      expect(klines).toHaveBeenCalled();
+      expect(new Set(klines.mock.calls.map(c => c[0]))).toEqual(
+        new Set(['BTCUSDT'])
+      );
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it('sends the crypto entry point to Binance too', async () => {
+    const klines = spyKlines();
+
+    await new DataProvider().getMultiTimeframeCryptoData('BTC-USD', config);
+
+    expect(new Set(klines.mock.calls.map(c => c[0]))).toEqual(
+      new Set(['BTCUSDT'])
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sends stock symbols to Yahoo', async () => {
+    const klines = spyKlines();
+
+    await new DataProvider().getMultiTimeframeData('AAPL', config);
+
+    expect(klines).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });

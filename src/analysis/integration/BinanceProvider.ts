@@ -16,7 +16,7 @@ function intervalMs(interval: Interval): number {
   return 7 * 24 * 60 * 60 * 1000;
 }
 
-function normalizeSpotSymbol(input: string): string {
+export function normalizeSpotSymbol(input: string): string {
   if (!input) return input;
   const s = String(input).trim().toUpperCase();
   if (s.includes('-') || s.includes('/')) {
@@ -25,6 +25,23 @@ function normalizeSpotSymbol(input: string): string {
     return `${base}${quote}`;
   }
   return s;
+}
+
+/** 识别为加密货币的报价币种（USD 会映射为 USDT） */
+const CRYPTO_QUOTE = /^([A-Z0-9]{2,15}?)[-/]?(USDT|USDC|BUSD|USD)$/;
+
+/**
+ * 如果代码看起来是加密货币交易对（如 BTC-USD、BTCUSD、BTCUSDT、btc/usdt），
+ * 返回 Binance 现货代码（如 BTCUSDT）；否则返回 null。
+ */
+export function toBinanceSymbol(input: string): string | null {
+  const s = String(input ?? '')
+    .trim()
+    .toUpperCase();
+  const m = CRYPTO_QUOTE.exec(s);
+  if (!m) return null;
+  const [, base, quote] = m;
+  return `${base}${quote === 'USD' ? 'USDT' : quote}`;
 }
 
 export class BinanceProvider {
