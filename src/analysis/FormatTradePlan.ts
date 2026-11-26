@@ -281,13 +281,59 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     output += buildSection('警告信息', warningContent);
   }
 
-  // 14. 分析构成
+  // 14. 分析构成：权重为 8 个模块归一化后的实际权重
+  const breakdownRows: Array<[string, number | undefined, number | undefined]> =
+    [
+      [
+        '筹码分析',
+        tradePlan.chipAnalysisWeight,
+        tradePlan.chipAnalysisContribution,
+      ],
+      [
+        '形态分析',
+        tradePlan.patternAnalysisWeight,
+        tradePlan.patternAnalysisContribution,
+      ],
+      [
+        '量价分析',
+        tradePlan.volumeAnalysisWeight,
+        tradePlan.volumeAnalysisContribution,
+      ],
+      [
+        '支阻位分析',
+        tradePlan.bbsrAnalysisWeight,
+        tradePlan.bbsrAnalysisContribution,
+      ],
+      [
+        '结构分析',
+        tradePlan.structureAnalysisWeight,
+        tradePlan.structureAnalysisContribution,
+      ],
+      [
+        '供需分析',
+        tradePlan.supplyDemandAnalysisWeight,
+        tradePlan.supplyDemandAnalysisContribution,
+      ],
+      [
+        '区间分析',
+        tradePlan.rangeAnalysisWeight,
+        tradePlan.rangeAnalysisContribution,
+      ],
+      [
+        '趋势线分析',
+        tradePlan.trendlineAnalysisWeight,
+        tradePlan.trendlineAnalysisContribution,
+      ],
+    ];
   output += buildSection(
     '分析构成',
-    `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n` +
-      `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n` +
-      `量价分析: ${(tradePlan.volumeAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.volumeAnalysisContribution.toFixed(1)}/100)\n` +
-      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n`
+    breakdownRows
+      .filter(([, weight]) => weight !== undefined)
+      .map(
+        ([name, weight, score]) =>
+          `${name}: ${((weight ?? 0) * 100).toFixed(0)}% (得分:${(score ?? 0).toFixed(1)}/100)\n`
+      )
+      .join('')
   );
 
   // 结尾分隔线

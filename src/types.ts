@@ -244,7 +244,7 @@ export interface IntegratedTradePlan {
   signalStrength: SignalStrength;
   confidenceScore: number; // 0-100
 
-  // 各分析方法的权重与贡献
+  // 各分析方法的权重（8 个模块归一化后的实际权重，合计为 1）与贡献
   chipAnalysisWeight: number;
   patternAnalysisWeight: number;
   volumeAnalysisWeight: number;
@@ -252,11 +252,16 @@ export interface IntegratedTradePlan {
   structureAnalysisWeight?: number;
   supplyDemandAnalysisWeight?: number;
   rangeAnalysisWeight?: number;
+  trendlineAnalysisWeight?: number;
 
   chipAnalysisContribution: number; // 0-100
   patternAnalysisContribution: number; // 0-100
   volumeAnalysisContribution: number; // 0-100
   bbsrAnalysisContribution: number; // 0-100
+  structureAnalysisContribution?: number; // 0-100
+  supplyDemandAnalysisContribution?: number; // 0-100
+  rangeAnalysisContribution?: number; // 0-100
+  trendlineAnalysisContribution?: number; // 0-100
 
   // 总体分析描述
   summary: string;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../src/types.js';
+import { formatTradePlanOutput } from '../src/analysis/FormatTradePlan.js';
 import { IntegratedOrchestrator } from '../src/analysis/integration/IntegratedOrchestrator.js';
 import { multiTimeFrameChipDistAnalysis } from '../src/analysis/analyzer/chip/multiTimeFrameChipDistributionAnalysis.js';
 import { aggregateDailyToWeekly } from '../src/util/util.js';
@@ -116,5 +117,39 @@ describe('multiTimeFrameChipDistAnalysis', () => {
 
     expect(res.currentPrice).toBeCloseTo(daily[daily.length - 1].close, 8);
     expect(res.timeframes.map(t => t.timeframe)).toEqual(['weekly', 'daily']);
+  });
+});
+
+describe('trade plan analysis breakdown', () => {
+  it('reports the normalized weights of all eight modules', async () => {
+    const daily = makeDaily(260);
+    const weekly = aggregateDailyToWeekly(daily);
+
+    const { tradePlan: p } =
+      await new IntegratedOrchestrator().executeOfflineAnalysis(
+        'T',
+        daily,
+        weekly,
+        []
+      );
+
+    const weights = [
+      p.chipAnalysisWeight,
+      p.patternAnalysisWeight,
+      p.volumeAnalysisWeight,
+      p.bbsrAnalysisWeight,
+      p.structureAnalysisWeight ?? 0,
+      p.supplyDemandAnalysisWeight ?? 0,
+      p.rangeAnalysisWeight ?? 0,
+      p.trendlineAnalysisWeight ?? 0,
+    ];
+    expect(weights.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+    // 默认权重合计 1.5，形态 0.5 → 约 33%
+    expect(p.patternAnalysisWeight).toBeCloseTo(0.5 / 1.5, 10);
+
+    const text = formatTradePlanOutput(p);
+    expect(text).toContain('形态分析: 33%');
+    expect(text).toContain('结构分析:');
+    expect(text).toContain('趋势线分析:');
   });
 });

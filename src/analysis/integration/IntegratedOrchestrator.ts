@@ -45,6 +45,7 @@ import type {
 import {
   DEFAULT_INTEGRATION_CONFIG,
   mergeIntegrationConfig,
+  normalizeWeights,
   type IntegrationConfig,
 } from './IntegrationConfig.js';
 
@@ -730,6 +731,9 @@ export class IntegratedOrchestrator {
     strategyResult: any,
     context: IntegrationContext
   ): IntegratedTradePlan {
+    // 打分时实际使用的权重（8 个模块一起归一化）
+    const weights = normalizeWeights(context.config.weights);
+
     // 构建完整的交易计划
     return {
       symbol,
@@ -740,17 +744,25 @@ export class IntegratedOrchestrator {
       signalStrength: signalResult.signalStrength,
       confidenceScore: signalResult.confidenceScore,
 
-      // 权重信息
-      chipAnalysisWeight: context.config.weights.chip,
-      patternAnalysisWeight: context.config.weights.pattern,
-      volumeAnalysisWeight: context.config.weights.volume,
-      bbsrAnalysisWeight: context.config.weights.bbsr,
+      // 权重信息：打分时实际使用的归一化权重
+      chipAnalysisWeight: weights.chip,
+      patternAnalysisWeight: weights.pattern,
+      volumeAnalysisWeight: weights.volume,
+      bbsrAnalysisWeight: weights.bbsr,
+      structureAnalysisWeight: weights.structure,
+      supplyDemandAnalysisWeight: weights.supplyDemand,
+      rangeAnalysisWeight: weights.range,
+      trendlineAnalysisWeight: weights.trendline,
 
       // 贡献度
       chipAnalysisContribution: signalResult.contributions.chip,
       patternAnalysisContribution: signalResult.contributions.pattern,
       volumeAnalysisContribution: signalResult.contributions.volume,
       bbsrAnalysisContribution: signalResult.contributions.bbsr,
+      structureAnalysisContribution: signalResult.contributions.structure,
+      supplyDemandAnalysisContribution: signalResult.contributions.supplyDemand,
+      rangeAnalysisContribution: signalResult.contributions.range,
+      trendlineAnalysisContribution: signalResult.contributions.trendline,
 
       // 策略相关
       entryStrategy: strategyResult.entryStrategy,
