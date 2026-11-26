@@ -103,8 +103,10 @@ export function analyzeSupplyDemandZone(
     z => (z.high - z.low) / z.low >= config.minZoneWidthPercent
   );
 
+  // 按时间排序后取最近 5 个未被突破的区域（需求区和供给区一起比较）
   const recentEffectiveZones = zones
     .filter(z => z.status !== 'broken')
+    .sort((a, b) => a.endIndex - b.endIndex)
     .slice(-5);
   const premiumDiscount = computePremiumDiscount(data);
 
