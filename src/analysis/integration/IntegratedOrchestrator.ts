@@ -521,7 +521,7 @@ export class IntegratedOrchestrator {
           'pattern'
         ),
         this.executeWithFallback(
-          () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
+          () => analyzeMultiTimeBBSR(symbol, dailyData, weeklyData),
           'bbsr'
         ),
         this.executeWithFallback(
