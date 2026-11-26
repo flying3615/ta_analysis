@@ -7,6 +7,27 @@ import {
 import { SimpleCache } from '../analysis/integration/CacheManager.js';
 import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
 
+type Timeframe = 'weekly' | 'daily' | '1hour';
+
+/** 各周期缓存有效期：小时线更新频繁，缓存时间更短 */
+const CACHE_TTL_MS: Record<Timeframe, number> = {
+  '1hour': 5 * 60 * 1000,
+  daily: 30 * 60 * 1000,
+  weekly: 30 * 60 * 1000,
+};
+
+/** 缓存键只精确到日期（UTC），同一天内的重复请求可以命中缓存 */
+function cacheKey(
+  source: string,
+  symbol: string,
+  timeframe: Timeframe,
+  startDate: Date,
+  endDate: Date
+): string {
+  const day = (d: Date) => d.toISOString().slice(0, 10);
+  return `${source}_${symbol}_${timeframe}_${day(startDate)}_${day(endDate)}`;
+}
+
 export class DataProvider {
   private cache: SimpleCache<Candle[]>;
   private binance = new BinanceProvider();
@@ -71,22 +92,26 @@ export class DataProvider {
     endDate: Date,
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
-    const cacheKey = `binance_${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    return this.cache.getOrFetch(cacheKey, async () => {
-      if (timeframe === 'weekly') {
-        const daily = await this.binance.getKlines(
-          symbol,
-          '1d',
-          startDate,
-          endDate
-        );
-        return aggregateDailyToWeekly(daily);
-      }
-      if (timeframe === 'daily') {
-        return await this.binance.getKlines(symbol, '1d', startDate, endDate);
-      }
-      return await this.binance.getKlines(symbol, '1h', startDate, endDate);
-    });
+    const key = cacheKey('binance', symbol, timeframe, startDate, endDate);
+    return this.cache.getOrFetch(
+      key,
+      async () => {
+        if (timeframe === 'weekly') {
+          const daily = await this.binance.getKlines(
+            symbol,
+            '1d',
+            startDate,
+            endDate
+          );
+          return aggregateDailyToWeekly(daily);
+        }
+        if (timeframe === 'daily') {
+          return await this.binance.getKlines(symbol, '1d', startDate, endDate);
+        }
+        return await this.binance.getKlines(symbol, '1h', startDate, endDate);
+      },
+      { ttl: CACHE_TTL_MS[timeframe] }
+    );
   }
 
   /**
@@ -133,15 +158,12 @@ export class DataProvider {
     endDate: Date,
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
-    const cacheKey = `${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    return this.cache.getOrFetch(cacheKey, async () => {
-      return await getStockDataForTimeframe(
-        symbol,
-        startDate,
-        endDate,
-        timeframe
-      );
-    });
+    const key = cacheKey('stock', symbol, timeframe, startDate, endDate);
+    return this.cache.getOrFetch(
+      key,
+      () => getStockDataForTimeframe(symbol, startDate, endDate, timeframe),
+      { ttl: CACHE_TTL_MS[timeframe] }
+    );
   }
 
   stats() {
