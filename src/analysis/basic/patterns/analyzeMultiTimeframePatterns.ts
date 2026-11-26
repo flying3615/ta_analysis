@@ -113,6 +113,7 @@ interface AnalyzeMultiTimeframePatterns {
   patterns: PatternAnalysisResult[];
   dominantPattern?: PatternAnalysisResult; // 主导形态
   patternSignal: PatternDirection; // 形态综合信号
+  dataLength?: number; // 参与分析的K线数量（用于判断形态新近度）
 }
 
 /**
@@ -483,6 +484,7 @@ function analyzeAllPatterns(
     patterns: allPatterns,
     dominantPattern,
     patternSignal,
+    dataLength: data.length,
   };
 }
 
@@ -669,12 +671,10 @@ function combinePatternAnalyses(
         signalStrength += patternConfig.signals.recencyMediumBonus;
       }
 
-      if (pattern.component) {
-        const patternEndIndex = pattern.component.endIndex;
-        const estimatedDataLength =
-          patternEndIndex + (patternEndIndex - pattern.component.startIndex);
-
-        const recencyRatio = patternEndIndex / estimatedDataLength;
+      // 新近度 = 形态结束位置在数据中的相对位置（1 表示最后一根K线）
+      if (pattern.component && analysis.dataLength) {
+        const recencyRatio =
+          (pattern.component.endIndex + 1) / analysis.dataLength;
 
         if (recencyRatio > patternConfig.signals.recencyHighThreshold) {
           signalStrength += patternConfig.signals.recencyHighBonus;
