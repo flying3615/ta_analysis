@@ -7,11 +7,14 @@ vi.mock('../src/util/util.js', async importOriginal => {
 
 import { getStockDataForTimeframe } from '../src/util/util.js';
 import { DataProvider } from '../src/data/DataProvider.js';
+import { DEFAULT_INTEGRATION_CONFIG } from '../src/analysis/integration/IntegrationConfig.js';
 
 const fetchMock = vi.mocked(getStockDataForTimeframe);
 
 describe('DataProvider cache', () => {
-  beforeEach(() => fetchMock.mockClear());
+  beforeEach(() => {
+    fetchMock.mockClear();
+  });
 
   it('reuses data for the same symbol and day range', async () => {
     const provider = new DataProvider();
@@ -59,5 +62,46 @@ describe('DataProvider cache', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('DataProvider.getMultiTimeframeData', () => {
+  const config = DEFAULT_INTEGRATION_CONFIG;
+  const bar = {
+    symbol: 'T',
+    open: 1,
+    high: 1,
+    low: 1,
+    close: 1,
+    volume: 1,
+    timestamp: new Date('2024-01-02'),
+  };
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+  });
+
+  it('returns empty hourly data when only the hourly fetch fails', async () => {
+    fetchMock.mockImplementation(async (_s, _a, _b, tf) => {
+      if (tf === '1hour') throw new Error('hourly unavailable');
+      return [bar];
+    });
+
+    const res = await new DataProvider().getMultiTimeframeData('T', config);
+
+    expect(res.dailyData).toHaveLength(1);
+    expect(res.weeklyData).toHaveLength(1);
+    expect(res.hourlyData).toEqual([]);
+  });
+
+  it('rejects when the daily fetch fails', async () => {
+    fetchMock.mockImplementation(async (_s, _a, _b, tf) => {
+      if (tf === 'daily') throw new Error('daily unavailable');
+      return [bar];
+    });
+
+    await expect(
+      new DataProvider().getMultiTimeframeData('T', config)
+    ).rejects.toThrow(/daily unavailable/);
   });
 });

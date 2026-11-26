@@ -150,7 +150,8 @@ export async function getStockData(
 
     if (result && result.quotes && result.quotes.length > 0) {
       result.quotes.forEach(quote => {
-        if (quote.date && quote.close && quote.volume !== undefined) {
+        // 跳过不完整的报价（Yahoo 会返回 close 或 volume 为 null 的行）
+        if (quote.date && quote.close && typeof quote.volume === 'number') {
           candles.push({
             symbol,
             open: quote.open || quote.close,
@@ -166,8 +167,11 @@ export async function getStockData(
 
     return candles;
   } catch (error) {
-    globalLogger.error('获取股票数据时出错:', error);
-    return [];
+    // 不再静默返回空数组：调用方需要区分"没有数据"和"获取失败"
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `获取 ${symbol} 数据失败 (interval=${interval}): ${message}`
+    );
   }
 }
 
@@ -177,27 +181,17 @@ export async function getStockDataForTimeframe(
   endDate: Date,
   timeframe: 'weekly' | 'daily' | '1hour'
 ): Promise<Candle[]> {
-  // 实际应用中，应该直接从数据提供商获取对应时间周期的数据
-  // 这里为了简化，我们从日线数据模拟其他时间周期
-
-  // 首先获取原始日线数据
-  const rawData = await getStockData(symbol, startDate, endDate);
-
-  if (timeframe === 'daily') {
-    return await getStockData(symbol, startDate, endDate); // 直接返回日线数据
-  } else if (timeframe === 'weekly') {
-    // 将日线数据聚合为周线
+  if (timeframe === 'weekly') {
     return await getStockData(symbol, startDate, endDate, '1wk');
-  } else if (timeframe === '1hour') {
-    // 注意：实际应用中应该直接获取真实的日内数据
+  }
+  if (timeframe === '1hour') {
     // 过滤掉夜盘影响，成交量为0的数据
     return (await getStockData(symbol, startDate, endDate, '1h')).filter(
       c => c.volume !== 0
     );
   }
-
   // 默认返回日线数据
-  return rawData;
+  return await getStockData(symbol, startDate, endDate);
 }
 
 /**

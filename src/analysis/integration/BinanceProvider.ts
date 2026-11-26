@@ -55,7 +55,13 @@ export class BinanceProvider {
       });
       const url = `${this.baseUrl}/api/v3/klines?${params.toString()}`;
       const res = await fetch(url);
-      if (!res.ok) break;
+      if (!res.ok) {
+        // 不返回部分数据：调用方需要知道这次获取失败了
+        const body = await res.text().catch(() => '');
+        throw new Error(
+          `Binance klines 请求失败 (${normSymbol} ${iv}): HTTP ${res.status} ${body.slice(0, 200)}`
+        );
+      }
       const arr: any[] = await res.json();
       if (!Array.isArray(arr) || arr.length === 0) break;
 
