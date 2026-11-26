@@ -82,8 +82,9 @@ export function identifyChipPeaks(
     const leftBound = Math.max(0, i - windowSize);
     const rightBound = Math.min(sortedDist.length - 1, i + windowSize);
 
-    // 如果窗口太小，则不考虑此点作为峰值
-    if (i - leftBound < minWindowPadding || rightBound - i < minWindowPadding) {
+    // 至少要有一个相邻点可以比较；位于两端的点只与一侧比较，
+    // 这样最低价或最高价区间的筹码峰也能被识别
+    if (rightBound - leftBound < minWindowPadding) {
       continue;
     }
 
@@ -556,10 +557,11 @@ export function identifyKeyPriceLevels(
     (a, b) => (b as any).localDensity - (a as any).localDensity
   );
 
-  // 合并相近的价格水平
-  const mergeNearbyLevels = levels => {
-    if (levels.length <= 1) return levels;
+  // 合并相近的价格水平：先按价格排序，相邻价位才能正确分组
+  const mergeNearbyLevels = densitySorted => {
+    if (densitySorted.length <= 1) return densitySorted;
 
+    const levels = [...densitySorted].sort((a, b) => a.price - b.price);
     const mergedLevels = [];
     let currentGroup = [levels[0]];
 
@@ -586,7 +588,8 @@ export function identifyKeyPriceLevels(
       mergedLevels.push(currentGroup[0]);
     }
 
-    return mergedLevels;
+    // 保持原来的输出顺序：按局部密度从高到低
+    return mergedLevels.sort((a, b) => b.localDensity - a.localDensity);
   };
 
   // 合并相近的水平

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { calculateBullBearRatio } from '../src/util/chipUtils.js';
+import {
+  calculateBullBearRatio,
+  identifyChipPeaks,
+  identifyKeyPriceLevels,
+} from '../src/util/chipUtils.js';
 import { chipConfig } from '../src/analysis/analyzer/chip/chipConfig.js';
 
 /** 当前价 100，低价筹码在 90，高价筹码在 110（两侧距离相同） */
@@ -29,5 +33,50 @@ describe('calculateBullBearRatio', () => {
     expect(calculateBullBearRatio(split(99.9, 0.1), 100)).toBeLessThanOrEqual(
       10
     );
+  });
+});
+
+describe('identifyKeyPriceLevels', () => {
+  it('merges nearby levels even when another level sits between them by density', () => {
+    // 当前价 150。99/100/101 彼此相距 1（< 1.5 的合并容差），120 远离它们
+    const dist = [
+      // 局部密度：100 → 25，120 → 20，101 → 19，99 → 18
+      // 按密度排序时 120 夹在 100 和 101 之间
+      { price: 99, weight: 6, percentage: 6 },
+      { price: 100, weight: 12, percentage: 12 },
+      { price: 101, weight: 7, percentage: 7 },
+      { price: 120, weight: 20, percentage: 20 },
+    ];
+
+    const res = identifyKeyPriceLevels(dist, 150, 0);
+    const supports = [...res.strongSupports, ...res.moderateSupports].sort(
+      (a, b) => a - b
+    );
+
+    expect(supports).toEqual([100, 120]);
+  });
+});
+
+describe('identifyChipPeaks', () => {
+  it('finds a peak in the highest price bin', () => {
+    const dist = Array.from({ length: 30 }, (_, i) => {
+      const pct = i === 29 ? 20 : 1 + (i % 3) * 0.1;
+      return { price: 90 + i, weight: pct, percentage: pct };
+    });
+
+    const peaks = identifyChipPeaks(dist, 100);
+
+    expect(peaks.map(p => p.price)).toContain(119);
+  });
+
+  it('finds a peak in the lowest price bin', () => {
+    const dist = Array.from({ length: 30 }, (_, i) => {
+      const pct = i === 0 ? 20 : 1 + (i % 3) * 0.1;
+      return { price: 90 + i, weight: pct, percentage: pct };
+    });
+
+    const peaks = identifyChipPeaks(dist, 100);
+
+    expect(peaks.map(p => p.price)).toContain(90);
   });
 });
