@@ -223,6 +223,8 @@ export function calculateStandardRSI(prices: number[], period: number): number {
     }
   }
 
+  // 价格完全不动时没有动量，返回中性值，而不是"超买"
+  if (avgGain === 0 && avgLoss === 0) return 50;
   if (avgLoss === 0) return 100;
 
   const rs = avgGain / avgLoss;
@@ -382,7 +384,8 @@ export function calculateMoneyFlowIndex(
     }
   }
 
-  // 防止除以零
+  // 防止除以零；没有任何资金流方向时返回中性值
+  if (positiveFlow === 0 && negativeFlow === 0) return 50;
   if (negativeFlow === 0) return 100;
   if (positiveFlow === 0) return 0;
 
