@@ -1,13 +1,11 @@
 import { Candle } from '../types.js';
 import yahooFinance from 'yahoo-finance2';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
 import { PatternStatus } from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 import { globalLogger } from './logger.js';
+
+/** yahoo-finance2 chart() 的查询参数与周期类型（从公开签名推断，不依赖内部路径） */
+type ChartOptions = Parameters<typeof yahooFinance.chart>[1];
+export type ChartInterval = NonNullable<ChartOptions['interval']>;
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -133,19 +131,19 @@ export async function getStockData(
   symbol: string,
   startDate: Date,
   endDate: Date,
-  interval = '1d'
+  interval: ChartInterval = '1d'
 ): Promise<Candle[]> {
+  // 显式指定 return: 'array'（库的默认值，结果带 quotes 数组），
+  // 以匹配返回 ChartResultArray 的重载，从而得到报价的类型
   const queryOptions = {
     period1: startDate,
     period2: endDate,
     interval,
-  } as ChartOptions;
+    return: 'array' as const,
+  };
 
   try {
-    const result: ChartResultObject = await yahooFinance.chart(
-      symbol,
-      queryOptions
-    );
+    const result = await yahooFinance.chart(symbol, queryOptions);
     const candles: Candle[] = [];
 
     if (result && result.quotes && result.quotes.length > 0) {
@@ -250,7 +248,7 @@ export async function getFullExchangeNameBySymbol(symbol: string) {
   } catch (e) {
     globalLogger.error(
       `Error occurs when getting ${symbol} full exchange name`,
-      e.message
+      e instanceof Error ? e.message : String(e)
     );
     return ''; // 返回 null 表示出错
   }

@@ -78,7 +78,7 @@ function simulateStockTrading(initState: InitState) {
 
     // 记录买入交易
     const buyTrade = {
-      type: 'buy',
+      type: 'buy' as const,
       cycle: cycles,
       price: buyPrice,
       shares: tradingPosition,
@@ -107,7 +107,7 @@ function simulateStockTrading(initState: InitState) {
 
     // 记录卖出交易
     const sellTrade = {
-      type: 'sell',
+      type: 'sell' as const,
       cycle: cycles,
       price: sellPrice,
       shares: tradingPosition,

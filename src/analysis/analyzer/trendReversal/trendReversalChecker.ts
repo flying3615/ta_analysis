@@ -149,7 +149,7 @@ async function checkStockForReversalSignal(
       symbol,
       hasSignal: false,
       allSignals: [],
-      summary: `分析${symbol}时发生错误: ${error.message}`,
+      summary: `分析${symbol}时发生错误: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -194,7 +194,7 @@ async function batchCheckForReversalSignals(
         symbol,
         hasSignal: false,
         allSignals: [],
-        summary: `分析时发生错误: ${error.message}`,
+        summary: `分析时发生错误: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }

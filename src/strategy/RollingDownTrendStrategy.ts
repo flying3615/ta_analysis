@@ -97,7 +97,7 @@ function calculateShortStrategyReturns(
       // 记录交易
       const stopLossTrade = {
         day,
-        type: 'stopLoss',
+        type: 'stopLoss' as const,
         price: currentPrice,
         shares: currentShortShares,
         value: coverValue,
@@ -143,7 +143,7 @@ function calculateShortStrategyReturns(
         // 记录交易
         const shortTrade = {
           day,
-          type: 'short',
+          type: 'short' as const,
           price: currentPrice,
           shares: tradingPosition,
           value: shortValue,
@@ -187,7 +187,7 @@ function calculateShortStrategyReturns(
         // 记录交易
         const coverTrade = {
           day,
-          type: 'cover',
+          type: 'cover' as const,
           price: currentPrice,
           shares: coverShares,
           value: coverValue,
@@ -333,7 +333,7 @@ async function runShortExpectedReturnsAnalysis(
     return formatShortAnalysisResult(analysis);
   } catch (error) {
     globalLogger.error('运行分析失败:', error);
-    return `分析失败: ${error.message}`;
+    return `分析失败: ${error instanceof Error ? error.message : String(error)}`;
   }
 }
 
@@ -403,7 +403,7 @@ async function compareShortVolatilityScenarios(
     return output;
   } catch (error) {
     globalLogger.error('比较不同波动率场景失败:', error);
-    return `比较失败: ${error.message}`;
+    return `比较失败: ${error instanceof Error ? error.message : String(error)}`;
   }
 }
 

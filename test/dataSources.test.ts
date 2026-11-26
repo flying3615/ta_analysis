@@ -35,6 +35,23 @@ describe('Yahoo data helpers', () => {
     expect(chart).toHaveBeenCalledTimes(1);
   });
 
+  it('requests the array format, which carries the quotes list', async () => {
+    chart.mockResolvedValue({ quotes: [] });
+
+    await getStockData(
+      'T',
+      new Date('2024-01-01'),
+      new Date('2024-02-01'),
+      '1h'
+    );
+
+    // return: 'object' 的结果没有 quotes 字段，会导致拿不到任何K线
+    expect(chart.mock.calls[0][1]).toMatchObject({
+      interval: '1h',
+      return: 'array',
+    });
+  });
+
   it('drops quotes whose volume is null', async () => {
     chart.mockResolvedValue({
       quotes: [quote('2024-01-02', 10, 100), quote('2024-01-03', 11, null)],

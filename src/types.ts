@@ -219,7 +219,14 @@ export interface KeyLevel {
  * 交易条件接口
  */
 export interface TradeCondition {
-  type: 'price' | 'pattern' | 'indicator' | 'volume' | 'time';
+  type:
+    | 'price'
+    | 'pattern'
+    | 'indicator'
+    | 'volume'
+    | 'time'
+    | 'chip'
+    | 'volatility';
   description: string;
   priority: 'critical' | 'important' | 'optional';
 }

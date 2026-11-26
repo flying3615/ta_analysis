@@ -255,10 +255,11 @@ export function findBuyingClimax(
       );
 
       // 根据形态类型计算不同的价格目标和关键点
-      let priceTarget, stopLoss, probableBreakoutZone;
-      let keyPoint1, keyPoint2;
-      let patternHeight, breakoutLevel;
-      let description, tradingImplication;
+      let priceTarget: number, stopLoss: number;
+      let probableBreakoutZone: [number, number];
+      let keyPoint1: PeakValley, keyPoint2: PeakValley;
+      let patternHeight: number, breakoutLevel: number;
+      let description: string, tradingImplication: string;
 
       if (isTopPattern) {
         // 顶部买入高潮：计算下跌目标

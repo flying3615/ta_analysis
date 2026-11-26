@@ -19,8 +19,8 @@ export function createPatternPlugin(): AnalyzerPlugin {
       input: AnalysisInputData,
       _context: IntegrationContext
     ): DirectionConversionResult {
-      const p = input.analyses.pattern as any;
-      const dir = p.combinedSignal as PatternDirection;
+      const p = input.analyses.pattern;
+      const dir = p.combinedSignal;
       const direction =
         dir === PatternDirection.Bullish
           ? TradeDirection.Long
