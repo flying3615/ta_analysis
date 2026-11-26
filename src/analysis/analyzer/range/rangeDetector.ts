@@ -53,11 +53,8 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
           nr7Count: nr7s,
         };
 
-        // 选择结束位置更靠后的区间作为最近区间
-        if (!bestRange || currentRange.endIndex > bestRange.endIndex) {
-          bestRange = currentRange;
-        }
-        // 如果找到一个就跳出内层循环，加速寻找最近的
+        // end 从最近往前扫描，第一个找到的就是最近的区间
+        bestRange = currentRange;
         break;
       }
     }

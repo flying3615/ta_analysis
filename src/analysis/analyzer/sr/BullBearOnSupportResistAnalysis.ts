@@ -1,6 +1,5 @@
 import { Candle, SRSignal, SupportResistanceResult } from '../../../types.js';
 import { checkBullOrBearRecently } from '../../basic/candle/BullOrBearDetector.js';
-import { PatternDirection } from '../../basic/patterns/analyzeMultiTimeframePatterns.js';
 import { srConfig } from './srConfig.js';
 
 /**
@@ -179,7 +178,9 @@ function detectSupportResistance(
 function checkBullBearNearSupportResistance(
   symbol: string,
   candles: Candle[]
-): SRSignal {
+): SRSignal | undefined {
+  if (candles.length === 0) return undefined;
+
   const srResult = detectSupportResistance(symbol, candles, srConfig.pivot);
 
   const { bullishPatternsDetails, bearishPatternsDetails } =
@@ -188,89 +189,37 @@ function checkBullBearNearSupportResistance(
   // 获取当前价格
   const currentPrice = candles[candles.length - 1].close;
 
-  // 4. 判断最新的信号类型 (看涨或看跌)
-  const lastBullishPattern =
-    bullishPatternsDetails.length > 0
-      ? bullishPatternsDetails[bullishPatternsDetails.length - 1]
-      : null;
+  // 4. 判断最新的信号类型 (看涨或看跌)：两种都有时取较新的一个
+  const lastBullishPattern = bullishPatternsDetails.at(-1);
+  const lastBearishPattern = bearishPatternsDetails.at(-1);
+  const useBullish =
+    lastBullishPattern !== undefined &&
+    (lastBearishPattern === undefined ||
+      lastBullishPattern.date > lastBearishPattern.date);
+  const recentPattern = useBullish ? lastBullishPattern : lastBearishPattern;
 
-  const lastBearishPattern =
-    bearishPatternsDetails.length > 0
-      ? bearishPatternsDetails[bearishPatternsDetails.length - 1]
-      : null;
+  // 没有信号
+  if (!recentPattern) return undefined;
 
-  // 确定最近的信号类型
-  let recentSignalType: PatternDirection | null = null;
-  let recentSignalDate: Date | null = null;
-  let signalStrength = 0;
-
-  if (!lastBullishPattern && lastBearishPattern) {
-    recentSignalType = PatternDirection.Bearish;
-    recentSignalDate = lastBearishPattern.date;
-    signalStrength = lastBearishPattern.strength;
-  } else if (lastBullishPattern && !lastBearishPattern) {
-    recentSignalType = PatternDirection.Bullish;
-    recentSignalDate = lastBullishPattern.date;
-    signalStrength = lastBullishPattern.strength;
-  } else if (lastBullishPattern && lastBearishPattern) {
-    // 如果两种信号都有，选择最近的
-    recentSignalType =
-      lastBullishPattern.date > lastBearishPattern.date
-        ? PatternDirection.Bullish
-        : PatternDirection.Bearish;
-    recentSignalDate =
-      recentSignalType === PatternDirection.Bullish
-        ? lastBullishPattern.date
-        : lastBearishPattern.date;
-    signalStrength =
-      recentSignalType === PatternDirection.Bullish
-        ? lastBullishPattern.strength
-        : lastBearishPattern.strength;
-  } else {
-    // 没有信号
-    return;
+  // 5. 判断是否在支撑位（看涨）或阻力位（看跌）附近
+  const level = useBullish
+    ? srResult.dynamicSupport
+    : srResult.dynamicResistance;
+  if (
+    level &&
+    isNearLevel(currentPrice, level, srConfig.nearThresholdPercent)
+  ) {
+    return {
+      symbol,
+      SRLevel: level,
+      signalDate: recentPattern.date,
+      currentPrice,
+      strength: recentPattern.strength,
+      signal: recentPattern,
+    };
   }
 
-  // 5. 判断是否在支撑位或阻力位附近
-  if (recentSignalType === PatternDirection.Bullish && recentSignalDate) {
-    // 检查是否在支撑位附近 (当前价格在支撑位 ±10% 范围内)
-    const dynamicSupport = srResult.dynamicSupport;
-    if (
-      dynamicSupport &&
-      isNearLevel(currentPrice, dynamicSupport, srConfig.nearThresholdPercent)
-    ) {
-      return {
-        symbol,
-        SRLevel: dynamicSupport,
-        signalDate: recentSignalDate,
-        currentPrice: currentPrice,
-        strength: signalStrength,
-        signal: lastBullishPattern,
-      };
-    }
-  }
-
-  if (recentSignalType === PatternDirection.Bearish && recentSignalDate) {
-    // 检查是否在阻力位附近 (当前价格在阻力位 ±10% 范围内)
-    const dynamicResistance = srResult.dynamicResistance;
-    if (
-      dynamicResistance &&
-      isNearLevel(
-        currentPrice,
-        dynamicResistance,
-        srConfig.nearThresholdPercent
-      )
-    ) {
-      return {
-        symbol: symbol,
-        SRLevel: dynamicResistance,
-        signalDate: recentSignalDate,
-        currentPrice: currentPrice,
-        strength: signalStrength,
-        signal: lastBearishPattern,
-      };
-    }
-  }
+  return undefined;
 }
 
 export { detectSupportResistance, checkBullBearNearSupportResistance };
