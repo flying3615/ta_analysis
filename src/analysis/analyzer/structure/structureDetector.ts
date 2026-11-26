@@ -4,7 +4,6 @@ import type {
   StructureEvent,
   StructureResult,
   StructureTrend,
-  Swing,
 } from './structureTypes.js';
 
 function findPivots(data: Candle[]): {
@@ -37,168 +36,138 @@ function findPivots(data: Candle[]): {
   return { highs, lows };
 }
 
-function buildExternalSwings(
-  data: Candle[],
-  pivots: { highs: (number | null)[]; lows: (number | null)[] }
-): Swing[] {
-  const swings: Swing[] = [];
-  const minMove = structureConfig.thresholds.minSwingDistancePercent;
-  let lastIndex = -1;
-  let lastHigh = -Infinity;
-  let lastLow = Infinity;
-
-  for (let i = 0; i < data.length; i++) {
-    const h = pivots.highs[i];
-    const l = pivots.lows[i];
-    if (h != null) {
-      if (lastIndex >= 0) {
-        const move = Math.abs((h - lastLow) / lastLow);
-        if (move >= minMove)
-          swings.push({
-            startIndex: lastIndex,
-            endIndex: i,
-            high: h,
-            low: lastLow,
-          });
-      }
-      lastIndex = i;
-      lastHigh = h;
-      lastLow = data[i].low;
-    }
-    if (l != null) {
-      if (lastIndex >= 0) {
-        const move = Math.abs((lastHigh - l) / lastHigh);
-        if (move >= minMove)
-          swings.push({
-            startIndex: lastIndex,
-            endIndex: i,
-            high: lastHigh,
-            low: l,
-          });
-      }
-      lastIndex = i;
-      lastLow = l;
-      lastHigh = data[i].high;
-    }
-  }
-  return swings;
+interface PivotPoint {
+  index: number;
+  price: number;
 }
 
+/** 把拐点数组整理成按时间排序的高点、低点序列（合并相邻的等价平台） */
+function collectPivotPoints(pivots: {
+  highs: (number | null)[];
+  lows: (number | null)[];
+}): { highs: PivotPoint[]; lows: PivotPoint[] } {
+  const { rightBars } = structureConfig.pivot;
+  const collect = (values: (number | null)[]): PivotPoint[] => {
+    const out: PivotPoint[] = [];
+    values.forEach((price, index) => {
+      if (price == null) return;
+      const prev = out[out.length - 1];
+      if (prev && index - prev.index <= rightBars && prev.price === price) {
+        return; // 同一个平台上的重复拐点
+      }
+      out.push({ index, price });
+    });
+    return out;
+  };
+  return { highs: collect(pivots.highs), lows: collect(pivots.lows) };
+}
+
+/** 最近两个高点和两个低点同时抬高为上升，同时降低为下降，否则为震荡 */
+function determineTrend(
+  highs: PivotPoint[],
+  lows: PivotPoint[]
+): StructureTrend {
+  if (highs.length < 2 || lows.length < 2) return 'sideways';
+  const [h1, h2] = highs.slice(-2);
+  const [l1, l2] = lows.slice(-2);
+  if (h2.price > h1.price && l2.price > l1.price) return 'up';
+  if (h2.price < h1.price && l2.price < l1.price) return 'down';
+  return 'sideways';
+}
+
+/**
+ * 检测结构事件：
+ * - 收盘价突破最近的拐点高点/低点：顺势为 BOS，逆势（打破原趋势）为 CHOCH
+ * - 最近两个拐点高点/低点几乎相等：EqualHighs / EqualLows
+ */
 function detectStructureEvents(
   data: Candle[],
-  swings: Swing[],
+  highs: PivotPoint[],
+  lows: PivotPoint[],
+  trend: StructureTrend,
   timeframe: 'weekly' | 'daily' | '1hour'
 ): StructureEvent | undefined {
-  if (swings.length < 2) return;
+  if (highs.length === 0 || lows.length === 0) return;
   const { breakThresholdPercent, equalTolerancePercent } =
     structureConfig.thresholds;
-  const lastSwing = swings[swings.length - 1];
-  const prevSwing = swings[swings.length - 2];
+  const lastHigh = highs[highs.length - 1];
+  const lastLow = lows[lows.length - 1];
   const close = data[data.length - 1].close;
+  const index = data.length - 1;
 
-  // BOS upward
-  const brokeHigh = close > lastSwing.high * (1 + breakThresholdPercent);
-  const brokeLow = close < lastSwing.low * (1 - breakThresholdPercent);
+  const brokeHigh = close > lastHigh.price * (1 + breakThresholdPercent);
+  const brokeLow = close < lastLow.price * (1 - breakThresholdPercent);
 
   if (brokeHigh) {
     return {
-      type: 'BOS',
+      type: trend === 'down' ? 'CHOCH' : 'BOS',
       direction: 'bullish',
-      index: data.length - 1,
+      index,
       price: close,
       timeframe,
     };
   }
   if (brokeLow) {
     return {
-      type: 'BOS',
+      type: trend === 'up' ? 'CHOCH' : 'BOS',
       direction: 'bearish',
-      index: data.length - 1,
+      index,
       price: close,
       timeframe,
     };
   }
 
   // Equal highs/lows
-  const eqHigh =
-    Math.abs(lastSwing.high - prevSwing.high) / prevSwing.high <
-    equalTolerancePercent;
-  const eqLow =
-    Math.abs(lastSwing.low - prevSwing.low) / prevSwing.low <
-    equalTolerancePercent;
-  if (eqHigh)
-    return {
-      type: 'EqualHighs',
-      direction: 'neutral',
-      index: lastSwing.endIndex,
-      price: lastSwing.high,
-      timeframe,
-    };
-  if (eqLow)
-    return {
-      type: 'EqualLows',
-      direction: 'neutral',
-      index: lastSwing.endIndex,
-      price: lastSwing.low,
-      timeframe,
-    };
-
-  // CHOCH: 简化 - 最近一段与前段方向相反并逼近另一侧边界
-  const wasUp =
-    prevSwing.high >= lastSwing.high && prevSwing.low < lastSwing.low;
-  const wasDown =
-    prevSwing.low <= lastSwing.low && prevSwing.high > lastSwing.high;
-  if (wasUp && brokeLow)
-    return {
-      type: 'CHOCH',
-      direction: 'bearish',
-      index: data.length - 1,
-      price: close,
-      timeframe,
-    };
-  if (wasDown && brokeHigh)
-    return {
-      type: 'CHOCH',
-      direction: 'bullish',
-      index: data.length - 1,
-      price: close,
-      timeframe,
-    };
-}
-
-function determineTrend(swings: Swing[]): StructureTrend {
-  if (swings.length < 3) return 'sideways';
-  const last = swings.slice(-3);
-  const highs = last.map(s => s.high);
-  const lows = last.map(s => s.low);
-  const up =
-    highs[2] > highs[1] &&
-    highs[1] > highs[0] &&
-    lows[2] > lows[1] &&
-    lows[1] > lows[0];
-  const down =
-    highs[2] < highs[1] &&
-    highs[1] < highs[0] &&
-    lows[2] < lows[1] &&
-    lows[1] < lows[0];
-  return up ? 'up' : down ? 'down' : 'sideways';
+  if (highs.length >= 2) {
+    const prevHigh = highs[highs.length - 2];
+    if (
+      Math.abs(lastHigh.price - prevHigh.price) / prevHigh.price <
+      equalTolerancePercent
+    ) {
+      return {
+        type: 'EqualHighs',
+        direction: 'neutral',
+        index: lastHigh.index,
+        price: lastHigh.price,
+        timeframe,
+      };
+    }
+  }
+  if (lows.length >= 2) {
+    const prevLow = lows[lows.length - 2];
+    if (
+      Math.abs(lastLow.price - prevLow.price) / prevLow.price <
+      equalTolerancePercent
+    ) {
+      return {
+        type: 'EqualLows',
+        direction: 'neutral',
+        index: lastLow.index,
+        price: lastLow.price,
+        timeframe,
+      };
+    }
+  }
+  return undefined;
 }
 
 export function analyzeMarketStructure(
   data: Candle[],
   timeframe: 'weekly' | 'daily' | '1hour'
 ): StructureResult {
-  const pivots = findPivots(data);
-  const swings = buildExternalSwings(data, pivots);
-  const trend = determineTrend(swings);
-  const evt = detectStructureEvents(data, swings, timeframe);
+  const { highs, lows } = collectPivotPoints(findPivots(data));
+  const trend = determineTrend(highs, lows);
+  const evt = detectStructureEvents(data, highs, lows, trend, timeframe);
 
-  const last = swings.at(-1);
-  const prev = swings.at(-2);
+  // 关键位：[最近高点, 最近低点, 前一高点, 前一低点]（formatStructure 依赖此顺序）
   const keyLevels: number[] = [];
-  if (last) {
-    keyLevels.push(last.high, last.low);
-    if (prev) keyLevels.push(prev.high, prev.low);
+  const lastHigh = highs.at(-1);
+  const lastLow = lows.at(-1);
+  if (lastHigh && lastLow) {
+    keyLevels.push(lastHigh.price, lastLow.price);
+    const prevHigh = highs.at(-2);
+    const prevLow = lows.at(-2);
+    if (prevHigh && prevLow) keyLevels.push(prevHigh.price, prevLow.price);
   }
 
   const summary = evt
