@@ -623,6 +623,20 @@ export function determineRiskManagement(
     adjustmentTriggers: [],
   };
 
+  // 先按信号强度确定基础仓位，再按波动率等因素调整
+  if (signalStrength === SignalStrength.Strong) {
+    riskManagement.suggestionPosition = 0.2; // 强信号使用20%资金
+  } else if (signalStrength === SignalStrength.Moderate) {
+    riskManagement.suggestionPosition = 0.15; // 中等信号使用15%资金
+  } else if (signalStrength === SignalStrength.Weak) {
+    riskManagement.suggestionPosition = 0.1; // 弱信号使用10%资金
+  } else if (
+    signalStrength === SignalStrength.Neutral ||
+    signalStrength === SignalStrength.Conflicting
+  ) {
+    riskManagement.suggestionPosition = 0.05; // 中性或冲突信号使用5%资金
+  }
+
   // 根据波动率调整仓位和风险考虑
   if (volatilityAnalysis) {
     const volatilityRegime =
@@ -654,20 +668,6 @@ export function determineRiskManagement(
         riskManagement.suggestionPosition *= 1.2; // 增加20%仓位
       }
     }
-  }
-
-  // 根据信号强度调整仓位
-  if (signalStrength === SignalStrength.Strong) {
-    riskManagement.suggestionPosition = 0.2; // 强信号使用20%资金
-  } else if (signalStrength === SignalStrength.Moderate) {
-    riskManagement.suggestionPosition = 0.15; // 中等信号使用15%资金
-  } else if (signalStrength === SignalStrength.Weak) {
-    riskManagement.suggestionPosition = 0.1; // 弱信号使用10%资金
-  } else if (
-    signalStrength === SignalStrength.Neutral ||
-    signalStrength === SignalStrength.Conflicting
-  ) {
-    riskManagement.suggestionPosition = 0.05; // 中性或冲突信号使用5%资金
   }
 
   // 根据信心分数调整
