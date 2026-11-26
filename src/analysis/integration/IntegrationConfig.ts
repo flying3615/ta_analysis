@@ -71,8 +71,9 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
     pattern: 0.5,
     volume: 0.2,
     bbsr: 0.1,
-    // 附加权重
-    structure: 0.3,
+    // 附加权重：与基础权重一起归一化（合计 1.5）。
+    // 每个附加模块满分时的贡献都低于 scoreLong（15），不能单独决定方向
+    structure: 0.2,
     supplyDemand: 0.1,
     range: 0.2,
     trendline: 0.1,

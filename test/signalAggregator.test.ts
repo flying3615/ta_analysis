@@ -140,3 +140,38 @@ describe('SignalAggregator plugins', () => {
     expect(calls).toBe(0);
   });
 });
+
+describe('default weights', () => {
+  it('let no module except pattern cross the score threshold on its own', async () => {
+    const { normalizeWeights } = await import(
+      '../src/analysis/integration/IntegrationConfig.js'
+    );
+    const w = normalizeWeights(DEFAULT_INTEGRATION_CONFIG.weights) as any;
+    const { scoreLong } = DEFAULT_INTEGRATION_CONFIG.thresholds;
+
+    for (const key of [
+      'chip',
+      'volume',
+      'bbsr',
+      'structure',
+      'supplyDemand',
+      'range',
+      'trendline',
+    ]) {
+      // 单个模块满分（置信度 100）时的贡献
+      expect(100 * w[key], key).toBeLessThan(scoreLong);
+    }
+  });
+
+  it('does not go long on a structure up-trend with a daily CHOCH alone', () => {
+    const agg = new SignalAggregator(DEFAULT_INTEGRATION_CONFIG);
+    const res = agg.aggregateSignals(
+      inputWithStructure({
+        trend: 'up',
+        lastEvent: { type: 'CHOCH', direction: 'bullish', timeframe: 'daily' },
+      }),
+      context
+    );
+    expect(res.direction).toBe('neutral');
+  });
+});
