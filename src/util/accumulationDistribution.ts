@@ -48,7 +48,7 @@ export function calculateAccumulationDistribution(
   const adSlope = calculateSlope(recentAD);
 
   // 确定积累分布线趋势
-  const adTrend = determineADTrend(adLine, lookbackPeriod);
+  const adTrend = determineADTrend(data, adLine, lookbackPeriod);
 
   // 检测背离
   const divergence = detectDivergence(data, adLine, lookbackPeriod);
@@ -104,31 +104,36 @@ export function calculateAccumulationDistribution(
   };
 }
 
+/** 窗口内净资金流占总成交量的比例超过此值才视为有方向 */
+const AD_TREND_THRESHOLD = 0.1;
+
 /**
  * 确定积累分布线趋势
+ * 用窗口内 A/D 的变化量除以窗口内的总成交量（结果在 -1 到 1 之间），
+ * 与取了多长的历史无关。
  */
 function determineADTrend(
+  data: Candle[],
   adLine: number[],
   lookbackPeriod: number
 ): PatternDirection {
-  if (adLine.length < lookbackPeriod) {
+  if (adLine.length < lookbackPeriod + 1) {
     return PatternDirection.Neutral;
   }
 
-  const recentAD = adLine.slice(-lookbackPeriod);
+  // 窗口内的 A/D 净变化 = 最近 lookbackPeriod 根K线的资金流量之和
+  const adChange =
+    adLine[adLine.length - 1] - adLine[adLine.length - 1 - lookbackPeriod];
+  const totalVolume = data
+    .slice(-lookbackPeriod)
+    .reduce((sum, c) => sum + c.volume, 0);
+  if (totalVolume === 0) return PatternDirection.Neutral;
 
-  // 计算AD变化率
-  const startAD = recentAD[0];
-  const endAD = recentAD[recentAD.length - 1];
+  const flowRatio = adChange / totalVolume;
 
-  // 防止除以零
-  if (startAD === 0) return PatternDirection.Neutral;
-
-  const changeRate = ((endAD - startAD) / Math.abs(startAD)) * 100;
-
-  if (changeRate > 2) {
+  if (flowRatio > AD_TREND_THRESHOLD) {
     return PatternDirection.Bullish;
-  } else if (changeRate < -2) {
+  } else if (flowRatio < -AD_TREND_THRESHOLD) {
     return PatternDirection.Bearish;
   } else {
     return PatternDirection.Neutral;
