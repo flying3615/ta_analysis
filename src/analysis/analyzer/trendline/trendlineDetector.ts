@@ -232,10 +232,17 @@ export function analyzeTrendlinesAndChannels(
       : undefined;
 
   // 分别以支撑线和阻力线的斜率构建包络通道，选触达数更多的一个
+  // 上下沿都至少被触及 minChannelTouches 次才算有效通道；
+  // 只碰到一根极端K线的包络线没有分析价值
   const candidates = [fittedSupport, fittedResistance]
     .filter((l): l is FittedLine => !!l)
     .map(l => buildEnvelopeChannel(data, l))
-    .filter((c): c is Channel => !!c);
+    .filter((c): c is Channel => !!c)
+    .filter(
+      c =>
+        c.touchesUpper >= trendlineConfig.minChannelTouches &&
+        c.touchesLower >= trendlineConfig.minChannelTouches
+    );
   const best = candidates.reduce<Channel | undefined>(
     (best, c) =>
       !best ||

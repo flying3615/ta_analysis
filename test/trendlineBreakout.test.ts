@@ -135,3 +135,15 @@ describe('breakout rate on random walks', () => {
     expect(down).toBeGreaterThan(0);
   });
 });
+
+describe('channel touch filter', () => {
+  it('rejects a channel whose bound only touches one spike bar', () => {
+    const data = channelThen([0, 0.5, -0.5]);
+    // 拟合区间内的一根K线最高价冲高 40%：上沿只碰到这一根K线
+    data[50] = { ...data[50], high: data[50].high * 1.4 };
+
+    const res = analyzeTrendlinesAndChannels('T', data, 'daily');
+
+    expect(res.channel).toBeUndefined();
+  });
+});
