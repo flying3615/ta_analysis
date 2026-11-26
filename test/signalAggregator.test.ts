@@ -194,3 +194,57 @@ describe('module contributions', () => {
     expect(res.contributions.pattern).toBe(0); // 中性
   });
 });
+
+describe('signal strength vs direction', () => {
+  it('rates a signal that crosses the direction threshold as at least weak', () => {
+    const input = inputWithStructure({ trend: 'sideways' });
+    // 形态看多、强度 51：得分 51 × (0.5 / 1.5) = 17，高于方向阈值 15，低于弱信号阈值 20
+    input.analyses.pattern = {
+      combinedSignal: 'bullish',
+      signalStrength: 51,
+      timeframeAnalyses: [],
+    };
+
+    const res = new SignalAggregator(
+      DEFAULT_INTEGRATION_CONFIG
+    ).aggregateSignals(input, context);
+
+    expect(res.finalScore).toBeCloseTo(17, 6);
+    expect(res.direction).toBe('long');
+    expect(res.signalStrength).toBe('weak');
+  });
+
+  it('keeps a neutral direction neutral', () => {
+    const res = new SignalAggregator(
+      DEFAULT_INTEGRATION_CONFIG
+    ).aggregateSignals(inputWithStructure({ trend: 'sideways' }), context);
+    expect(res.direction).toBe('neutral');
+    expect(res.signalStrength).toBe('neutral');
+  });
+
+  it('keeps the strength neutral when a custom direction threshold is not crossed', () => {
+    const config = {
+      ...DEFAULT_INTEGRATION_CONFIG,
+      thresholds: {
+        ...DEFAULT_INTEGRATION_CONFIG.thresholds,
+        scoreLong: 30,
+        scoreShort: -30,
+      },
+    };
+    const input = inputWithStructure({ trend: 'sideways' });
+    // 得分 75 × (0.5 / 1.5) = 25：高于弱信号阈值 20，低于方向阈值 30
+    input.analyses.pattern = {
+      combinedSignal: 'bullish',
+      signalStrength: 75,
+      timeframeAnalyses: [],
+    };
+
+    const res = new SignalAggregator(config).aggregateSignals(input, {
+      ...context,
+      config,
+    });
+
+    expect(res.direction).toBe('neutral');
+    expect(res.signalStrength).toBe('neutral');
+  });
+});

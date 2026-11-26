@@ -149,7 +149,8 @@ export class SignalAggregator {
     const signalStrength = this.determineSignalStrength(
       Math.abs(finalScore),
       chipResult.direction,
-      patternResult.direction
+      patternResult.direction,
+      direction
     );
 
     // 计算置信度
@@ -577,8 +578,12 @@ export class SignalAggregator {
   private determineSignalStrength(
     absScore: number,
     chipDirection: TradeDirection,
-    patternDirection: TradeDirection
+    patternDirection: TradeDirection,
+    direction: TradeDirection
   ): SignalStrength {
+    // 没有越过方向阈值的信号，强度一律为中性，与方向结论保持一致
+    if (direction === TradeDirection.Neutral) return SignalStrength.Neutral;
+
     // 考虑筹码和形态方向的一致性
     const directionsAlign =
       chipDirection === patternDirection &&
@@ -599,7 +604,9 @@ export class SignalAggregator {
       return SignalStrength.Weak;
     }
 
-    return SignalStrength.Neutral;
+    // 已经越过方向阈值（做多/做空）的信号至少是弱信号，
+    // 避免出现"方向做多、强度中性"的矛盾结论
+    return SignalStrength.Weak;
   }
 
   /**
