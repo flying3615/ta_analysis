@@ -28,6 +28,7 @@ export interface BacktestConfig {
   commissionPerTrade: number; // fixed commission
   slippageBps: number; // basis points of price on entry/exit
   allowShort: boolean;
+  periodsPerYear?: number; // Sharpe 年化周期数；不填时根据K线间隔推断
   exitParams?: {
     takeProfitPercent?: number;
     stopLossPercent?: number;
@@ -60,14 +61,51 @@ export interface BacktestResult {
   };
 }
 
-function calcSharpe(returns: number[]): number {
+function calcSharpe(returns: number[], periodsPerYear: number): number {
   if (returns.length === 0) return 0;
   const mean = returns.reduce((s, r) => s + r, 0) / returns.length;
   const varr =
     returns.reduce((s, r) => s + Math.pow(r - mean, 2), 0) / returns.length;
   const std = Math.sqrt(Math.max(varr, 0));
   if (std === 0) return 0;
-  return (mean * Math.sqrt(252)) / std;
+  return (mean * Math.sqrt(periodsPerYear)) / std;
+}
+
+/**
+ * 根据K线时间间隔推断每年的周期数：
+ * 周线 52；日线按交易日数（有周末K线时 365，否则 252）；
+ * 日内按"每天的K线数 × 交易日数"。
+ */
+export function inferPeriodsPerYear(candles: Candle[]): number {
+  if (candles.length < 2) return 252;
+  const gaps: number[] = [];
+  for (let i = 1; i < candles.length; i++) {
+    gaps.push(
+      candles[i].timestamp.getTime() - candles[i - 1].timestamp.getTime()
+    );
+  }
+  gaps.sort((a, b) => a - b);
+  const medianGap = gaps[Math.floor(gaps.length / 2)];
+  const day = 86400000;
+  if (medianGap >= 4 * day) return 52;
+
+  // 出现周末K线说明是全年交易的市场（如加密货币）
+  const hasWeekend = candles.some(c => {
+    const d = c.timestamp.getUTCDay();
+    return d === 0 || d === 6;
+  });
+  const tradingDays = hasWeekend ? 365 : 252;
+  if (medianGap >= 0.5 * day) return tradingDays;
+
+  // 日内：统计每个 UTC 日期的K线数，取中位数
+  const perDay = new Map<string, number>();
+  for (const c of candles) {
+    const key = c.timestamp.toISOString().slice(0, 10);
+    perDay.set(key, (perDay.get(key) ?? 0) + 1);
+  }
+  const counts = [...perDay.values()].sort((a, b) => a - b);
+  const barsPerDay = counts[Math.floor(counts.length / 2)];
+  return tradingDays * barsPerDay;
 }
 
 function calcMaxDrawdown(equity: number[]): number {
@@ -267,7 +305,10 @@ export class Backtester {
       ? losses.reduce((s, t) => s + t.pnl, 0) / losses.length
       : 0;
     const maxDrawdown = calcMaxDrawdown(equity);
-    const sharpe = calcSharpe(stepReturns);
+    const sharpe = calcSharpe(
+      stepReturns,
+      this.config.periodsPerYear ?? inferPeriodsPerYear(candles)
+    );
 
     return {
       trades,

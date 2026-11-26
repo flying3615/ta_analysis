@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../src/types.js';
 import {
+  inferPeriodsPerYear,
   Backtester,
   type Signal,
   type Strategy,
@@ -202,5 +203,95 @@ describe('Backtester accounting', () => {
     }).run(candles, strat);
 
     expect(res.trades[0].exitIdx).toBe(58);
+  });
+});
+
+describe('Backtester Sharpe annualization', () => {
+  /** 同一组收盘价，按给定的时间间隔生成K线 */
+  function series(stepMs: number): Candle[] {
+    const closes = Array.from(
+      { length: 120 },
+      (_, i) => 100 + i * 0.3 + (i % 5) * 0.8
+    );
+    const t0 = Date.parse('2024-01-01T00:00:00Z');
+    return closes.map((c, i) => ({
+      symbol: 'T',
+      open: c,
+      high: c,
+      low: c,
+      close: c,
+      volume: 1000,
+      timestamp: new Date(t0 + i * stepMs),
+    }));
+  }
+  const strat = scripted({ 52: { direction: 'long' } });
+
+  it('annualizes weekly bars with 52 periods per year', async () => {
+    const daily = await new Backtester(noFrictions).run(
+      series(86400000),
+      strat
+    );
+    const weekly = await new Backtester(noFrictions).run(
+      series(7 * 86400000),
+      strat
+    );
+
+    expect(daily.metrics.sharpe).not.toBe(0);
+    // 连续日历日（含周末）的日线按 365 天年化
+    expect(weekly.metrics.sharpe / daily.metrics.sharpe).toBeCloseTo(
+      Math.sqrt(52 / 365),
+      6
+    );
+  });
+
+  it('uses periodsPerYear when it is given', async () => {
+    const auto = await new Backtester(noFrictions).run(series(86400000), strat);
+    const manual = await new Backtester({
+      ...noFrictions,
+      periodsPerYear: 252,
+    }).run(series(86400000), strat);
+
+    expect(manual.metrics.sharpe / auto.metrics.sharpe).toBeCloseTo(
+      Math.sqrt(252 / 365),
+      6
+    );
+  });
+});
+
+describe('inferPeriodsPerYear', () => {
+  const at = (iso: string) => ({
+    symbol: 'T',
+    open: 1,
+    high: 1,
+    low: 1,
+    close: 1,
+    volume: 1,
+    timestamp: new Date(iso),
+  });
+
+  it('counts 7 hourly bars per trading day for stocks', () => {
+    const bars = [];
+    for (const day of ['02', '03', '04']) {
+      for (let h = 14; h <= 20; h++)
+        bars.push(at(`2024-01-${day}T${h}:30:00Z`));
+    }
+    expect(inferPeriodsPerYear(bars)).toBe(252 * 7);
+  });
+
+  it('counts 24 hourly bars per day, every day, for crypto', () => {
+    const t0 = Date.parse('2024-01-01T00:00:00Z');
+    // 8 天（含周末）的连续小时线
+    const bars = Array.from({ length: 8 * 24 }, (_, i) =>
+      at(new Date(t0 + i * 3600000).toISOString())
+    );
+    expect(inferPeriodsPerYear(bars)).toBe(365 * 24);
+  });
+
+  it('uses 365 trading days for daily bars that include weekends', () => {
+    const t0 = Date.parse('2024-01-01T00:00:00Z');
+    const bars = Array.from({ length: 30 }, (_, i) =>
+      at(new Date(t0 + i * 86400000).toISOString())
+    );
+    expect(inferPeriodsPerYear(bars)).toBe(365);
   });
 });
