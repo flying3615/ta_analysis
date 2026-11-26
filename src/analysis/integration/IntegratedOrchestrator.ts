@@ -559,10 +559,8 @@ export class IntegratedOrchestrator {
           config
         ),
         this.executeWithFallback(
-          () =>
-            analyzeVolumeVolatilityCombined(
-              (hourlyData?.length ?? 0) >= 20 ? hourlyData : dailyData
-            ),
+          // 波动率按日线年化（√252），区间阈值也按日线校准，所以始终使用日线
+          () => analyzeVolumeVolatilityCombined(dailyData),
           'volatility',
           config
         ),

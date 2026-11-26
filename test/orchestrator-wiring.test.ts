@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Candle } from '../src/types.js';
 import { analyzeMultiTimeBBSR } from '../src/analysis/analyzer/sr/multiTimeFrameBBSRAnalysis.js';
+import { analyzeVolumeVolatilityCombined } from '../src/analysis/analyzer/volatility/volatilityAnalysis.js';
 import { IntegratedOrchestrator } from '../src/analysis/integration/IntegratedOrchestrator.js';
 import { aggregateDailyToWeekly } from '../src/util/util.js';
 
@@ -13,6 +14,22 @@ vi.mock(
         typeof import('../src/analysis/analyzer/sr/multiTimeFrameBBSRAnalysis.js')
       >();
     return { analyzeMultiTimeBBSR: vi.fn(orig.analyzeMultiTimeBBSR) };
+  }
+);
+
+vi.mock(
+  '../src/analysis/analyzer/volatility/volatilityAnalysis.js',
+  async importOriginal => {
+    const orig =
+      await importOriginal<
+        typeof import('../src/analysis/analyzer/volatility/volatilityAnalysis.js')
+      >();
+    return {
+      ...orig,
+      analyzeVolumeVolatilityCombined: vi.fn(
+        orig.analyzeVolumeVolatilityCombined
+      ),
+    };
   }
 );
 
@@ -53,5 +70,23 @@ describe('IntegratedOrchestrator wiring', () => {
     const [, dailyArg, weeklyArg] = spy.mock.calls[0];
     expect(dailyArg).toBe(daily);
     expect(weeklyArg).toBe(weekly);
+  });
+
+  it('analyzes volatility on daily candles, matching its daily calibration', async () => {
+    const daily = makeCandles(260, 86400000);
+    const weekly = aggregateDailyToWeekly(daily);
+    const hourly = makeCandles(200, 3600000);
+    const spy = vi.mocked(analyzeVolumeVolatilityCombined);
+    spy.mockClear();
+
+    await new IntegratedOrchestrator().executeOfflineAnalysis(
+      'T',
+      daily,
+      weekly,
+      hourly
+    );
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls[0][0]).toBe(daily);
   });
 });
