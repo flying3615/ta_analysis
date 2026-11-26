@@ -3,6 +3,13 @@ import axios from 'axios';
 import { globalLogger } from '../util/logger.js';
 import imageToBase64 from 'image-to-base64';
 
+/** 生成不含请求配置（如 API key）的错误描述 */
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const status = (error as { response?: { status?: number } }).response?.status;
+  return status ? `HTTP ${status} - ${error.message}` : error.message;
+}
+
 export async function fetchChartData(
   symbol: string,
   timeFrameConfigs: TimeFrameConfig[]
@@ -30,6 +37,7 @@ export async function fetchChartData(
           'content-type': 'application/json',
         },
         responseType: 'json', // Optional, but good practice to specify expected response type
+        timeout: 30_000,
       });
       const imageBase64 = await imageToBase64(response.data.url);
 
@@ -43,7 +51,10 @@ export async function fetchChartData(
         imageBase64,
       });
     } catch (error) {
-      globalLogger.error('Error fetching chart data:', error);
+      // 只记录消息和状态码：完整的 AxiosError 含有请求头里的 x-api-key
+      globalLogger.error(
+        `Error fetching chart data (${symbol} ${timeFrameConfig.interval}): ${describeError(error)}`
+      );
     }
   }
 
