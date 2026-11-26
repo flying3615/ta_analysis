@@ -207,6 +207,22 @@ export { Backtester } from './analysis/backtest/Backtester.js';
 export { TrendlineBreakoutStrategy } from './analysis/backtest/strategies/TrendlineBreakoutStrategy.js';
 export { IntegrationSignalStrategy } from './analysis/backtest/strategies/IntegrationSignalStrategy.js';
 export { RangeBreakoutStrategy } from './analysis/backtest/strategies/RangeBreakoutStrategy.js';
+export {
+  DonchianStrategy,
+  evaluateDonchian,
+  donchianAtr,
+  type DonchianParams,
+  type DonchianFilter,
+  type DonchianEvaluation,
+} from './analysis/backtest/strategies/DonchianStrategy.js';
+export type {
+  PositionContext,
+  Signal,
+  Strategy,
+  Trade,
+  BacktestConfig,
+  BacktestResult,
+} from './analysis/backtest/Backtester.js';
 
 export { DataProvider } from './data/DataProvider.js';
 // Backtest strategies centralized config
