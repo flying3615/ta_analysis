@@ -10,6 +10,16 @@ import { globalLogger } from '../util/logger.js';
 
 type Timeframe = 'weekly' | 'daily' | '1hour';
 
+/** 获取单个周期数据的函数：参数依次为开始日期、结束日期、周期 */
+// 基础规则 no-unused-vars 会把类型签名里的参数名误报为未使用
+/* eslint-disable no-unused-vars */
+type FetchTimeframe = (
+  start: Date,
+  end: Date,
+  tf: Timeframe
+) => Promise<Candle[]>;
+/* eslint-enable no-unused-vars */
+
 export interface MultiTimeframeCandles {
   weeklyData: Candle[];
   dailyData: Candle[];
@@ -65,7 +75,7 @@ export class DataProvider {
   private async fetchTimeframes(
     symbol: string,
     config: IntegrationConfig,
-    fetchOne: (start: Date, end: Date, tf: Timeframe) => Promise<Candle[]>
+    fetchOne: FetchTimeframe
   ): Promise<MultiTimeframeCandles> {
     const today = new Date();
     const startFor = (lookbackDays: number) => {
