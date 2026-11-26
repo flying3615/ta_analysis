@@ -46,131 +46,106 @@ function countTouches(
   return count;
 }
 
-function buildChannelFromSupport(
+/**
+ * 以给定斜率构建包络通道：上沿平移到区间内最高点，下沿平移到区间内最低点。
+ * 两侧都是包络线，所以向上和向下突破的判定是对称的。
+ */
+function buildEnvelopeChannel(
   data: Candle[],
-  support: FittedLine
+  base: FittedLine
 ): Channel | undefined {
-  const start = support.startIndex,
-    end = support.endIndex;
-  // 以支持线平移到最高点构建上边界
-  let maxDelta = -Infinity;
+  const start = base.startIndex,
+    end = base.endIndex;
+  let maxAbove = -Infinity;
+  let maxBelow = -Infinity;
   for (let i = start; i <= end; i++) {
-    const base = support.slope * i + support.intercept;
-    maxDelta = Math.max(maxDelta, data[i].high - base);
+    const line = base.slope * i + base.intercept;
+    maxAbove = Math.max(maxAbove, data[i].high - line);
+    maxBelow = Math.max(maxBelow, line - data[i].low);
   }
-  const upper = {
-    ...support,
-    kind: 'resistance' as const,
-    intercept: support.intercept + maxDelta,
+  const upper: FittedLine = {
+    ...base,
+    kind: 'resistance',
+    intercept: base.intercept + maxAbove,
   };
-  const mid = {
-    slope: support.slope,
-    intercept: support.intercept + maxDelta / 2,
+  const lower: FittedLine = {
+    ...base,
+    kind: 'support',
+    intercept: base.intercept - maxBelow,
+  };
+  const width = upper.intercept - lower.intercept;
+  const mid: FittedLine = {
+    slope: base.slope,
+    intercept: lower.intercept + width / 2,
     startIndex: start,
     endIndex: end,
     touches: 0,
-    kind: 'mid' as const,
+    kind: 'mid',
   };
-  const width = maxDelta;
+  const tol = trendlineConfig.priceTolerancePercent;
+  const touchesUpper = countTouches(data, upper, 'resistance', tol, start, end);
+  const touchesLower = countTouches(data, lower, 'support', tol, start, end);
   return {
-    upper,
-    lower: support,
+    upper: { ...upper, touches: touchesUpper },
+    lower: { ...lower, touches: touchesLower },
     mid,
     width,
-    slope: mid.slope,
-    touchesUpper: countTouches(
-      data,
-      upper,
-      'resistance',
-      trendlineConfig.priceTolerancePercent,
-      start,
-      end
-    ),
-    touchesLower: support.touches,
+    slope: base.slope,
+    touchesUpper,
+    touchesLower,
   };
 }
 
-function buildChannelFromResistance(
-  data: Candle[],
-  resistance: FittedLine
-): Channel | undefined {
-  const start = resistance.startIndex,
-    end = resistance.endIndex;
-  // 以阻力线平移到最低点构建下边界
-  let maxDelta = -Infinity;
-  for (let i = start; i <= end; i++) {
-    const base = resistance.slope * i + resistance.intercept;
-    maxDelta = Math.max(maxDelta, base - data[i].low);
-  }
-  const lower = {
-    ...resistance,
-    kind: 'support' as const,
-    intercept: resistance.intercept - maxDelta,
-  };
-  const mid = {
-    slope: resistance.slope,
-    intercept: resistance.intercept - maxDelta / 2,
-    startIndex: start,
-    endIndex: end,
-    touches: 0,
-    kind: 'mid' as const,
-  };
-  const width = maxDelta;
-  return {
-    upper: resistance,
-    lower,
-    mid,
-    width,
-    slope: mid.slope,
-    touchesUpper: resistance.touches,
-    touchesLower: countTouches(
-      data,
-      lower,
-      'support',
-      trendlineConfig.priceTolerancePercent,
-      start,
-      end
-    ),
-  };
-}
-
+/**
+ * 在通道拟合区间之后的最近K线里检测突破：
+ * 最后一根收盘价越过通道边界才算突破；突破K线是窗口内第一根越过边界的K线，
+ * 回踩只在突破K线之后判断。
+ */
 function detectBreakoutRetest(
   data: Candle[],
-  ch: Channel
+  ch: Channel,
+  fitEnd: number
 ): BreakoutRetest | undefined {
   const lastIndex = data.length - 1;
-  const last = data[lastIndex];
-  const upperNow = ch.upper.slope * lastIndex + ch.upper.intercept;
-  const lowerNow = ch.lower.slope * lastIndex + ch.lower.intercept;
-  const brokeUp =
-    last.close > upperNow * (1 + trendlineConfig.breakoutThresholdPercent);
-  const brokeDown =
-    last.close < lowerNow * (1 - trendlineConfig.breakoutThresholdPercent);
-  if (!brokeUp && !brokeDown) return;
-  const dir = brokeUp ? ('up' as const) : ('down' as const);
+  const th = trendlineConfig.breakoutThresholdPercent;
+  const upperAt = (i: number) => ch.upper.slope * i + ch.upper.intercept;
+  const lowerAt = (i: number) => ch.lower.slope * i + ch.lower.intercept;
+  const isBeyond = (i: number, dir: 'up' | 'down') =>
+    dir === 'up'
+      ? data[i].close > upperAt(i) * (1 + th)
+      : data[i].close < lowerAt(i) * (1 - th);
 
-  // 回踩窗口
-  const start = Math.max(0, lastIndex - trendlineConfig.retestWindowBars + 1);
+  const dir: 'up' | 'down' | undefined = isBeyond(lastIndex, 'up')
+    ? 'up'
+    : isBeyond(lastIndex, 'down')
+      ? 'down'
+      : undefined;
+  if (!dir) return;
+
+  let breakoutIndex = lastIndex;
+  for (let i = fitEnd + 1; i <= lastIndex; i++) {
+    if (isBeyond(i, dir)) {
+      breakoutIndex = i;
+      break;
+    }
+  }
+
+  // 回踩：突破之后的K线回到边界附近
   let retested = false;
   let retestIndex: number | undefined = undefined;
-  for (let i = start; i <= lastIndex; i++) {
-    const bound =
-      dir === 'up'
-        ? ch.upper.slope * i + ch.upper.intercept
-        : ch.lower.slope * i + ch.lower.intercept;
+  const retestEnd = Math.min(
+    lastIndex,
+    breakoutIndex + trendlineConfig.retestWindowBars
+  );
+  for (let i = breakoutIndex + 1; i <= retestEnd; i++) {
+    const bound = dir === 'up' ? upperAt(i) : lowerAt(i);
     const tol = bound * trendlineConfig.retestTolerancePercent;
-    if (dir === 'up') {
-      if (data[i].low <= bound + tol) {
-        retested = true;
-        retestIndex = i;
-        break;
-      }
-    } else {
-      if (data[i].high >= bound - tol) {
-        retested = true;
-        retestIndex = i;
-        break;
-      }
+    if (
+      dir === 'up' ? data[i].low <= bound + tol : data[i].high >= bound - tol
+    ) {
+      retested = true;
+      retestIndex = i;
+      break;
     }
   }
 
@@ -188,13 +163,13 @@ function detectBreakoutRetest(
     trendlineConfig.scoreWeights.slope * (slopeScore / 100) +
       trendlineConfig.scoreWeights.retest * (retestScore / 100) +
       trendlineConfig.scoreWeights.touches *
-        ((ch.touchesUpper + ch.touchesLower) / 6) +
+        Math.min(1, (ch.touchesUpper + ch.touchesLower) / 6) +
       trendlineConfig.scoreWeights.follow * (widthScore / 100)
   );
 
   return {
     direction: dir,
-    breakoutIndex: lastIndex,
+    breakoutIndex,
     retested,
     retestIndex,
     qualityScore,
@@ -208,9 +183,19 @@ export function analyzeTrendlinesAndChannels(
 ): TrendlineChannelAnalysisResult {
   const n = data.length;
   const start = Math.max(0, n - trendlineConfig.maxLookbackBars);
+  // 通道只用最近 breakoutWindowBars 根之前的K线拟合，最近的K线用来判断突破
+  const fitEnd = n - 1 - trendlineConfig.breakoutWindowBars;
+  if (fitEnd - start + 1 < trendlineConfig.minTouches * 3) {
+    return {
+      symbol,
+      timeframe,
+      summary: '数据不足，未形成稳定通道',
+    };
+  }
+
   const pointsSupport: Array<{ x: number; y: number }> = [];
   const pointsResistance: Array<{ x: number; y: number }> = [];
-  for (let i = start; i < n; i++) {
+  for (let i = start; i <= fitEnd; i++) {
     pointsSupport.push({ x: i, y: data[i].low });
     pointsResistance.push({ x: i, y: data[i].high });
   }
@@ -218,8 +203,8 @@ export function analyzeTrendlinesAndChannels(
   const res = fitLine(pointsResistance);
   const tol = trendlineConfig.priceTolerancePercent;
 
-  const supTouches = countTouches(data, sup, 'support', tol, start, n - 1);
-  const resTouches = countTouches(data, res, 'resistance', tol, start, n - 1);
+  const supTouches = countTouches(data, sup, 'support', tol, start, fitEnd);
+  const resTouches = countTouches(data, res, 'resistance', tol, start, fitEnd);
 
   const fittedSupport: FittedLine | undefined =
     Math.abs(sup.slope) >= trendlineConfig.minSlopeAbs &&
@@ -228,7 +213,7 @@ export function analyzeTrendlinesAndChannels(
           slope: sup.slope,
           intercept: sup.intercept,
           startIndex: start,
-          endIndex: n - 1,
+          endIndex: fitEnd,
           touches: supTouches,
           kind: 'support',
         }
@@ -240,39 +225,28 @@ export function analyzeTrendlinesAndChannels(
           slope: res.slope,
           intercept: res.intercept,
           startIndex: start,
-          endIndex: n - 1,
+          endIndex: fitEnd,
           touches: resTouches,
           kind: 'resistance',
         }
       : undefined;
 
-  // 分别从支撑线和阻力线独立构建通道
-  let channelFromSupport: Channel | undefined = undefined;
-  let channelFromResistance: Channel | undefined = undefined;
-  if (fittedSupport) {
-    channelFromSupport = buildChannelFromSupport(data, fittedSupport);
-  }
-  if (fittedResistance) {
-    channelFromResistance = buildChannelFromResistance(data, fittedResistance);
-  }
-
-  // 选择质量更好的通道（触达数优先），如都无则为undefined
-  let channel: Channel | undefined = undefined;
-  if (channelFromSupport && channelFromResistance) {
-    const supportTouches =
-      channelFromSupport.touchesUpper + channelFromSupport.touchesLower;
-    const resistanceTouches =
-      channelFromResistance.touchesUpper + channelFromResistance.touchesLower;
-    channel =
-      supportTouches >= resistanceTouches
-        ? channelFromSupport
-        : channelFromResistance;
-  } else {
-    channel = channelFromSupport || channelFromResistance;
-  }
+  // 分别以支撑线和阻力线的斜率构建包络通道，选触达数更多的一个
+  const candidates = [fittedSupport, fittedResistance]
+    .filter((l): l is FittedLine => !!l)
+    .map(l => buildEnvelopeChannel(data, l))
+    .filter((c): c is Channel => !!c);
+  const channel = candidates.reduce<Channel | undefined>(
+    (best, c) =>
+      !best ||
+      c.touchesUpper + c.touchesLower > best.touchesUpper + best.touchesLower
+        ? c
+        : best,
+    undefined
+  );
 
   const breakoutRetest = channel
-    ? detectBreakoutRetest(data, channel)
+    ? detectBreakoutRetest(data, channel, fitEnd)
     : undefined;
 
   const slopeStr = channel

@@ -9,6 +9,7 @@ export interface TrendlineConfig {
   channelWidthAtrMax: number; // 通道宽度上限（ATR倍数）
 
   breakoutThresholdPercent: number; // 突破阈值
+  breakoutWindowBars: number; // 最近多少根K线不参与通道拟合，用于判断突破
   retestWindowBars: number; // 回踩确认窗口
   retestTolerancePercent: number; // 回踩触达容差
 
@@ -31,6 +32,7 @@ export const trendlineConfig: TrendlineConfig = {
   channelWidthAtrMax: 4.0,
 
   breakoutThresholdPercent: 0.005,
+  breakoutWindowBars: 5,
   retestWindowBars: 8,
   retestTolerancePercent: 0.003,
 
