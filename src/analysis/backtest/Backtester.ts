@@ -182,22 +182,26 @@ export class Backtester {
             shouldExit = true;
         }
 
-        // 追踪止损逻辑
+        // 追踪止损逻辑：先用此前的峰值（谷值）判断本根K线是否触发，
+        // 再用本根K线更新峰值。同一根K线内无法知道高低点的先后顺序。
         if (ts && !shouldExit) {
           if (isLong) {
-            peakOrTroughPrice = Math.max(peakOrTroughPrice, candles[i].high);
             const trailingStopLevel = peakOrTroughPrice * (1 - ts / 100);
             if (candles[i].low <= trailingStopLevel) {
               shouldExit = true;
             }
           } else {
             // short
-            peakOrTroughPrice = Math.min(peakOrTroughPrice, candles[i].low);
             const trailingStopLevel = peakOrTroughPrice * (1 + ts / 100);
             if (candles[i].high >= trailingStopLevel) {
               shouldExit = true;
             }
           }
+        }
+        if (ts) {
+          peakOrTroughPrice = isLong
+            ? Math.max(peakOrTroughPrice, candles[i].high)
+            : Math.min(peakOrTroughPrice, candles[i].low);
         }
 
         // 来自策略的平仓信号

@@ -130,4 +130,77 @@ describe('Backtester accounting', () => {
     expect(res.trades).toHaveLength(1);
     expect(res.trades[0].exitIdx).toBe(59);
   });
+
+  it('does not stop out on a bar that only rises (trailing stop uses the prior peak)', async () => {
+    const candles = candlesFromCloses(new Array(70).fill(100));
+    // 第 55 根：开 100、低 100、高 108、收 108（只上涨）
+    candles[55] = {
+      ...candles[55],
+      open: 100,
+      low: 100,
+      high: 108,
+      close: 108,
+    };
+    for (let i = 56; i < 70; i++)
+      candles[i] = {
+        ...candles[i],
+        open: 108,
+        high: 108,
+        low: 108,
+        close: 108,
+      };
+    const strat = scripted({ 52: { direction: 'long' } });
+
+    const res = await new Backtester({
+      ...noFrictions,
+      exitParams: { trailingStopPercent: 7 },
+    }).run(candles, strat);
+
+    // 不应在第 55 根触发止损；持仓到最后清算
+    expect(res.trades).toHaveLength(1);
+    expect(res.trades[0].exitIdx).toBe(69);
+  });
+
+  it('stops out when a later bar falls through the trailed level', async () => {
+    const closes = new Array(70).fill(100);
+    const candles = candlesFromCloses(closes);
+    candles[55] = {
+      ...candles[55],
+      open: 100,
+      low: 100,
+      high: 110,
+      close: 110,
+    };
+    // 第 57 根跌到 101，低于 110 × 0.93 = 102.3
+    candles[56] = {
+      ...candles[56],
+      open: 110,
+      low: 109,
+      high: 110,
+      close: 109,
+    };
+    candles[57] = {
+      ...candles[57],
+      open: 105,
+      low: 101,
+      high: 105,
+      close: 101,
+    };
+    for (let i = 58; i < 70; i++)
+      candles[i] = {
+        ...candles[i],
+        open: 101,
+        high: 101,
+        low: 101,
+        close: 101,
+      };
+    const strat = scripted({ 52: { direction: 'long' } });
+
+    const res = await new Backtester({
+      ...noFrictions,
+      exitParams: { trailingStopPercent: 7 },
+    }).run(candles, strat);
+
+    expect(res.trades[0].exitIdx).toBe(58);
+  });
 });
