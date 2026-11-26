@@ -20,13 +20,9 @@ export const detectBullOrBear = (
   const bearishPatterns: PatternResult[] = [];
 
   for (let i = patternCheckingWindow; i < candles.length; i++) {
-    const currentWindowSize = Math.min(
-      patternCheckingWindow,
-      candles.length - i
-    );
-
+    // 以第 i 根K线为结尾，向前取完整窗口（i >= patternCheckingWindow，不会越界）
     // i+1 为了包含当前K线
-    const windowCandles = candles.slice(i - currentWindowSize, i + 1);
+    const windowCandles = candles.slice(i - patternCheckingWindow, i + 1);
 
     // 获取最新K线的信息
     const currentCandle = windowCandles[windowCandles.length - 1];
