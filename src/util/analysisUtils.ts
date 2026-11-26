@@ -609,6 +609,37 @@ export function findPatternStopLoss(
 }
 
 /**
+ * 选择用于计算风险（风险回报比）的止损价：
+ * 优先使用位于亏损一侧的主止损（fixed）；没有时取亏损一侧离入场价最近的止损；
+ * 再没有时取离入场价最近的止损。没有任何止损时返回入场价。
+ */
+export function selectRiskStop(
+  direction: TradeDirection,
+  entry: number,
+  stopLossLevels: IntegratedTradePlan['exitStrategy']['stopLossLevels']
+): number {
+  if (stopLossLevels.length === 0) return entry;
+  const isLong = direction === TradeDirection.Long;
+  const isShort = direction === TradeDirection.Short;
+  const onLossSide = (p: number) =>
+    isLong ? p < entry : isShort ? p > entry : false;
+
+  const primary = stopLossLevels.find(
+    l => l.type === 'fixed' && onLossSide(l.price)
+  );
+  if (primary) return primary.price;
+
+  const stopPrices = stopLossLevels.map(l => l.price);
+  const lossSide = stopPrices.filter(onLossSide);
+  if (lossSide.length > 0) {
+    return isLong ? Math.max(...lossSide) : Math.min(...lossSide);
+  }
+  return stopPrices.reduce((a, b) =>
+    Math.abs(a - entry) < Math.abs(b - entry) ? a : b
+  );
+}
+
+/**
  * 确定风险管理策略
  */
 export function determineRiskManagement(
@@ -697,27 +728,11 @@ export function determineRiskManagement(
     exitStrategy.stopLossLevels.length > 0
   ) {
     const entry = entryStrategy.idealEntryPrice;
-    const stopPrices = exitStrategy.stopLossLevels.map(l => l.price);
-    let chosenStop = stopPrices[0];
-    if (direction === TradeDirection.Long) {
-      const below = stopPrices.filter(p => p < entry);
-      // 取最贴近入场价的下方止损（风险最小）
-      chosenStop =
-        below.length > 0
-          ? Math.max(...below)
-          : stopPrices.reduce((a, b) =>
-              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
-            );
-    } else if (direction === TradeDirection.Short) {
-      const above = stopPrices.filter(p => p > entry);
-      // 取最贴近入场价的上方止损
-      chosenStop =
-        above.length > 0
-          ? Math.min(...above)
-          : stopPrices.reduce((a, b) =>
-              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
-            );
-    }
+    const chosenStop = selectRiskStop(
+      direction,
+      entry,
+      exitStrategy.stopLossLevels
+    );
 
     const potentialRisk = Math.max(1e-8, Math.abs(entry - chosenStop));
     const weightedReward = calculateWeightedReward(

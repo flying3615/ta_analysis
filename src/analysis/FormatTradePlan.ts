@@ -1,5 +1,8 @@
 import { toEDTString } from '../util/util.js';
-import { calculateWeightedReward } from '../util/analysisUtils.js';
+import {
+  calculateWeightedReward,
+  selectRiskStop,
+} from '../util/analysisUtils.js';
 import { IntegratedTradePlan } from '../types.js';
 
 /**
@@ -7,17 +10,12 @@ import { IntegratedTradePlan } from '../types.js';
  */
 function buildMachineReadableSummary(tradePlan: IntegratedTradePlan): string {
   const entry = tradePlan.entryStrategy.idealEntryPrice;
-  const stopPrices = tradePlan.exitStrategy.stopLossLevels.map(l => l.price);
-  const stopUsed = (() => {
-    if (tradePlan.direction === 'long') {
-      const below = stopPrices.filter(p => p < entry);
-      return below.length > 0 ? Math.max(...below) : (stopPrices[0] ?? entry);
-    } else if (tradePlan.direction === 'short') {
-      const above = stopPrices.filter(p => p > entry);
-      return above.length > 0 ? Math.min(...above) : (stopPrices[0] ?? entry);
-    }
-    return stopPrices[0] ?? entry;
-  })();
+  // 与风险管理使用同一个止损选择规则
+  const stopUsed = selectRiskStop(
+    tradePlan.direction,
+    entry,
+    tradePlan.exitStrategy.stopLossLevels
+  );
 
   const weightedReward = calculateWeightedReward(
     tradePlan.direction as any,

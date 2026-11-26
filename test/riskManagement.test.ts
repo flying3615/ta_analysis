@@ -58,3 +58,60 @@ describe('determineRiskManagement max loss', () => {
     expect(plan.maxLoss).toBe('账户总资金的2.0%');
   });
 });
+
+describe('determineRiskManagement risk/reward', () => {
+  const entryStrategy = {
+    idealEntryPrice: 100,
+    entryType: 'pullback',
+    entryZones: [],
+    confirmationSignals: [],
+    riskLevel: RiskLevel.Medium,
+  } as any;
+  const volatility = {
+    volatilityAnalysis: { volatilityRegime: 'normal', bollingerBandWidth: 5 },
+  } as any;
+
+  it('measures risk to the primary (fixed) stop, not the nearest one', () => {
+    const exitStrategy = {
+      takeProfitLevels: [{ price: 106, proportion: 1, reasoning: '' }],
+      stopLossLevels: [
+        { price: 97.6, type: 'fixed', reasoning: '' }, // 主止损 −2.4%
+        { price: 90, type: 'trailing', reasoning: '' },
+        { price: 99.8, type: 'trailing', reasoning: '' }, // 只低 0.2%
+      ],
+    } as any;
+
+    const rm = determineRiskManagement(
+      TradeDirection.Long,
+      entryStrategy,
+      exitStrategy,
+      100,
+      SignalStrength.Moderate,
+      volatility
+    );
+
+    // 收益 6 / 风险 2.4 = 2.5
+    expect(rm.riskRewardRatio).toBeCloseTo(6 / 2.4, 6);
+  });
+
+  it('uses the primary stop above entry for shorts', () => {
+    const exitStrategy = {
+      takeProfitLevels: [{ price: 94, proportion: 1, reasoning: '' }],
+      stopLossLevels: [
+        { price: 103, type: 'fixed', reasoning: '' },
+        { price: 100.1, type: 'trailing', reasoning: '' },
+      ],
+    } as any;
+
+    const rm = determineRiskManagement(
+      TradeDirection.Short,
+      entryStrategy,
+      exitStrategy,
+      100,
+      SignalStrength.Moderate,
+      volatility
+    );
+
+    expect(rm.riskRewardRatio).toBeCloseTo(6 / 3, 6);
+  });
+});
