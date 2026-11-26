@@ -15,6 +15,7 @@ import {
   SignalStrength,
   type IntegratedTradePlan,
   type KeyLevel,
+  type TradeCondition,
 } from '../../types.js';
 import {
   determineEntryStrategy,
@@ -81,7 +82,7 @@ export class StrategyGenerator {
     input: StrategyGenerationInput
   ): IntegratedTradePlan['confirmationSignals'] {
     const { signalResult, analyses } = input;
-    const confirmationSignals = [];
+    const confirmationSignals: TradeCondition[] = [];
 
     // 基础方向确认
     confirmationSignals.push({
@@ -131,7 +132,7 @@ export class StrategyGenerator {
     input: StrategyGenerationInput
   ): IntegratedTradePlan['invalidationConditions'] {
     const { signalResult, currentPrice, keyLevels } = input;
-    const invalidationConditions = [];
+    const invalidationConditions: TradeCondition[] = [];
 
     // 基于关键位的失效条件
     if (signalResult.direction === TradeDirection.Long) {

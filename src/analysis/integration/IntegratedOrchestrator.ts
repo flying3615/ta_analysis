@@ -44,8 +44,17 @@ import type {
 } from './IntegrationTypes.js';
 import {
   DEFAULT_INTEGRATION_CONFIG,
+  mergeIntegrationConfig,
+  normalizeWeights,
   type IntegrationConfig,
 } from './IntegrationConfig.js';
+
+/** 一次分析所用的打分组件，均由同一份配置构建 */
+interface ScoringComponents {
+  signalAggregator: SignalAggregator;
+  keyLevelManager: KeyLevelManager;
+  strategyGenerator: StrategyGenerator;
+}
 
 export class IntegratedOrchestrator {
   private signalAggregator: SignalAggregator;
@@ -60,6 +69,29 @@ export class IntegratedOrchestrator {
     this.keyLevelManager = new KeyLevelManager(config);
     this.strategyGenerator = new StrategyGenerator(config);
     this.registerBuiltInPlugins();
+  }
+
+  /**
+   * 返回按给定配置构建的打分组件。
+   * 配置与实例配置相同时复用实例组件，否则为本次调用新建一套。
+   */
+  private componentsFor(config: IntegrationConfig): ScoringComponents {
+    if (config === this.config) {
+      return {
+        signalAggregator: this.signalAggregator,
+        keyLevelManager: this.keyLevelManager,
+        strategyGenerator: this.strategyGenerator,
+      };
+    }
+    const signalAggregator = new SignalAggregator(config);
+    for (const plugin of this.signalAggregator.getPlugins()) {
+      signalAggregator.registerPlugin(plugin);
+    }
+    return {
+      signalAggregator,
+      keyLevelManager: new KeyLevelManager(config),
+      strategyGenerator: new StrategyGenerator(config),
+    };
   }
 
   /** 统一注册内置插件，供构造与配置更新复用 */
@@ -85,9 +117,8 @@ export class IntegratedOrchestrator {
     const executionId = generateUniqueId();
 
     // 合并配置
-    const finalConfig = customConfig
-      ? { ...this.config, ...customConfig }
-      : this.config;
+    const finalConfig = mergeIntegrationConfig(this.config, customConfig);
+    const components = this.componentsFor(finalConfig);
 
     // 创建执行上下文
     const context: IntegrationContext = {
@@ -126,7 +157,7 @@ export class IntegratedOrchestrator {
 
       // 信号汇总
       const signalStartTime = Date.now();
-      const signalResult = this.signalAggregator.aggregateSignals(
+      const signalResult = components.signalAggregator.aggregateSignals(
         analysisData,
         context
       );
@@ -134,10 +165,11 @@ export class IntegratedOrchestrator {
 
       // 关键位管理
       const keyLevelStartTime = Date.now();
-      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
-        analysisData,
-        context
-      );
+      const keyLevelResult =
+        components.keyLevelManager.extractAndMergeKeyLevels(
+          analysisData,
+          context
+        );
       const keyLevelEndTime = Date.now();
 
       // 策略生成
@@ -151,7 +183,7 @@ export class IntegratedOrchestrator {
         config: finalConfig,
       };
       const strategyResult =
-        this.strategyGenerator.generateStrategy(strategyInput);
+        components.strategyGenerator.generateStrategy(strategyInput);
       const strategyEndTime = Date.now();
 
       // 构建最终交易计划
@@ -204,9 +236,8 @@ export class IntegratedOrchestrator {
     const executionId = generateUniqueId();
 
     // 合并配置
-    const finalConfig = customConfig
-      ? { ...this.config, ...customConfig }
-      : this.config;
+    const finalConfig = mergeIntegrationConfig(this.config, customConfig);
+    const components = this.componentsFor(finalConfig);
 
     // 创建执行上下文
     const context: IntegrationContext = {
@@ -249,7 +280,7 @@ export class IntegratedOrchestrator {
 
       // 信号汇总
       const signalStartTime = Date.now();
-      const signalResult = this.signalAggregator.aggregateSignals(
+      const signalResult = components.signalAggregator.aggregateSignals(
         analysisData,
         context
       );
@@ -257,10 +288,11 @@ export class IntegratedOrchestrator {
 
       // 关键位管理
       const keyLevelStartTime = Date.now();
-      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
-        analysisData,
-        context
-      );
+      const keyLevelResult =
+        components.keyLevelManager.extractAndMergeKeyLevels(
+          analysisData,
+          context
+        );
       const keyLevelEndTime = Date.now();
 
       // 策略生成
@@ -274,7 +306,7 @@ export class IntegratedOrchestrator {
         config: finalConfig,
       };
       const strategyResult =
-        this.strategyGenerator.generateStrategy(strategyInput);
+        components.strategyGenerator.generateStrategy(strategyInput);
       const strategyEndTime = Date.now();
 
       // 构建最终交易计划
@@ -334,9 +366,8 @@ export class IntegratedOrchestrator {
     const startTime = Date.now();
     const executionId = generateUniqueId();
 
-    const finalConfig = customConfig
-      ? { ...this.config, ...customConfig }
-      : this.config;
+    const finalConfig = mergeIntegrationConfig(this.config, customConfig);
+    const components = this.componentsFor(finalConfig);
 
     const context: IntegrationContext = {
       symbol,
@@ -363,17 +394,18 @@ export class IntegratedOrchestrator {
       const analysisEndTime = Date.now();
 
       const signalStartTime = Date.now();
-      const signalResult = this.signalAggregator.aggregateSignals(
+      const signalResult = components.signalAggregator.aggregateSignals(
         analysisData,
         context
       );
       const signalEndTime = Date.now();
 
       const keyLevelStartTime = Date.now();
-      const keyLevelResult = this.keyLevelManager.extractAndMergeKeyLevels(
-        analysisData,
-        context
-      );
+      const keyLevelResult =
+        components.keyLevelManager.extractAndMergeKeyLevels(
+          analysisData,
+          context
+        );
       const keyLevelEndTime = Date.now();
 
       const strategyStartTime = Date.now();
@@ -386,7 +418,7 @@ export class IntegratedOrchestrator {
         config: finalConfig,
       };
       const strategyResult =
-        this.strategyGenerator.generateStrategy(strategyInput);
+        components.strategyGenerator.generateStrategy(strategyInput);
       const strategyEndTime = Date.now();
 
       const tradePlan = this.buildTradePlan(
@@ -514,38 +546,44 @@ export class IntegratedOrchestrator {
               dailyData,
               hourlyData
             ),
-          'chip'
+          'chip',
+          config
         ),
         this.executeWithFallback(
           () => analyzeMultiTimeframePattern(weeklyData, dailyData, hourlyData),
-          'pattern'
+          'pattern',
+          config
         ),
         this.executeWithFallback(
-          () => analyzeMultiTimeBBSR(symbol, dailyData, hourlyData),
-          'bbsr'
+          () => analyzeMultiTimeBBSR(symbol, dailyData, weeklyData),
+          'bbsr',
+          config
         ),
         this.executeWithFallback(
-          () =>
-            analyzeVolumeVolatilityCombined(
-              (hourlyData?.length ?? 0) >= 20 ? hourlyData : dailyData
-            ),
-          'volatility'
+          // 波动率按日线年化（√252），区间阈值也按日线校准，所以始终使用日线
+          () => analyzeVolumeVolatilityCombined(dailyData),
+          'volatility',
+          config
         ),
         this.executeWithFallback(
           () => analyzeMarketStructure(dailyData, 'daily'),
-          'structure'
+          'structure',
+          config
         ),
         this.executeWithFallback(
           () => analyzeSupplyDemandZone(symbol, dailyData, 'daily'),
-          'supplyDemand'
+          'supplyDemand',
+          config
         ),
         this.executeWithFallback(
           () => analyzeRange(symbol, dailyData, 'daily'),
-          'range'
+          'range',
+          config
         ),
         this.executeWithFallback(
           () => analyzeTrendlinesAndChannels(symbol, dailyData, 'daily'),
-          'trendline'
+          'trendline',
+          config
         ),
       ]);
 
@@ -574,7 +612,8 @@ export class IntegratedOrchestrator {
    */
   private async executeWithFallback<T>(
     analysisFunction: () => Promise<T> | T,
-    moduleName: string
+    moduleName: string,
+    config: IntegrationConfig
   ): Promise<AnalysisResultWrapper<T>> {
     const startTime = Date.now();
 
@@ -596,7 +635,7 @@ export class IntegratedOrchestrator {
       };
 
       // 如果启用了降级策略，返回基础结果
-      if (this.config.options.enableFallbackStrategy) {
+      if (config.options.enableFallbackStrategy) {
         const fallbackData = this.createFallbackData(moduleName) as T;
         return {
           success: false,
@@ -692,6 +731,9 @@ export class IntegratedOrchestrator {
     strategyResult: any,
     context: IntegrationContext
   ): IntegratedTradePlan {
+    // 打分时实际使用的权重（8 个模块一起归一化）
+    const weights = normalizeWeights(context.config.weights);
+
     // 构建完整的交易计划
     return {
       symbol,
@@ -702,17 +744,25 @@ export class IntegratedOrchestrator {
       signalStrength: signalResult.signalStrength,
       confidenceScore: signalResult.confidenceScore,
 
-      // 权重信息
-      chipAnalysisWeight: context.config.weights.chip,
-      patternAnalysisWeight: context.config.weights.pattern,
-      volumeAnalysisWeight: context.config.weights.volume,
-      bbsrAnalysisWeight: context.config.weights.bbsr,
+      // 权重信息：打分时实际使用的归一化权重
+      chipAnalysisWeight: weights.chip,
+      patternAnalysisWeight: weights.pattern,
+      volumeAnalysisWeight: weights.volume,
+      bbsrAnalysisWeight: weights.bbsr,
+      structureAnalysisWeight: weights.structure,
+      supplyDemandAnalysisWeight: weights.supplyDemand,
+      rangeAnalysisWeight: weights.range,
+      trendlineAnalysisWeight: weights.trendline,
 
       // 贡献度
       chipAnalysisContribution: signalResult.contributions.chip,
       patternAnalysisContribution: signalResult.contributions.pattern,
       volumeAnalysisContribution: signalResult.contributions.volume,
       bbsrAnalysisContribution: signalResult.contributions.bbsr,
+      structureAnalysisContribution: signalResult.contributions.structure,
+      supplyDemandAnalysisContribution: signalResult.contributions.supplyDemand,
+      rangeAnalysisContribution: signalResult.contributions.range,
+      trendlineAnalysisContribution: signalResult.contributions.trendline,
 
       // 策略相关
       entryStrategy: strategyResult.entryStrategy,
@@ -740,7 +790,10 @@ export class IntegratedOrchestrator {
       ),
 
       primaryTimeframe: analysisData.analyses.chip?.primaryTimeframe ?? 'daily',
-      timeframeConsistency: this.calculateTimeframeConsistency(analysisData),
+      timeframeConsistency: this.calculateTimeframeConsistency(
+        analysisData,
+        context.config
+      ),
       shortTermOutlook: this.narrative.buildShortTermOutlook(
         analysisData.analyses
       ),
@@ -853,9 +906,10 @@ export class IntegratedOrchestrator {
    * 计算时间周期一致性
    */
   private calculateTimeframeConsistency(
-    analysisData: AnalysisInputData
+    analysisData: AnalysisInputData,
+    config: IntegrationConfig
   ): string {
-    const cfg = this.config.consistency;
+    const cfg = config.consistency;
     const pattern: any = analysisData.analyses.pattern;
 
     // 形态多周期方向按权重折算为分数（多头=1，空头=-1，缺省=0）
@@ -952,7 +1006,7 @@ export class IntegratedOrchestrator {
    * 更新配置
    */
   updateConfig(newConfig: Partial<IntegrationConfig>): void {
-    this.config = { ...this.config, ...newConfig };
+    this.config = mergeIntegrationConfig(this.config, newConfig);
 
     // 更新子模块配置
     this.signalAggregator = new SignalAggregator(this.config);

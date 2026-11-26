@@ -3,10 +3,10 @@
 识别关键支撑/阻力与其附近的多空形态信号（如锤子、吞没等），用于确认或否定交易方向。
 
 #### 目录与核心文件
-- `src/analysis/sr/srConfig.ts`、`srTypes.ts`: 配置与类型
-- `src/analysis/sr/BullBearOnSupportResistAnalysis.ts`: 关键位附近信号检测
-- `src/analysis/sr/multiTimeFrameBBSRAnalysis.ts`: 多周期编排
-- `src/analysis/sr/formatSrAnalysis.ts`: 输出格式化
+- `src/analysis/analyzer/sr/srConfig.ts`、`srTypes.ts`: 配置与类型
+- `src/analysis/analyzer/sr/BullBearOnSupportResistAnalysis.ts`: 关键位附近信号检测
+- `src/analysis/analyzer/sr/multiTimeFrameBBSRAnalysis.ts`: 多周期编排
+- `src/analysis/analyzer/sr/formatSrAnalysis.ts`: 输出格式化
 
 #### 输入/输出
 - 输入：日/小时蜡烛

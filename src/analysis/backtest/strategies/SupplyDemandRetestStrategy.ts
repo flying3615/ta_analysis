@@ -47,6 +47,8 @@ export function SupplyDemandRetestStrategy(
 
   let lastSignalIndex = -1;
   let lastDirection: 'long' | 'short' | 'flat' | undefined = undefined;
+  // 已经触发过的供需区，每个区域只触发一次
+  const triggeredZones = new Set<string>();
 
   return {
     name: 'SupplyDemandRetest',
@@ -73,6 +75,10 @@ export function SupplyDemandRetestStrategy(
       // 在供需区内触发回踩
       const isInside = current >= candidate.low && current <= candidate.high;
       if (!isInside) return null;
+
+      // 区域标识：起点K线的时间（窗口会随 i 平移，不能用下标）+ 价格区间
+      const zoneKey = `${candidate.type}:${window[candidate.startIndex]?.timestamp.getTime()}:${candidate.low}:${candidate.high}`;
+      if (triggeredZones.has(zoneKey)) return null;
 
       let signal: Signal | null = null;
       if (candidate.type === 'demand') {
@@ -105,6 +111,7 @@ export function SupplyDemandRetestStrategy(
       if (signal) {
         lastSignalIndex = i;
         lastDirection = signal.direction;
+        triggeredZones.add(zoneKey);
       }
 
       return signal;

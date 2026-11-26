@@ -8,6 +8,7 @@ export interface RangeConfig {
   followThroughBars: number; // 跟随观测根数
   followThroughMinPercent: number; // 跟随最小延续幅度
   retestBars: number; // 回测窗口
+  maxBreakoutAgeBars: number; // 突破距今超过此根数则不再视为当前信号
 }
 
 export const rangeConfig: RangeConfig = {
@@ -20,6 +21,7 @@ export const rangeConfig: RangeConfig = {
   followThroughBars: 3,
   followThroughMinPercent: 0.006, // 0.6%
   retestBars: 5,
+  maxBreakoutAgeBars: 10,
 };
 
 export function updateRangeConfig(partial: Partial<RangeConfig>) {

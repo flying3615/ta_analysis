@@ -7,6 +7,7 @@ export interface TrendReversalConfig {
   trendDirection: {
     defaultPeriod: number; // determineTrendDirection 默认均线周期
     minSlopePoints: number; // 计算斜率的最小点数
+    minRelativeSlope: number; // 均线每根K线的变化占均价的比例超过此值才算趋势
   };
 
   // 小/大周期均线参数（detectTrendReversal 默认值）
@@ -44,6 +45,7 @@ export const trendReversalConfig: TrendReversalConfig = {
   trendDirection: {
     defaultPeriod: 20,
     minSlopePoints: 5,
+    minRelativeSlope: 0.0005, // 0.05%/根
   },
   movingAverage: {
     smallPeriod: 15,

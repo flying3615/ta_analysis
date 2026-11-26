@@ -20,13 +20,9 @@ export const detectBullOrBear = (
   const bearishPatterns: PatternResult[] = [];
 
   for (let i = patternCheckingWindow; i < candles.length; i++) {
-    const currentWindowSize = Math.min(
-      patternCheckingWindow,
-      candles.length - i
-    );
-
+    // 以第 i 根K线为结尾，向前取完整窗口（i >= patternCheckingWindow，不会越界）
     // i+1 为了包含当前K线
-    const windowCandles = candles.slice(i - currentWindowSize, i + 1);
+    const windowCandles = candles.slice(i - patternCheckingWindow, i + 1);
 
     // 获取最新K线的信息
     const currentCandle = windowCandles[windowCandles.length - 1];
@@ -160,10 +156,9 @@ export const checkBullOrBearRecently = (
 
   const { bullishPatterns, bearishPatterns } = detectBullOrBear(candles);
 
-  // 计算日期范围
-  const today = new Date();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(today.getDate() - daysBefore);
+  // 以最后一根K线的时间为"今天"，这样历史数据和回测也能得到结果
+  const today = candles[candles.length - 1].timestamp;
+  const cutoffDate = new Date(today.getTime() - daysBefore * 86400000);
 
   // 筛选出符合条件的模式
   const recentBullishPatterns = bullishPatterns.filter(

@@ -8,7 +8,7 @@ export interface IntegrationWeights {
   pattern: number;
   volume: number;
   bbsr: number;
-  // 附加权重（不计入100%基础权重）
+  // 附加模块权重（与基础模块一起归一化）
   structure?: number;
   supplyDemand?: number;
   range?: number;
@@ -71,8 +71,9 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
     pattern: 0.5,
     volume: 0.2,
     bbsr: 0.1,
-    // 附加权重
-    structure: 0.3,
+    // 附加权重：与基础权重一起归一化（合计 1.5）。
+    // 每个附加模块满分时的贡献都低于 scoreLong（15），不能单独决定方向
+    structure: 0.2,
     supplyDemand: 0.1,
     range: 0.2,
     trendline: 0.1,
@@ -110,64 +111,73 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
   },
 };
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !(value instanceof Date)
+  );
+}
+
+function deepMerge<T>(base: T, updates: unknown): T {
+  if (!isPlainObject(base) || !isPlainObject(updates)) {
+    return (updates === undefined ? base : updates) as T;
+  }
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) continue;
+    out[key] = deepMerge(out[key], value);
+  }
+  return out as T;
+}
+
+/**
+ * 把部分配置深度合并到基础配置上。
+ * 未提供的字段（包括嵌套字段）保留基础配置的值，数组整体替换。
+ */
+export function mergeIntegrationConfig(
+  base: IntegrationConfig,
+  updates?: Partial<IntegrationConfig>
+): IntegrationConfig {
+  return updates ? deepMerge(base, updates) : base;
+}
+
 // 配置更新函数
 export function updateIntegrationConfig(
   updates: Partial<IntegrationConfig>
 ): IntegrationConfig {
-  return {
-    ...DEFAULT_INTEGRATION_CONFIG,
-    ...updates,
-    weights: {
-      ...DEFAULT_INTEGRATION_CONFIG.weights,
-      ...updates.weights,
-    },
-    thresholds: {
-      ...DEFAULT_INTEGRATION_CONFIG.thresholds,
-      ...updates.thresholds,
-    },
-    timeframes: {
-      ...DEFAULT_INTEGRATION_CONFIG.timeframes,
-      ...updates.timeframes,
-    },
-    consistency: {
-      ...DEFAULT_INTEGRATION_CONFIG.consistency,
-      ...(updates.consistency as Partial<ConsistencyConfig>),
-      timeframeWeights: {
-        ...DEFAULT_INTEGRATION_CONFIG.consistency.timeframeWeights,
-        ...(updates.consistency?.timeframeWeights as Partial<
-          ConsistencyConfig['timeframeWeights']
-        >),
-      },
-    },
-    options: {
-      ...DEFAULT_INTEGRATION_CONFIG.options,
-      ...updates.options,
-    },
-  };
+  return mergeIntegrationConfig(DEFAULT_INTEGRATION_CONFIG, updates);
 }
 
 // 权重归一化函数
 export function normalizeWeights(
   weights: IntegrationWeights
 ): IntegrationWeights {
-  const totalWeight =
-    weights.chip + weights.pattern + weights.volume + weights.bbsr;
+  // 8 个内置模块一起归一化（合计为 1），使最终分数保持在 ±100 以内。
+  // 插件权重（plugins）单独配置，不参与归一化。
+  const parts = {
+    chip: weights.chip,
+    pattern: weights.pattern,
+    volume: weights.volume,
+    bbsr: weights.bbsr,
+    structure: weights.structure || 0,
+    supplyDemand: weights.supplyDemand || 0,
+    range: weights.range || 0,
+    trendline: weights.trendline || 0,
+  };
+  const totalWeight = Object.values(parts).reduce((s, w) => s + w, 0);
 
   if (totalWeight === 0) {
     throw new Error('权重总和不能为0');
   }
 
-  return {
-    chip: weights.chip / totalWeight,
-    pattern: weights.pattern / totalWeight,
-    volume: weights.volume / totalWeight,
-    bbsr: weights.bbsr / totalWeight,
-    // 附加权重保持不变
-    structure: weights.structure,
-    supplyDemand: weights.supplyDemand,
-    range: weights.range,
-    trendline: weights.trendline,
-  };
+  const normalized = { ...weights };
+  for (const [key, value] of Object.entries(parts)) {
+    (normalized as unknown as Record<string, number>)[key] =
+      value / totalWeight;
+  }
+  return normalized;
 }
 
 // 验证配置函数

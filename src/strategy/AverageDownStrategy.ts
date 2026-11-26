@@ -30,6 +30,7 @@ function simulateStockTrading(initState: InitState) {
   } = initState;
 
   // 初始状态计算
+  // 净投入 = 买入总额（含手续费）− 卖出净回收；avgCost 为摊薄成本
   let totalInvestment = initialShares * initialPrice;
   const tradingPosition = Math.floor(initialShares * tradingRatio);
   const fixedPosition = initialShares - tradingPosition;
@@ -77,7 +78,7 @@ function simulateStockTrading(initState: InitState) {
 
     // 记录买入交易
     const buyTrade = {
-      type: 'buy',
+      type: 'buy' as const,
       cycle: cycles,
       price: buyPrice,
       shares: tradingPosition,
@@ -97,8 +98,8 @@ function simulateStockTrading(initState: InitState) {
 
     // 计算新的持股和成本
     currentShares -= tradingPosition;
-    // 此处修正：卖出的股票按平均成本计算对总投资的影响
-    totalInvestment -= tradingPosition * avgCost;
+    // 摊薄成本：卖出的净回收额从总投入中扣除，盈亏都体现在剩余持仓的成本里
+    totalInvestment -= sellValue - sellFee;
     avgCost = totalInvestment / currentShares;
 
     // 计算单次循环利润
@@ -106,7 +107,7 @@ function simulateStockTrading(initState: InitState) {
 
     // 记录卖出交易
     const sellTrade = {
-      type: 'sell',
+      type: 'sell' as const,
       cycle: cycles,
       price: sellPrice,
       shares: tradingPosition,

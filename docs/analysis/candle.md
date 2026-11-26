@@ -3,11 +3,11 @@
 检测多周期（周/日/小时）的常见 K 线形态并给出方向与入场/止损/止盈建议。
 
 #### 目录与核心文件
-- `src/analysis/candle/candleConfig.ts`: 配置（检测窗口、权重、止损比例）
-- `src/analysis/candle/candleUtils.ts`: 风险回报与价格计算工具
-- `src/analysis/candle/BullOrBearDetector.ts`: 形态检测基础库
-- `src/analysis/candle/formatCandleAnalysis.ts`: 中文格式化输出
-- `src/analysis/candle/multiTImeFrameCandleAnalysis.ts`: 编排入口
+- `src/analysis/basic/candle/candleConfig.ts`: 配置（检测窗口、权重、止损比例）
+- `src/analysis/basic/candle/candleUtils.ts`: 风险回报与价格计算工具
+- `src/analysis/basic/candle/BullOrBearDetector.ts`: 形态检测基础库
+- `src/analysis/basic/candle/formatCandleAnalysis.ts`: 中文格式化输出
+- `src/analysis/basic/candle/multiTimeCandleAnalysis.ts`: 编排入口
 
 #### 输入/输出
 - 输入：`weekly/daily/1hour` 蜡烛

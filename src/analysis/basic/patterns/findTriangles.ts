@@ -90,7 +90,8 @@ export function findTriangles(
 
   // 检测上升三角形（水平阻力线，上升支撑线）
   // 上升三角形需要至少两个相似的高点和两个上升的低点
-  if (peaks.length >= 2 && valleys.length >= 2) {
+  // 带标签的块：某项检查不通过时只跳过本类三角形，继续检查其他类型
+  ascendingCheck: if (peaks.length >= 2 && valleys.length >= 2) {
     // 检查是否存在水平的高点
     const laterPeaks = peaks.slice(-2);
     const isHorizontalHighs = arePricesSimilar(
@@ -139,16 +140,16 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice > resistanceLevel) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, resistanceLevel, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, resistanceLevel, true)) {
             status = PatternStatus.Confirmed; // 已确认突破上方
           } else {
             status = PatternStatus.Completed; // 突破但未确认
           }
         } else if (currentPrice < projectedSupport) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedSupport, false)) {
             status = PatternStatus.Failed; // 向下突破（失败）
           } else {
             status = PatternStatus.Completed; // 突破但未确认
@@ -176,13 +177,13 @@ export function findTriangles(
       // 检查形态高度是否足够显著
       if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
         // 形态高度不够显著，跳过此形态
-        return patterns;
+        break ascendingCheck;
       }
 
       // 检查形态持续时间是否合理
       if (!isPatternDurationValid(duration)) {
         // 形态持续时间不合理，跳过此形态
-        return patterns;
+        break ascendingCheck;
       }
 
       // 新增：检测形态是否无效
@@ -289,7 +290,8 @@ export function findTriangles(
   }
 
   // 检测下降三角形（下降阻力线，水平支撑线）
-  if (peaks.length >= 2 && valleys.length >= 2) {
+  // 带标签的块：某项检查不通过时只跳过本类三角形，继续检查其他类型
+  descendingCheck: if (peaks.length >= 2 && valleys.length >= 2) {
     // 检查是否存在下降的高点
     const isDescendingHighs =
       peaks[peaks.length - 1].price < peaks[peaks.length - 2].price;
@@ -341,16 +343,16 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice < supportLevel) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, supportLevel, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, supportLevel, false)) {
             status = PatternStatus.Confirmed; // 已确认突破下方
           } else {
             status = PatternStatus.Completed; // 突破但未确认
           }
         } else if (currentPrice > projectedResistance) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedResistance, true)) {
             status = PatternStatus.Failed; // 向上突破（失败）
           } else {
             status = PatternStatus.Completed; // 突破但未确认
@@ -375,14 +377,14 @@ export function findTriangles(
       const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
       if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
         // 形态高度不够显著，跳过此形态
-        return patterns;
+        break descendingCheck;
       }
 
       // 检查形态持续时间是否合理
       const duration = endIndex - startIndex;
       if (!isPatternDurationValid(duration)) {
         // 形态持续时间不合理，跳过此形态
-        return patterns;
+        break descendingCheck;
       }
 
       // 新增：检测形态是否无效
@@ -494,7 +496,8 @@ export function findTriangles(
   }
 
   // 检测对称三角形（同时有下降阻力线和上升支撑线）
-  if (peaks.length >= 2 && valleys.length >= 2) {
+  // 带标签的块：某项检查不通过时只跳过本类三角形，继续检查其他类型
+  symmetricalCheck: if (peaks.length >= 2 && valleys.length >= 2) {
     // 检查是否存在下降的高点
     const isDescendingHighs =
       peaks[peaks.length - 1].price < peaks[peaks.length - 2].price;
@@ -550,8 +553,8 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice > projectedResistance) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedResistance, true)) {
             status = PatternStatus.Confirmed;
             breakoutDirection = PatternDirection.Bullish;
           } else {
@@ -559,8 +562,8 @@ export function findTriangles(
           }
         } else if (currentPrice < projectedSupport) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedSupport, false)) {
             status = PatternStatus.Confirmed;
             breakoutDirection = PatternDirection.Bearish;
           } else {
@@ -593,14 +596,14 @@ export function findTriangles(
       const avgPrice = data.reduce((sum, d) => sum + d.close, 0) / data.length;
       if (!isPatternHeightSignificant(patternHeight, avgPrice)) {
         // 形态高度不够显著，跳过此形态
-        return patterns;
+        break symmetricalCheck;
       }
 
       // 检查形态持续时间是否合理
       const duration = endIndex - startIndex;
       if (!isPatternDurationValid(duration)) {
         // 形态持续时间不合理，跳过此形态
-        return patterns;
+        break symmetricalCheck;
       }
 
       // 新增：检测形态是否无效

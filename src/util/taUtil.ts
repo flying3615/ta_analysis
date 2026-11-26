@@ -223,6 +223,8 @@ export function calculateStandardRSI(prices: number[], period: number): number {
     }
   }
 
+  // 价格完全不动时没有动量，返回中性值，而不是"超买"
+  if (avgGain === 0 && avgLoss === 0) return 50;
   if (avgLoss === 0) return 100;
 
   const rs = avgGain / avgLoss;
@@ -382,7 +384,8 @@ export function calculateMoneyFlowIndex(
     }
   }
 
-  // 防止除以零
+  // 防止除以零；没有任何资金流方向时返回中性值
+  if (positiveFlow === 0 && negativeFlow === 0) return 50;
   if (negativeFlow === 0) return 100;
   if (positiveFlow === 0) return 0;
 
@@ -525,33 +528,11 @@ export function calculateStandardDeviation(data: number[]): number {
 }
 
 /**
- * 计算最近的ATR值
+ * 计算最近的ATR值（Wilder 平滑，与 calculateATRSeries 的最后一个值一致）
  */
 export function calculateATR(data: Candle[], period: number): number {
-  const trValues: number[] = [];
-
-  // 计算真实范围值
-  for (let i = 1; i < data.length; i++) {
-    const high = data[i].high;
-    const low = data[i].low;
-    const prevClose = data[i - 1].close;
-
-    const tr1 = high - low;
-    const tr2 = Math.abs(high - prevClose);
-    const tr3 = Math.abs(low - prevClose);
-
-    const tr = Math.max(tr1, tr2, tr3);
-    trValues.push(tr);
-  }
-
-  // 计算ATR
-  if (trValues.length === 0) return 0;
-  if (trValues.length < period) {
-    return trValues.reduce((sum, tr) => sum + tr, 0) / trValues.length;
-  }
-
-  const recentTRs = trValues.slice(-period);
-  return recentTRs.reduce((sum, tr) => sum + tr, 0) / period;
+  const series = calculateATRSeries(data, period);
+  return series.length > 0 ? series[series.length - 1] : 0;
 }
 
 /**
@@ -574,6 +555,8 @@ export function calculateATRSeries(data: Candle[], period: number): number[] {
     const tr = Math.max(tr1, tr2, tr3);
     trValues.push(tr);
   }
+
+  if (trValues.length === 0) return atrValues;
 
   // 计算初始ATR
   if (trValues.length < period) {

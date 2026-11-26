@@ -3,10 +3,10 @@
 识别基底—冲击—离开结构，标注需求/供应区、状态（新鲜/测试/破坏），并计算 premium/discount。
 
 #### 目录与核心文件
-- `src/analysis/supplyDemand/sdConfig.ts`、`sdTypes.ts`
-- `src/analysis/supplyDemand/sdDetector.ts`: 区域检测与状态更新
-- `src/analysis/supplyDemand/multiTimeSupplyDemand.ts`: 多周期汇总
-- `src/analysis/supplyDemand/formatSupplyDemand.ts`: 格式输出
+- `src/analysis/analyzer/supplyDemand/sdConfig.ts`、`sdTypes.ts`
+- `src/analysis/analyzer/supplyDemand/sdDetector.ts`: 区域检测与状态更新
+- `src/analysis/analyzer/supplyDemand/multiTimeSupplyDemand.ts`: 多周期汇总
+- `src/analysis/analyzer/supplyDemand/formatSupplyDemand.ts`: 格式输出
 
 #### 输入/输出
 - 输入：日/小时蜡烛

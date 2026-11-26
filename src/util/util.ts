@@ -1,13 +1,11 @@
 import { Candle } from '../types.js';
 import yahooFinance from 'yahoo-finance2';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { ChartOptions } from 'yahoo-finance2/dist/cjs/src/modules/chart';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { ChartResultObject } from 'yahoo-finance2/dist/esm/src/modules/chart';
 import { PatternStatus } from '../analysis/basic/patterns/analyzeMultiTimeframePatterns.js';
 import { globalLogger } from './logger.js';
+
+/** yahoo-finance2 chart() 的查询参数与周期类型（从公开签名推断，不依赖内部路径） */
+type ChartOptions = Parameters<typeof yahooFinance.chart>[1];
+export type ChartInterval = NonNullable<ChartOptions['interval']>;
 
 export function isToday(date: Date): boolean {
   const today = new Date();
@@ -133,24 +131,25 @@ export async function getStockData(
   symbol: string,
   startDate: Date,
   endDate: Date,
-  interval = '1d'
+  interval: ChartInterval = '1d'
 ): Promise<Candle[]> {
+  // 显式指定 return: 'array'（库的默认值，结果带 quotes 数组），
+  // 以匹配返回 ChartResultArray 的重载，从而得到报价的类型
   const queryOptions = {
     period1: startDate,
     period2: endDate,
     interval,
-  } as ChartOptions;
+    return: 'array' as const,
+  };
 
   try {
-    const result: ChartResultObject = await yahooFinance.chart(
-      symbol,
-      queryOptions
-    );
+    const result = await yahooFinance.chart(symbol, queryOptions);
     const candles: Candle[] = [];
 
     if (result && result.quotes && result.quotes.length > 0) {
       result.quotes.forEach(quote => {
-        if (quote.date && quote.close && quote.volume !== undefined) {
+        // 跳过不完整的报价（Yahoo 会返回 close 或 volume 为 null 的行）
+        if (quote.date && quote.close && typeof quote.volume === 'number') {
           candles.push({
             symbol,
             open: quote.open || quote.close,
@@ -166,8 +165,11 @@ export async function getStockData(
 
     return candles;
   } catch (error) {
-    globalLogger.error('获取股票数据时出错:', error);
-    return [];
+    // 不再静默返回空数组：调用方需要区分"没有数据"和"获取失败"
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `获取 ${symbol} 数据失败 (interval=${interval}): ${message}`
+    );
   }
 }
 
@@ -177,27 +179,17 @@ export async function getStockDataForTimeframe(
   endDate: Date,
   timeframe: 'weekly' | 'daily' | '1hour'
 ): Promise<Candle[]> {
-  // 实际应用中，应该直接从数据提供商获取对应时间周期的数据
-  // 这里为了简化，我们从日线数据模拟其他时间周期
-
-  // 首先获取原始日线数据
-  const rawData = await getStockData(symbol, startDate, endDate);
-
-  if (timeframe === 'daily') {
-    return await getStockData(symbol, startDate, endDate); // 直接返回日线数据
-  } else if (timeframe === 'weekly') {
-    // 将日线数据聚合为周线
+  if (timeframe === 'weekly') {
     return await getStockData(symbol, startDate, endDate, '1wk');
-  } else if (timeframe === '1hour') {
-    // 注意：实际应用中应该直接获取真实的日内数据
+  }
+  if (timeframe === '1hour') {
     // 过滤掉夜盘影响，成交量为0的数据
     return (await getStockData(symbol, startDate, endDate, '1h')).filter(
       c => c.volume !== 0
     );
   }
-
   // 默认返回日线数据
-  return rawData;
+  return await getStockData(symbol, startDate, endDate);
 }
 
 /**
@@ -256,7 +248,7 @@ export async function getFullExchangeNameBySymbol(symbol: string) {
   } catch (e) {
     globalLogger.error(
       `Error occurs when getting ${symbol} full exchange name`,
-      e.message
+      e instanceof Error ? e.message : String(e)
     );
     return ''; // 返回 null 表示出错
   }
@@ -270,7 +262,10 @@ export function aggregateDailyToWeekly(daily: Candle[]): Candle[] {
 
   // Group by ISO week (year-week)
   const weekKey = (d: Date) => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // 使用 UTC 日期，结果不随运行环境的时区变化
+    const date = new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+    );
     // ISO week calculation
     // Thursday in current week decides the year
     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));

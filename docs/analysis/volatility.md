@@ -3,12 +3,12 @@
 结合 ATR、布林带宽度、历史波动率与量价关系，输出波动环境与量能结论，并提供机器可解析摘要字段。
 
 #### 目录与核心文件
-- `src/analysis/volatility/volatilityAnalysis.ts`: 综合波动率分析与汇总
-- `src/analysis/volatility/volumeVolatilityAnalysis.ts`: 量能子模块类型
+- `src/analysis/analyzer/volatility/volatilityAnalysis.ts`: 综合波动率分析与汇总
+- `src/analysis/analyzer/volatility/volumeVolatilityAnalysis.ts`: 量能子模块类型
 - `src/analysis/FormatTradePlan.ts`: `vvInsights` 输出集成与 JSON 摘要
 
 #### 输入/输出
-- 输入：小时蜡烛
+- 输入：日线蜡烛（年化按 √252 计算，区间阈值按日线校准）
 - 输出：波动率摘要、量能摘要、合成总结
 
 #### 算法要点

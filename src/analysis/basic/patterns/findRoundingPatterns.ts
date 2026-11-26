@@ -29,6 +29,22 @@ export function findRoundingPatterns(
 
   // 使用简单的移动平均来平滑价格
   const smoothingPeriod = 5;
+  // recentData 在 data 中的起始下标
+  const offset = data.length - lookbackPeriod;
+  /** 平滑序列第 k 个值对应的窗口 data[offset+k .. offset+k+4] 内最低/最高K线的下标 */
+  const extremeInSmoothingWindow = (k: number, kind: 'low' | 'high') => {
+    let best = offset + k;
+    for (let j = best + 1; j <= offset + k + smoothingPeriod - 1; j++) {
+      if (
+        kind === 'low'
+          ? data[j].low < data[best].low
+          : data[j].high > data[best].high
+      ) {
+        best = j;
+      }
+    }
+    return best;
+  };
   for (let i = smoothingPeriod - 1; i < recentData.length; i++) {
     const avgPrice =
       recentData
@@ -83,13 +99,10 @@ export function findRoundingPatterns(
       const keyPrices: number[] = [];
 
       // 确定形态的开始、低点和结束位置
-      const roundBottomStart =
-        data.length - lookbackPeriod + Math.max(0, minIndex - 10);
-      const lowestPoint = data.length - lookbackPeriod + minIndex;
-      const roundBottomEnd = Math.min(
-        data.length - 1,
-        data.length - lookbackPeriod + minIndex + 10
-      );
+      // smoothedPrices[k] 是 recentData[k..k+4] 的均值；最低点取该窗口内最低的那根K线
+      const lowestPoint = extremeInSmoothingWindow(minIndex, 'low');
+      const roundBottomStart = Math.max(offset, lowestPoint - 10);
+      const roundBottomEnd = Math.min(data.length - 1, lowestPoint + 10);
 
       // 计算形态特性
       const roundingStartPrice = data[roundBottomStart].close;
@@ -252,13 +265,10 @@ export function findRoundingPatterns(
       const keyPrices: number[] = [];
 
       // 确定形态的开始、高点和结束位置
-      const roundTopStart =
-        data.length - lookbackPeriod + Math.max(0, maxIndex - 10);
-      const highestPoint = data.length - lookbackPeriod + maxIndex;
-      const roundTopEnd = Math.min(
-        data.length - 1,
-        data.length - lookbackPeriod + maxIndex + 10
-      );
+      // smoothedPricesTop[k] 是 recentData[k..k+4] 的均值；最高点取该窗口内最高的那根K线
+      const highestPoint = extremeInSmoothingWindow(maxIndex, 'high');
+      const roundTopStart = Math.max(offset, highestPoint - 10);
+      const roundTopEnd = Math.min(data.length - 1, highestPoint + 10);
 
       // 计算形态特性
       const roundingStartPrice = data[roundTopStart].close;

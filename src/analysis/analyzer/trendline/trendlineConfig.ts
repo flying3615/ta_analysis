@@ -1,5 +1,6 @@
 export interface TrendlineConfig {
   minTouches: number; // 趋势线最少触点数
+  minChannelTouches: number; // 通道上下沿各自最少触点数
   priceTolerancePercent: number; // 触达容差（相对价格）
   minSlopeAbs: number; // 斜率绝对值下限，过滤近似水平线
   maxLookbackBars: number; // 回溯最多K线数
@@ -9,6 +10,7 @@ export interface TrendlineConfig {
   channelWidthAtrMax: number; // 通道宽度上限（ATR倍数）
 
   breakoutThresholdPercent: number; // 突破阈值
+  breakoutWindowBars: number; // 最近多少根K线不参与通道拟合，用于判断突破
   retestWindowBars: number; // 回踩确认窗口
   retestTolerancePercent: number; // 回踩触达容差
 
@@ -22,6 +24,7 @@ export interface TrendlineConfig {
 
 export const trendlineConfig: TrendlineConfig = {
   minTouches: 3,
+  minChannelTouches: 2,
   priceTolerancePercent: 0.003, // 0.3%
   minSlopeAbs: 0.0001,
   maxLookbackBars: 300,
@@ -31,6 +34,7 @@ export const trendlineConfig: TrendlineConfig = {
   channelWidthAtrMax: 4.0,
 
   breakoutThresholdPercent: 0.005,
+  breakoutWindowBars: 5,
   retestWindowBars: 8,
   retestTolerancePercent: 0.003,
 

@@ -39,7 +39,7 @@ function multiTimeFrameChipDistAnalysis(
   hourlyData: Candle[]
 ): MultiTimeframeAnalysisResult {
   const timeframeAnalyses: TimeframeAnalysis[] = [];
-  let candles = [];
+  let candles: Candle[] = [];
 
   // 为每个时间周期获取数据并分析
   for (const timeframe of includeTimeframes) {
@@ -50,6 +50,9 @@ function multiTimeFrameChipDistAnalysis(
     } else {
       candles = dailyData;
     }
+
+    // 没有K线的时间周期（例如回测时小时线为空）直接跳过
+    if (!candles || candles.length === 0) continue;
 
     // 计算筹码分布
     const chipDistribution = calculateChipDistribution(candles);
@@ -70,8 +73,19 @@ function multiTimeFrameChipDistAnalysis(
     });
   }
 
+  if (timeframeAnalyses.length === 0) {
+    throw new Error(`${symbol} 没有任何时间周期的K线数据，无法进行筹码分析`);
+  }
+
+  // 主周期没有数据时，退回到第一个有数据的周期
+  const effectivePrimary = timeframeAnalyses.some(
+    ta => ta.timeframe === primaryTimeframe
+  )
+    ? primaryTimeframe
+    : timeframeAnalyses[0].timeframe;
+
   // 组合各时间周期的分析结果，生成综合建议
-  return combineTimeframeAnalyses(timeframeAnalyses, primaryTimeframe);
+  return combineTimeframeAnalyses(timeframeAnalyses, effectivePrimary);
 }
 
 // 导出核心函数，使其可供其他模块使用

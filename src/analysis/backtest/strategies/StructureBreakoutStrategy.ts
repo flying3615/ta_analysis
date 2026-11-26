@@ -45,6 +45,8 @@ export function StructureBreakoutStrategy(
 
   let lastSignalIndex = -1;
   let lastDirection: 'long' | 'short' | 'flat' | undefined = undefined;
+  // 已经发出过信号的突破（方向 + 被突破的拐点价位），同一次突破只触发一次
+  let lastEventKey: string | undefined = undefined;
 
   return {
     name: 'StructureBreakout',
@@ -60,6 +62,12 @@ export function StructureBreakoutStrategy(
 
       // 事件过滤
       if (preferEvent !== 'any' && evt.type !== preferEvent) return null;
+
+      // keyLevels 顺序：[最近高点, 最近低点, 前一高点, 前一低点]
+      const brokenLevel =
+        evt.direction === 'bullish' ? res.keyLevels[0] : res.keyLevels[1];
+      const eventKey = `${evt.type}:${evt.direction}@${brokenLevel}`;
+      if (eventKey === lastEventKey) return null;
 
       // 趋势一致性过滤
       if (confirmTrend) {
@@ -98,6 +106,7 @@ export function StructureBreakoutStrategy(
       if (signal) {
         lastSignalIndex = i;
         lastDirection = signal.direction;
+        lastEventKey = eventKey;
       }
 
       return signal;

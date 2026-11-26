@@ -2,7 +2,6 @@ import { Candle } from '../../../types.js';
 import { toEDTString } from '../../../util/util.js';
 import { patternConfig } from './patternConfig.js';
 
-import _ from 'lodash';
 import { findHeadAndShoulders } from './findHeadAndShoulders.js';
 import { findDoubleTopsAndBottoms } from './findDoubleTopsAndBottoms.js';
 import { findTriangles } from './findTriangles.js';
@@ -113,6 +112,7 @@ interface AnalyzeMultiTimeframePatterns {
   patterns: PatternAnalysisResult[];
   dominantPattern?: PatternAnalysisResult; // 主导形态
   patternSignal: PatternDirection; // 形态综合信号
+  dataLength?: number; // 参与分析的K线数量（用于判断形态新近度）
 }
 
 /**
@@ -180,7 +180,7 @@ function detectPeaksAndValleys(
     avgVolatility > 0.03
       ? Math.max(3, windowSize - 1)
       : avgVolatility < 0.01
-        ? Math.min(data.length / 4, windowSize + 2)
+        ? Math.min(Math.floor(data.length / 4), windowSize + 2)
         : windowSize;
 
   // 计算最小显著变化百分比，用于过滤噪声
@@ -448,13 +448,13 @@ function analyzeAllPatterns(
       timeframe
     );
 
-    // 调整形态的可靠性和重要性
+    // 匹配系数只调整可靠性；排序用 可靠性 × 重要性，
+    // 如果重要性也乘一次，系数就被计算了两次（相当于平方）
     pattern.reliability = Math.min(
       100,
       pattern.reliability * timeframeMatchFactor
     );
-    pattern.significance =
-      pattern.significance * distanceFactor * timeframeMatchFactor;
+    pattern.significance = pattern.significance * distanceFactor;
 
     // 为已确认突破的形态和正在形成的形态调整权重
     if (pattern.status === PatternStatus.Confirmed) {
@@ -483,6 +483,7 @@ function analyzeAllPatterns(
     patterns: allPatterns,
     dominantPattern,
     patternSignal,
+    dataLength: data.length,
   };
 }
 
@@ -567,6 +568,21 @@ function calculatePatternSignal(
     return PatternDirection.Bearish;
   }
   return PatternDirection.Neutral;
+}
+
+/**
+ * 把形态的关键日期和价格配对成 "时间 @ (价格)" 文本。
+ * 只配对两个数组共有的长度，避免长度不一致时访问 undefined。
+ */
+function formatKeyPoints(pattern: PatternAnalysisResult): string {
+  const count = Math.min(pattern.keyDates.length, pattern.keyPrices.length);
+  const parts: string[] = [];
+  for (let i = 0; i < count; i++) {
+    parts.push(
+      `${toEDTString(pattern.keyDates[i])} @ (${pattern.keyPrices[i].toFixed(2)})`
+    );
+  }
+  return parts.join(' | ');
 }
 
 /**
@@ -669,12 +685,10 @@ function combinePatternAnalyses(
         signalStrength += patternConfig.signals.recencyMediumBonus;
       }
 
-      if (pattern.component) {
-        const patternEndIndex = pattern.component.endIndex;
-        const estimatedDataLength =
-          patternEndIndex + (patternEndIndex - pattern.component.startIndex);
-
-        const recencyRatio = patternEndIndex / estimatedDataLength;
+      // 新近度 = 形态结束位置在数据中的相对位置（1 表示最后一根K线）
+      if (pattern.component && analysis.dataLength) {
+        const recencyRatio =
+          (pattern.component.endIndex + 1) / analysis.dataLength;
 
         if (recencyRatio > patternConfig.signals.recencyHighThreshold) {
           signalStrength += patternConfig.signals.recencyHighBonus;
@@ -736,37 +750,22 @@ function combinePatternAnalyses(
 
   const hourlyOtherPatternsDesc = hourlyAnalyses?.patterns
     .filter(p => p !== hourlyAnalyses.dominantPattern)
-    .map(p => {
-      const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
-      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
-    })
+    .map(p => `${p.patternType} ${formatKeyPoints(p)}`)
     .join('\n');
 
   const dailyOtherPatternsDesc = dailyAnalyses?.patterns
     .filter(p => p !== dailyAnalyses.dominantPattern)
-    .map(p => {
-      const datePriceMapping = _.zip(p.keyDates, p.keyPrices);
-      return `${p.patternType} ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}`;
-    })
+    .map(p => `${p.patternType} ${formatKeyPoints(p)}`)
     .join('\n');
 
   if (hourlyAnalyses?.dominantPattern) {
-    const datePriceMapping = _.zip(
-      hourlyAnalyses.dominantPattern.keyDates,
-      hourlyAnalyses.dominantPattern.keyPrices
-    );
-
     description += `\n\n小时线主导形态: ${hourlyAnalyses.dominantPattern.patternType}
-    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${hourlyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
+    \n 关键时间: ${formatKeyPoints(hourlyAnalyses.dominantPattern)}, (${hourlyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${hourlyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
   }
 
   if (dailyAnalyses?.dominantPattern) {
-    const datePriceMapping = _.zip(
-      dailyAnalyses.dominantPattern.keyDates,
-      dailyAnalyses.dominantPattern.keyPrices
-    );
     description += `\n\n日线主导形态: ${dailyAnalyses.dominantPattern.patternType}
-    \n 关键时间: ${datePriceMapping.map(([date, price]) => `${toEDTString(date)} @ (${price.toFixed(2)})`).join(' | ')}, (${dailyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
+    \n 关键时间: ${formatKeyPoints(dailyAnalyses.dominantPattern)}, (${dailyAnalyses.dominantPattern.direction === PatternDirection.Bullish ? '看涨' : '看跌'})，可靠性: ${dailyAnalyses.dominantPattern.reliability.toFixed(2)}/100。`;
   }
 
   if (hourlyOtherPatternsDesc) {

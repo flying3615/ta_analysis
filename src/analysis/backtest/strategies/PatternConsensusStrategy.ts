@@ -9,7 +9,7 @@
  * 入场:
  * - combinedSignal 为 Bullish 且 signalStrength >= 阈值 -> 做多
  * - combinedSignal 为 Bearish 且 signalStrength >= 阈值 -> 做空
- * - requireAllAligned 为 true 时，只有三周期一致才入场
+ * - requireAllAligned 为 true 时，只有所有有数据的周期方向一致（且非中性）才入场
  *
  * 数据来源:
  * - 周线近似由日线聚合（当前实现按5日聚合；可替换为 util.aggregateDailyToWeekly 提升精度）
@@ -88,17 +88,20 @@ export function PatternConsensusStrategy(
 
       if (analysis.signalStrength < minSignalStrength) return null;
 
-      const tfa = analysis.timeframeAnalyses;
-      const weeklySig = tfa.find(a => a.timeframe === 'weekly')?.patternSignal;
-      const dailySig = tfa.find(a => a.timeframe === 'daily')?.patternSignal;
-      const hourlySig = tfa.find(a => a.timeframe === '1hour')?.patternSignal;
-
+      // 只比较有数据的周期（回测中小时线为空，其信号总是中性），
+      // 要求它们方向一致且不是中性
+      const inputs = {
+        weekly: weeklyData,
+        daily: dailyData,
+        '1hour': hourlyData,
+      };
+      const signals = analysis.timeframeAnalyses
+        .filter(a => inputs[a.timeframe].length > 0)
+        .map(a => a.patternSignal);
       const allAligned =
-        weeklySig &&
-        dailySig &&
-        hourlySig &&
-        weeklySig === dailySig &&
-        dailySig === hourlySig;
+        signals.length >= 2 &&
+        signals[0] !== PatternDirection.Neutral &&
+        signals.every(sig => sig === signals[0]);
 
       if (requireAllAligned && !allAligned) return null;
 

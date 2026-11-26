@@ -57,8 +57,9 @@ function calculateStrategyReturns(
   let currentShares = initialShares;
   let totalInvestment = initialShares * initialPrice;
   let avgCost = initialPrice;
-  let cashBalance = Math.floor(initialShares * tradingRatio) * initialPrice;
-  // let cashBalance = 0;
+  // 预留用于低吸的现金，属于初始投入的一部分
+  const initialCash = Math.floor(initialShares * tradingRatio) * initialPrice;
+  let cashBalance = initialCash;
   let totalFees = 0;
   let tradingPosition = Math.floor(initialShares * tradingRatio);
 
@@ -79,11 +80,8 @@ function calculateStrategyReturns(
   for (let day = 1; day < pricePath.length; day++) {
     const currentPrice = pricePath[day];
 
-    // 检查是否触发止损
-    if (
-      currentPrice <= initialPrice * (1 - stopLossPercent) &&
-      currentShares > 0
-    ) {
+    // 检查是否触发止损：基于当前持仓的平均成本（动态止损）
+    if (currentShares > 0 && currentPrice <= avgCost * (1 - stopLossPercent)) {
       // 执行清仓
       const sellValue = currentShares * currentPrice;
 
@@ -119,14 +117,14 @@ function calculateStrategyReturns(
 
     // 如果未买入状态，检查是否满足买入条件
     if (!hasBought) {
-      // 止损之后再次买入信号为当前股价为上次股价的110%时
-
+      // 止损之后：不再低吸，只等价格回升到止损价的 110% 时整仓买回
       let reBuyAfterStopLoss = false;
       if (hasStopLoss) {
+        const stopLossPrice = pricePath[lastStopLossDay];
+        if (currentPrice < stopLossPrice * 1.1) continue;
         hasStopLoss = false;
         tradingPosition = initialShares;
-        const stopLossPrice = pricePath[lastStopLossDay];
-        reBuyAfterStopLoss = currentPrice >= stopLossPrice * 1.1;
+        reBuyAfterStopLoss = true;
       }
 
       // 价格下跌达到触发条件
@@ -179,7 +177,9 @@ function calculateStrategyReturns(
         totalInvestment =
           totalInvestment * ((currentShares - tradingPosition) / currentShares);
         currentShares -= tradingPosition;
-        avgCost = totalInvestment / currentShares;
+        // 全部卖出后没有持仓成本（避免 0/0 = NaN）
+        avgCost = currentShares > 0 ? totalInvestment / currentShares : 0;
+        if (currentShares === 0) totalInvestment = 0;
 
         // 计算单次循环利润
         const cycleProfitLoss =
@@ -209,12 +209,12 @@ function calculateStrategyReturns(
   // 计算最终结果
   const finalPrice = pricePath[pricePath.length - 1];
   const finalMarketValue = currentShares * finalPrice;
-  const totalReturn =
-    finalMarketValue + cashBalance - initialShares * initialPrice;
-  const returnRate = (totalReturn / (initialShares * initialPrice)) * 100;
+  const initialInvestment = initialShares * initialPrice + initialCash;
+  const totalReturn = finalMarketValue + cashBalance - initialInvestment;
+  const returnRate = (totalReturn / initialInvestment) * 100;
 
   return {
-    initialInvestment: initialShares * initialPrice,
+    initialInvestment,
     finalShares: currentShares,
     finalAvgCost: avgCost,
     finalMarketValue,
@@ -308,7 +308,7 @@ async function runExpectedReturnsAnalysis(
 }
 
 // 使用示例
-const sampleParams: ExpectedReturnParams = {
+export const sampleParams: ExpectedReturnParams = {
   symbol: 'TSLA',
   initialShares: 10,
   feePerTrade: 5,
@@ -318,9 +318,9 @@ const sampleParams: ExpectedReturnParams = {
   stopLossPercent: 0.1, // 10%止损线
 };
 
-// 运行分析示例
-const analysisReport = await runExpectedReturnsAnalysis(sampleParams);
-console.log(analysisReport);
+// 运行分析示例（取消注释后运行；导入本模块时不应自动联网执行）
+// const analysisReport = await runExpectedReturnsAnalysis(sampleParams);
+// console.log(analysisReport);
 
 // const result = compareVolatilityScenarios(sampleParams);
 // console.log(result);

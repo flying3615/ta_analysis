@@ -3,10 +3,10 @@
 识别摆动高低点、BOS、CHOCH、等高/等低与总体趋势。
 
 #### 目录与核心文件
-- `src/analysis/structure/structureConfig.ts`、`structureTypes.ts`
-- `src/analysis/structure/structureDetector.ts`: 枢轴/摆动/事件检测
-- `src/analysis/structure/multiTimeStructure.ts`: 多周期汇总
-- `src/analysis/structure/formatStructure.ts`: 输出格式
+- `src/analysis/analyzer/structure/structureConfig.ts`、`structureTypes.ts`
+- `src/analysis/analyzer/structure/structureDetector.ts`: 枢轴/摆动/事件检测
+- `src/analysis/analyzer/structure/multiTimeStructure.ts`: 多周期汇总
+- `src/analysis/analyzer/structure/formatStructure.ts`: 输出格式
 
 #### 输入/输出
 - 输入：日/小时蜡烛

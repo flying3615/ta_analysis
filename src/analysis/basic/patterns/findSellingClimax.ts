@@ -137,8 +137,9 @@ export function findSellingClimax(
         status
       );
 
-      // 计算形态的重要性（结合可靠性和价格波动幅度）
-      const significance = reliability * (range / avgRange) * 0.8;
+      // 计算形态的重要性：与其他形态一致，使用 可靠性 × 幅度/价格
+      // （range 已经是相对价格的振幅比例）
+      const significance = reliability * range;
 
       // 分析成交量特征
       const volumePattern = analyzeSellingClimaxVolume(
@@ -147,10 +148,13 @@ export function findSellingClimax(
       );
 
       // 计算价格目标（通常是反弹到形态前的阻力位或前期高点）
-      const previousHighs = data
-        .slice(Math.max(0, i - lookbackPeriod), i)
-        .map(c => c.high);
-      const resistanceLevel = Math.max(...previousHighs);
+      const lookbackStart = Math.max(0, i - lookbackPeriod);
+      // 阻力位：回看区间内的最高点，并记录它所在的K线
+      let resistanceIndex = lookbackStart;
+      for (let j = lookbackStart + 1; j < i; j++) {
+        if (data[j].high > data[resistanceIndex].high) resistanceIndex = j;
+      }
+      const resistanceLevel = data[resistanceIndex].high;
 
       // 价格目标：以当前K线为基准，反弹幅度通常是下跌幅度的61.8%（斐波那契回调）
       const priceMoveDown = resistanceLevel - currentCandle.low;
@@ -183,9 +187,9 @@ export function findSellingClimax(
               type: 'valley',
             },
             {
-              index: Math.max(0, i - lookbackPeriod),
+              index: resistanceIndex,
               price: resistanceLevel,
-              date: data[Math.max(0, i - lookbackPeriod)].timestamp,
+              date: data[resistanceIndex].timestamp,
               type: 'peak',
             },
           ],
@@ -200,11 +204,9 @@ export function findSellingClimax(
         probableBreakoutZone,
         description: `卖出高潮, ${getStatusDescription(status)}, 低点在 ${currentCandle.low.toFixed(2)}, 阻力位在 ${resistanceLevel.toFixed(2)}`,
         tradingImplication: `看涨信号, 预计反弹目标: ${priceTarget.toFixed(2)}, 止损位: ${stopLoss.toFixed(2)}`,
-        keyDates: [
-          data[Math.max(0, i - lookbackPeriod)].timestamp,
-          currentCandle.timestamp,
-        ],
-        keyPrices: [currentCandle.low, resistanceLevel],
+        // 按时间顺序：先是阻力位所在K线，再是高潮K线
+        keyDates: [data[resistanceIndex].timestamp, currentCandle.timestamp],
+        keyPrices: [resistanceLevel, currentCandle.low],
       });
     }
   }

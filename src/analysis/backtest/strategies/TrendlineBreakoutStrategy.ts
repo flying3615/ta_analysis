@@ -109,7 +109,8 @@ export function TrendlineBreakoutStrategy(
       const isStrongDowntrend =
         trendStrengthCount <= -cfg.trendStrengthConsecutive;
 
-      let signal: Signal | null = null;
+      // 本策略生成的信号都带有 strength
+      let signal: (Signal & { strength: number }) | null = null;
 
       // 基于通道斜率、价格位置和动量的策略逻辑
       if (isRisingChannel) {

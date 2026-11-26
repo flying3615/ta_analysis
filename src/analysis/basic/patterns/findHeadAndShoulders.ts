@@ -84,10 +84,8 @@ export function findHeadAndShoulders(
           // 检查是否为有效突破
           if (currentPrice < projectedNeckline) {
             // 向下突破颈线，检查是否为有效突破
-            const breakoutIndex = data.length - 1;
-            if (
-              isValidBreakout(data, breakoutIndex, projectedNeckline, false)
-            ) {
+            const searchFrom = rightShoulder.index + 1; // 从形态结束后开始寻找突破K线
+            if (isValidBreakout(data, searchFrom, projectedNeckline, false)) {
               status = PatternStatus.Confirmed;
             } else {
               status = PatternStatus.Completed;
@@ -269,8 +267,8 @@ export function findHeadAndShoulders(
           // 检查是否为有效突破
           if (currentPrice > projectedNeckline) {
             // 向上突破颈线，检查是否为有效突破
-            const breakoutIndex = data.length - 1;
-            if (isValidBreakout(data, breakoutIndex, projectedNeckline, true)) {
+            const searchFrom = rightShoulder.index + 1; // 从形态结束后开始寻找突破K线
+            if (isValidBreakout(data, searchFrom, projectedNeckline, true)) {
               status = PatternStatus.Confirmed;
             } else {
               status = PatternStatus.Completed;

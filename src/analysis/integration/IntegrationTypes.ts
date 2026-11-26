@@ -43,6 +43,7 @@ export interface SignalAggregationResult {
   direction: TradeDirection;
   signalStrength: SignalStrength;
   confidenceScore: number;
+  // 各模块自身得分（-100 到 100）：正数看多，负数看空，0 为中性
   contributions: {
     chip: number;
     pattern: number;
@@ -55,6 +56,8 @@ export interface SignalAggregationResult {
   };
   // 额外（插件）贡献与分数，按模块ID记录，便于扩展
   extraContributions?: Record<string, number>;
+  // 执行失败的插件：插件ID → 错误信息
+  pluginErrors?: Record<string, string>;
   weightedScores: {
     chip: number;
     pattern: number;
@@ -186,7 +189,7 @@ export interface ScoreCalculationResult {
   rawScore: number;
   weightedScore: number;
   direction: TradeDirection;
-  contribution: number;
+  contribution: number; // 模块自身得分（-100 到 100），符号表示方向
   source: string;
 }
 

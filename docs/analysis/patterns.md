@@ -3,11 +3,11 @@
 基于图表形态（双顶/双底、杯柄、三角形、旗形等）检测，并由小周期→大周期的趋势逆转模块进行增强，避免重复计算。
 
 #### 目录与核心文件
-- `src/analysis/patterns/patternConfig.ts`: 形态参数与权重
-- `src/analysis/patterns/analyzeMultiTimeframePatterns.ts`: 多周期形态分析
-- `src/analysis/trendReversal/trendReversalConfig.ts`: 逆转参数
-- `src/analysis/trendReversal/multiTimeFrameTrendReversal.ts`: 趋势逆转增强器
-- `src/analysis/trendReversal/formatReport.ts`: 报告输出
+- `src/analysis/basic/patterns/patternConfig.ts`: 形态参数与权重
+- `src/analysis/basic/patterns/analyzeMultiTimeframePatterns.ts`: 多周期形态分析
+- `src/analysis/analyzer/trendReversal/trendReversalConfig.ts`: 逆转参数
+- `src/analysis/analyzer/trendReversal/multiTimeFrameTrendReversal.ts`: 趋势逆转增强器
+- `src/analysis/analyzer/trendReversal/formatReport.ts`: 报告输出
 
 #### 输入/输出
 - 输入：`weekly/daily/1hour` 蜡烛

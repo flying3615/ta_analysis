@@ -4,6 +4,7 @@
  */
 
 import { TradeDirection, SignalStrength } from '../../types.js';
+import { globalLogger } from '../../util/logger.js';
 import { PatternDirection } from '../basic/patterns/analyzeMultiTimeframePatterns.js';
 import type {
   AnalysisInputData,
@@ -13,9 +14,9 @@ import type {
   IntegrationContext,
   AnalyzerPlugin,
 } from './IntegrationTypes.js';
-import type {
-  IntegrationConfig,
-  IntegrationWeights,
+import {
+  normalizeWeights,
+  type IntegrationConfig,
 } from './IntegrationConfig.js';
 
 export class SignalAggregator {
@@ -46,7 +47,7 @@ export class SignalAggregator {
     input: AnalysisInputData,
     context: IntegrationContext
   ): SignalAggregationResult {
-    const normalizedWeights = this.normalizeWeights(this.config.weights);
+    const normalizedWeights = normalizeWeights(this.config.weights);
 
     // 提取各模块的方向和分数
     const chipResult = this.extractChipSignal(input.analyses.chip);
@@ -84,7 +85,7 @@ export class SignalAggregator {
       normalizedWeights.bbsr
     );
 
-    // 附加权重（不计入基础100%）
+    // 附加模块（与基础模块一起归一化）
     const structureWeighted = this.calculateAdditionalScore(
       structureResult,
       normalizedWeights.structure || 0
@@ -105,20 +106,26 @@ export class SignalAggregator {
     // 插件信号处理
     const extraWeightedScores: Record<string, number> = {};
     const extraContributions: Record<string, number> = {};
+    const pluginErrors: Record<string, string> = {};
     let pluginsTotalWeighted = 0;
     for (const plugin of this.plugins) {
+      // 插件均按独立配置权重处理，不参与主权重归一（开闭原则）
+      const weight = this.config.weights.plugins?.[plugin.id] ?? 0;
+      // 权重为 0 的插件不贡献分数，不必执行
+      if (weight === 0) continue;
       try {
         const res = plugin.extract(input, context);
-        // 插件均按独立配置权重处理，不参与主权重归一（开闭原则）
-        const weight = this.config.weights.plugins?.[plugin.id] ?? 0;
         const ws = this.calculateAdditionalScore(res, weight);
         pluginsTotalWeighted += ws;
         extraWeightedScores[plugin.id] = ws;
         extraContributions[plugin.id] = Math.abs(
           weight === 0 ? 0 : ws / weight
         );
-      } catch {
-        // 忽略单插件错误，避免影响主流程
+      } catch (error) {
+        // 单个插件失败不影响主流程，但要记录下来，避免与"中性信号"混淆
+        const message = error instanceof Error ? error.message : String(error);
+        pluginErrors[plugin.id] = message;
+        globalLogger.warn(`插件 ${plugin.id} 执行失败: ${message}`);
       }
     }
 
@@ -142,7 +149,8 @@ export class SignalAggregator {
     const signalStrength = this.determineSignalStrength(
       Math.abs(finalScore),
       chipResult.direction,
-      patternResult.direction
+      patternResult.direction,
+      direction
     );
 
     // 计算置信度
@@ -162,13 +170,13 @@ export class SignalAggregator {
         pattern: patternWeighted.contribution,
         volume: volumeWeighted.contribution,
         bbsr: bbsrWeighted.contribution,
-        structure: structureWeighted / (normalizedWeights.structure || 1),
-        supplyDemand:
-          supplyDemandWeighted / (normalizedWeights.supplyDemand || 1),
-        range: rangeWeighted / (normalizedWeights.range || 1),
-        trendline: trendlineWeighted / (normalizedWeights.trendline || 1),
+        structure: this.signedScore(structureResult),
+        supplyDemand: this.signedScore(supplyDemandResult),
+        range: this.signedScore(rangeResult),
+        trendline: this.signedScore(trendlineResult),
       },
       extraContributions,
+      ...(Object.keys(pluginErrors).length > 0 ? { pluginErrors } : {}),
       weightedScores: {
         chip: chipWeighted.weightedScore,
         pattern: patternWeighted.weightedScore,
@@ -180,26 +188,6 @@ export class SignalAggregator {
         trendline: trendlineWeighted,
       },
       extraWeightedScores,
-    };
-  }
-
-  /**
-   * 权重归一化
-   */
-  private normalizeWeights(weights: IntegrationWeights): IntegrationWeights {
-    const totalWeight =
-      weights.chip + weights.pattern + weights.volume + weights.bbsr;
-
-    return {
-      chip: weights.chip / totalWeight,
-      pattern: weights.pattern / totalWeight,
-      volume: weights.volume / totalWeight,
-      bbsr: weights.bbsr / totalWeight,
-      // 附加权重保持不变
-      structure: weights.structure,
-      supplyDemand: weights.supplyDemand,
-      range: weights.range,
-      trendline: weights.trendline,
     };
   }
 
@@ -520,7 +508,8 @@ export class SignalAggregator {
 
     const rawScore = signal.confidence;
     const weightedScore = rawScore * weight * directionMultiplier;
-    const contribution = Math.abs(weightedScore) / weight;
+    // 模块自身得分：正数看多，负数看空，0 为中性（与权重无关，避免权重为 0 时 0/0）
+    const contribution = rawScore * directionMultiplier;
 
     return {
       rawScore,
@@ -531,8 +520,15 @@ export class SignalAggregator {
     };
   }
 
+  /** 模块自身得分：置信度带上方向符号（看多为正，看空为负，中性为 0） */
+  private signedScore(signal: DirectionConversionResult): number {
+    if (signal.direction === TradeDirection.Long) return signal.confidence;
+    if (signal.direction === TradeDirection.Short) return -signal.confidence;
+    return 0;
+  }
+
   /**
-   * 计算附加分数（不计入主要权重）
+   * 计算附加模块分数（权重已与基础模块一起归一化）
    */
   private calculateAdditionalScore(
     signal: DirectionConversionResult,
@@ -582,8 +578,12 @@ export class SignalAggregator {
   private determineSignalStrength(
     absScore: number,
     chipDirection: TradeDirection,
-    patternDirection: TradeDirection
+    patternDirection: TradeDirection,
+    direction: TradeDirection
   ): SignalStrength {
+    // 没有越过方向阈值的信号，强度一律为中性，与方向结论保持一致
+    if (direction === TradeDirection.Neutral) return SignalStrength.Neutral;
+
     // 考虑筹码和形态方向的一致性
     const directionsAlign =
       chipDirection === patternDirection &&
@@ -604,7 +604,9 @@ export class SignalAggregator {
       return SignalStrength.Weak;
     }
 
-    return SignalStrength.Neutral;
+    // 已经越过方向阈值（做多/做空）的信号至少是弱信号，
+    // 避免出现"方向做多、强度中性"的矛盾结论
+    return SignalStrength.Weak;
   }
 
   /**

@@ -219,7 +219,14 @@ export interface KeyLevel {
  * 交易条件接口
  */
 export interface TradeCondition {
-  type: 'price' | 'pattern' | 'indicator' | 'volume' | 'time';
+  type:
+    | 'price'
+    | 'pattern'
+    | 'indicator'
+    | 'volume'
+    | 'time'
+    | 'chip'
+    | 'volatility';
   description: string;
   priority: 'critical' | 'important' | 'optional';
 }
@@ -237,7 +244,7 @@ export interface IntegratedTradePlan {
   signalStrength: SignalStrength;
   confidenceScore: number; // 0-100
 
-  // 各分析方法的权重与贡献
+  // 各分析方法的权重（8 个模块归一化后的实际权重，合计为 1）与贡献
   chipAnalysisWeight: number;
   patternAnalysisWeight: number;
   volumeAnalysisWeight: number;
@@ -245,11 +252,16 @@ export interface IntegratedTradePlan {
   structureAnalysisWeight?: number;
   supplyDemandAnalysisWeight?: number;
   rangeAnalysisWeight?: number;
+  trendlineAnalysisWeight?: number;
 
-  chipAnalysisContribution: number; // 0-100
-  patternAnalysisContribution: number; // 0-100
-  volumeAnalysisContribution: number; // 0-100
-  bbsrAnalysisContribution: number; // 0-100
+  chipAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  patternAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  volumeAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  bbsrAnalysisContribution: number; // -100 到 100：正数看多，负数看空
+  structureAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  supplyDemandAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  rangeAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
+  trendlineAnalysisContribution?: number; // -100 到 100：正数看多，负数看空
 
   // 总体分析描述
   summary: string;
@@ -360,7 +372,7 @@ export interface IntegratedTradePlan {
 }
 
 export interface VolatilityAnalysisResult {
-  historicalVolatility: number;
+  historicalVolatility: number; // 年化历史波动率，单位 %
   bollingerBandWidth: number;
   atr: number;
   atrPercent: number;

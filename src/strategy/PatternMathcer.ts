@@ -14,6 +14,22 @@ import {
 import { EMA, RSI, SMA } from 'technicalindicators';
 import { calculateSlope } from '../util/taUtil.js';
 
+/** 小数收益率（0.01 表示 1%）；util.percentChange 返回的是百分数 */
+function fractionalReturns(prices: number[]): number[] {
+  return percentChange(prices).map(change => change / 100);
+}
+
+/**
+ * technicalindicators 返回的数组比输入短（前 period-1 个值缺失）。
+ * 在前面补 NaN，使下标与输入（日期）对齐。
+ */
+function alignToInput(values: number[], inputLength: number): number[] {
+  return [
+    ...new Array(Math.max(0, inputLength - values.length)).fill(NaN),
+    ...values,
+  ];
+}
+
 export function extractPatternFeatures(candles: Candle[]): PatternFeatures {
   const analysis = analyzeStockPattern(candles);
   // 保留原有代码...
@@ -34,10 +50,8 @@ export function extractPatternFeatures(candles: Candle[]): PatternFeatures {
   }
 
   let volumePattern: 'increasing' | 'decreasing' | 'stable' | 'spikes';
-  if (
-    analysis.highVolumeDates.length >
-    Math.floor(analysis.highVolumeDates.length / 10)
-  ) {
+  // 放量日（成交量超过 20 日均量 2 倍）占比超过 10% 才算"放量频繁"
+  if (analysis.highVolumeDates.length > Math.floor(candles.length / 10)) {
     volumePattern = 'spikes';
   } else if (Math.abs(analysis.avgVolumeRatio - 1) < 0.1) {
     volumePattern = 'stable';
@@ -94,7 +108,7 @@ export function extractPatternFeatures(candles: Candle[]): PatternFeatures {
   const rollingVolatilities: number[] = [];
   for (let i = windowSize; i < prices.length; i++) {
     const windowPrices = prices.slice(i - windowSize, i);
-    const returns = percentChange(windowPrices);
+    const returns = fractionalReturns(windowPrices);
     rollingVolatilities.push(standardDeviation(returns) * Math.sqrt(252));
   }
 
@@ -473,7 +487,7 @@ export function matchStockPattern(
 }
 
 // Main function: analyze stock pattern
-function analyzeStockPattern(candles: Candle[]): AnalysisResult {
+export function analyzeStockPattern(candles: Candle[]): AnalysisResult {
   const dates = candles.map(candle => candle.timestamp);
   const prices = candles.map(candle => candle.close);
   const volumes = candles.map(candle => candle.volume);
@@ -512,14 +526,14 @@ function analyzeStockPattern(candles: Candle[]): AnalysisResult {
   }
 
   // 3. Moving average analysis - using EMA instead of SMA
-  const shortMa = EMA.calculate({
-    period: 10,
-    values: prices,
-  });
-  const longMa = EMA.calculate({
-    period: 20,
-    values: prices,
-  });
+  const shortMa = alignToInput(
+    EMA.calculate({ period: 10, values: prices }),
+    prices.length
+  );
+  const longMa = alignToInput(
+    EMA.calculate({ period: 20, values: prices }),
+    prices.length
+  );
 
   const goldenCrossDates: Date[] = [];
   const deathCrossDates: Date[] = [];
@@ -541,7 +555,11 @@ function analyzeStockPattern(candles: Candle[]): AnalysisResult {
   }
 
   // 4. Volume analysis
-  const avgVolume = SMA.calculate({ period: 20, values: volumes });
+  // avgVolume[i] 是截至第 i 根（含）的 20 日均量，不使用未来数据
+  const avgVolume = alignToInput(
+    SMA.calculate({ period: 20, values: volumes }),
+    volumes.length
+  );
   const volumeRatio: number[] = [];
 
   for (let i = 0; i < volumes.length; i++) {
@@ -566,7 +584,7 @@ function analyzeStockPattern(candles: Candle[]): AnalysisResult {
     validVolumeRatios > 0 ? sumVolumeRatio / validVolumeRatios : 0;
 
   // 5. Volatility analysis
-  const dailyReturns = percentChange(prices);
+  const dailyReturns = fractionalReturns(prices);
   const annualizedVolatility = standardDeviation(dailyReturns) * Math.sqrt(252);
 
   // 6. RSI analysis

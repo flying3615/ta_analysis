@@ -1,23 +1,28 @@
 import { toEDTString } from '../util/util.js';
-import { calculateWeightedReward } from '../util/analysisUtils.js';
+import {
+  calculateWeightedReward,
+  selectRiskStop,
+} from '../util/analysisUtils.js';
 import { IntegratedTradePlan } from '../types.js';
+
+/** 模块得分的展示：符号表示方向，例如 "看空 65.0/100" */
+function formatModuleScore(score: number): string {
+  if (score > 0) return `看多 ${score.toFixed(1)}/100`;
+  if (score < 0) return `看空 ${(-score).toFixed(1)}/100`;
+  return '中性';
+}
 
 /**
  * 构建机器可解析摘要（单行 JSON 字符串）
  */
 function buildMachineReadableSummary(tradePlan: IntegratedTradePlan): string {
   const entry = tradePlan.entryStrategy.idealEntryPrice;
-  const stopPrices = tradePlan.exitStrategy.stopLossLevels.map(l => l.price);
-  const stopUsed = (() => {
-    if (tradePlan.direction === 'long') {
-      const below = stopPrices.filter(p => p < entry);
-      return below.length > 0 ? Math.max(...below) : (stopPrices[0] ?? entry);
-    } else if (tradePlan.direction === 'short') {
-      const above = stopPrices.filter(p => p > entry);
-      return above.length > 0 ? Math.min(...above) : (stopPrices[0] ?? entry);
-    }
-    return stopPrices[0] ?? entry;
-  })();
+  // 与风险管理使用同一个止损选择规则
+  const stopUsed = selectRiskStop(
+    tradePlan.direction,
+    entry,
+    tradePlan.exitStrategy.stopLossLevels
+  );
 
   const weightedReward = calculateWeightedReward(
     tradePlan.direction as any,
@@ -283,13 +288,59 @@ function formatTradePlanOutput(tradePlan: IntegratedTradePlan): string {
     output += buildSection('警告信息', warningContent);
   }
 
-  // 14. 分析构成
+  // 14. 分析构成：权重为 8 个模块归一化后的实际权重
+  const breakdownRows: Array<[string, number | undefined, number | undefined]> =
+    [
+      [
+        '筹码分析',
+        tradePlan.chipAnalysisWeight,
+        tradePlan.chipAnalysisContribution,
+      ],
+      [
+        '形态分析',
+        tradePlan.patternAnalysisWeight,
+        tradePlan.patternAnalysisContribution,
+      ],
+      [
+        '量价分析',
+        tradePlan.volumeAnalysisWeight,
+        tradePlan.volumeAnalysisContribution,
+      ],
+      [
+        '支阻位分析',
+        tradePlan.bbsrAnalysisWeight,
+        tradePlan.bbsrAnalysisContribution,
+      ],
+      [
+        '结构分析',
+        tradePlan.structureAnalysisWeight,
+        tradePlan.structureAnalysisContribution,
+      ],
+      [
+        '供需分析',
+        tradePlan.supplyDemandAnalysisWeight,
+        tradePlan.supplyDemandAnalysisContribution,
+      ],
+      [
+        '区间分析',
+        tradePlan.rangeAnalysisWeight,
+        tradePlan.rangeAnalysisContribution,
+      ],
+      [
+        '趋势线分析',
+        tradePlan.trendlineAnalysisWeight,
+        tradePlan.trendlineAnalysisContribution,
+      ],
+    ];
   output += buildSection(
     '分析构成',
-    `筹码分析: ${(tradePlan.chipAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.chipAnalysisContribution.toFixed(1)}/100)\n` +
-      `形态分析: ${(tradePlan.patternAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.patternAnalysisContribution.toFixed(1)}/100)\n` +
-      `量价分析: ${(tradePlan.volumeAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.volumeAnalysisContribution.toFixed(1)}/100)\n` +
-      `支阻位分析: ${(tradePlan.bbsrAnalysisWeight * 100).toFixed(0)}% (得分:${tradePlan.bbsrAnalysisContribution.toFixed(1)}/100)\n`
+    breakdownRows
+      .filter(([, weight]) => weight !== undefined)
+      .map(
+        ([name, weight, score]) =>
+          `${name}: ${((weight ?? 0) * 100).toFixed(0)}% (${formatModuleScore(score ?? 0)})\n`
+      )
+      .join('')
   );
 
   // 结尾分隔线

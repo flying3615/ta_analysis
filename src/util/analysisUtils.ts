@@ -306,8 +306,10 @@ export function determineExitStrategy(
           tfa.dominantPattern.direction === PatternDirection.Bullish
       )
       .map(tfa => tfa.dominantPattern?.priceTarget)
-      .filter(price => price && price > entryPrice)
-      .sort((a, b) => (a || 0) - (b || 0));
+      .filter(
+        (price): price is number => price !== undefined && price > entryPrice
+      )
+      .sort((a, b) => a - b);
 
     // 组合阻力位和目标价位
     const takeProfitCandidates = [
@@ -401,8 +403,11 @@ export function determineExitStrategy(
           tfa.dominantPattern.direction === PatternDirection.Bearish
       )
       .map(tfa => tfa.dominantPattern?.priceTarget)
-      .filter(price => price && price < entryPrice)
-      .sort((a, b) => (b || 0) - (a || 0));
+      .filter(
+        (price): price is number =>
+          price !== undefined && price > 0 && price < entryPrice
+      )
+      .sort((a, b) => b - a);
 
     // 组合支撑位和目标价位
     const takeProfitCandidates = [
@@ -510,13 +515,15 @@ export function determineExitStrategy(
       potentialStopLevels.push(patternStopLoss);
     }
 
-    // 如果没有找到合适的止损位，使用固定百分比止损
-    if (potentialStopLevels.length === 0) {
-      potentialStopLevels.push(entryPrice * 0.95); // 入场价下方5%
-    }
+    // 去掉离入场价过近的止损并排序；都不合适时使用固定百分比止损（入场价下方5%）
+    const stopLevels = arrangeStopLevels(
+      potentialStopLevels,
+      entryPrice,
+      entryPrice * 0.95
+    );
 
     // 将止损位添加到策略中
-    exitStrategy.stopLossLevels = potentialStopLevels.map((price, index) => {
+    exitStrategy.stopLossLevels = stopLevels.map((price, index) => {
       const stopRatio = (entryPrice - price) / entryPrice;
       return {
         price,
@@ -552,13 +559,15 @@ export function determineExitStrategy(
       potentialStopLevels.push(patternStopLoss);
     }
 
-    // 如果没有找到合适的止损位，使用固定百分比止损
-    if (potentialStopLevels.length === 0) {
-      potentialStopLevels.push(entryPrice * 1.05); // 入场价上方5%
-    }
+    // 去掉离入场价过近的止损并排序；都不合适时使用固定百分比止损（入场价上方5%）
+    const stopLevels = arrangeStopLevels(
+      potentialStopLevels,
+      entryPrice,
+      entryPrice * 1.05
+    );
 
     // 将止损位添加到策略中
-    exitStrategy.stopLossLevels = potentialStopLevels.map((price, index) => {
+    exitStrategy.stopLossLevels = stopLevels.map((price, index) => {
       const stopRatio = (price - entryPrice) / entryPrice;
       return {
         price,
@@ -572,6 +581,28 @@ export function determineExitStrategy(
   }
 
   return exitStrategy;
+}
+
+/** 止损离入场价至少要有这么远（比例），否则没有实际意义 */
+const MIN_STOP_DISTANCE = 0.005;
+
+/**
+ * 整理候选止损：去掉离入场价不足 MIN_STOP_DISTANCE 的止损；
+ * 第一个保留的作为主止损，其余按离入场价从近到远排序。
+ * 没有可用止损时返回 [fallback]。
+ */
+function arrangeStopLevels(
+  candidates: number[],
+  entryPrice: number,
+  fallback: number
+): number[] {
+  const usable = candidates.filter(
+    price => Math.abs(price - entryPrice) / entryPrice >= MIN_STOP_DISTANCE
+  );
+  if (usable.length === 0) return [fallback];
+  const [primary, ...rest] = usable;
+  rest.sort((a, b) => Math.abs(a - entryPrice) - Math.abs(b - entryPrice));
+  return [primary, ...rest];
 }
 
 /**
@@ -604,6 +635,37 @@ export function findPatternStopLoss(
 }
 
 /**
+ * 选择用于计算风险（风险回报比）的止损价：
+ * 优先使用位于亏损一侧的主止损（fixed）；没有时取亏损一侧离入场价最近的止损；
+ * 再没有时取离入场价最近的止损。没有任何止损时返回入场价。
+ */
+export function selectRiskStop(
+  direction: TradeDirection,
+  entry: number,
+  stopLossLevels: IntegratedTradePlan['exitStrategy']['stopLossLevels']
+): number {
+  if (stopLossLevels.length === 0) return entry;
+  const isLong = direction === TradeDirection.Long;
+  const isShort = direction === TradeDirection.Short;
+  const onLossSide = (p: number) =>
+    isLong ? p < entry : isShort ? p > entry : false;
+
+  const primary = stopLossLevels.find(
+    l => l.type === 'fixed' && onLossSide(l.price)
+  );
+  if (primary) return primary.price;
+
+  const stopPrices = stopLossLevels.map(l => l.price);
+  const lossSide = stopPrices.filter(onLossSide);
+  if (lossSide.length > 0) {
+    return isLong ? Math.max(...lossSide) : Math.min(...lossSide);
+  }
+  return stopPrices.reduce((a, b) =>
+    Math.abs(a - entry) < Math.abs(b - entry) ? a : b
+  );
+}
+
+/**
  * 确定风险管理策略
  */
 export function determineRiskManagement(
@@ -622,6 +684,20 @@ export function determineRiskManagement(
     volatilityConsideration: '标准波动性考虑',
     adjustmentTriggers: [],
   };
+
+  // 先按信号强度确定基础仓位，再按波动率等因素调整
+  if (signalStrength === SignalStrength.Strong) {
+    riskManagement.suggestionPosition = 0.2; // 强信号使用20%资金
+  } else if (signalStrength === SignalStrength.Moderate) {
+    riskManagement.suggestionPosition = 0.15; // 中等信号使用15%资金
+  } else if (signalStrength === SignalStrength.Weak) {
+    riskManagement.suggestionPosition = 0.1; // 弱信号使用10%资金
+  } else if (
+    signalStrength === SignalStrength.Neutral ||
+    signalStrength === SignalStrength.Conflicting
+  ) {
+    riskManagement.suggestionPosition = 0.05; // 中性或冲突信号使用5%资金
+  }
 
   // 根据波动率调整仓位和风险考虑
   if (volatilityAnalysis) {
@@ -656,20 +732,6 @@ export function determineRiskManagement(
     }
   }
 
-  // 根据信号强度调整仓位
-  if (signalStrength === SignalStrength.Strong) {
-    riskManagement.suggestionPosition = 0.2; // 强信号使用20%资金
-  } else if (signalStrength === SignalStrength.Moderate) {
-    riskManagement.suggestionPosition = 0.15; // 中等信号使用15%资金
-  } else if (signalStrength === SignalStrength.Weak) {
-    riskManagement.suggestionPosition = 0.1; // 弱信号使用10%资金
-  } else if (
-    signalStrength === SignalStrength.Neutral ||
-    signalStrength === SignalStrength.Conflicting
-  ) {
-    riskManagement.suggestionPosition = 0.05; // 中性或冲突信号使用5%资金
-  }
-
   // 根据信心分数调整
   riskManagement.suggestionPosition *= 0.5 + confidenceScore / 200; // 增加或减少高达50%的仓位
 
@@ -692,27 +754,11 @@ export function determineRiskManagement(
     exitStrategy.stopLossLevels.length > 0
   ) {
     const entry = entryStrategy.idealEntryPrice;
-    const stopPrices = exitStrategy.stopLossLevels.map(l => l.price);
-    let chosenStop = stopPrices[0];
-    if (direction === TradeDirection.Long) {
-      const below = stopPrices.filter(p => p < entry);
-      // 取最贴近入场价的下方止损（风险最小）
-      chosenStop =
-        below.length > 0
-          ? Math.max(...below)
-          : stopPrices.reduce((a, b) =>
-              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
-            );
-    } else if (direction === TradeDirection.Short) {
-      const above = stopPrices.filter(p => p > entry);
-      // 取最贴近入场价的上方止损
-      chosenStop =
-        above.length > 0
-          ? Math.min(...above)
-          : stopPrices.reduce((a, b) =>
-              Math.abs(a - entry) < Math.abs(b - entry) ? a : b
-            );
-    }
+    const chosenStop = selectRiskStop(
+      direction,
+      entry,
+      exitStrategy.stopLossLevels
+    );
 
     const potentialRisk = Math.max(1e-8, Math.abs(entry - chosenStop));
     const weightedReward = calculateWeightedReward(
@@ -725,8 +771,9 @@ export function determineRiskManagement(
   }
 
   // 设置最大损失
+  // 仓位已被限制在 [5%, 30%]；不超过 10% 视为小仓位
   const maxLossPercentage =
-    1 - riskManagement.suggestionPosition > 0.95
+    riskManagement.suggestionPosition <= 0.1
       ? 1.0 // 如果仓位很小，风险较低
       : 2.0; // 如果仓位较大，可接受更高风险
 

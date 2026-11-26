@@ -221,8 +221,9 @@ export function calculateVolatilityAnalysis(
   // 1. 计算历史波动率 (标准差法)
   const returns = calculateReturns(closes);
   const recentReturns = returns.slice(-lookbackPeriod);
+  // 年化，单位为百分数（与 atrPercent、bollingerBandWidth 一致）
   const historicalVolatility =
-    (calculateStandardDeviation(recentReturns) || 0) * Math.sqrt(252); // 年化
+    (calculateStandardDeviation(recentReturns) || 0) * Math.sqrt(252) * 100;
 
   // 2. 计算布林带宽度 (相对于价格的百分比)
   const sma20 = calculateSMA(closes, volatilityConfig.periods.smaShort);

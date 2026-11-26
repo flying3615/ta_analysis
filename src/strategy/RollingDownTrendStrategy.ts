@@ -97,7 +97,7 @@ function calculateShortStrategyReturns(
       // 记录交易
       const stopLossTrade = {
         day,
-        type: 'stopLoss',
+        type: 'stopLoss' as const,
         price: currentPrice,
         shares: currentShortShares,
         value: coverValue,
@@ -143,7 +143,7 @@ function calculateShortStrategyReturns(
         // 记录交易
         const shortTrade = {
           day,
-          type: 'short',
+          type: 'short' as const,
           price: currentPrice,
           shares: tradingPosition,
           value: shortValue,
@@ -163,15 +163,16 @@ function calculateShortStrategyReturns(
     else {
       // 价格下跌达到触发条件
       if (currentPrice <= lastShortPrice * (1 - downPercent)) {
-        // 执行平仓
-        const coverValue = tradingPosition * currentPrice;
+        // 只回补本轮加空的那一份，且不超过当前持仓
+        const coverShares = Math.min(tradingPosition, currentShortShares);
+        const coverValue = coverShares * currentPrice;
         const coverFee = feePerTrade;
 
         cashBalance -= coverValue + coverFee;
         totalFees += coverFee;
 
         // 更新持仓和成本（保持平均做空价格不变，因为我们是按比例平仓）
-        currentShortShares -= tradingPosition;
+        currentShortShares -= coverShares;
 
         // 修复: 仅当所有持仓都平仓时重置avgShortPrice
         if (currentShortShares <= 0) {
@@ -181,14 +182,14 @@ function calculateShortStrategyReturns(
 
         // 计算单次循环利润
         const cycleProfitLoss =
-          tradingPosition * lastShortPrice - coverValue - feePerTrade * 2;
+          coverShares * lastShortPrice - coverValue - feePerTrade * 2;
 
         // 记录交易
         const coverTrade = {
           day,
-          type: 'cover',
+          type: 'cover' as const,
           price: currentPrice,
-          shares: tradingPosition,
+          shares: coverShares,
           value: coverValue,
           fee: coverFee,
           newShortShares: currentShortShares,
@@ -197,10 +198,8 @@ function calculateShortStrategyReturns(
         };
         trades.push(coverTrade);
 
-        // 更新状态
-        if (currentShortShares === 0) {
-          hasShorted = false;
-        }
+        // 本轮滚动仓位已回补，等待下一次上涨再加空
+        hasShorted = false;
         lastTradeDay = day;
       }
     }
@@ -334,7 +333,7 @@ async function runShortExpectedReturnsAnalysis(
     return formatShortAnalysisResult(analysis);
   } catch (error) {
     globalLogger.error('运行分析失败:', error);
-    return `分析失败: ${error.message}`;
+    return `分析失败: ${error instanceof Error ? error.message : String(error)}`;
   }
 }
 
@@ -404,12 +403,12 @@ async function compareShortVolatilityScenarios(
     return output;
   } catch (error) {
     globalLogger.error('比较不同波动率场景失败:', error);
-    return `比较失败: ${error.message}`;
+    return `比较失败: ${error instanceof Error ? error.message : String(error)}`;
   }
 }
 
 // 使用示例
-const sampleShortParams: ShortExpectedReturnParams = {
+export const sampleShortParams: ShortExpectedReturnParams = {
   symbol: 'TSLA',
   initialShortShares: 1000,
   feePerTrade: 5,
@@ -419,8 +418,9 @@ const sampleShortParams: ShortExpectedReturnParams = {
   stopLossPercent: 0.2, // 20%止损线，价格上涨超过20%时强制平仓
 };
 
-const result = await runShortExpectedReturnsAnalysis(sampleShortParams);
-console.log(result);
+// 运行分析示例（取消注释后运行；导入本模块时不应自动联网执行）
+// const result = await runShortExpectedReturnsAnalysis(sampleShortParams);
+// console.log(result);
 
 // 导出函数
 export {

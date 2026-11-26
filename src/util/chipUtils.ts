@@ -82,8 +82,9 @@ export function identifyChipPeaks(
     const leftBound = Math.max(0, i - windowSize);
     const rightBound = Math.min(sortedDist.length - 1, i + windowSize);
 
-    // 如果窗口太小，则不考虑此点作为峰值
-    if (i - leftBound < minWindowPadding || rightBound - i < minWindowPadding) {
+    // 至少要有一个相邻点可以比较；位于两端的点只与一侧比较，
+    // 这样最低价或最高价区间的筹码峰也能被识别
+    if (rightBound - leftBound < minWindowPadding) {
       continue;
     }
 
@@ -391,15 +392,13 @@ export function calculateCumulativeDistribution(
 }
 
 /**
- * 计算多空比率 - 新增
- * 根据筹码分布计算多空比，用于判断市场情绪
- * 0-1: 极度看空 - 高价筹码占绝对优势，下跌风险极高
- * 1-3: 强势看空 - 高价筹码明显占优，下跌趋势强劲
- * 3-4: 偏空 - 高价筹码略占优势，市场偏向下行
- * 4-6: 中性 - 多空力量基本平衡，市场处于震荡整理
- * 6-7: 偏多 - 低价筹码略占优势，市场偏向上行
- * 7-9: 强势看多 - 低价筹码明显占优，上涨趋势强劲
- * 9-10: 极度看多 - 低价筹码占绝对优势，强势上涨概率高
+ * 计算多空比率
+ * 多空比 = 加权低价筹码 / 加权高价筹码，取值范围 [0, 10]，1 表示多空平衡。
+ * 与 chipConfig 中的阈值对应：
+ * - > strongBullRatio(3): 强势看多
+ * - > moderateBullRatio(1.5): 偏多
+ * - < slightBearRatio(1): 偏空
+ * - < strongBearRatio(0.5): 强势看空
  */
 export function calculateBullBearRatio(
   chipDistribution: ChipDistribution[],
@@ -448,7 +447,7 @@ export function calculateBullBearRatio(
     )
     .reduce((sum, item) => sum + item.percentage, 0);
 
-  // 计算最终的多空比率 (规范化到0-10的范围)
+  // 计算最终的多空比率
   const adjustedBullChips = bullChips + neutralChips * neutralWeight;
   const adjustedBearChips = bearChips + neutralChips * (1 - neutralWeight);
 
@@ -456,9 +455,18 @@ export function calculateBullBearRatio(
   if (adjustedBearChips === 0) return 10.0; // 极度看多，设置上限
   if (adjustedBullChips === 0) return 0.0; // 极度看空，设置下限
 
-  // 将比率映射到0-10的范围
+  // 直接使用原始比率，与配置阈值的语义一致，上限为 10
   const rawRatio = adjustedBullChips / adjustedBearChips;
-  return Math.min(10, (rawRatio * 5) / (1 + rawRatio * 4));
+  return Math.min(10, rawRatio);
+}
+
+/** 关键价位候选：筹码分布中的一个价位及其局部密度 */
+interface DensityCandidate {
+  price: number;
+  weight: number;
+  percentage: number;
+  isStrong: boolean;
+  localDensity: number; // 价格 ±1% 窗口内的筹码占比之和
 }
 
 /**
@@ -501,69 +509,50 @@ export function identifyKeyPriceLevels(
   // 按价格排序（用于后续聚类）
   const sortedByPrice = [...chipDistribution].sort((a, b) => a.price - b.price);
 
-  // 使用动态阈值筛选候选支撑位和阻力位
-  let candidateSupports = sortedByWeight
-    .filter(
-      item => item.price < currentPrice && item.percentage > moderateThreshold
-    )
-    .map(item => ({
-      price: item.price,
-      weight: item.weight,
-      percentage: item.percentage,
-      isStrong: item.percentage > strongThreshold,
-    }));
-
-  let candidateResistances = sortedByWeight
-    .filter(
-      item => item.price > currentPrice && item.percentage > moderateThreshold
-    )
-    .map(item => ({
-      price: item.price,
-      weight: item.weight,
-      percentage: item.percentage,
-      isStrong: item.percentage > strongThreshold,
-    }));
-
   // 计算局部密度：检查每个候选点周围的筹码累计
-  const calculateLocalDensity = candidate => {
+  const withLocalDensity = (item: ChipDistribution): DensityCandidate => {
     // 定义价格窗口（基于当前价格的一定百分比）
     const windowSize = currentPrice * 0.01; // 1%的价格窗口
 
-    // 找到窗口内的所有点
-    const nearbyPoints = sortedByPrice.filter(
-      item => Math.abs(item.price - candidate.price) <= windowSize
-    );
-
-    // 计算窗口内的总权重
-    const localDensity = nearbyPoints.reduce(
-      (sum, item) => sum + item.percentage,
-      0
-    );
+    // 找到窗口内的所有点，计算总权重
+    const localDensity = sortedByPrice
+      .filter(other => Math.abs(other.price - item.price) <= windowSize)
+      .reduce((sum, other) => sum + other.percentage, 0);
 
     return {
-      ...candidate,
+      price: item.price,
+      weight: item.weight,
+      percentage: item.percentage,
+      isStrong: item.percentage > strongThreshold,
       localDensity,
     };
   };
 
-  // 计算局部密度
-  candidateSupports = candidateSupports.map(calculateLocalDensity);
-  candidateResistances = candidateResistances.map(calculateLocalDensity);
+  // 使用动态阈值筛选候选支撑位和阻力位，并按局部密度从高到低排序
+  const byDensity = (a: DensityCandidate, b: DensityCandidate) =>
+    b.localDensity - a.localDensity;
+  const candidateSupports = sortedByWeight
+    .filter(
+      item => item.price < currentPrice && item.percentage > moderateThreshold
+    )
+    .map(withLocalDensity)
+    .sort(byDensity);
+  const candidateResistances = sortedByWeight
+    .filter(
+      item => item.price > currentPrice && item.percentage > moderateThreshold
+    )
+    .map(withLocalDensity)
+    .sort(byDensity);
 
-  // 按局部密度重新排序
-  candidateSupports.sort(
-    (a, b) => (b as any).localDensity - (a as any).localDensity
-  );
-  candidateResistances.sort(
-    (a, b) => (b as any).localDensity - (a as any).localDensity
-  );
+  // 合并相近的价格水平：先按价格排序，相邻价位才能正确分组
+  const mergeNearbyLevels = (
+    densitySorted: DensityCandidate[]
+  ): DensityCandidate[] => {
+    if (densitySorted.length <= 1) return densitySorted;
 
-  // 合并相近的价格水平
-  const mergeNearbyLevels = levels => {
-    if (levels.length <= 1) return levels;
-
-    const mergedLevels = [];
-    let currentGroup = [levels[0]];
+    const levels = [...densitySorted].sort((a, b) => a.price - b.price);
+    const mergedLevels: DensityCandidate[] = [];
+    let currentGroup: DensityCandidate[] = [levels[0]];
 
     for (let i = 1; i < levels.length; i++) {
       const lastLevel = currentGroup[currentGroup.length - 1];
@@ -588,7 +577,8 @@ export function identifyKeyPriceLevels(
       mergedLevels.push(currentGroup[0]);
     }
 
-    return mergedLevels;
+    // 保持原来的输出顺序：按局部密度从高到低
+    return mergedLevels.sort((a, b) => b.localDensity - a.localDensity);
   };
 
   // 合并相近的水平

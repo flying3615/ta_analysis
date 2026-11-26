@@ -11,7 +11,7 @@ import { trendReversalConfig } from './trendReversalConfig.js';
  *
  * @param hourlyData 小时级别K线数据
  * @param dailyData 日线级别K线数据
- * @param signalThreshold 信号强度阈值，只有超过此值才被认为是有效信号，默认为40
+ * @param signalThreshold 信号强度阈值，只有超过此值才被认为是有效信号，默认取 trendReversalConfig
  * @returns 包含判断结果和详细信号信息的对象，含目标价位
  */
 function hasTrendReversalSignal(
@@ -22,6 +22,7 @@ function hasTrendReversalSignal(
 ): {
   hasSignal: boolean;
   primarySignal?: TrendReversalSignal;
+  allSignals: TrendReversalSignal[];
   summary: string;
 } {
   // 只检查小时对日线的逆转
@@ -77,6 +78,8 @@ function hasTrendReversalSignal(
   return {
     hasSignal,
     primarySignal,
+    // 所有检测到的逆转信号（包括强度不足阈值的弱信号）
+    allSignals: hourlyVsDailySignal.isReversal ? [hourlyVsDailySignal] : [],
     summary,
   };
 }
@@ -91,11 +94,13 @@ function hasTrendReversalSignal(
  */
 async function checkStockForReversalSignal(
   symbol: string,
-  signalThreshold: number
+  signalThreshold: number = trendReversalConfig.strengthThreshold
+    .defaultSignalThreshold
 ): Promise<{
   symbol: string;
   hasSignal: boolean;
   primarySignal?: TrendReversalSignal;
+  allSignals: TrendReversalSignal[];
   summary: string;
 }> {
   try {
@@ -143,7 +148,8 @@ async function checkStockForReversalSignal(
     return {
       symbol,
       hasSignal: false,
-      summary: `分析${symbol}时发生错误: ${error.message}`,
+      allSignals: [],
+      summary: `分析${symbol}时发生错误: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -157,7 +163,8 @@ async function checkStockForReversalSignal(
  */
 async function batchCheckForReversalSignals(
   symbols: string[],
-  signalThreshold: number = 40
+  signalThreshold: number = trendReversalConfig.strengthThreshold
+    .defaultSignalThreshold
 ): Promise<
   Array<{
     symbol: string;
@@ -187,7 +194,7 @@ async function batchCheckForReversalSignals(
         symbol,
         hasSignal: false,
         allSignals: [],
-        summary: `分析时发生错误: ${error.message}`,
+        summary: `分析时发生错误: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }

@@ -15,7 +15,13 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
   const latestAllowedEnd = data.length - 2; // 留出至少1根用于突破判断
   let bestRange: RangeBox | undefined = undefined;
 
-  for (let end = latestAllowedEnd; end >= config.minBarsInRange; end--) {
+  // 只在最近 lookback 根K线内寻找区间
+  const earliestEnd = Math.max(
+    config.minBarsInRange,
+    data.length - 1 - config.lookback
+  );
+
+  for (let end = latestAllowedEnd; end >= earliestEnd; end--) {
     for (let start = end - config.minBarsInRange; start >= 0; start--) {
       const len = end - start + 1;
       if (len < config.minBarsInRange) continue;
@@ -47,11 +53,8 @@ function findRecentRange(data: Candle[]): RangeBox | undefined {
           nr7Count: nr7s,
         };
 
-        // 选择结束位置更靠后的区间作为最近区间
-        if (!bestRange || currentRange.endIndex > bestRange.endIndex) {
-          bestRange = currentRange;
-        }
-        // 如果找到一个就跳出内层循环，加速寻找最近的
+        // end 从最近往前扫描，第一个找到的就是最近的区间
+        bestRange = currentRange;
         break;
       }
     }
@@ -145,6 +148,7 @@ function assessBreakout(
   return {
     direction: direction!,
     breakoutIndex,
+    barsSinceBreakout: data.length - 1 - breakoutIndex,
     volumeExpansion,
     followThrough,
     retested,
@@ -163,17 +167,25 @@ export function analyzeRange(
     return { symbol, timeframe, compressionScore: 0 };
   }
 
-  const breakout = assessBreakout(data, box);
+  const assessed = assessBreakout(data, box);
+  // 过旧的突破不再作为当前信号
+  const breakout =
+    assessed && assessed.barsSinceBreakout <= rangeConfig.maxBreakoutAgeBars
+      ? assessed
+      : undefined;
 
   // 收缩强度：NR4/NR7命中 + 区间宽度越小越高
   const atr = calculateATR(data, rangeConfig.atrPeriod);
-  const compressionScore = Math.max(
+  const rawCompression = Math.max(
     0,
     (1 - (box.high - box.low) / (atr * rangeConfig.rangeAtrMaxMultiplier)) *
       80 +
       (box.nr4Count > 0 ? 10 : 0) +
       (box.nr7Count > 0 ? 10 : 0)
   );
+
+  // 评分保留 1 位小数，便于直接展示
+  const compressionScore = Math.round(rawCompression * 10) / 10;
 
   return {
     symbol,

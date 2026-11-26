@@ -5,7 +5,49 @@ import {
   getStockDataForTimeframe,
 } from '../util/util.js';
 import { SimpleCache } from '../analysis/integration/CacheManager.js';
-import { BinanceProvider } from '../analysis/integration/BinanceProvider.js';
+import {
+  BinanceProvider,
+  normalizeSpotSymbol,
+  toBinanceSymbol,
+} from '../analysis/integration/BinanceProvider.js';
+import { globalLogger } from '../util/logger.js';
+
+type Timeframe = 'weekly' | 'daily' | '1hour';
+
+/** 获取单个周期数据的函数：参数依次为开始日期、结束日期、周期 */
+// 基础规则 no-unused-vars 会把类型签名里的参数名误报为未使用
+/* eslint-disable no-unused-vars */
+type FetchTimeframe = (
+  start: Date,
+  end: Date,
+  tf: Timeframe
+) => Promise<Candle[]>;
+/* eslint-enable no-unused-vars */
+
+export interface MultiTimeframeCandles {
+  weeklyData: Candle[];
+  dailyData: Candle[];
+  hourlyData: Candle[];
+}
+
+/** 各周期缓存有效期：小时线更新频繁，缓存时间更短 */
+const CACHE_TTL_MS: Record<Timeframe, number> = {
+  '1hour': 5 * 60 * 1000,
+  daily: 30 * 60 * 1000,
+  weekly: 30 * 60 * 1000,
+};
+
+/** 缓存键只精确到日期（UTC），同一天内的重复请求可以命中缓存 */
+function cacheKey(
+  source: string,
+  symbol: string,
+  timeframe: Timeframe,
+  startDate: Date,
+  endDate: Date
+): string {
+  const day = (d: Date) => d.toISOString().slice(0, 10);
+  return `${source}_${symbol}_${timeframe}_${day(startDate)}_${day(endDate)}`;
+}
 
 export class DataProvider {
   private cache: SimpleCache<Candle[]>;
@@ -18,51 +60,64 @@ export class DataProvider {
   async getMultiTimeframeData(
     symbol: string,
     config: IntegrationConfig
-  ): Promise<{
-    weeklyData: Candle[];
-    dailyData: Candle[];
-    hourlyData: Candle[];
-  }> {
+  ): Promise<MultiTimeframeCandles> {
+    // 加密货币交易对统一走 Binance（代码先规范化为 BTCUSDT 这样的形式），其他走 Yahoo
+    const binanceSymbol = toBinanceSymbol(symbol);
+    return this.fetchTimeframes(symbol, config, (start, end, tf) =>
+      binanceSymbol
+        ? this.getCachedBinanceData(binanceSymbol, start, end, tf)
+        : this.getCachedStockData(symbol, start, end, tf)
+    );
+  }
+
+  /**
+   * 并行获取三个周期的数据。
+   * 日线是必需的，失败时抛错；周线和小时线失败时记录警告并按空数据处理。
+   */
+  private async fetchTimeframes(
+    symbol: string,
+    config: IntegrationConfig,
+    fetchOne: FetchTimeframe
+  ): Promise<MultiTimeframeCandles> {
     const today = new Date();
+    const startFor = (lookbackDays: number) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - lookbackDays);
+      return d;
+    };
 
-    const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(
-      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
-    );
+    const [weekly, daily, hourly] = await Promise.allSettled([
+      fetchOne(
+        startFor(config.timeframes.weekly.lookbackDays),
+        today,
+        'weekly'
+      ),
+      fetchOne(startFor(config.timeframes.daily.lookbackDays), today, 'daily'),
+      fetchOne(startFor(config.timeframes.hourly.lookbackDays), today, '1hour'),
+    ]);
 
-    const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(
-      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
-    );
+    if (daily.status === 'rejected') throw daily.reason;
 
-    const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(
-      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
-    );
+    const optional = (
+      result: PromiseSettledResult<Candle[]>,
+      tf: Timeframe
+    ): Candle[] => {
+      if (result.status === 'fulfilled') return result.value;
+      const reason =
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason);
+      globalLogger.warn(
+        `${symbol} ${tf} 数据获取失败，按空数据处理: ${reason}`
+      );
+      return [];
+    };
 
-    let weeklyData: Candle[] = [];
-    let dailyData: Candle[] = [];
-    let hourlyData: Candle[] = [];
-
-    if (
-      symbol.endsWith('USDT') ||
-      symbol.endsWith('BUSD') ||
-      symbol.endsWith('USD')
-    ) {
-      [weeklyData, dailyData, hourlyData] = await Promise.all([
-        this.getCachedBinanceData(symbol, weeklyStartDate, today, 'weekly'),
-        this.getCachedBinanceData(symbol, dailyStartDate, today, 'daily'),
-        this.getCachedBinanceData(symbol, hourlyStartDate, today, '1hour'),
-      ]);
-    } else {
-      [weeklyData, dailyData, hourlyData] = await Promise.all([
-        this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-        this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-        this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
-      ]);
-    }
-
-    return { weeklyData, dailyData, hourlyData };
+    return {
+      weeklyData: optional(weekly, 'weekly'),
+      dailyData: daily.value,
+      hourlyData: optional(hourly, '1hour'),
+    };
   }
 
   private async getCachedBinanceData(
@@ -71,60 +126,41 @@ export class DataProvider {
     endDate: Date,
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
-    const cacheKey = `binance_${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    return this.cache.getOrFetch(cacheKey, async () => {
-      if (timeframe === 'weekly') {
-        const daily = await this.binance.getKlines(
-          symbol,
-          '1d',
-          startDate,
-          endDate
-        );
-        return aggregateDailyToWeekly(daily);
-      }
-      if (timeframe === 'daily') {
-        return await this.binance.getKlines(symbol, '1d', startDate, endDate);
-      }
-      return await this.binance.getKlines(symbol, '1h', startDate, endDate);
-    });
+    const key = cacheKey('binance', symbol, timeframe, startDate, endDate);
+    return this.cache.getOrFetch(
+      key,
+      async () => {
+        if (timeframe === 'weekly') {
+          const daily = await this.binance.getKlines(
+            symbol,
+            '1d',
+            startDate,
+            endDate
+          );
+          return aggregateDailyToWeekly(daily);
+        }
+        if (timeframe === 'daily') {
+          return await this.binance.getKlines(symbol, '1d', startDate, endDate);
+        }
+        return await this.binance.getKlines(symbol, '1h', startDate, endDate);
+      },
+      { ttl: CACHE_TTL_MS[timeframe] }
+    );
   }
 
   /**
-   * 获取加密货币多周期数据（使用与股票相同的数据提供方，如 Yahoo）
-   * 外部仍可传入 apiKey，但此实现不再依赖 tmai-api。
+   * 获取加密货币多周期数据（Binance 现货）。
+   * 代码会规范化为 Binance 形式：BTC-USD / BTCUSD → BTCUSDT，ETH/EUR → ETHEUR。
    */
   async getMultiTimeframeCryptoData(
     symbol: string,
     config: IntegrationConfig
-  ): Promise<{
-    weeklyData: Candle[];
-    dailyData: Candle[];
-    hourlyData: Candle[];
-  }> {
-    const today = new Date();
-
-    const weeklyStartDate = new Date(today);
-    weeklyStartDate.setDate(
-      weeklyStartDate.getDate() - config.timeframes.weekly.lookbackDays
+  ): Promise<MultiTimeframeCandles> {
+    const binanceSymbol =
+      toBinanceSymbol(symbol) ?? normalizeSpotSymbol(symbol);
+    return this.fetchTimeframes(symbol, config, (start, end, tf) =>
+      this.getCachedBinanceData(binanceSymbol, start, end, tf)
     );
-
-    const dailyStartDate = new Date(today);
-    dailyStartDate.setDate(
-      dailyStartDate.getDate() - config.timeframes.daily.lookbackDays
-    );
-
-    const hourlyStartDate = new Date(today);
-    hourlyStartDate.setDate(
-      hourlyStartDate.getDate() - config.timeframes.hourly.lookbackDays
-    );
-
-    const [weeklyData, dailyData, hourlyData] = await Promise.all([
-      this.getCachedStockData(symbol, weeklyStartDate, today, 'weekly'),
-      this.getCachedStockData(symbol, dailyStartDate, today, 'daily'),
-      this.getCachedStockData(symbol, hourlyStartDate, today, '1hour'),
-    ]);
-
-    return { weeklyData, dailyData, hourlyData };
   }
 
   async getCachedStockData(
@@ -133,15 +169,12 @@ export class DataProvider {
     endDate: Date,
     timeframe: 'weekly' | 'daily' | '1hour'
   ): Promise<Candle[]> {
-    const cacheKey = `${symbol}_${timeframe}_${startDate.toISOString()}_${endDate.toISOString()}`;
-    return this.cache.getOrFetch(cacheKey, async () => {
-      return await getStockDataForTimeframe(
-        symbol,
-        startDate,
-        endDate,
-        timeframe
-      );
-    });
+    const key = cacheKey('stock', symbol, timeframe, startDate, endDate);
+    return this.cache.getOrFetch(
+      key,
+      () => getStockDataForTimeframe(symbol, startDate, endDate, timeframe),
+      { ttl: CACHE_TTL_MS[timeframe] }
+    );
   }
 
   stats() {
