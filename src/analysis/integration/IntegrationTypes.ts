@@ -55,6 +55,8 @@ export interface SignalAggregationResult {
   };
   // 额外（插件）贡献与分数，按模块ID记录，便于扩展
   extraContributions?: Record<string, number>;
+  // 执行失败的插件：插件ID → 错误信息
+  pluginErrors?: Record<string, string>;
   weightedScores: {
     chip: number;
     pattern: number;

@@ -4,6 +4,7 @@
  */
 
 import { TradeDirection, SignalStrength } from '../../types.js';
+import { globalLogger } from '../../util/logger.js';
 import { PatternDirection } from '../basic/patterns/analyzeMultiTimeframePatterns.js';
 import type {
   AnalysisInputData,
@@ -105,20 +106,26 @@ export class SignalAggregator {
     // 插件信号处理
     const extraWeightedScores: Record<string, number> = {};
     const extraContributions: Record<string, number> = {};
+    const pluginErrors: Record<string, string> = {};
     let pluginsTotalWeighted = 0;
     for (const plugin of this.plugins) {
+      // 插件均按独立配置权重处理，不参与主权重归一（开闭原则）
+      const weight = this.config.weights.plugins?.[plugin.id] ?? 0;
+      // 权重为 0 的插件不贡献分数，不必执行
+      if (weight === 0) continue;
       try {
         const res = plugin.extract(input, context);
-        // 插件均按独立配置权重处理，不参与主权重归一（开闭原则）
-        const weight = this.config.weights.plugins?.[plugin.id] ?? 0;
         const ws = this.calculateAdditionalScore(res, weight);
         pluginsTotalWeighted += ws;
         extraWeightedScores[plugin.id] = ws;
         extraContributions[plugin.id] = Math.abs(
           weight === 0 ? 0 : ws / weight
         );
-      } catch {
-        // 忽略单插件错误，避免影响主流程
+      } catch (error) {
+        // 单个插件失败不影响主流程，但要记录下来，避免与"中性信号"混淆
+        const message = error instanceof Error ? error.message : String(error);
+        pluginErrors[plugin.id] = message;
+        globalLogger.warn(`插件 ${plugin.id} 执行失败: ${message}`);
       }
     }
 
@@ -169,6 +176,7 @@ export class SignalAggregator {
         trendline: trendlineWeighted / (normalizedWeights.trendline || 1),
       },
       extraContributions,
+      ...(Object.keys(pluginErrors).length > 0 ? { pluginErrors } : {}),
       weightedScores: {
         chip: chipWeighted.weightedScore,
         pattern: patternWeighted.weightedScore,

@@ -97,3 +97,46 @@ describe('normalizeWeights', () => {
     expect(w.plugins).toEqual({ custom: 0.5 });
   });
 });
+
+describe('SignalAggregator plugins', () => {
+  const neutral = () => inputWithStructure({ trend: 'sideways' });
+
+  it('reports a plugin that throws instead of hiding the error', () => {
+    const config = {
+      ...DEFAULT_INTEGRATION_CONFIG,
+      weights: {
+        ...DEFAULT_INTEGRATION_CONFIG.weights,
+        plugins: { broken: 0.5 },
+      },
+    };
+    const agg = new SignalAggregator(config);
+    agg.registerPlugin({
+      id: 'broken',
+      category: 'additional',
+      extract: () => {
+        throw new Error('boom');
+      },
+    } as any);
+
+    const res = agg.aggregateSignals(neutral(), { ...context, config });
+
+    expect(res.pluginErrors).toEqual({ broken: 'boom' });
+  });
+
+  it('does not run plugins whose weight is zero', () => {
+    const agg = new SignalAggregator(DEFAULT_INTEGRATION_CONFIG);
+    let calls = 0;
+    agg.registerPlugin({
+      id: 'unused',
+      category: 'additional',
+      extract: () => {
+        calls++;
+        return { direction: 'long', confidence: 90, source: 'unused' };
+      },
+    } as any);
+
+    agg.aggregateSignals(neutral(), context);
+
+    expect(calls).toBe(0);
+  });
+});
