@@ -139,16 +139,16 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice > resistanceLevel) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, resistanceLevel, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, resistanceLevel, true)) {
             status = PatternStatus.Confirmed; // 已确认突破上方
           } else {
             status = PatternStatus.Completed; // 突破但未确认
           }
         } else if (currentPrice < projectedSupport) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedSupport, false)) {
             status = PatternStatus.Failed; // 向下突破（失败）
           } else {
             status = PatternStatus.Completed; // 突破但未确认
@@ -341,16 +341,16 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice < supportLevel) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, supportLevel, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, supportLevel, false)) {
             status = PatternStatus.Confirmed; // 已确认突破下方
           } else {
             status = PatternStatus.Completed; // 突破但未确认
           }
         } else if (currentPrice > projectedResistance) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedResistance, true)) {
             status = PatternStatus.Failed; // 向上突破（失败）
           } else {
             status = PatternStatus.Completed; // 突破但未确认
@@ -550,8 +550,8 @@ export function findTriangles(
       if (currentIndex > endIndex) {
         if (currentPrice > projectedResistance) {
           // 向上突破阻力线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedResistance, true)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedResistance, true)) {
             status = PatternStatus.Confirmed;
             breakoutDirection = PatternDirection.Bullish;
           } else {
@@ -559,8 +559,8 @@ export function findTriangles(
           }
         } else if (currentPrice < projectedSupport) {
           // 向下突破支撑线，检查是否为有效突破
-          const breakoutIndex = data.length - 1;
-          if (isValidBreakout(data, breakoutIndex, projectedSupport, false)) {
+          const searchFrom = endIndex + 1; // 从形态结束后开始寻找突破K线
+          if (isValidBreakout(data, searchFrom, projectedSupport, false)) {
             status = PatternStatus.Confirmed;
             breakoutDirection = PatternDirection.Bearish;
           } else {

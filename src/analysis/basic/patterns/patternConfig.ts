@@ -157,15 +157,49 @@ export function isPatternDurationValid(duration: number): boolean {
 }
 
 /**
+ * 从 searchFromIndex 开始，找到第一根收盘价越过突破水平的K线。
+ * 越过的幅度需超过 breakoutConfirmationPercent。没有则返回 -1。
+ */
+export function findBreakoutIndex(
+  data: Candle[],
+  searchFromIndex: number,
+  breakoutLevel: number,
+  isUpward: boolean
+): number {
+  const requiredMove =
+    breakoutLevel * patternConfig.validation.breakoutConfirmationPercent;
+  for (let i = Math.max(0, searchFromIndex); i < data.length; i++) {
+    const close = data[i].close;
+    if (
+      isUpward
+        ? close > breakoutLevel + requiredMove
+        : close < breakoutLevel - requiredMove
+    ) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * 检查是否为有效突破
+ * @param searchFromIndex 形态结束后的第一根K线下标，从这里开始寻找突破K线
  */
 export function isValidBreakout(
   data: Candle[],
-  breakoutIndex: number,
+  searchFromIndex: number,
   breakoutLevel: number,
   isUpward: boolean
 ): boolean {
-  // 检查是否有足够的确认K线
+  const breakoutIndex = findBreakoutIndex(
+    data,
+    searchFromIndex,
+    breakoutLevel,
+    isUpward
+  );
+  if (breakoutIndex < 0) return false;
+
+  // 检查突破K线之后是否有足够的确认K线
   const confirmationBars = Math.min(
     patternConfig.validation.breakoutConfirmationBars,
     data.length - breakoutIndex - 1
@@ -198,7 +232,8 @@ export function isValidBreakout(
 }
 
 /**
- * 检查形态是否失败
+ * 检查形态是否失败：突破之后，某根K线的价格区间大部分回到了突破水平的另一侧。
+ * @param patternEndIndex 形态结束K线的下标，从其后开始寻找突破K线
  */
 export function isPatternFailed(
   data: Candle[],
@@ -206,24 +241,35 @@ export function isPatternFailed(
   breakoutLevel: number,
   isUpward: boolean
 ): boolean {
-  // 检查突破后的价格走势
-  for (let i = patternEndIndex + 1; i < data.length; i++) {
-    const candle = data[i];
+  const breakoutIndex = findBreakoutIndex(
+    data,
+    patternEndIndex + 1,
+    breakoutLevel,
+    isUpward
+  );
+  // 还没有突破，谈不上失败
+  if (breakoutIndex < 0) return false;
 
-    if (isUpward) {
-      // 向上突破后，如果价格大幅回撤到突破水平以下，可能失败
-      const retracement =
-        (breakoutLevel - candle.low) / (candle.high - breakoutLevel);
-      if (retracement > patternConfig.validation.failureRetracementThreshold) {
-        return true;
-      }
+  for (let i = breakoutIndex + 1; i < data.length; i++) {
+    const candle = data[i];
+    const range = candle.high - candle.low;
+
+    // K线价格区间位于突破水平错误一侧的比例（0-1）
+    let wrongSide: number;
+    if (range <= 0) {
+      const beyond = isUpward
+        ? candle.close < breakoutLevel
+        : candle.close > breakoutLevel;
+      wrongSide = beyond ? 1 : 0;
     } else {
-      // 向下突破后，如果价格大幅反弹到突破水平以上，可能失败
-      const retracement =
-        (candle.high - breakoutLevel) / (breakoutLevel - candle.low);
-      if (retracement > patternConfig.validation.failureRetracementThreshold) {
-        return true;
-      }
+      const raw = isUpward
+        ? (breakoutLevel - candle.low) / range
+        : (candle.high - breakoutLevel) / range;
+      wrongSide = Math.max(0, Math.min(1, raw));
+    }
+
+    if (wrongSide > patternConfig.validation.failureRetracementThreshold) {
+      return true;
     }
   }
 

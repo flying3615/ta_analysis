@@ -83,8 +83,8 @@ export function findDoubleTopsAndBottoms(
           // 检查是否为有效突破
           if (currentPrice < neckline) {
             // 向下突破颈线，检查是否为有效突破
-            const breakoutIndex = data.length - 1;
-            if (isValidBreakout(data, breakoutIndex, neckline, false)) {
+            const searchFrom = secondPeak.index + 1; // 从形态结束后开始寻找突破K线
+            if (isValidBreakout(data, searchFrom, neckline, false)) {
               status = PatternStatus.Confirmed;
             } else {
               status = PatternStatus.Completed;
@@ -230,8 +230,8 @@ export function findDoubleTopsAndBottoms(
           // 检查是否为有效突破
           if (currentPrice > neckline) {
             // 向上突破颈线，检查是否为有效突破
-            const breakoutIndex = data.length - 1;
-            if (isValidBreakout(data, breakoutIndex, neckline, true)) {
+            const searchFrom = secondValley.index + 1; // 从形态结束后开始寻找突破K线
+            if (isValidBreakout(data, searchFrom, neckline, true)) {
               status = PatternStatus.Confirmed;
             } else {
               status = PatternStatus.Completed;
