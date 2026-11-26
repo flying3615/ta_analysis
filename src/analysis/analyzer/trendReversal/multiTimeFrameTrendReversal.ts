@@ -113,7 +113,8 @@ export function calculateMeasuredMoveTargets(
       // 计算不同的目标位
       const target1 = entryPrice + risk; // 1:1 风险回报比
       const target2 = pivotLow + previousDownMove; // 标准量度移动
-      const target3 = pivotLow + previousDownMove * 1.618; // 斐波那契扩展
+      const target3 =
+        pivotLow + previousDownMove * trendReversalConfig.targets.fibExtension; // 斐波那契扩展
 
       return {
         target1,
@@ -149,7 +150,8 @@ export function calculateMeasuredMoveTargets(
       // 计算不同的目标位
       const target1 = entryPrice - risk; // 1:1 风险回报比
       const target2 = pivotHigh - previousUpMove; // 标准量度移动
-      const target3 = pivotHigh - previousUpMove * 1.618; // 斐波那契扩展
+      const target3 =
+        pivotHigh - previousUpMove * trendReversalConfig.targets.fibExtension; // 斐波那契扩展
 
       return {
         target1,
@@ -237,13 +239,20 @@ function determineTrendDirection(
 
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
+  // 使用相对斜率（每根K线的变化占均价的比例），与价格量级无关
+  const meanPrice = sumY / n;
+  if (meanPrice <= 0) return 0;
+  const relativeSlope = slope / meanPrice;
+
   // 根据数据量动态调整斜率阈值
   // 较小的数据集需要更大的斜率才能判定为趋势
-  const slopeThreshold = 0.0005 * (30 / Math.min(data.length, 30));
+  const slopeThreshold =
+    trendReversalConfig.trendDirection.minRelativeSlope *
+    (30 / Math.min(data.length, 30));
 
   // 用均线斜率判断趋势
-  if (slope > slopeThreshold) return 1; // 上涨趋势
-  if (slope < -slopeThreshold) return -1; // 下跌趋势
+  if (relativeSlope > slopeThreshold) return 1; // 上涨趋势
+  if (relativeSlope < -slopeThreshold) return -1; // 下跌趋势
   return 0; // 盘整
 }
 
