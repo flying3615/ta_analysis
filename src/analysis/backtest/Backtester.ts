@@ -9,17 +9,34 @@ export interface Signal {
   entry?: number; // optional suggested entry
   stop?: number; // optional stop loss
   targets?: number[]; // optional take profit targets
+  /**
+   * 每股风险单位（R），只用于把盈亏换算成 R 倍数，不会作为止损执行。
+   * 例如唐奇安系统本身没有初始止损，可以用 2 × ATR 作为风险单位。
+   */
+  riskPerShare?: number;
   reason?: string;
 }
 
+/** 回测器传给策略的当前持仓（没有持仓时为 undefined） */
+export interface PositionContext {
+  side: 'long' | 'short';
+  entryIdx: number; // 入场K线下标
+  entryPrice: number; // 含滑点的入场价
+}
+
+// 基础规则 no-unused-vars 会把函数类型里的参数名误报为未使用
+/* eslint-disable no-unused-vars */
 export interface Strategy {
   name: string;
-  // Given slice of candles up to index i (inclusive), return signal for next bar
+  // Given slice of candles up to index i (inclusive), return signal for next bar.
+  // position 是当前持仓；回测器可能因止损等原因平仓，策略应以它为准，而不是自己记录。
   generateSignal: (
     history: Candle[],
-    i: number
+    i: number,
+    position?: PositionContext
   ) => Promise<Signal | null> | Signal | null;
 }
+/* eslint-enable no-unused-vars */
 
 export interface BacktestConfig {
   initialCapital: number;
@@ -28,6 +45,7 @@ export interface BacktestConfig {
   commissionPerTrade: number; // fixed commission
   slippageBps: number; // basis points of price on entry/exit
   allowShort: boolean;
+  warmupBars?: number; // 从第几根K线开始询问策略（默认 50）
   periodsPerYear?: number; // Sharpe 年化周期数；不填时根据K线间隔推断
   exitParams?: {
     takeProfitPercent?: number;
@@ -39,11 +57,17 @@ export interface BacktestConfig {
 export interface Trade {
   entryIdx: number;
   exitIdx: number;
+  entryDate: Date;
+  exitDate: Date;
+  holdingBars: number; // exitIdx − entryIdx
   direction: 'long' | 'short';
   entryPrice: number;
   exitPrice: number;
   qty: number;
-  pnl: number;
+  pnl: number; // 毛盈亏（不含手续费）
+  netPnl: number; // 净盈亏：毛盈亏 − 开仓和平仓两次手续费
+  riskPerShare?: number; // 入场信号给出的每股风险单位
+  rMultiple?: number; // 净盈亏 ÷ (riskPerShare × qty)；没有风险单位时为 undefined
 }
 
 export interface BacktestResult {
@@ -140,6 +164,7 @@ export class Backtester {
     let positionSide: 'long' | 'short' | null = null;
     let entryPrice = 0;
     let entryIdx = 0;
+    let riskPerShare: number | undefined; // 来自策略信号的风险单位（不执行）
     let stopPrice: number | undefined; // 来自策略信号的止损价
     let targetPrice: number | undefined; // 来自策略信号的第一目标价
     let peakOrTroughPrice = 0; // For trailing stop
@@ -167,24 +192,43 @@ export class Backtester {
       if (!positionSide) return;
       const pnl = unrealisedPnL(exitPrice);
       cash += pnl - this.config.commissionPerTrade;
+      const netPnl = pnl - 2 * this.config.commissionPerTrade;
       trades.push({
         entryIdx,
         exitIdx,
+        entryDate: candles[entryIdx].timestamp,
+        exitDate: candles[exitIdx].timestamp,
+        holdingBars: exitIdx - entryIdx,
         direction: positionSide,
         entryPrice,
         exitPrice,
         qty: positionQty,
         pnl,
+        netPnl,
+        riskPerShare,
+        rMultiple:
+          riskPerShare !== undefined && positionQty > 0
+            ? netPnl / (riskPerShare * positionQty)
+            : undefined,
       });
       positionQty = 0;
       positionSide = null;
+      riskPerShare = undefined;
       stopPrice = undefined;
       targetPrice = undefined;
       peakOrTroughPrice = 0; // Reset trailing stop tracker
     };
 
-    for (let i = 50; i < candles.length - 1; i++) {
-      const signal = await strategy.generateSignal(candles.slice(0, i + 1), i);
+    const warmup = this.config.warmupBars ?? 50;
+    for (let i = warmup; i < candles.length - 1; i++) {
+      const position: PositionContext | undefined = positionSide
+        ? { side: positionSide, entryIdx, entryPrice }
+        : undefined;
+      const signal = await strategy.generateSignal(
+        candles.slice(0, i + 1),
+        i,
+        position
+      );
       const nextOpen = candles[i + 1].open;
       const slip = nextOpen * (this.config.slippageBps / 10000);
       pushEquity(cash + unrealisedPnL(candles[i].close));
@@ -264,6 +308,10 @@ export class Backtester {
       positionSide = isLongEntry ? 'long' : 'short';
       entryPrice = entry;
       entryIdx = i + 1;
+      riskPerShare =
+        signal.riskPerShare !== undefined && signal.riskPerShare > 0
+          ? signal.riskPerShare
+          : undefined;
       peakOrTroughPrice = entry; // Initialize for trailing stop
       // 只接受位于入场价正确一侧的止损/目标价
       stopPrice =
