@@ -74,6 +74,7 @@ export function findFlagsAndPennants(
       data,
       lookbackPeriod,
       config.minFlagpoleMove,
+      config.minDuration,
       direction
     );
 
@@ -92,8 +93,8 @@ export function findFlagsAndPennants(
         : data[flagpoleInfo.flagpoleEndIndex].low,
     ];
 
-    // 旗杆后寻找旗形或三角旗
-    const consolidationStart = flagpoleInfo.flagpoleEndIndex;
+    // 旗杆终点之后的K线是整理区（旗面）
+    const consolidationStart = flagpoleInfo.flagpoleEndIndex + 1;
     const consolidationEnd = Math.min(
       consolidationStart + config.maxDuration,
       data.length - 1
@@ -133,7 +134,7 @@ export function findFlagsAndPennants(
       patterns.push(flagPattern);
     } else {
       // 检查是否形成了三角旗
-      const isPennant = checkForPennant(upperSlope, lowerSlope, direction);
+      const isPennant = checkForPennant(upperSlope, lowerSlope);
 
       if (
         isPennant &&
@@ -161,12 +162,15 @@ export function findFlagsAndPennants(
   }
 
   /**
-   * 查找旗杆
+   * 查找旗杆：从最近的K线往前找，返回最近一个满足幅度要求的旗杆。
+   * 旗杆终点是区间内的最高点（看涨）或最低点（看跌），
+   * 且终点之后至少留出 minDuration 根K线作为旗面。
    */
   function findFlagpole(
     data: Candle[],
     lookbackPeriod: number,
     minFlagpoleMove: number,
+    minDuration: number,
     direction: PatternDirection
   ): {
     flagpoleStartIndex: number;
@@ -174,49 +178,37 @@ export function findFlagsAndPennants(
     flagpolePrice: number;
   } | null {
     const isBullish = direction === PatternDirection.Bullish;
+    const maxPoleLength = 10;
+    // 旗杆终点的最大下标（不含）：之后要留出 minDuration 根K线
+    const latestEnd = data.length - minDuration;
+    const earliestStart = Math.max(0, data.length - lookbackPeriod);
 
-    for (let i = data.length - lookbackPeriod; i < data.length - 20; i++) {
-      // 确保索引有效
-      if (i < 0) continue;
+    for (let i = latestEnd - 2; i >= earliestStart; i--) {
+      const moveEnd = Math.min(i + maxPoleLength, latestEnd);
 
-      const moveEnd = Math.min(i + 10, data.length - 20);
-
-      if (isBullish) {
-        // 在看涨趋势中寻找向上的旗杆
-        const lowPrice = data[i].low;
-        const highPrices = data.slice(i, moveEnd).map(d => d.high);
-        const highPrice = Math.max(...highPrices);
-
-        if ((highPrice - lowPrice) / lowPrice > minFlagpoleMove) {
-          // 找出旗杆结束的点
-          for (let j = i + 1; j < moveEnd; j++) {
-            if (data[j].high >= highPrice * 0.98) {
-              return {
-                flagpoleStartIndex: i,
-                flagpoleEndIndex: j,
-                flagpolePrice: highPrice,
-              };
-            }
-          }
+      // 找出区间内的极值K线作为旗杆终点
+      let endIndex = i;
+      for (let j = i + 1; j < moveEnd; j++) {
+        if (
+          isBullish
+            ? data[j].high > data[endIndex].high
+            : data[j].low < data[endIndex].low
+        ) {
+          endIndex = j;
         }
-      } else {
-        // 在看跌趋势中寻找向下的旗杆
-        const highPrice = data[i].high;
-        const lowPrices = data.slice(i, moveEnd).map(d => d.low);
-        const lowPrice = Math.min(...lowPrices);
+      }
+      if (endIndex === i) continue;
 
-        if ((highPrice - lowPrice) / highPrice > minFlagpoleMove) {
-          // 找出旗杆结束的点
-          for (let j = i + 1; j < moveEnd; j++) {
-            if (data[j].low <= lowPrice * 1.02) {
-              return {
-                flagpoleStartIndex: i,
-                flagpoleEndIndex: j,
-                flagpolePrice: lowPrice,
-              };
-            }
-          }
-        }
+      const move = isBullish
+        ? (data[endIndex].high - data[i].low) / data[i].low
+        : (data[i].high - data[endIndex].low) / data[i].high;
+
+      if (move > minFlagpoleMove) {
+        return {
+          flagpoleStartIndex: i,
+          flagpoleEndIndex: endIndex,
+          flagpolePrice: isBullish ? data[endIndex].high : data[endIndex].low,
+        };
       }
     }
 
@@ -287,20 +279,10 @@ export function findFlagsAndPennants(
   /**
    * 检查是否形成三角旗
    */
-  function checkForPennant(
-    upperSlope: number,
-    lowerSlope: number,
-    direction: PatternDirection
-  ): boolean {
-    const isBullish = direction === PatternDirection.Bullish;
-
-    if (isBullish) {
-      // 看涨三角旗表现为上边界向下，下边界向上（收敛）
-      return upperSlope < 0 && lowerSlope > 0;
-    } else {
-      // 看跌三角旗表现为上边界向上，下边界向下（收敛）
-      return upperSlope > 0 && lowerSlope < 0;
-    }
+  function checkForPennant(upperSlope: number, lowerSlope: number): boolean {
+    // 三角旗无论看涨还是看跌都是收敛整理：上边界向下，下边界向上。
+    // 方向由旗杆决定。
+    return upperSlope < 0 && lowerSlope > 0;
   }
 
   /**
