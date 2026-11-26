@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { determineRiskManagement } from '../src/util/analysisUtils.js';
+import {
+  determineExitStrategy,
+  determineRiskManagement,
+} from '../src/util/analysisUtils.js';
 import { RiskLevel, SignalStrength, TradeDirection } from '../src/types.js';
 
 function planFor(
@@ -113,5 +116,82 @@ describe('determineRiskManagement risk/reward', () => {
     );
 
     expect(rm.riskRewardRatio).toBeCloseTo(6 / 3, 6);
+  });
+});
+
+describe('determineExitStrategy stop levels', () => {
+  const pattern = (stopLoss: number, direction: 'bullish' | 'bearish') =>
+    ({
+      timeframeAnalyses: [
+        {
+          timeframe: 'daily',
+          patterns: [],
+          patternSignal: direction,
+          dominantPattern: {
+            direction,
+            reliability: 80,
+            stopLoss,
+            priceTarget: undefined,
+          },
+        },
+      ],
+    }) as any;
+  const chip = {} as any;
+  const vol = { volatilityAnalysis: { volatilityRegime: 'normal' } } as any;
+  const level = (price: number, type: 'support' | 'resistance') =>
+    ({
+      price,
+      type,
+      strength: 'moderate',
+      source: 'chip',
+      timeframe: 'daily',
+      description: '',
+    }) as any;
+
+  it('drops a long stop that sits within 0.5% of the entry', () => {
+    const exit = determineExitStrategy(
+      TradeDirection.Long,
+      [level(98, 'support'), level(92, 'support')],
+      100,
+      chip,
+      pattern(99.8, 'bullish'), // 形态止损只低 0.2%
+      vol
+    );
+
+    const prices = exit.stopLossLevels.map(l => l.price);
+    expect(prices).not.toContain(99.8);
+    expect(exit.stopLossLevels[0]).toMatchObject({ type: 'fixed' });
+    expect(prices[0]).toBeCloseTo(98 * 0.99, 10);
+  });
+
+  it('orders the backup stops from nearest to farthest', () => {
+    const exit = determineExitStrategy(
+      TradeDirection.Long,
+      [level(98, 'support'), level(80, 'support')],
+      100,
+      chip,
+      pattern(95, 'bullish'),
+      vol
+    );
+
+    // 主止损 97.02，其余按离入场价由近到远：95，79.2
+    expect(exit.stopLossLevels.map(l => l.price)).toEqual([
+      98 * 0.99,
+      95,
+      80 * 0.99,
+    ]);
+  });
+
+  it('drops a short stop that sits within 0.5% of the entry', () => {
+    const exit = determineExitStrategy(
+      TradeDirection.Short,
+      [level(102, 'resistance')],
+      100,
+      chip,
+      pattern(100.3, 'bearish'),
+      vol
+    );
+
+    expect(exit.stopLossLevels.map(l => l.price)).toEqual([102 * 1.01]);
   });
 });

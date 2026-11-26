@@ -515,13 +515,15 @@ export function determineExitStrategy(
       potentialStopLevels.push(patternStopLoss);
     }
 
-    // 如果没有找到合适的止损位，使用固定百分比止损
-    if (potentialStopLevels.length === 0) {
-      potentialStopLevels.push(entryPrice * 0.95); // 入场价下方5%
-    }
+    // 去掉离入场价过近的止损并排序；都不合适时使用固定百分比止损（入场价下方5%）
+    const stopLevels = arrangeStopLevels(
+      potentialStopLevels,
+      entryPrice,
+      entryPrice * 0.95
+    );
 
     // 将止损位添加到策略中
-    exitStrategy.stopLossLevels = potentialStopLevels.map((price, index) => {
+    exitStrategy.stopLossLevels = stopLevels.map((price, index) => {
       const stopRatio = (entryPrice - price) / entryPrice;
       return {
         price,
@@ -557,13 +559,15 @@ export function determineExitStrategy(
       potentialStopLevels.push(patternStopLoss);
     }
 
-    // 如果没有找到合适的止损位，使用固定百分比止损
-    if (potentialStopLevels.length === 0) {
-      potentialStopLevels.push(entryPrice * 1.05); // 入场价上方5%
-    }
+    // 去掉离入场价过近的止损并排序；都不合适时使用固定百分比止损（入场价上方5%）
+    const stopLevels = arrangeStopLevels(
+      potentialStopLevels,
+      entryPrice,
+      entryPrice * 1.05
+    );
 
     // 将止损位添加到策略中
-    exitStrategy.stopLossLevels = potentialStopLevels.map((price, index) => {
+    exitStrategy.stopLossLevels = stopLevels.map((price, index) => {
       const stopRatio = (price - entryPrice) / entryPrice;
       return {
         price,
@@ -577,6 +581,28 @@ export function determineExitStrategy(
   }
 
   return exitStrategy;
+}
+
+/** 止损离入场价至少要有这么远（比例），否则没有实际意义 */
+const MIN_STOP_DISTANCE = 0.005;
+
+/**
+ * 整理候选止损：去掉离入场价不足 MIN_STOP_DISTANCE 的止损；
+ * 第一个保留的作为主止损，其余按离入场价从近到远排序。
+ * 没有可用止损时返回 [fallback]。
+ */
+function arrangeStopLevels(
+  candidates: number[],
+  entryPrice: number,
+  fallback: number
+): number[] {
+  const usable = candidates.filter(
+    price => Math.abs(price - entryPrice) / entryPrice >= MIN_STOP_DISTANCE
+  );
+  if (usable.length === 0) return [fallback];
+  const [primary, ...rest] = usable;
+  rest.sort((a, b) => Math.abs(a - entryPrice) - Math.abs(b - entryPrice));
+  return [primary, ...rest];
 }
 
 /**
