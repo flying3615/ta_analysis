@@ -227,8 +227,9 @@ export function findBuyingClimax(
         isInDowntrend
       );
 
-      // 计算形态的重要性（结合可靠性和价格波动幅度）
-      const significance = reliability * (range / avgRange) * 0.8;
+      // 计算形态的重要性：与其他形态一致，使用 可靠性 × 幅度/价格
+      // （range 已经是相对价格的振幅比例）
+      const significance = reliability * range;
 
       // 分析成交量特征
       const volumePattern = analyzeBuyingClimaxVolume(
