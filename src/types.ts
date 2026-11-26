@@ -367,7 +367,7 @@ export interface IntegratedTradePlan {
 }
 
 export interface VolatilityAnalysisResult {
-  historicalVolatility: number;
+  historicalVolatility: number; // 年化历史波动率，单位 %
   bollingerBandWidth: number;
   atr: number;
   atrPercent: number;
