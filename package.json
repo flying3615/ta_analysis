@@ -1,11 +1,12 @@
 {
   "name": "@gabriel3615/ta_analysis",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "stock ta analysis",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "scripts": {
