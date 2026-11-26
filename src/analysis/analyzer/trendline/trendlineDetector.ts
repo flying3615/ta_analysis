@@ -236,7 +236,7 @@ export function analyzeTrendlinesAndChannels(
     .filter((l): l is FittedLine => !!l)
     .map(l => buildEnvelopeChannel(data, l))
     .filter((c): c is Channel => !!c);
-  const channel = candidates.reduce<Channel | undefined>(
+  const best = candidates.reduce<Channel | undefined>(
     (best, c) =>
       !best ||
       c.touchesUpper + c.touchesLower > best.touchesUpper + best.touchesLower
@@ -244,6 +244,13 @@ export function analyzeTrendlinesAndChannels(
         : best,
     undefined
   );
+
+  // 记录通道边界在最后一根K线处的价格，供关键位等使用
+  const channel: Channel | undefined = best && {
+    ...best,
+    upperAtLast: best.upper.slope * (n - 1) + best.upper.intercept,
+    lowerAtLast: best.lower.slope * (n - 1) + best.lower.intercept,
+  };
 
   const breakoutRetest = channel
     ? detectBreakoutRetest(data, channel, fitEnd)

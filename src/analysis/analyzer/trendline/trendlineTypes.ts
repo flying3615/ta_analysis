@@ -17,6 +17,8 @@ export interface Channel {
   slope: number; // 以中轴为主
   touchesUpper: number;
   touchesLower: number;
+  upperAtLast?: number; // 上沿投影到最后一根K线的价格
+  lowerAtLast?: number; // 下沿投影到最后一根K线的价格
 }
 
 export interface BreakoutRetest {

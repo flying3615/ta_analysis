@@ -164,25 +164,19 @@ export class KeyLevelManager {
   ): KeyLevel[] {
     const levels: KeyLevel[] = [];
 
-    // 结构突破位
-    // 部分结构实现可能没有 lastBreakLevel，这里仅基于趋势与基本关键点提取
-
-    // 关键摆动点
-    (structureAnalysis as any).swingPoints?.forEach(
-      (point: any, index: number) => {
-        if (index < 3) {
-          // 只取最近3个摆动点
-          levels.push({
-            price: point.price,
-            type: point.type === 'high' ? 'resistance' : 'support',
-            strength: 'moderate',
-            source: 'structure',
-            timeframe: structureAnalysis.timeframe,
-            description: `结构摆动${point.type === 'high' ? '高' : '低'}点`,
-          });
-        }
-      }
-    );
+    // keyLevels 顺序：[最近高点, 最近低点, 前一高点, 前一低点]
+    const names = ['最近', '最近', '前一', '前一'];
+    (structureAnalysis.keyLevels ?? []).slice(0, 4).forEach((price, index) => {
+      const isHigh = index % 2 === 0;
+      levels.push({
+        price,
+        type: isHigh ? 'resistance' : 'support',
+        strength: 'moderate',
+        source: 'structure',
+        timeframe: structureAnalysis.timeframe,
+        description: `结构${names[index]}摆动${isHigh ? '高' : '低'}点`,
+      });
+    });
 
     return levels;
   }
@@ -265,13 +259,9 @@ export class KeyLevelManager {
 
     // 趋势通道边界
     if (trendlineAnalysis.channel) {
-      // trendline types 使用 upper/lower 或者 upperBand/lowerBand，这里兼容
-      const upper =
-        (trendlineAnalysis.channel as any).upperBand ??
-        (trendlineAnalysis.channel as any).upper?.high;
-      const lower =
-        (trendlineAnalysis.channel as any).lowerBand ??
-        (trendlineAnalysis.channel as any).lower?.low;
+      // 通道边界在最后一根K线处的价格
+      const upper = trendlineAnalysis.channel.upperAtLast;
+      const lower = trendlineAnalysis.channel.lowerAtLast;
       if (typeof upper === 'number') {
         levels.push({
           price: upper,
