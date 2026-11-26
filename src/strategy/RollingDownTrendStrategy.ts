@@ -409,7 +409,7 @@ async function compareShortVolatilityScenarios(
 }
 
 // 使用示例
-const sampleShortParams: ShortExpectedReturnParams = {
+export const sampleShortParams: ShortExpectedReturnParams = {
   symbol: 'TSLA',
   initialShortShares: 1000,
   feePerTrade: 5,
@@ -419,8 +419,9 @@ const sampleShortParams: ShortExpectedReturnParams = {
   stopLossPercent: 0.2, // 20%止损线，价格上涨超过20%时强制平仓
 };
 
-const result = await runShortExpectedReturnsAnalysis(sampleShortParams);
-console.log(result);
+// 运行分析示例（取消注释后运行；导入本模块时不应自动联网执行）
+// const result = await runShortExpectedReturnsAnalysis(sampleShortParams);
+// console.log(result);
 
 // 导出函数
 export {

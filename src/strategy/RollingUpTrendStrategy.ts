@@ -57,8 +57,9 @@ function calculateStrategyReturns(
   let currentShares = initialShares;
   let totalInvestment = initialShares * initialPrice;
   let avgCost = initialPrice;
-  let cashBalance = Math.floor(initialShares * tradingRatio) * initialPrice;
-  // let cashBalance = 0;
+  // 预留用于低吸的现金，属于初始投入的一部分
+  const initialCash = Math.floor(initialShares * tradingRatio) * initialPrice;
+  let cashBalance = initialCash;
   let totalFees = 0;
   let tradingPosition = Math.floor(initialShares * tradingRatio);
 
@@ -209,12 +210,12 @@ function calculateStrategyReturns(
   // 计算最终结果
   const finalPrice = pricePath[pricePath.length - 1];
   const finalMarketValue = currentShares * finalPrice;
-  const totalReturn =
-    finalMarketValue + cashBalance - initialShares * initialPrice;
-  const returnRate = (totalReturn / (initialShares * initialPrice)) * 100;
+  const initialInvestment = initialShares * initialPrice + initialCash;
+  const totalReturn = finalMarketValue + cashBalance - initialInvestment;
+  const returnRate = (totalReturn / initialInvestment) * 100;
 
   return {
-    initialInvestment: initialShares * initialPrice,
+    initialInvestment,
     finalShares: currentShares,
     finalAvgCost: avgCost,
     finalMarketValue,
@@ -308,7 +309,7 @@ async function runExpectedReturnsAnalysis(
 }
 
 // 使用示例
-const sampleParams: ExpectedReturnParams = {
+export const sampleParams: ExpectedReturnParams = {
   symbol: 'TSLA',
   initialShares: 10,
   feePerTrade: 5,
@@ -318,9 +319,9 @@ const sampleParams: ExpectedReturnParams = {
   stopLossPercent: 0.1, // 10%止损线
 };
 
-// 运行分析示例
-const analysisReport = await runExpectedReturnsAnalysis(sampleParams);
-console.log(analysisReport);
+// 运行分析示例（取消注释后运行；导入本模块时不应自动联网执行）
+// const analysisReport = await runExpectedReturnsAnalysis(sampleParams);
+// console.log(analysisReport);
 
 // const result = compareVolatilityScenarios(sampleParams);
 // console.log(result);
