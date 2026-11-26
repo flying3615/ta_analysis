@@ -48,6 +48,22 @@ export function findBuyingClimax(
 ): PatternAnalysisResult[] {
   const patterns: PatternAnalysisResult[] = [];
 
+  /** 回看区间 [i - lookbackPeriod, i) 内最高价或最低价所在的K线下标 */
+  const extremeIndex = (i: number, kind: 'high' | 'low'): number => {
+    const start = Math.max(0, i - lookbackPeriod);
+    let best = start;
+    for (let j = start + 1; j < i; j++) {
+      if (
+        kind === 'high'
+          ? data[j].high > data[best].high
+          : data[j].low < data[best].low
+      ) {
+        best = j;
+      }
+    }
+    return best;
+  };
+
   // 确保有足够的数据
   if (data.length < lookbackPeriod + 5) {
     return patterns;
@@ -246,7 +262,8 @@ export function findBuyingClimax(
 
       if (isTopPattern) {
         // 顶部买入高潮：计算下跌目标
-        const supportLevel = Math.min(...previousLows);
+        const supportIndex = extremeIndex(i, 'low');
+        const supportLevel = data[supportIndex].low;
         const priceMoveUp = currentCandle.high - supportLevel;
         priceTarget = currentCandle.high - priceMoveUp * 0.618;
         stopLoss = currentCandle.high * 1.03; // 止损位：高点再上方一点
@@ -259,9 +276,9 @@ export function findBuyingClimax(
           type: 'peak',
         };
         keyPoint2 = {
-          index: Math.max(0, i - lookbackPeriod),
+          index: supportIndex,
           price: supportLevel,
-          date: data[Math.max(0, i - lookbackPeriod)].timestamp,
+          date: data[supportIndex].timestamp,
           type: 'valley',
         };
 
@@ -272,7 +289,8 @@ export function findBuyingClimax(
         tradingImplication = `看跌信号, 预计回撤目标: ${priceTarget.toFixed(2)}, 止损位: ${stopLoss.toFixed(2)}`;
       } else {
         // 底部买入高潮：计算上涨目标
-        const resistanceLevel = Math.max(...previousHighs);
+        const resistanceIndex = extremeIndex(i, 'high');
+        const resistanceLevel = data[resistanceIndex].high;
         const priceMoveDown = resistanceLevel - currentCandle.low;
         priceTarget = currentCandle.low + priceMoveDown * 0.618;
         stopLoss = currentCandle.low * 0.97; // 止损位：低点再下方一点
@@ -285,9 +303,9 @@ export function findBuyingClimax(
           type: 'valley',
         };
         keyPoint2 = {
-          index: Math.max(0, i - lookbackPeriod),
+          index: resistanceIndex,
           price: resistanceLevel,
-          date: data[Math.max(0, i - lookbackPeriod)].timestamp,
+          date: data[resistanceIndex].timestamp,
           type: 'peak',
         };
 
@@ -324,13 +342,9 @@ export function findBuyingClimax(
         probableBreakoutZone,
         description,
         tradingImplication,
-        keyDates: [
-          data[Math.max(0, i - lookbackPeriod)].timestamp,
-          currentCandle.timestamp,
-        ],
-        keyPrices: isTopPattern
-          ? [keyPoint2.price, keyPoint1.price]
-          : [keyPoint1.price, keyPoint2.price],
+        // 按时间顺序：先是支撑/阻力所在K线（keyPoint2），再是高潮K线（keyPoint1）
+        keyDates: [keyPoint2.date, keyPoint1.date],
+        keyPrices: [keyPoint2.price, keyPoint1.price],
       });
     }
   }

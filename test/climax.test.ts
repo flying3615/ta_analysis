@@ -91,3 +91,22 @@ describe('timeframe match factor', () => {
     expect(adjusted!.significance).toBeCloseTo(expected, 6);
   });
 });
+
+describe('climax key points', () => {
+  it('dates the resistance at the bar where the high occurred, paired in order', () => {
+    const data = sellingClimaxData();
+    // 回看区间内最高点放在第 20 根
+    data[20] = { ...data[20], high: 103 };
+
+    const [climax] = findSellingClimax(data, [], 30);
+
+    const resistance = climax.component.keyPoints.find(p => p.type === 'peak')!;
+    expect(resistance.index).toBe(20);
+    expect(resistance.price).toBe(103);
+    expect(resistance.date).toEqual(data[20].timestamp);
+
+    // keyDates 与 keyPrices 按时间顺序一一对应
+    expect(climax.keyDates).toEqual([data[20].timestamp, data[37].timestamp]);
+    expect(climax.keyPrices).toEqual([103, 90]);
+  });
+});
