@@ -206,6 +206,81 @@ console.log(result.metrics); // 胜率、平均盈亏、最大回撤、夏普比
 
 前 3 个可以从包入口直接导入。其余策略位于 `dist/analysis/backtest/strategies/`。策略参数的默认值集中在 `backtestStrategiesConfig`。
 
+### 唐奇安 System 2 离线回测
+
+`DonchianStrategy` 复现了 stock-scanner-tauri 中唐奇安 System 2 的规则，用于离线回测：
+
+| 规则                        | 说明                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| 入场通道                    | 被评估K线之前 55 根的最高价 / 最低价（不含当前K线）                                               |
+| 出场                        | 收盘价严格越过之前 20 根的最低价（做多）/ 最高价（做空）                                          |
+| 突破                        | 收盘价严格高于 55 日高点（做多）/ 低于 55 日低点（做空）                                          |
+| 过热                        | 收盘价离出场线超过 15% 时不算突破                                                                 |
+| ATR                         | 最近 56 根K线的 14 日 Wilder ATR                                                                  |
+| 入场计划（`donchian-plan`） | 回撤到信号线 + 0.25 ATR 以内，之后另一天收盘重新站回信号线；信号后第 15 根K线到期；反向突破时作废 |
+| 风险单位                    | 2 × ATR，只用于把盈亏换算成 R 倍数，不作为止损执行                                                |
+
+无法离线复现的部分：流动性、市值、风险筛选和新闻催化剂检查。回测中计划的创建规则（Rust app 由人工创建）写在 `src/analysis/backtest/strategies/DonchianStrategy.ts` 的文件注释中。
+
+**第 1 步：在 Mac 上导出数据**（以只读方式打开 stock-scanner 的数据库）：
+
+```bash
+DB="$HOME/Library/Application Support/com.flying3615.stock-scanner/stock-scanner.sqlite"
+
+# 先看数据量：股票数、日期范围、行数
+sqlite3 -readonly "$DB" \
+  "SELECT COUNT(DISTINCT symbol), MIN(trading_date), MAX(trading_date), COUNT(*) FROM daily_bars;"
+
+# 导出
+sqlite3 -readonly -header -csv "$DB" \
+  "SELECT symbol, trading_date, source, open, high, low, close, volume, adjusted_close, is_complete, missing_reason
+   FROM daily_bars ORDER BY symbol, trading_date;" > bars.csv
+```
+
+**第 2 步：运行回测**（完全离线）：
+
+```bash
+npm run build
+npm run backtest -- --data bars.csv --long-only --split-date 2023-01-01 --out trades.csv
+npm run backtest -- --data bars.csv --strategy donchian-plan --long-only --split-date 2023-01-01
+```
+
+| 选项                                      | 作用                                           |
+| ----------------------------------------- | ---------------------------------------------- |
+| `--strategy donchian\|donchian-plan`      | 突破入场，或突破 + 入场计划（默认 `donchian`） |
+| `--long-only`                             | 只做多                                         |
+| `--commission <n>` / `--slippage-bps <n>` | 每次开仓/平仓的手续费；滑点（基点，默认 5）    |
+| `--risk-atr <n>`                          | 风险单位的 ATR 倍数（默认 2）                  |
+| `--split-date YYYY-MM-DD`                 | 按入场日期分别报告样本内和样本外               |
+| `--adjust`                                | 按 `adjusted_close / close` 缩放价格           |
+| `--symbols A,B`                           | 只回测这些股票                                 |
+| `--out trades.csv`                        | 导出每笔交易                                   |
+
+数据处理规则：同一天有多个数据源时优先使用 Yahoo；跳过不完整的行；单日涨跌超过 30% 的K线会在报告中列出（可能是未复权的拆股，必要时使用 `--adjust`）。
+
+报告按 R 统计：交易数、胜率、平均 R（期望值）、R 中位数、累计 R、盈亏比、最长连亏、累计 R 曲线的最大回撤（按出场日期累计，没有考虑同时持仓，是近似值），以及各股票的明细。
+
+在代码中使用：
+
+```ts
+import {
+  runPortfolioBacktest,
+  DonchianStrategy,
+} from '@gabriel3615/ta_analysis';
+
+const result = await runPortfolioBacktest(
+  dataBySymbol, // Record<string, Candle[]>
+  () =>
+    DonchianStrategy({
+      mode: 'entryPlan',
+      longOnly: true,
+      filter: (history, i, direction) => true, // 过滤器：返回 false 时跳过这次突破
+    }),
+  { warmupBars: 56, allowShort: false, splitDate: new Date('2023-01-01') }
+);
+console.log(result.overall, result.outOfSample);
+```
+
 ### 网格搜索
 
 ```ts
