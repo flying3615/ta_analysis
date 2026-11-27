@@ -132,6 +132,29 @@ export type DonchianFilter = (
 ) => boolean;
 /* eslint-enable no-unused-vars */
 
+/**
+ * 唐奇安出场：持仓时收盘价严格越过之前 20 根的出场线（做多：低于最低价）时发出 flat 信号。
+ * 随机入场对照也使用这个函数，保证两者的出场完全相同。
+ */
+export function donchianExitSignal(
+  history: Candle[],
+  i: number,
+  position: PositionContext
+): Signal | null {
+  const ev = evaluateDonchian(history, i, position.side);
+  if (ev.state === 'insufficient') return null;
+  const close = history[i].close;
+  const exitTriggered =
+    position.side === 'long' ? close < ev.exitLine : close > ev.exitLine;
+  return exitTriggered
+    ? {
+        timestamp: history[i].timestamp,
+        direction: 'flat',
+        reason: `收盘价越过 20 日出场线 ${ev.exitLine}`,
+      }
+    : null;
+}
+
 export interface DonchianParams {
   mode?: 'breakout' | 'entryPlan';
   longOnly?: boolean; // 只做多（回测器的 allowShort 也会拦截做空）
@@ -192,25 +215,6 @@ export function DonchianStrategy(
     reason,
   });
 
-  const exitSignal = (
-    history: Candle[],
-    i: number,
-    position: PositionContext
-  ): Signal | null => {
-    const ev = evaluateDonchian(history, i, position.side, overheatPct);
-    if (ev.state === 'insufficient') return null;
-    const close = history[i].close;
-    const exitTriggered =
-      position.side === 'long' ? close < ev.exitLine : close > ev.exitLine;
-    return exitTriggered
-      ? {
-          timestamp: history[i].timestamp,
-          direction: 'flat',
-          reason: `收盘价越过 20 日出场线 ${ev.exitLine}`,
-        }
-      : null;
-  };
-
   /** 按 Rust 的顺序推进计划：反向突破 → 到期 → 回撤 → 确认 */
   const advancePlan = (history: Candle[], i: number): Signal | null => {
     if (!plan || i <= plan.signalIdx) return null;
@@ -264,7 +268,7 @@ export function DonchianStrategy(
     generateSignal(history, i, position) {
       if (position) {
         plan = undefined; // 持仓期间不保留计划
-        return exitSignal(history, i, position);
+        return donchianExitSignal(history, i, position);
       }
 
       const evaluations = directions.map(direction => ({
