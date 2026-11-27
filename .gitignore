@@ -27,3 +27,10 @@ yarn-error.log*
 # 临时文件
 .tmp/
 .temp/
+
+# 回测用的K线数据（体积大，不提交）
+# 用 scripts/fetch-nasdaq-bars.mjs 抓取，或从 stock-scanner 的 daily_bars 导出
+/bars.csv
+/bars-all.csv
+/bars-nasdaq.csv
+.bars-cache/

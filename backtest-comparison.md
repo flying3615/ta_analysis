@@ -121,6 +121,8 @@
 
 ## 复现
 
+数据文件（`bars-all.csv`、`bars.csv`）体积较大，不放在仓库中，需要按第 1 步重新抓取。
+
 ```bash
 # 1. 抓数据（Yahoo 被限流时使用 Nasdaq）
 node scripts/fetch-nasdaq-bars.mjs --symbols-file bars-symbols.txt --out bars-nasdaq.csv
