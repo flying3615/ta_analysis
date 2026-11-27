@@ -216,6 +216,22 @@ export {
   type DonchianEvaluation,
 } from './analysis/backtest/strategies/DonchianStrategy.js';
 export {
+  BREAKOUT_FILTERS,
+  volumeFilter,
+  structureFilter,
+  zoneFilter,
+  volatilityFilter,
+  toDonchianFilter,
+  type BreakoutFilter,
+  type FilterName,
+  type FilterVerdict,
+} from './analysis/backtest/donchianFilters.js';
+export {
+  splitTradesByFilter,
+  type FilterComparison,
+  type FilterSplit,
+} from './analysis/backtest/filterComparison.js';
+export {
   runPortfolioBacktest,
   computeRMetrics,
   type PortfolioConfig,
