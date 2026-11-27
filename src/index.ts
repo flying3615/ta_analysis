@@ -215,6 +215,13 @@ export {
   type DonchianFilter,
   type DonchianEvaluation,
 } from './analysis/backtest/strategies/DonchianStrategy.js';
+export { RandomEntryStrategy } from './analysis/backtest/strategies/RandomEntryStrategy.js';
+export {
+  runNullModel,
+  nullDistribution,
+  type NullDistribution,
+  type NullModelResult,
+} from './analysis/backtest/nullModel.js';
 export {
   BREAKOUT_FILTERS,
   volumeFilter,
