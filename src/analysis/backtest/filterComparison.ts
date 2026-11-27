@@ -24,7 +24,7 @@ export interface FilterSplit {
   fail: GroupStats;
   undecided: number;
   keptFraction: number; // 通过组交易数 ÷ 总交易数
-  diffR: number; // 通过组平均 R − 不通过组平均 R
+  diffR?: number; // 通过组平均 R − 不通过组平均 R；任一组没有交易时为 undefined
   se?: number; // Welch 标准误：√(s₁²/n₁ + s₂²/n₂)
   t?: number; // diffR ÷ se；任一组少于 2 笔交易时为 undefined
 }
@@ -61,14 +61,15 @@ function compare(
     fail,
     undecided,
     keptFraction: total > 0 ? pass.count / total : 0,
-    diffR: pass.avgR - fail.avgR,
+    diffR: pass.count > 0 && fail.count > 0 ? pass.avgR - fail.avgR : undefined,
   };
   if (pass.count >= 2 && fail.count >= 2) {
     const se = Math.sqrt(
       pass.sdR ** 2 / pass.count + fail.sdR ** 2 / fail.count
     );
     split.se = se;
-    split.t = se > 0 ? split.diffR / se : undefined;
+    split.t =
+      se > 0 && split.diffR !== undefined ? split.diffR / se : undefined;
   }
   return split;
 }

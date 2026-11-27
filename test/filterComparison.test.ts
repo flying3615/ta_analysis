@@ -117,4 +117,14 @@ describe('splitTradesByFilter', () => {
     );
     expect(all.t).toBeUndefined();
   });
+
+  it('has no difference when one group is empty', () => {
+    const { all } = splitTradesByFilter(
+      [trade(10, 1), trade(20, 2)],
+      data,
+      evenFilter()
+    );
+    expect(all.fail.count).toBe(0);
+    expect(all.diffR).toBeUndefined();
+  });
 });
