@@ -50,6 +50,18 @@ describe('parseCliArgs', () => {
     });
   });
 
+  it('reads --null-model', () => {
+    expect(parseCliArgs(['--data', 'x', '--null-model', '20']).nullModel).toBe(
+      20
+    );
+    expect(() => parseCliArgs(['--data', 'x', '--null-model', '0'])).toThrow(
+      /--null-model/
+    );
+    expect(() =>
+      parseCliArgs(['--data', 'x', '--null-model', '5', '--compare'])
+    ).toThrow(/--null-model/);
+  });
+
   it('reads --compare and --filter', () => {
     expect(parseCliArgs(['--data', 'x', '--compare']).compare).toBe(true);
     expect(
@@ -200,5 +212,27 @@ describe('runBacktestCli', () => {
     expect(text).toContain('过滤器: 放量突破');
     // 合成数据的成交量恒定，突破日不放量，所以没有交易
     expect(text).toMatch(/交易数\s*\|\s*0/);
+  });
+
+  it('compares the baseline with random entries using --null-model', async () => {
+    const { io } = memoryIo({ 'bars.csv': csv });
+    const progress: string[] = [];
+    const text = await runBacktestCli(
+      [
+        '--data',
+        'bars.csv',
+        '--long-only',
+        '--null-model',
+        '2',
+        '--split-date',
+        '2020-03-01',
+      ],
+      { ...io, progress: (m: string) => progress.push(m) }
+    );
+    expect(text).toContain('随机入场对照');
+    expect(text).toContain('随机 ≥ 基准');
+    expect(text).toContain('逐年');
+    expect(text).toContain('判断标准');
+    expect(progress.some(m => m.includes('随机种子 2/2'))).toBe(true);
   });
 });

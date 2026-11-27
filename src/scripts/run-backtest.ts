@@ -6,6 +6,7 @@ import { runBacktestCli } from '../analysis/backtest/cli.js';
 runBacktestCli(process.argv.slice(2), {
   readFile: path => readFileSync(path, 'utf8'),
   writeFile: (path, text) => writeFileSync(path, text, 'utf8'),
+  progress: message => process.stderr.write(`${message}\n`),
 })
   .then(report => process.stdout.write(report))
   .catch((error: unknown) => {

@@ -10,6 +10,7 @@ import {
   type FilterName,
 } from './donchianFilters.js';
 import { splitTradesByFilter, type FilterSplit } from './filterComparison.js';
+import { runNullModel, type NullDistribution } from './nullModel.js';
 import {
   runPortfolioBacktest,
   type PortfolioResult,
@@ -30,6 +31,7 @@ export interface CliOptions {
   out?: string;
   compare: boolean;
   filters?: FilterName[];
+  nullModel?: number; // 随机入场对照的种子数
 }
 
 const FILTER_NAMES = Object.keys(BREAKOUT_FILTERS) as FilterName[];
@@ -48,7 +50,8 @@ export const CLI_USAGE = `用法: node dist/scripts/run-backtest.js --data <bars
   --out trades.csv                   导出每笔交易
   --compare                          对比 4 个过滤器：拆分基准交易，并附实际过滤后的运行结果
   --filter volume,structure,zone,volatility
-                                     使用指定的过滤器组合（全部通过才入场）`;
+                                     使用指定的过滤器组合（全部通过才入场）
+  --null-model <n>                   随机入场对照：用 n 个随机种子，比较基准与随机入场（建议 20）`;
 
 export function parseCliArgs(argv: string[]): CliOptions {
   const opts: Partial<CliOptions> = {
@@ -122,6 +125,14 @@ export function parseCliArgs(argv: string[]): CliOptions {
       case '--compare':
         opts.compare = true;
         break;
+      case '--null-model': {
+        const n = number(i++, flag);
+        if (!Number.isInteger(n) || n < 1) {
+          throw new Error(`${flag} 需要一个正整数（随机种子数）`);
+        }
+        opts.nullModel = n;
+        break;
+      }
       case '--filter': {
         const names = value(i++, flag)
           .split(',')
@@ -142,6 +153,9 @@ export function parseCliArgs(argv: string[]): CliOptions {
     }
   }
   if (!opts.data) throw new Error(`缺少 --data\n\n${CLI_USAGE}`);
+  if (opts.nullModel && (opts.compare || opts.filters)) {
+    throw new Error('--null-model 不能与 --compare 或 --filter 同时使用');
+  }
   if (opts.compare && opts.filters) {
     throw new Error('--compare 会自动对比全部过滤器，不能与 --filter 同时使用');
   }
@@ -253,6 +267,9 @@ export interface CliIo {
   readFile: (path: string) => string;
   // eslint-disable-next-line no-unused-vars -- 函数类型参数名的误报
   writeFile: (path: string, text: string) => void;
+  /** 长时间运行时的进度信息（脚本输出到 stderr） */
+  // eslint-disable-next-line no-unused-vars -- 函数类型参数名的误报
+  progress?: (message: string) => void;
 }
 
 const signed = (v: number, digits = 3) =>
@@ -288,6 +305,24 @@ function filteredRunTable(rows: [string, PortfolioResult][]): string {
     ),
   ].join('\n');
 }
+
+function nullRow(label: string, d: NullDistribution): string {
+  return (
+    `| ${label} | ${fmt(d.baseline, 3)} | ${fmt(d.mean, 3)} | ${fmt(d.sd, 3)} | ` +
+    `${fmt(d.min, 3)} ~ ${fmt(d.max, 3)} | ${Math.round(d.atOrAboveBaseline * d.values.length)} / ${d.values.length} | ` +
+    `${d.z === undefined ? '-' : signed(d.z, 2)} |`
+  );
+}
+
+const NULL_HEADER = [
+  '| 区间 | 基准平均 R | 随机均值 | 随机标准差 | 随机范围 | 随机 ≥ 基准 | z |',
+  '|---|---|---|---|---|---|---|',
+];
+
+export const NULL_DECISION_RULE =
+  '判断标准（在看到数据之前确定）：只有样本内和样本外都满足"随机 ≥ 基准的比例 ≤ 5%"' +
+  '（20 个种子时最多 1 个），才说明唐奇安突破本身有优势；否则基准的收益主要来自股票池上涨' +
+  '和幸存者偏差，研究过滤器的意义不大。随机入场与唐奇安使用完全相同的出场规则和风险单位。';
 
 export const DECISION_RULE =
   '判断标准（在看到数据之前确定）：一个过滤器值得移植到 Rust，需要同时满足 ' +
@@ -356,7 +391,39 @@ export async function runBacktestCli(
     );
   }
 
-  if (opts.compare) {
+  if (opts.nullModel) {
+    const nm = await runNullModel(dataBySymbol, result, {
+      seeds: opts.nullModel,
+      riskAtrMultiple: opts.riskAtr,
+      splitDate,
+      backtestConfig: {
+        commissionPerTrade: opts.commission,
+        slippageBps: opts.slippageBps,
+        warmupBars: 56,
+      },
+      onProgress: io.progress,
+    });
+    const rowsOut = [nullRow('全部', nm.overall)];
+    if (nm.inSample && nm.outOfSample) {
+      rowsOut.push(
+        nullRow(`样本内（< ${opts.splitDate}）`, nm.inSample),
+        nullRow(`样本外（≥ ${opts.splitDate}）`, nm.outOfSample)
+      );
+    }
+    sections.push(
+      '## 随机入场对照\n\n' +
+        `入场概率校准为每根K线 ${nm.probability.toExponential(3)}；` +
+        `基准交易数 ${nm.baselineTrades}，随机平均交易数 ${fmt(nm.nullTradesMean, 0)}；` +
+        `随机种子 ${nm.seeds} 个。出场规则和风险单位与基准相同，只做多。\n\n` +
+        [...NULL_HEADER, ...rowsOut].join('\n'),
+      '### 逐年（按入场年份）\n\n' +
+        [
+          ...NULL_HEADER,
+          ...Object.entries(nm.byYear).map(([y, d]) => nullRow(y, d)),
+        ].join('\n'),
+      NULL_DECISION_RULE
+    );
+  } else if (opts.compare) {
     const splits = FILTER_NAMES.map(
       n =>
         [
