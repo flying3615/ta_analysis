@@ -140,3 +140,26 @@ describe('Backtester warm-up', () => {
     expect(Math.min(...seen.keys())).toBe(60);
   });
 });
+
+describe('Backtester signal index', () => {
+  it('defaults the signal bar to the bar before entry', async () => {
+    const candles = candlesFromCloses(new Array(70).fill(100));
+    const { trades } = await new Backtester(noFrictions).run(
+      candles,
+      scripted({ 52: { direction: 'long' }, 60: { direction: 'flat' } })
+    );
+    expect(trades[0].signalIdx).toBe(52);
+  });
+
+  it('uses the signal index the strategy supplies', async () => {
+    const candles = candlesFromCloses(new Array(70).fill(100));
+    const { trades } = await new Backtester(noFrictions).run(
+      candles,
+      scripted({
+        52: { direction: 'long', signalIdx: 45 },
+        60: { direction: 'flat' },
+      })
+    );
+    expect(trades[0].signalIdx).toBe(45);
+  });
+});

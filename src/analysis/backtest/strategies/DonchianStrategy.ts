@@ -241,13 +241,17 @@ export function DonchianStrategy(
           : atMost(close, p.confirmationPrice);
       if (confirmed) {
         plan = undefined; // DECISION_REQUIRED → 回测中视为入场
-        return entrySignal(
-          history,
-          i,
-          p.direction,
-          p.atr,
-          `唐奇安入场计划：回撤后重新站回信号线 ${p.signalLine}`
-        );
+        return {
+          ...entrySignal(
+            history,
+            i,
+            p.direction,
+            p.atr,
+            `唐奇安入场计划：回撤后重新站回信号线 ${p.signalLine}`
+          ),
+          // 信号K线是突破当天（创建计划的K线），不是确认日
+          signalIdx: p.signalIdx,
+        };
       }
     }
     return null;

@@ -14,6 +14,11 @@ export interface Signal {
    * 例如唐奇安系统本身没有初始止损，可以用 2 × ATR 作为风险单位。
    */
   riskPerShare?: number;
+  /**
+   * 产生这笔交易的信号K线下标。默认是发出入场信号的那根K线；
+   * 例如入场计划在确认日入场，但信号K线是突破当天。
+   */
+  signalIdx?: number;
   reason?: string;
 }
 
@@ -57,6 +62,7 @@ export interface BacktestConfig {
 export interface Trade {
   entryIdx: number;
   exitIdx: number;
+  signalIdx: number; // 信号K线下标（见 Signal.signalIdx）
   entryDate: Date;
   exitDate: Date;
   holdingBars: number; // exitIdx − entryIdx
@@ -164,6 +170,7 @@ export class Backtester {
     let positionSide: 'long' | 'short' | null = null;
     let entryPrice = 0;
     let entryIdx = 0;
+    let signalIdx = 0;
     let riskPerShare: number | undefined; // 来自策略信号的风险单位（不执行）
     let stopPrice: number | undefined; // 来自策略信号的止损价
     let targetPrice: number | undefined; // 来自策略信号的第一目标价
@@ -196,6 +203,7 @@ export class Backtester {
       trades.push({
         entryIdx,
         exitIdx,
+        signalIdx,
         entryDate: candles[entryIdx].timestamp,
         exitDate: candles[exitIdx].timestamp,
         holdingBars: exitIdx - entryIdx,
@@ -308,6 +316,7 @@ export class Backtester {
       positionSide = isLongEntry ? 'long' : 'short';
       entryPrice = entry;
       entryIdx = i + 1;
+      signalIdx = signal.signalIdx ?? i;
       riskPerShare =
         signal.riskPerShare !== undefined && signal.riskPerShare > 0
           ? signal.riskPerShare
