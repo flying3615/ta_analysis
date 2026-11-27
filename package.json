@@ -22,7 +22,8 @@
     "publish:minor": "npm version minor",
     "publish:major": "npm version major",
     "run:crypto": "node dist/scripts/run-crypto.js",
-    "run:binance": "node dist/scripts/run-binance-spot.js"
+    "run:binance": "node dist/scripts/run-binance-spot.js",
+    "backtest": "node dist/scripts/run-backtest.js"
   },
   "keywords": [
     "stock",

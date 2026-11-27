@@ -1,5 +1,14 @@
 # 更新日志
 
+## 未发布
+
+### 新增
+
+1. `DonchianStrategy`：唐奇安 System 2 策略，规则与 stock-scanner-tauri 一致，支持突破和入场计划两种模式，以及过滤器钩子。
+2. `runPortfolioBacktest` 和 `computeRMetrics`：多股票回测与按 R 统计的指标，支持按日期切分样本内/样本外。
+3. `npm run backtest`：读取 stock-scanner 的 `daily_bars` 导出文件，离线运行回测并输出报告。
+4. 回测器：策略可以拿到当前持仓（`generateSignal` 的第 3 个可选参数）；交易记录入场/出场日期、持有根数、净盈亏和 R 倍数；信号可以带 `riskPerShare`；新增 `warmupBars` 配置。
+
 ## 4.0.0
 
 这个版本修复了回测、信号聚合、各分析模块和数据层中的大量正确性问题。许多输出数值会因此变化，部分公开接口也有不兼容变化，所以升级为主版本。
