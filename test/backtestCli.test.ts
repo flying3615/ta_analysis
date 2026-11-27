@@ -11,6 +11,7 @@ describe('parseCliArgs', () => {
       slippageBps: 5,
       riskAtr: 2,
       adjust: false,
+      compare: false,
     });
   });
 
@@ -47,6 +48,19 @@ describe('parseCliArgs', () => {
       symbols: ['AAPL', 'MSFT'],
       out: 'trades.csv',
     });
+  });
+
+  it('reads --compare and --filter', () => {
+    expect(parseCliArgs(['--data', 'x', '--compare']).compare).toBe(true);
+    expect(
+      parseCliArgs(['--data', 'x', '--filter', 'volume, zone']).filters
+    ).toEqual(['volume', 'zone']);
+    expect(() => parseCliArgs(['--data', 'x', '--filter', 'magic'])).toThrow(
+      /magic/
+    );
+    expect(() =>
+      parseCliArgs(['--data', 'x', '--compare', '--filter', 'volume'])
+    ).toThrow(/--compare/);
   });
 
   it('rejects a missing --data, an unknown option and a bad number', () => {
@@ -145,5 +159,46 @@ describe('runBacktestCli', () => {
     );
     expect(text).toContain('样本内');
     expect(text).toContain('样本外');
+  });
+
+  it('compares every filter against the baseline trades with --compare', async () => {
+    const { io } = memoryIo({ 'bars.csv': csv });
+    const text = await runBacktestCli(
+      [
+        '--data',
+        'bars.csv',
+        '--long-only',
+        '--compare',
+        '--split-date',
+        '2020-03-01',
+      ],
+      io
+    );
+    expect(text).toContain('拆分基准交易');
+    for (const label of [
+      '放量突破',
+      '结构趋势一致',
+      '上方无供给区',
+      '波动率不极端',
+    ]) {
+      expect(text).toContain(label);
+    }
+    expect(text).toContain('实际过滤后运行');
+    // 合成数据成交量恒定，放量突破的通过组为空：平均 R 和差值都显示为 "-"
+    expect(text).toMatch(
+      /\| 放量突破 \| 0 \/ \d+ \| 0% \| - \| -?[\d.]+ \| - \| - \|/
+    );
+    expect(text).toContain('判断标准');
+  });
+
+  it('applies a filter combination with --filter', async () => {
+    const { io } = memoryIo({ 'bars.csv': csv });
+    const text = await runBacktestCli(
+      ['--data', 'bars.csv', '--long-only', '--filter', 'volume'],
+      io
+    );
+    expect(text).toContain('过滤器: 放量突破');
+    // 合成数据的成交量恒定，突破日不放量，所以没有交易
+    expect(text).toMatch(/交易数\s*\|\s*0/);
   });
 });

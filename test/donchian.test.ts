@@ -189,6 +189,16 @@ function run(
 
 describe('DonchianStrategy entry-plan mode', () => {
   // 第 56 根突破：信号线 110，ATR ≈ 10（回撤区上沿 112.5）
+  it('reports the plan-creation bar as the signal bar', () => {
+    const data = flatThen([112, 111, 110.5]);
+    const strat = DonchianStrategy({ mode: 'entryPlan' });
+    let entry: any;
+    for (let i = 56; i < data.length; i++) {
+      entry = strat.generateSignal(data.slice(0, i + 1), i, undefined) ?? entry;
+    }
+    expect(entry.signalIdx).toBe(56);
+  });
+
   it('enters after a pullback and a reclaim on two different later days', () => {
     const data = flatThen([112, 111, 110.5]);
     // 57：收盘 111 ≤ 112.5 → 进入回撤；58：收盘 110.5 ≥ 110 → 确认
