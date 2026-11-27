@@ -215,6 +215,14 @@ export {
   type DonchianFilter,
   type DonchianEvaluation,
 } from './analysis/backtest/strategies/DonchianStrategy.js';
+export {
+  runPortfolioBacktest,
+  computeRMetrics,
+  type PortfolioConfig,
+  type PortfolioResult,
+  type RMetrics,
+  type SymbolTrade,
+} from './analysis/backtest/Portfolio.js';
 export type {
   PositionContext,
   Signal,
