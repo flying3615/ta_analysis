@@ -108,6 +108,8 @@ export interface LoadReport {
   filledFromOtherSource: number; // yahoo 缺失、用其他来源补上的天数
   /** 单日涨跌超过 30% 的K线：可能是未复权的拆股，需要人工检查 */
   largeMoves: { symbol: string; date: string; changePct: number }[];
+  /** 相邻两根K线相隔超过 7 个自然日的缺口：跨缺口计算的通道和 ATR 不可靠 */
+  gaps: { symbol: string; from: string; to: string; days: number }[];
 }
 
 export interface BuildOptions {
@@ -129,6 +131,7 @@ export function buildCandles(
     skippedIncomplete: 0,
     filledFromOtherSource: 0,
     largeMoves: [],
+    gaps: [],
   };
 
   // symbol → date → 选中的行
@@ -174,6 +177,19 @@ export function buildCandles(
         timestamp: new Date(`${date}T00:00:00Z`),
       };
       const prev = candles[candles.length - 1];
+      if (prev) {
+        const days = Math.round(
+          (candle.timestamp.getTime() - prev.timestamp.getTime()) / 86400000
+        );
+        if (days > 7) {
+          report.gaps.push({
+            symbol,
+            from: prev.timestamp.toISOString().slice(0, 10),
+            to: date,
+            days,
+          });
+        }
+      }
       if (prev && prev.close > 0) {
         const changePct = (candle.close / prev.close - 1) * 100;
         if (Math.abs(changePct) > largeMovePct) {

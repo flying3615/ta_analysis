@@ -155,4 +155,15 @@ describe('buildCandles', () => {
     expect(report.firstDate).toBe('2024-01-02');
     expect(report.lastDate).toBe('2024-01-03');
   });
+
+  it('reports gaps of more than 7 calendar days between bars', () => {
+    const { report } = buildCandles([
+      row('A', '2024-01-02', 10),
+      row('A', '2024-01-05', 10), // 3 天：正常（含周末也不超过 7 天）
+      row('A', '2024-02-01', 10), // 27 天：缺口
+    ]);
+    expect(report.gaps).toEqual([
+      { symbol: 'A', from: '2024-01-05', to: '2024-02-01', days: 27 },
+    ]);
+  });
 });

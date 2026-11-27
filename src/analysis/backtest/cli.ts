@@ -32,7 +32,8 @@ export const CLI_USAGE = `用法: node dist/scripts/run-backtest.js --data <bars
   --slippage-bps <n>                 滑点，基点（默认 5）
   --risk-atr <n>                     风险单位 = n × ATR，只用于计算 R（默认 2）
   --split-date YYYY-MM-DD            按入场日期切分样本内/样本外
-  --adjust                           按 adjusted_close / close 缩放价格
+  --adjust                           按 adjusted_close / close 缩放价格（含分红调整；
+                                     不加时与 stock-scanner 评估使用的价格一致）
   --symbols A,B,C                    只回测这些股票
   --out trades.csv                   导出每笔交易`;
 
@@ -147,13 +148,28 @@ function loadSection(report: LoadReport): string {
   if (report.largeMoves.length > 0) {
     lines.push(
       '',
-      `⚠️ 单日涨跌超过 30% 的K线 ${report.largeMoves.length} 根（可能是未复权的拆股，请检查，必要时使用 --adjust）:`,
+      `⚠️ 单日涨跌超过 30% 的K线 ${report.largeMoves.length} 根。` +
+        '可能是拆股前后的价格混在一起（stock-scanner 只覆盖重新拉取的日期，旧行会保留）。' +
+        '请检查这些股票：在 stock-scanner 中重新拉取它们的完整历史，或用 --symbols 排除。',
       ...report.largeMoves
         .slice(0, 20)
         .map(m => `  ${m.symbol} ${m.date} ${m.changePct}%`)
     );
     if (report.largeMoves.length > 20) {
       lines.push(`  …… 共 ${report.largeMoves.length} 根`);
+    }
+  }
+  if (report.gaps.length > 0) {
+    lines.push(
+      '',
+      `⚠️ 数据缺口（相邻K线相隔超过 7 天）${report.gaps.length} 处。` +
+        '跨缺口计算的通道和 ATR 不可靠，入场计划的到期也按K线数计算。',
+      ...report.gaps
+        .slice(0, 20)
+        .map(g => `  ${g.symbol} ${g.from} → ${g.to}（${g.days} 天）`)
+    );
+    if (report.gaps.length > 20) {
+      lines.push(`  …… 共 ${report.gaps.length} 处`);
     }
   }
   return lines.join('\n');
