@@ -105,7 +105,9 @@ export interface LoadReport {
   firstDate?: string;
   lastDate?: string;
   skippedIncomplete: number; // is_complete = 0 或有 missing_reason
-  filledFromOtherSource: number; // yahoo 缺失、用其他来源补上的天数
+  /** 某只股票有首选来源（yahoo）的数据、但某天缺失、用其他来源补上的天数 */
+  filledFromOtherSource: number;
+  sources: Record<string, number>; // 最终采用的K线按来源计数
   /** 单日涨跌超过 30% 的K线：可能是未复权的拆股，需要人工检查 */
   largeMoves: { symbol: string; date: string; changePct: number }[];
   /** 相邻两根K线相隔超过 7 个自然日的缺口：跨缺口计算的通道和 ATR 不可靠 */
@@ -130,6 +132,7 @@ export function buildCandles(
     symbols: 0,
     skippedIncomplete: 0,
     filledFromOtherSource: 0,
+    sources: {},
     largeMoves: [],
     gaps: [],
   };
@@ -157,9 +160,16 @@ export function buildCandles(
   for (const [symbol, byDate] of chosen) {
     const dates = [...byDate.keys()].sort();
     const candles: Candle[] = [];
+    // 只有这只股票确实有首选来源的数据时，其他来源的行才算"补齐"
+    const hasPreferred = [...byDate.values()].some(
+      r => r.source.toLowerCase() === prefer
+    );
     for (const date of dates) {
       const r = byDate.get(date)!;
-      if (r.source.toLowerCase() !== prefer) report.filledFromOtherSource++;
+      if (hasPreferred && r.source.toLowerCase() !== prefer) {
+        report.filledFromOtherSource++;
+      }
+      report.sources[r.source] = (report.sources[r.source] ?? 0) + 1;
       const factor =
         options.adjust &&
         r.adjusted_close &&

@@ -166,4 +166,13 @@ describe('buildCandles', () => {
       { symbol: 'A', from: '2024-01-05', to: '2024-02-01', days: 27 },
     ]);
   });
+
+  it('does not count fills when a symbol has no rows from the preferred source', () => {
+    const { report } = buildCandles([
+      row('A', '2024-01-02', 10, { source: 'nasdaq' }),
+      row('A', '2024-01-03', 11, { source: 'nasdaq' }),
+    ]);
+    expect(report.filledFromOtherSource).toBe(0);
+    expect(report.sources).toEqual({ nasdaq: 2 });
+  });
 });

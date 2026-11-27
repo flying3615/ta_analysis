@@ -192,14 +192,18 @@ function loadSection(report: LoadReport): string {
     `日期范围: ${report.firstDate ?? '-'} ~ ${report.lastDate ?? '-'}`,
     `读取行数: ${report.rowsRead}`,
     `跳过的不完整行: ${report.skippedIncomplete}`,
+    `数据来源: ${Object.entries(report.sources)
+      .map(([source, n]) => `${source} ${n}`)
+      .join('，')}`,
     `由其他数据源补齐的天数: ${report.filledFromOtherSource}`,
   ];
   if (report.largeMoves.length > 0) {
     lines.push(
       '',
       `⚠️ 单日涨跌超过 30% 的K线 ${report.largeMoves.length} 根。` +
-        '可能是拆股前后的价格混在一起（stock-scanner 只覆盖重新拉取的日期，旧行会保留）。' +
-        '请检查这些股票：在 stock-scanner 中重新拉取它们的完整历史，或用 --symbols 排除。',
+        '可能是真实的财报或事件跳空，也可能是拆股前后的价格混在一起' +
+        '（例如 stock-scanner 只覆盖重新拉取的日期，拆股前的旧行会保留）。' +
+        '可以对照已知拆股日期检查；如果是混价，请重新拉取该股票的完整历史，或用 --symbols 排除。',
       ...report.largeMoves
         .slice(0, 20)
         .map(m => `  ${m.symbol} ${m.date} ${m.changePct}%`)
